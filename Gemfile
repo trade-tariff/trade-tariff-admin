@@ -40,7 +40,7 @@ gem "sidekiq-scheduler", "~> 2.0"
 gem "sinatra", "~> 2.0", require: nil
 gem "bootscale", "~> 0.5", require: false
 
-gem "nokogiri", "~> 1.8.1"
+gem "nokogiri", "~> 1.11.0"
 
 group :development, :test do
   gem "dotenv-rails"
