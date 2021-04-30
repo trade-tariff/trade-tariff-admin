@@ -24,8 +24,7 @@ module Synonyms
       end
     end
 
-    def edit
-    end
+    def edit; end
 
     def update
       search_reference.assign_attributes(search_reference_params.to_h)
@@ -47,7 +46,7 @@ module Synonyms
 
     def export
       export_service = SearchReference::ExportService.new(
-        search_reference_parent.search_references
+        search_reference_parent.search_references,
       )
       filename = "#{search_reference_parent.reference_title}-synonyms-#{Time.now.to_i}.csv"
       send_data export_service.to_csv, filename: filename
@@ -77,11 +76,11 @@ module Synonyms
     end
 
     def search_reference_parent
-      raise NotImplementedError.new('Please override #search_reference_parent')
+      raise NotImplementedError, 'Please override #search_reference_parent'
     end
 
     def scope
-      raise NotImplementedError.new('Please override #scope')
+      raise NotImplementedError, 'Please override #scope'
     end
   end
 end

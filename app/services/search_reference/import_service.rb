@@ -17,7 +17,7 @@ class SearchReference
 
     def import!
       @search_reference.assign_attributes(
-        title: @row['title']
+        title: @row['title'],
       )
       @search_reference.save
     end
@@ -26,13 +26,13 @@ class SearchReference
 
     def get_search_reference
       referenced_resource.search_references.build(
-        referenced_id: referenced_resource.id
+        referenced_id: referenced_resource.id,
       )
     end
 
     def referenced_resource
       referenced_class.find(
-        referenced_id
+        referenced_id,
       )
     end
 

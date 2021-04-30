@@ -8,7 +8,7 @@ class ImportSearchReferencesJob < ApplicationJob
       csv_file = import_task.file.download
       SearchReference::ImportService.from_csv!(csv_file)
       import_task.update(status: :successful)
-    rescue => _
+    rescue StandardError => _e
       import_task.update(status: :failed)
     end
   end

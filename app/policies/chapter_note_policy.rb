@@ -1,4 +1,4 @@
-class ChapterNotePolicy < Struct.new(:user, :chapter_note)
+ChapterNotePolicy = Struct.new(:user, :chapter_note) do
   def edit?
     user.gds_editor? || user.hmrc_editor?
   end
