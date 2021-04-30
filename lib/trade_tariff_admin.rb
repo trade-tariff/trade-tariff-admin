@@ -7,7 +7,7 @@ require 'redis_resolver'
 module TradeTariffAdmin
   class << self
     def production?
-      ENV["GOVUK_APP_DOMAIN"] == "tariff-admin-production.cloudapps.digital"
+      ENV['GOVUK_APP_DOMAIN'] == 'tariff-admin-production.cloudapps.digital'
     end
   end
 end

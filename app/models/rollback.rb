@@ -1,4 +1,4 @@
-require "concerns/her_paginatable"
+require 'concerns/her_paginatable'
 
 class Rollback
   include Her::JsonApi::Model

@@ -77,11 +77,11 @@ module Synonyms
     end
 
     def search_reference_parent
-      raise NotImplementedError.new("Please override #search_reference_parent")
+      raise NotImplementedError.new('Please override #search_reference_parent')
     end
 
     def scope
-      raise NotImplementedError.new("Please override #scope")
+      raise NotImplementedError.new('Please override #scope')
     end
   end
 end

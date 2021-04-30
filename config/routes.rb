@@ -1,6 +1,6 @@
-require "sidekiq/web"
-require "sidekiq-scheduler/web"
-require "gds_editor_constraint"
+require 'sidekiq/web'
+require 'sidekiq-scheduler/web'
+require 'gds_editor_constraint'
 
 Rails.application.routes.draw do
   namespace :notes, module: :notes do
@@ -64,9 +64,9 @@ Rails.application.routes.draw do
   resources :footnotes, only: [:index, :edit, :update]
   resources :measure_types, only: [:index, :edit, :update]
 
-  post "govspeak" => "govspeak#govspeak", as: :govspeak
-  get  "healthcheck" => "healthcheck#check", as: :healthcheck
-  get  "/" => "pages#index", as: :index
-  mount Sidekiq::Web => "/sidekiq", constraints: GdsEditorConstraint.new
-  root to: "pages#index"
+  post 'govspeak' => 'govspeak#govspeak', as: :govspeak
+  get  'healthcheck' => 'healthcheck#check', as: :healthcheck
+  get  '/' => 'pages#index', as: :index
+  mount Sidekiq::Web => '/sidekiq', constraints: GdsEditorConstraint.new
+  root to: 'pages#index'
 end

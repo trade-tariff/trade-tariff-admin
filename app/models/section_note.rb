@@ -13,7 +13,7 @@ class SectionNote
 
   # NOTE singular resource
   def request_path
-    self.class.build_request_path("/admin/sections/:section_id/section_note", attributes.dup)
+    self.class.build_request_path('/admin/sections/:section_id/section_note', attributes.dup)
   end
 
   def section_title; end

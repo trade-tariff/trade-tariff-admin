@@ -17,7 +17,7 @@ class SearchReference
 
     def import!
       @search_reference.assign_attributes(
-        title: @row["title"]
+        title: @row['title']
       )
       @search_reference.save
     end
