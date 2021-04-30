@@ -4,6 +4,6 @@ FactoryBot.define do
   factory :section_note do
     id         { generate(:section_note_id) }
     section_id { generate(:section_id) }
-    content    { "Content of note" }
+    content    { 'Content of note' }
   end
 end

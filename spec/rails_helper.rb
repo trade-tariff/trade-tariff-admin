@@ -1,17 +1,17 @@
-ENV["RAILS_ENV"] ||= 'test'
+ENV['RAILS_ENV'] ||= 'test'
 
 require 'simplecov'
 
 SimpleCov.start 'rails'
 SimpleCov.formatters = SimpleCov::Formatter::HTMLFormatter
 
-require File.expand_path("../../config/environment", __FILE__)
+require File.expand_path('../config/environment', __dir__)
 
 require 'rspec/rails'
 require 'pundit/rspec'
 require 'webmock/rspec'
 
-Dir[Rails.root.join("spec/support/**/*.rb")].each {|f| require f}
+Dir[Rails.root.join('spec/support/**/*.rb')].each { |f| require f }
 
 RSpec.configure do |config|
   config.raise_errors_for_deprecations!
@@ -24,14 +24,14 @@ RSpec.configure do |config|
   config.include Rails.application.routes.url_helpers
   config.include ApiResponsesHelper
   config.include FactoryBot::Syntax::Methods
-  config.include FeaturesHelper, :type => :feature
+  config.include FeaturesHelper, type: :feature
 
   config.before(:suite) do
     DatabaseCleaner.strategy = :transaction
     DatabaseCleaner.clean_with(:truncation)
   end
 
-  config.around(:each) do |example|
+  config.around do |example|
     DatabaseCleaner.cleaning do
       example.run
     end

@@ -1,34 +1,34 @@
 require 'rails_helper'
 
-describe "Footnote management" do
+describe 'Footnote management' do
   let!(:user) { create :user, :gds_editor }
 
-  describe "Footnote editing" do
+  describe 'Footnote editing' do
     let(:footnote)         { build :footnote }
-    let(:new_description)  { "new content" }
+    let(:new_description)  { 'new content' }
 
     specify do
-      stub_api_for(Footnote) { |stub|
-        stub.get("/admin/footnotes") { |_env|
+      stub_api_for(Footnote) do |stub|
+        stub.get('/admin/footnotes') do |_env|
           api_success_response(data: [{ type: 'footnote', id: footnote.id, attributes: footnote.attributes }])
-        }
-        stub.get("/admin/footnotes/#{footnote.to_param}") { |_env|
+        end
+        stub.get("/admin/footnotes/#{footnote.to_param}") do |_env|
           api_success_response(data: { type: 'footnote', id: footnote.id,  attributes: footnote.attributes })
-        }
-        stub.patch("/admin/footnotes/#{footnote.to_param}") { |_env|
+        end
+        stub.patch("/admin/footnotes/#{footnote.to_param}") do |_env|
           api_no_content_response
-        }
-      }
+        end
+      end
 
       verify footnote_created(footnote)
 
       update_footnote_for footnote, description: new_description
 
-      stub_api_for(Footnote) { |stub|
-        stub.get("/admin/footnotes/#{footnote.to_param}") { |_env|
-          api_success_response(data: { type: 'footnote', id: footnote.id,  attributes: footnote.attributes.merge(description: new_description) })
-        }
-      }
+      stub_api_for(Footnote) do |stub|
+        stub.get("/admin/footnotes/#{footnote.to_param}") do |_env|
+          api_success_response(data: { type: 'footnote', id: footnote.id, attributes: footnote.attributes.merge(description: new_description) })
+        end
+      end
 
       verify footnote_updated(footnote, description: new_description)
     end

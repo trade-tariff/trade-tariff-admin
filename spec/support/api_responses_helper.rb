@@ -1,6 +1,6 @@
 module ApiResponsesHelper
   def stub_api_for(klass)
-    klass.use_api (api = Her::API.new)
+    klass.use_api(api = Her::API.new)
 
     api.setup url: Rails.application.config.api_host do |c|
       c.use Her::Middleware::HeaderMetadataParse # lib/her/middleware/header_metadata_parse.rb
@@ -16,11 +16,11 @@ module ApiResponsesHelper
 
   def jsonapi_success_response(type, response = {}, headers = {})
     response = if response.is_a? Hash
-      { data: { type: type, attributes: response } }
-    elsif response.is_a? Array
-      { data: response.map{ |r| { type: type, attributes: r } } }
-    else
-      response
+                 { data: { type: type, attributes: response } }
+               elsif response.is_a? Array
+                 { data: response.map { |r| { type: type, attributes: r } } }
+               else
+                 response
     end
     [200, headers, response.to_json]
   end

@@ -1,43 +1,43 @@
 require 'rails_helper'
 
-describe "Section Note management" do
+describe 'Section Note management' do
   let!(:user) { create :user, :gds_editor }
 
-  before {
+  before do
     # section note specs do not concern chapters
-    stub_api_for(Chapter) { |stub|
-      stub.get("/admin/chapters") { |_env|
+    stub_api_for(Chapter) do |stub|
+      stub.get('/admin/chapters') do |_env|
         api_success_response([])
-      }
-    }
-  }
+      end
+    end
+  end
 
-  describe "Section Note creation" do
+  describe 'Section Note creation' do
     let(:section_note) { build :section_note }
     let(:section)      { build :section, title: 'new section' }
 
     specify do
-      stub_api_for(Section) { |stub|
-        stub.get("/admin/sections") { |_env|
+      stub_api_for(Section) do |stub|
+        stub.get('/admin/sections') do |_env|
           jsonapi_success_response('section', [section.attributes])
-        }
-        stub.get("/admin/sections/#{section.id}") { |_env|
+        end
+        stub.get("/admin/sections/#{section.id}") do |_env|
           jsonapi_success_response('section', section.attributes)
-        }
-      }
+        end
+      end
 
-      stub_api_for(SectionNote) { |stub|
+      stub_api_for(SectionNote) do |stub|
         stub.post("/admin/sections/#{section.id}/section_note") { |_env| api_created_response }
-      }
+      end
 
       refute note_created_for(section)
 
-      stub_api_for(Section) { |stub|
-        stub.get("/admin/sections") { |_env| jsonapi_success_response('section', [section.attributes.merge(section_note_id: section_note.id)]) }
-        stub.get("/admin/sections/#{section.id}") { |_env|
+      stub_api_for(Section) do |stub|
+        stub.get('/admin/sections') { |_env| jsonapi_success_response('section', [section.attributes.merge(section_note_id: section_note.id)]) }
+        stub.get("/admin/sections/#{section.id}") do |_env|
           jsonapi_success_response('section', section.attributes.merge(section_note_id: section_note.id))
-        }
-      }
+        end
+      end
 
       create_note_for section, content: section_note.content
 
@@ -45,55 +45,55 @@ describe "Section Note management" do
     end
   end
 
-  describe "section Note editing" do
+  describe 'section Note editing' do
     let(:section)      { build :section, :with_note }
     let(:section_note) { build :section_note, section_id: section.id }
-    let(:new_content)  { "new content" }
+    let(:new_content)  { 'new content' }
 
     specify do
-      stub_api_for(Section) { |stub|
-        stub.get("/admin/sections") { |_env| jsonapi_success_response('section', [section.attributes]) }
+      stub_api_for(Section) do |stub|
+        stub.get('/admin/sections') { |_env| jsonapi_success_response('section', [section.attributes]) }
         stub.get("/admin/sections/#{section.id}") { |_env| jsonapi_success_response('section', section.attributes) }
-      }
+      end
 
       verify note_created_for(section)
 
-      stub_api_for(SectionNote) { |stub|
+      stub_api_for(SectionNote) do |stub|
         stub.get("/admin/sections/#{section.id}/section_note") { |_env| jsonapi_success_response('section_note', section_note.attributes) }
         stub.patch("/admin/sections/#{section.id}/section_note") { |_env| api_no_content_response }
-      }
+      end
 
       update_note_for section, content: new_content
 
-      stub_api_for(SectionNote) { |stub|
+      stub_api_for(SectionNote) do |stub|
         stub.get("/admin/sections/#{section.id}/section_note") { |_env| jsonapi_success_response('section_note', section_note.attributes.merge(content: new_content)) }
-      }
+      end
 
       verify note_updated_for(section, content: new_content)
     end
   end
 
-  describe "Section Note deletion" do
+  describe 'Section Note deletion' do
     let(:section)      { build :section, :with_note }
     let(:section_note) { build :section_note, section_id: section.id }
 
     it 'can be removed' do
-      stub_api_for(Section) { |stub|
-        stub.get("/admin/sections") { |_env| jsonapi_success_response('section', [section.attributes]) }
+      stub_api_for(Section) do |stub|
+        stub.get('/admin/sections') { |_env| jsonapi_success_response('section', [section.attributes]) }
         stub.get("/admin/sections/#{section.id}") { |_env| jsonapi_success_response('section', section.attributes) }
-      }
+      end
 
-      stub_api_for(SectionNote) { |stub|
+      stub_api_for(SectionNote) do |stub|
         stub.get("/admin/sections/#{section.id}/section_note") { |_env| jsonapi_success_response('section_note', section_note.attributes) }
         stub.delete("/admin/sections/#{section.id}/section_note") { |_env| api_no_content_response }
-      }
+      end
 
       verify note_created_for(section)
 
-      stub_api_for(Section) { |stub|
-        stub.get("/admin/sections") { |_env| jsonapi_success_response('section', [section.attributes.except(:section_note_id)]) }
+      stub_api_for(Section) do |stub|
+        stub.get('/admin/sections') { |_env| jsonapi_success_response('section', [section.attributes.except(:section_note_id)]) }
         stub.get("/admin/sections/#{section.id}") { |_env| jsonapi_success_response('section', section.attributes.except(:section_note_id)) }
-      }
+      end
 
       remove_note_for section
 

@@ -1,39 +1,39 @@
 require 'rails_helper'
 require 'search_reference'
 
-describe "Heading Search Reference management" do
+describe 'Heading Search Reference management' do
   let!(:user)   { create :user, :gds_editor }
   let(:chapter) { build :chapter }
 
-  describe "Search Reference creation" do
+  describe 'Search Reference creation' do
     let(:title)        { 'new title' }
     let(:heading)      { build :heading, title: 'new heading', chapter: { type: 'chapter', id: chapter.id, attributes: chapter.attributes } }
     let(:heading_search_reference) { build :heading_search_reference, title: title, referenced: heading.attributes }
 
     specify do
-      stub_api_for(Heading) { |stub|
-        stub.get("/admin/headings/#{heading.to_param}") { |_env|
+      stub_api_for(Heading) do |stub|
+        stub.get("/admin/headings/#{heading.to_param}") do |_env|
           jsonapi_success_response('heading', heading.attributes)
-        }
-      }
+        end
+      end
 
-      stub_api_for(Heading::SearchReference) { |stub|
-        stub.get("/admin/headings/#{heading.to_param}/search_references") { |_env|
+      stub_api_for(Heading::SearchReference) do |stub|
+        stub.get("/admin/headings/#{heading.to_param}/search_references") do |_env|
           jsonapi_success_response('search_reference', [], 'x-meta' => { pagination: { total: 1 } }.to_json)
-        }
-      }
+        end
+      end
 
       refute search_reference_created_for(heading, title: title)
 
-      stub_api_for(Heading::SearchReference) { |stub|
-        stub.post("/admin/headings/#{heading.to_param}/search_references") { |_env|
+      stub_api_for(Heading::SearchReference) do |stub|
+        stub.post("/admin/headings/#{heading.to_param}/search_references") do |_env|
           api_created_response
-        }
+        end
 
-        stub.get("/admin/headings/#{heading.to_param}/search_references") { |_env|
+        stub.get("/admin/headings/#{heading.to_param}/search_references") do |_env|
           jsonapi_success_response('search_reference', [heading_search_reference.attributes], 'x-meta' => { pagination: { total: 1 } }.to_json)
-        }
-      }
+        end
+      end
 
       create_search_reference_for heading, title: title
 
@@ -41,36 +41,36 @@ describe "Heading Search Reference management" do
     end
   end
 
-  describe "Search Reference deletion" do
+  describe 'Search Reference deletion' do
     let(:heading)                  { build :heading, :with_chapter, chapter: { type: 'chapter', id: chapter.id, attributes: chapter.attributes } }
     let(:heading_search_reference) { build :heading_search_reference, referenced: heading.attributes }
 
     specify do
-      stub_api_for(Heading) { |stub|
-        stub.get("/admin/headings/#{heading.to_param}") { |_env|
+      stub_api_for(Heading) do |stub|
+        stub.get("/admin/headings/#{heading.to_param}") do |_env|
           jsonapi_success_response('heading', heading.attributes)
-        }
-      }
+        end
+      end
 
-      stub_api_for(Heading::SearchReference) { |stub|
-        stub.get("/admin/headings/#{heading.to_param}/search_references") { |_env|
+      stub_api_for(Heading::SearchReference) do |stub|
+        stub.get("/admin/headings/#{heading.to_param}/search_references") do |_env|
           jsonapi_success_response('heading', [heading_search_reference.attributes], 'x-meta' => { pagination: { total: 1 } }.to_json)
-        }
-      }
+        end
+      end
 
       verify search_reference_created_for(heading, title: heading_search_reference[:title])
 
-      stub_api_for(Heading::SearchReference) { |stub|
-        stub.get("/admin/headings/#{heading.to_param}/search_references/#{heading_search_reference.to_param}") { |_env|
+      stub_api_for(Heading::SearchReference) do |stub|
+        stub.get("/admin/headings/#{heading.to_param}/search_references/#{heading_search_reference.to_param}") do |_env|
           jsonapi_success_response('search_reference', heading_search_reference.attributes)
-        }
-        stub.delete("/admin/headings/#{heading.to_param}/search_references/#{heading_search_reference.to_param}") { |_env|
+        end
+        stub.delete("/admin/headings/#{heading.to_param}/search_references/#{heading_search_reference.to_param}") do |_env|
           api_no_content_response
-        }
-        stub.get("/admin/headings/#{heading.to_param}/search_references") { |_env|
+        end
+        stub.get("/admin/headings/#{heading.to_param}/search_references") do |_env|
           jsonapi_success_response('search_reference', [], 'x-meta' => { pagination: { total: 1 } }.to_json)
-        }
-      }
+        end
+      end
 
       remove_heading_search_reference_for(heading, heading_search_reference)
 
@@ -78,45 +78,45 @@ describe "Heading Search Reference management" do
     end
   end
 
-  describe "Search reference editing" do
+  describe 'Search reference editing' do
     let(:heading)                  { build :heading, :with_chapter, chapter: { type: 'chapter', id: chapter.id, attributes: chapter.attributes } }
     let(:heading_search_reference) { build :heading_search_reference, referenced: heading.attributes }
-    let(:new_title) { "new title" }
+    let(:new_title) { 'new title' }
 
     specify do
-      stub_api_for(Heading) { |stub|
-        stub.get("/admin/headings/#{heading.to_param}") { |_env|
+      stub_api_for(Heading) do |stub|
+        stub.get("/admin/headings/#{heading.to_param}") do |_env|
           jsonapi_success_response('heading', heading.attributes)
-        }
-      }
+        end
+      end
 
-      stub_api_for(Heading::SearchReference) { |stub|
-        stub.get("/admin/headings/#{heading.to_param}/search_references") { |_env|
+      stub_api_for(Heading::SearchReference) do |stub|
+        stub.get("/admin/headings/#{heading.to_param}/search_references") do |_env|
           jsonapi_success_response('search_reference', [heading_search_reference.attributes], 'x-meta' => { pagination: { total: 1 } }.to_json)
-        }
-      }
+        end
+      end
 
       verify search_reference_created_for(heading, title: heading_search_reference[:title])
 
-      stub_api_for(Heading::SearchReference) { |stub|
-        stub.get("/admin/headings/#{heading.to_param}/search_references/#{heading_search_reference.to_param}") { |_env|
+      stub_api_for(Heading::SearchReference) do |stub|
+        stub.get("/admin/headings/#{heading.to_param}/search_references/#{heading_search_reference.to_param}") do |_env|
           jsonapi_success_response('search_reference', heading_search_reference.attributes)
-        }
-        stub.patch("/admin/headings/#{heading.to_param}/search_references/#{heading_search_reference.to_param}") { |_env|
+        end
+        stub.patch("/admin/headings/#{heading.to_param}/search_references/#{heading_search_reference.to_param}") do |_env|
           api_no_content_response
-        }
-        stub.get("/admin/headings/#{heading.to_param}/search_references") { |_env|
+        end
+        stub.get("/admin/headings/#{heading.to_param}/search_references") do |_env|
           jsonapi_success_response('search_reference', [heading_search_reference.attributes], 'x-meta' => { pagination: { total: 1 } }.to_json)
-        }
-      }
+        end
+      end
 
       update_heading_search_reference_for(heading, heading_search_reference, title: new_title)
 
-      stub_api_for(Heading::SearchReference) { |stub|
-        stub.get("/admin/headings/#{heading.to_param}/search_references/#{heading_search_reference.to_param}") { |_env|
+      stub_api_for(Heading::SearchReference) do |stub|
+        stub.get("/admin/headings/#{heading.to_param}/search_references/#{heading_search_reference.to_param}") do |_env|
           jsonapi_success_response('search_reference', heading_search_reference.attributes.merge(title: new_title))
-        }
-      }
+        end
+      end
 
       verify heading_search_reference_updated_for(heading, heading_search_reference, title: new_title)
     end
@@ -165,7 +165,7 @@ describe "Heading Search Reference management" do
   def search_reference_created_for(heading, attributes = {})
     ensure_on synonyms_heading_search_references_path(heading)
 
-    within("table") do
+    within('table') do
       page.has_content? attributes.fetch(:title)
     end
   end

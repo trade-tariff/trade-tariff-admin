@@ -1,34 +1,34 @@
 require 'rails_helper'
 
-describe "Measure Type management" do
+describe 'Measure Type management' do
   let!(:user) { create :user, :gds_editor }
 
-  describe "Measure Type editing" do
+  describe 'Measure Type editing' do
     let(:measure_type)     { build :measure_type }
-    let(:new_description)  { "new content" }
+    let(:new_description)  { 'new content' }
 
     specify do
-      stub_api_for(MeasureType) { |stub|
-        stub.get("/admin/measure_types") { |_env|
+      stub_api_for(MeasureType) do |stub|
+        stub.get('/admin/measure_types') do |_env|
           api_success_response(data: [{ type: 'measure_type', attributes: measure_type.attributes }])
-        }
-        stub.get("/admin/measure_types/#{measure_type.id}") { |_env|
+        end
+        stub.get("/admin/measure_types/#{measure_type.id}") do |_env|
           api_success_response(data: { type: 'measure_type', attributes: measure_type.attributes })
-        }
-        stub.patch("/admin/measure_types/#{measure_type.id}") { |_env|
+        end
+        stub.patch("/admin/measure_types/#{measure_type.id}") do |_env|
           api_no_content_response
-        }
-      }
+        end
+      end
 
       verify measure_type_created(measure_type)
 
       update_measure_type_for measure_type, description: new_description
 
-      stub_api_for(MeasureType) { |stub|
-        stub.get("/admin/measure_types/#{measure_type.id}") { |_env|
+      stub_api_for(MeasureType) do |stub|
+        stub.get("/admin/measure_types/#{measure_type.id}") do |_env|
           api_success_response(data: { type: 'measure_type', attributes: measure_type.attributes.merge(description: new_description) })
-        }
-      }
+        end
+      end
 
       verify measure_type_updated(measure_type, description: new_description)
     end
