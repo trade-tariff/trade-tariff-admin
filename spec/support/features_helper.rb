@@ -23,7 +23,7 @@ module FeaturesHelper
     {
       page: 1,
       per_page: 20,
-      total_count: 0
+      total_count: 0,
     }.merge(options)
   end
 end

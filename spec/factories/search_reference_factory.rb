@@ -7,7 +7,7 @@ FactoryBot.define do
     title { generate(:search_reference_title) }
   end
 
-  factory :section_search_reference, parent: :search_reference, class: Section::SearchReference do
+  factory :section_search_reference, parent: :search_reference, class: 'Section::SearchReference' do
     transient do
       referenced { attributes_for(:section) }
     end
@@ -15,7 +15,7 @@ FactoryBot.define do
     referenced_id { referenced[:id] }
   end
 
-  factory :chapter_search_reference, parent: :search_reference, class: Chapter::SearchReference do
+  factory :chapter_search_reference, parent: :search_reference, class: 'Chapter::SearchReference' do
     transient do
       referenced { attributes_for(:chapter) }
     end
@@ -23,7 +23,7 @@ FactoryBot.define do
     referenced_id { referenced[:goods_nomenclature_item_id].first(2) }
   end
 
-  factory :heading_search_reference, parent: :search_reference, class: Heading::SearchReference do
+  factory :heading_search_reference, parent: :search_reference, class: 'Heading::SearchReference' do
     transient do
       referenced { attributes_for(:heading) }
     end
@@ -31,7 +31,7 @@ FactoryBot.define do
     referenced_id { referenced[:goods_nomenclature_item_id].first(4) }
   end
 
-  factory :commodity_search_reference, parent: :search_reference, class: Commodity::SearchReference do
+  factory :commodity_search_reference, parent: :search_reference, class: 'Commodity::SearchReference' do
     transient do
       referenced { attributes_for(:commodity) }
     end

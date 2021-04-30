@@ -6,7 +6,7 @@ FactoryBot.define do
     section_note_id { nil }
     position        { id }
     numeral         { id }
-    title           { "Section Title" }
+    title           { 'Section Title' }
 
     trait :with_note do
       section_note_id { generate(:section_note_id) }
