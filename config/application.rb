@@ -6,7 +6,7 @@ require 'rails/all'
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
-APP_SLUG = 'trade-tariff-admin'
+APP_SLUG = 'trade-tariff-admin'.freeze
 
 module TradeTariffAdmin
   class Application < Rails::Application

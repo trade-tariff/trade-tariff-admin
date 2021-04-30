@@ -2,10 +2,10 @@ require 'csv'
 
 class SearchReference
   class ExportService
-    ATTRIBUTES = [
-      :goodsnomenclature_type,
-      :goodsnomenclature_code,
-      :title
+    ATTRIBUTES = %i[
+      goodsnomenclature_type
+      goodsnomenclature_code
+      title
     ].freeze
 
     def initialize(collection)

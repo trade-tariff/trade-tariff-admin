@@ -2,7 +2,7 @@ class SearchReference
   include Her::JsonApi::Model
 
   collection_path '/admin/search_references'
-  type self.name.demodulize.tableize
+  type name.demodulize.tableize
 
   attributes :title, :referenced_id, :referenced_class
 
@@ -17,6 +17,6 @@ class SearchReference
   end
 
   # CSV export/import
-  alias :goodsnomenclature_code :referenced_id
-  alias :goodsnomenclature_type :referenced_class
+  alias_method :goodsnomenclature_code, :referenced_id
+  alias_method :goodsnomenclature_type, :referenced_class
 end

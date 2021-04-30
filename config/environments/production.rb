@@ -51,17 +51,18 @@ Rails.application.configure do
   config.log_level = :info
   config.lograge.enabled = true
   config.lograge.formatter = Lograge::Formatters::Logstash.new
-  config.lograge.custom_options = lambda do |event|
+  config.lograge.custom_options = lambda do |_event|
     { domain: ENV['GOVUK_APP_DOMAIN'] }
   end
 
   # Redis cache store
   # RedisResolver returns url and db
-  config.cache_store = :redis_cache_store, RedisResolver.get_redis_config.merge({
-    expires_in: 1.day,
-    namespace:  ENV['GOVUK_APP_DOMAIN'],
-    pool_size:  Integer(ENV['MAX_THREADS'] || 5)
-  })
+  config.cache_store = :redis_cache_store,
+                       RedisResolver.get_redis_config.merge({
+                         expires_in: 1.day,
+                         namespace: ENV['GOVUK_APP_DOMAIN'],
+                         pool_size: Integer(ENV['MAX_THREADS'] || 5),
+                       })
 
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
   # config.action_controller.asset_host = 'http://assets.example.com'

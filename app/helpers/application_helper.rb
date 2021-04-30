@@ -7,7 +7,7 @@ module ApplicationHelper
       opts[:class] = 'active'
     end
 
-    content_tag :li, opts do
+    tag.li(opts) do
       link_to name, url
     end
   end

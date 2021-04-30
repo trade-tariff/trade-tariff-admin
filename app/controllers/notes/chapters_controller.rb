@@ -2,8 +2,7 @@ module Notes
   class ChaptersController < ApplicationController
     respond_to :json
 
-    def index
-    end
+    def index; end
 
     def show
       respond_with chapter

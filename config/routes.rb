@@ -4,14 +4,14 @@ require 'gds_editor_constraint'
 
 Rails.application.routes.draw do
   namespace :notes, module: :notes do
-    resources :sections, only: [:index, :show] do
+    resources :sections, only: %i[index show] do
       scope module: 'sections' do
         resource :section_note
         resources :chapters, only: [:index]
       end
     end
 
-    resources :chapters, only: [:index, :show] do
+    resources :chapters, only: %i[index show] do
       scope module: 'chapters' do
         resource :chapter_note
         resources :headings, only: [:index]
@@ -20,10 +20,10 @@ Rails.application.routes.draw do
   end
 
   namespace :synonyms, module: :synonyms do
-    resource :import, only: [:show, :create]
+    resource :import, only: %i[show create]
     resource :export, only: [:create]
 
-    resources :sections, only: [:index, :show] do
+    resources :sections, only: %i[index show] do
       scope module: 'sections' do
         resources :chapters, only: [:index]
         resources :search_references do
@@ -32,7 +32,7 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :chapters, only: [:index, :show] do
+    resources :chapters, only: %i[index show] do
       scope module: 'chapters' do
         resources :headings, only: [:index]
         resources :search_references do
@@ -60,9 +60,9 @@ Rails.application.routes.draw do
   end
 
   resources :tariff_updates, only: [:index]
-  resources :rollbacks, only: [:index, :new, :create]
-  resources :footnotes, only: [:index, :edit, :update]
-  resources :measure_types, only: [:index, :edit, :update]
+  resources :rollbacks, only: %i[index new create]
+  resources :footnotes, only: %i[index edit update]
+  resources :measure_types, only: %i[index edit update]
 
   post 'govspeak' => 'govspeak#govspeak', as: :govspeak
   get  'healthcheck' => 'healthcheck#check', as: :healthcheck

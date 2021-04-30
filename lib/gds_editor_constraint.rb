@@ -3,6 +3,7 @@ class GdsEditorConstraint
 
   def matches?(request)
     return true if Rails.env.development?
+
     @request = request
     warden.authenticate!
     current_user && current_user.gds_editor?
@@ -19,6 +20,6 @@ class GdsEditorConstraint
   end
 
   def user_signed_in?
-    warden && warden.authenticated? && ! warden.user.remotely_signed_out?
+    warden && warden.authenticated? && !warden.user.remotely_signed_out?
   end
 end
