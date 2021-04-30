@@ -13,7 +13,7 @@ class RollbacksController < ApplicationController
     @rollback.user = current_user
 
     if @rollback.save
-      redirect_to rollbacks_path, notice: "Rollback was scheduled"
+      redirect_to rollbacks_path, notice: 'Rollback was scheduled'
     else
       @rollback.initialize_errors
       render :new

@@ -36,7 +36,7 @@ Rails.application.configure do
   config.assets.digest = true
 
   # `config.assets.precompile` and `config.assets.version` have moved to config/initializers/assets.rb
-  config.assets.prefix = "/trade-tariff-admin"
+  config.assets.prefix = '/trade-tariff-admin'
 
   # Specifies the header that your server uses for sending files.
   # config.action_dispatch.x_sendfile_header = 'X-Sendfile' # for Apache
@@ -52,15 +52,15 @@ Rails.application.configure do
   config.lograge.enabled = true
   config.lograge.formatter = Lograge::Formatters::Logstash.new
   config.lograge.custom_options = lambda do |event|
-    { domain: ENV["GOVUK_APP_DOMAIN"] }
+    { domain: ENV['GOVUK_APP_DOMAIN'] }
   end
 
   # Redis cache store
   # RedisResolver returns url and db
   config.cache_store = :redis_cache_store, RedisResolver.get_redis_config.merge({
     expires_in: 1.day,
-    namespace:  ENV["GOVUK_APP_DOMAIN"],
-    pool_size:  Integer(ENV["MAX_THREADS"] || 5)
+    namespace:  ENV['GOVUK_APP_DOMAIN'],
+    pool_size:  Integer(ENV['MAX_THREADS'] || 5)
   })
 
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
@@ -82,5 +82,5 @@ Rails.application.configure do
   config.active_record.dump_schema_after_migration = false
 
   # Host for Trade Tariff API endpoint
-  config.api_host = Plek.new.find("tariff-api")
+  config.api_host = Plek.new.find('tariff-api')
 end

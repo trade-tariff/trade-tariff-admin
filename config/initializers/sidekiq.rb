@@ -1,4 +1,4 @@
-require "sidekiq"
+require 'sidekiq'
 
 redis_config = RedisResolver.get_redis_config
 

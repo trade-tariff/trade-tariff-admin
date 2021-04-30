@@ -4,7 +4,7 @@ module Her
     class AcceptApiV2 < Faraday::Middleware
       # @private
       def add_header(headers)
-        headers.merge! "Accept" => "application/vnd.uktt.v2"
+        headers.merge! 'Accept' => 'application/vnd.uktt.v2'
       end
 
       # @private
