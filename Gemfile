@@ -61,7 +61,7 @@ gem "bootsnap", require: false
 
 group :development, :test do
   gem "dotenv-rails"
-  gem "brakeman", "~> 3.3", ">= 3.3.0", require: false
+  gem "brakeman", require: false
 end
 
 group :development do
@@ -69,16 +69,16 @@ group :development do
 end
 
 group :test do
+  gem "capybara"
   gem "ci_reporter"
   gem "ci_reporter_rspec"
+  gem "database_cleaner"
   gem "factory_bot_rails"
-  gem "shoulda-matchers", "~> 3.1.1"
-  gem "simplecov", "~> 0.18", require: false
-  gem "rspec-rails", "~> 4"
-  gem "capybara", "~> 3"
-  gem "webmock", "~> 3.8.0"
-  gem "database_cleaner", "~> 1.8"
+  gem "rspec-rails"
   gem "rspec_junit_formatter"
+  gem "shoulda-matchers"
+  gem "simplecov"
+  gem "webmock"
 end
 
 group :production do
