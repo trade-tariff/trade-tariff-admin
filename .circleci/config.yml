@@ -109,9 +109,9 @@ jobs:
       - checkout
       - ruby/install-deps
       - run:
-         name: "Setup DB"
-         command: |
-           RAILS_ENV=test bundle exec rails db:migrate --trace
+          name: "Setup DB"
+          command: |
+            RAILS_ENV=test bundle exec rails db:migrate --trace
       - ruby/rspec-test
       - store_artifacts:
           path: coverage
@@ -123,7 +123,14 @@ jobs:
           space: "development"
           environment_key: "dev"
           app_domain_prefix: "dev"
-
+  deploy_prod:
+    docker:
+      - image: cimg/ruby:2.7.1-node
+    steps:
+      - cf_deploy:
+          space: "production"
+          environment_key: "production"
+          app_domain_prefix: "production"
 
 workflows:
   version: 2
@@ -146,4 +153,10 @@ workflows:
                 - master
           requires:
             - test
+      - deploy_prod:
+          context: trade-tariff
+          filters:
+            branches:
+              only:
+                - master
 
