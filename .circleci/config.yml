@@ -82,7 +82,7 @@ jobs:
     steps:
       - checkout
       - ruby/install-deps
-  checking:
+  linters:
     docker:
       - image: 'cimg/ruby:2.7.1-node'
     steps:
@@ -91,6 +91,14 @@ jobs:
       - ruby/rubocop-check:
           format: progress
           label: Inspecting with Rubocop
+      - run:
+          name: Inspecting with Brakeman
+          when: always
+          command: 'bundle exec brakeman -o test-results/brakeman/brakeman.junit -o brakeman.html --no-progress --separate-models'
+      - store_test_results:
+          path: test-results/brakeman/
+      - store_artifacts:
+          path: brakeman.html
   test:
     docker:
       - image: cimg/ruby:2.7.1-node
@@ -136,9 +144,8 @@ workflows:
   version: 2
   build_and_test:
     jobs:
-      # TODO: Fix rubocop issues
-      #      - checking:
-      #          context: trade-tariff
+      - linters:
+          context: trade-tariff
       - test:
           context: trade-tariff
           filters:

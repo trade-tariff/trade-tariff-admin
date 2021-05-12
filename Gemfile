@@ -59,7 +59,7 @@ gem 'bootsnap', require: false
 gem 'nokogiri', '>= 1.10.10'
 
 group :development, :test do
-  gem 'brakeman', require: false
+  gem 'brakeman'
   gem 'dotenv-rails'
 end
 
