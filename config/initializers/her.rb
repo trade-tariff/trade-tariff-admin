@@ -9,5 +9,5 @@ Her::API.setup url: Rails.application.config.api_host do |c|
   c.use Her::Middleware::TariffJsonapiParser  # lib/her/middleware/tariff_jsonapi_parser.rb
 
   # Adapter
-  c.use Faraday::Adapter::NetHttp
+  c.adapter Faraday::Adapter::NetHttp
 end
