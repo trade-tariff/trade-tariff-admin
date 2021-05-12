@@ -75,6 +75,21 @@ commands:
           event: pass
           template: basic_success_1
 
+  sentry-release:
+    steps:
+      - checkout
+      - run:
+          name: Create release and notify Sentry of deploy
+          command: |
+            curl -sL https://sentry.io/get-cli/ | bash
+            export SENTRY_RELEASE=$(sentry-cli releases propose-version)
+            sentry-cli releases new -p $SENTRY_PROJECT $SENTRY_RELEASE
+            sentry-cli releases set-commits $SENTRY_RELEASE --auto
+            sentry-cli releases finalize $SENTRY_RELEASE
+            sentry-cli releases deploys $SENTRY_RELEASE new -e $SENTRY_ENVIRONMENT
+
+
+
 jobs:
   build:
     docker:
@@ -82,7 +97,7 @@ jobs:
     steps:
       - checkout
       - ruby/install-deps
-  checking:
+  linters:
     docker:
       - image: 'cimg/ruby:2.7.1-node'
     steps:
@@ -91,6 +106,14 @@ jobs:
       - ruby/rubocop-check:
           format: progress
           label: Inspecting with Rubocop
+      - run:
+          name: Inspecting with Brakeman
+          when: always
+          command: 'bundle exec brakeman -o test-results/brakeman/brakeman.junit -o brakeman.html --no-progress --separate-models'
+      - store_test_results:
+          path: test-results/brakeman/
+      - store_artifacts:
+          path: brakeman.html
   test:
     docker:
       - image: cimg/ruby:2.7.1-node
@@ -118,27 +141,34 @@ jobs:
   deploy_dev:
     docker:
       - image: cimg/ruby:2.7.1-node
+    environment:
+      SENTRY_ENVIRONMENT: development
     steps:
+      - checkout
       - cf_deploy:
           space: "development"
           environment_key: "dev"
           app_domain_prefix: "dev"
+      - sentry-release
+
   deploy_prod:
     docker:
       - image: cimg/ruby:2.7.1-node
+    environment:
+      SENTRY_ENVIRONMENT: production
     steps:
       - cf_deploy:
           space: "production"
           environment_key: "production"
           app_domain_prefix: "production"
+      - sentry-release
 
 workflows:
   version: 2
   build_and_test:
     jobs:
-      # TODO: Fix rubocop issues
-      #      - checking:
-      #          context: trade-tariff
+      - linters:
+          context: trade-tariff
       - test:
           context: trade-tariff
           filters:
