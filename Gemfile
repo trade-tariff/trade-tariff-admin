@@ -3,49 +3,48 @@ source 'https://rubygems.org'
 ruby File.read('.ruby-version').chomp
 
 # Server
-gem 'puma', '~> 5.0.4'
-gem 'rails', '>= 6.0.3.4'
-gem 'sinatra', '~> 2.0.8', require: nil
+gem 'puma'
+gem 'rails', '~> 6'
 
 # DB
-gem 'pg', '~> 1.1.3'
+gem 'pg'
 
 # Assets
 gem 'bootstrap-datepicker-rails'
-gem 'bootstrap-sass', '>= 3.4.1'
-gem 'coffee-rails', '~> 5.0'
-gem 'govuk_admin_template', '6.7.0'
-gem 'jquery-rails', '~> 4.3.4'
+gem 'bootstrap-sass'
+gem 'coffee-rails'
+gem 'govuk_admin_template'
+gem 'jquery-rails'
 gem 'sass-rails'
-gem 'uglifier', '~> 2.7'
+gem 'uglifier'
 
 # Markdown
-gem 'addressable', '~> 2.7'
-gem 'govspeak', '6.5.6'
-gem 'govuk_publishing_components', '21.5.0'
+gem 'addressable'
+gem 'govspeak'
+gem 'govuk_publishing_components'
 
 # API
 gem 'faraday_middleware'
-gem 'her', '1.1.0'
+gem 'her'
 gem 'oj'
 
 # Cache
-gem 'redis', '~> 4.2'
+gem 'redis'
 gem 'redis-activesupport'
 
 # Authorization / SSO
-gem 'gds-sso', '~> 15'
-gem 'plek', '~> 2.1.0'
-gem 'pundit', '0.3.0'
+gem 'gds-sso'
+gem 'plek'
+gem 'pundit'
 
 # Helpers
-gem 'kaminari', '~> 1.2'
+gem 'kaminari'
 gem 'responders'
-gem 'simple_form', '>= 5.0.0'
+gem 'simple_form'
 
 # File upload / mime type
 gem 'marcel'
-gem 'shrine', '~> 3.3'
+gem 'shrine'
 
 # Logging
 gem 'lograge'
