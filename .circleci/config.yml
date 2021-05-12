@@ -75,6 +75,21 @@ commands:
           event: pass
           template: basic_success_1
 
+  sentry-release:
+    steps:
+      - checkout
+      - run:
+          name: Create release and notify Sentry of deploy
+          command: |
+            curl -sL https://sentry.io/get-cli/ | bash
+            export SENTRY_RELEASE=$(sentry-cli releases propose-version)
+            sentry-cli releases new -p $SENTRY_PROJECT $SENTRY_RELEASE
+            sentry-cli releases set-commits $SENTRY_RELEASE --auto
+            sentry-cli releases finalize $SENTRY_RELEASE
+            sentry-cli releases deploys $SENTRY_RELEASE new -e $SENTRY_ENVIRONMENT
+
+
+
 jobs:
   build:
     docker:
@@ -126,19 +141,27 @@ jobs:
   deploy_dev:
     docker:
       - image: cimg/ruby:2.7.1-node
+    environment:
+      SENTRY_ENVIRONMENT: development
     steps:
+      - checkout
       - cf_deploy:
           space: "development"
           environment_key: "dev"
           app_domain_prefix: "dev"
+      - sentry-release
+
   deploy_prod:
     docker:
       - image: cimg/ruby:2.7.1-node
+    environment:
+      SENTRY_ENVIRONMENT: production
     steps:
       - cf_deploy:
           space: "production"
           environment_key: "production"
           app_domain_prefix: "production"
+      - sentry-release
 
 workflows:
   version: 2
