@@ -5,6 +5,7 @@ ruby File.read('.ruby-version').chomp
 # Server
 gem 'puma'
 gem 'rails', '~> 6'
+gem 'routing-filter', github: 'svenfuchs/routing-filter'
 
 # DB
 gem 'pg'

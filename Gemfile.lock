@@ -1,3 +1,11 @@
+GIT
+  remote: https://github.com/svenfuchs/routing-filter.git
+  revision: 8d1f1da79c4db786e8baeda586a8d790e23712bf
+  specs:
+    routing-filter (0.6.3)
+      actionpack (>= 6.1)
+      activesupport (>= 6.1)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -476,6 +484,7 @@ DEPENDENCIES
   redis
   redis-activesupport
   responders
+  routing-filter!
   rspec-rails
   rspec_junit_formatter
   rubocop-govuk

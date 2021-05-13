@@ -1,8 +1,12 @@
 require 'sidekiq/web'
 require 'sidekiq-scheduler/web'
 require 'gds_editor_constraint'
+require 'routing_filter/service_path_prefix_handler'
 
 Rails.application.routes.draw do
+  filter :service_path_prefix_handler
+  default_url_options(host: TradeTariffAdmin.host)
+
   namespace :notes, module: :notes do
     resources :sections, only: %i[index show] do
       scope module: 'sections' do
