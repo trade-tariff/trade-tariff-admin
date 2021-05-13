@@ -16,5 +16,6 @@ REVISION
 public/uploads/*
 .nvimlog
 vendor
-.env.*
+.env
+.env.*.local
 /node_modules
