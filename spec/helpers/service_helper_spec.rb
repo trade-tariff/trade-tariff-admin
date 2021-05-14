@@ -12,6 +12,15 @@ describe ServiceHelper, type: :helper do
       allow(helper).to receive(:request).and_return(request)
     end
 
+    context 'when the selected service choice is nil' do
+      let(:path) { '/rollbacks/new' }
+      let(:choice) { nil }
+
+      it 'returns the link to the XI service' do
+        expect(switch_service_link).to eq(link_to('Switch to XI service', '/xi/rollbacks/new'))
+      end
+    end
+
     context 'when the selected service choice is uk' do
       let(:path) { '/uk/rollbacks/new' }
       let(:choice) { 'uk' }

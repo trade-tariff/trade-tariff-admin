@@ -8,6 +8,6 @@ module ServiceHelper
   private
 
   def current_path
-    request.filtered_path.sub("/#{TradeTariffAdmin::ServiceChooser.service_choice}", '')
+    request.filtered_path.sub(TradeTariffAdmin::ServiceChooser.service_choice.to_s, '').sub('//', '/')
   end
 end
