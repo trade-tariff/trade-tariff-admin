@@ -56,9 +56,6 @@ describe RoutingFilter::ServicePathPrefixHandler, type: :routing do
   end
 
   describe 'path generation' do
-    let(:commodity_id) { '0101210000' }
-    let(:service_default) { 'uk' }
-
     before do
       TradeTariffAdmin::ServiceChooser.service_choice = choice
     end

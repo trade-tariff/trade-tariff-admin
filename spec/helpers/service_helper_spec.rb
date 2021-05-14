@@ -37,6 +37,15 @@ describe ServiceHelper, type: :helper do
       it 'returns the link to the current UK service' do
         expect(switch_service_link).to eq(link_to('Switch to UK service', '/rollbacks/new'))
       end
+
+      context 'when using the root path' do
+        let(:path) { '/xi' }
+        let(:choice) { 'xi' }
+
+        it 'returns the link to the current UK service' do
+          expect(switch_service_link).to eq(link_to('Switch to UK service', '/'))
+        end
+      end
     end
   end
 end
