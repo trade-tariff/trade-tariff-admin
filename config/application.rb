@@ -16,7 +16,6 @@ module TradeTariffAdmin
     config.autoloader = :classic
 
     require 'trade_tariff_admin'
-    require 'faraday_middleware/service_urls'
 
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers

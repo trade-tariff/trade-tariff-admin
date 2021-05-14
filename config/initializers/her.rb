@@ -1,3 +1,5 @@
+require 'faraday_middleware/service_urls'
+
 # order of used middleware matters: first used last executed
 Her::API.setup url: Rails.application.config.api_host do |c|
   # Request
