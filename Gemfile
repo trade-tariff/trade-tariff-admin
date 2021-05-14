@@ -62,6 +62,7 @@ gem 'nokogiri', '>= 1.10.10'
 group :development, :test do
   gem 'brakeman'
   gem 'dotenv-rails'
+  gem 'pry-byebug'
 end
 
 group :development do
