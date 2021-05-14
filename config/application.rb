@@ -16,6 +16,7 @@ module TradeTariffAdmin
     config.autoloader = :classic
 
     require 'trade_tariff_admin'
+    require 'trade_tariff_admin/service_chooser'
 
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
