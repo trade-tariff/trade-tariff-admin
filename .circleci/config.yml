@@ -97,13 +97,13 @@ commands:
 jobs:
   build:
     docker:
-      - image: cimg/ruby:2.7.1-node
+      - image: cimg/ruby:2.7.3-node
     steps:
       - checkout
       - ruby/install-deps
   linters:
     docker:
-      - image: 'cimg/ruby:2.7.1-node'
+      - image: 'cimg/ruby:2.7.3-node'
     steps:
       - checkout
       - ruby/install-deps
@@ -120,7 +120,7 @@ jobs:
           path: brakeman.html
   test:
     docker:
-      - image: cimg/ruby:2.7.1-node
+      - image: cimg/ruby:2.7.3-node
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
@@ -144,7 +144,7 @@ jobs:
           path: coverage
   deploy_dev:
     docker:
-      - image: cimg/ruby:2.7.1-node
+      - image: cimg/ruby:2.7.3-node
     environment:
       SENTRY_ENVIRONMENT: development
     steps:
@@ -157,7 +157,7 @@ jobs:
 
   deploy_prod:
     docker:
-      - image: cimg/ruby:2.7.1-node
+      - image: cimg/ruby:2.7.3-node
     environment:
       SENTRY_ENVIRONMENT: production
     steps:
