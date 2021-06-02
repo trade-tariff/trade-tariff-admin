@@ -14,6 +14,9 @@ commands:
         type: string
       app_domain_prefix:
         type: string
+      buildpack_version:
+        type: string
+        default: "v1.8.39"
     steps:
       - checkout
       - run:
@@ -34,8 +37,9 @@ commands:
       - run:
           name: "Push new app in dark mode"
           command: |
+            export BUILDPACK="https://github.com/cloudfoundry/ruby-buildpack.git#<< parameters.buildpack_version >>"
             # Push as "dark" instance
-            cf push "$CF_APP-<< parameters.environment_key >>-dark" -f deploy_manifest.yml --no-route
+            cf push "$CF_APP-<< parameters.environment_key >>-dark" -f deploy_manifest.yml --no-route --buildpack $BUILDPACK
             # Map dark route
             cf map-route  "$CF_APP-<< parameters.environment_key >>-dark" london.cloudapps.digital -n "$CF_APP-<< parameters.environment_key >>-dark"
             # Enable routing from this frontend to backend applications which are private
@@ -93,13 +97,13 @@ commands:
 jobs:
   build:
     docker:
-      - image: cimg/ruby:2.7.1-node
+      - image: cimg/ruby:2.7.3-node
     steps:
       - checkout
       - ruby/install-deps
   linters:
     docker:
-      - image: 'cimg/ruby:2.7.1-node'
+      - image: 'cimg/ruby:2.7.3-node'
     steps:
       - checkout
       - ruby/install-deps
@@ -116,7 +120,7 @@ jobs:
           path: brakeman.html
   test:
     docker:
-      - image: cimg/ruby:2.7.1-node
+      - image: cimg/ruby:2.7.3-node
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
@@ -140,7 +144,7 @@ jobs:
           path: coverage
   deploy_dev:
     docker:
-      - image: cimg/ruby:2.7.1-node
+      - image: cimg/ruby:2.7.3-node
     environment:
       SENTRY_ENVIRONMENT: development
     steps:
@@ -153,7 +157,7 @@ jobs:
 
   deploy_prod:
     docker:
-      - image: cimg/ruby:2.7.1-node
+      - image: cimg/ruby:2.7.3-node
     environment:
       SENTRY_ENVIRONMENT: production
     steps:
