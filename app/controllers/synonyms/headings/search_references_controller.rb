@@ -4,7 +4,7 @@ module Synonyms
       private
 
       def search_reference_parent
-        @heading ||= Heading.find(params[:heading_id])
+        @search_reference_parent ||= Heading.find(params[:heading_id])
       end
       alias_method :heading, :search_reference_parent
       helper_method :heading

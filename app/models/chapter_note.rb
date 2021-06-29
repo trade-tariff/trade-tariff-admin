@@ -11,7 +11,7 @@ class ChapterNote
 
   belongs_to :chapter
 
-  # NOTE singular resource
+  # NOTE: singular resource
   def request_path
     self.class.build_request_path('/admin/chapters/:chapter_id/chapter_note', attributes.dup.merge('chapter_id' => chapter.reload.to_param))
   end

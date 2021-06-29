@@ -1,6 +1,6 @@
 module Notes
   module Sections
-    class ChaptersController < ApplicationController
+    class ChaptersController < AuthenticatedController
       def index
         @chapters = section.chapters
       end

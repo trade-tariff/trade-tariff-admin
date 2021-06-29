@@ -4,7 +4,7 @@ module Her
       def initialize(app, token = nil)
         super(app)
         @token = token && token.to_s
-     end
+      end
 
       def call(env)
         env[:request_headers][:authorization] = authorization_header

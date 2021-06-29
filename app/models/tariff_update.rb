@@ -8,13 +8,15 @@ class TariffUpdate
              :exception_backtrace, :exception_class, :exception_queries, :conformance_errors,
              :file_presigned_url, :log_presigned_urls, :presence_errors
 
+  STATES = {
+    'A' => 'Applied',
+    'M' => 'Missing',
+    'P' => 'Pending',
+    'F' => 'Failed',
+  }.freeze
+
   def state
-    case attributes[:state]
-    when 'A' then 'Applied'
-    when 'M' then 'Missing'
-    when 'P' then 'Pending'
-    when 'F' then 'Failed'
-    end
+    STATES[super]
   end
 
   def update_type
@@ -46,11 +48,11 @@ class TariffUpdate
   end
 
   def created_at
-    Time.parse(super)
+    Time.zone.parse(super)
   end
 
   def applied_at
-    Time.parse(super) if super.present?
+    Time.zone.parse(super) if super.present?
   end
 
   def to_s

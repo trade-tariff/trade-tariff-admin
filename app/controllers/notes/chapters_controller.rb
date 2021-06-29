@@ -1,5 +1,5 @@
 module Notes
-  class ChaptersController < ApplicationController
+  class ChaptersController < AuthenticatedController
     respond_to :json
 
     def index; end

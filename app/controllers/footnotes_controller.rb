@@ -1,4 +1,4 @@
-class FootnotesController < ApplicationController
+class FootnotesController < AuthenticatedController
   respond_to :json
 
   def show; end

@@ -1,12 +1,12 @@
 module ApiResponsesHelper
-  def stub_api_for(klass)
+  def stub_api_for(klass, &block)
     klass.use_api(api = Her::API.new)
 
     api.setup url: Rails.application.config.api_host do |c|
       c.use Her::Middleware::HeaderMetadataParse # lib/her/middleware/header_metadata_parse.rb
       c.use Her::Middleware::AcceptApiV2         # lib/her/middleware/accept_api_v2.rb
       c.use Her::Middleware::TariffJsonapiParser # lib/her/middleware/tariff_jsonapi_parser.rb
-      c.adapter(:test) { |s| yield(s) }
+      c.adapter(:test, &block)
     end
   end
 
@@ -15,13 +15,14 @@ module ApiResponsesHelper
   end
 
   def jsonapi_success_response(type, response = {}, headers = {})
-    response = if response.is_a? Hash
+    response = case response
+               when Hash
                  { data: { type: type, attributes: response } }
-               elsif response.is_a? Array
+               when Array
                  { data: response.map { |r| { type: type, attributes: r } } }
                else
                  response
-    end
+               end
     [200, headers, response.to_json]
   end
 

@@ -1,6 +1,6 @@
 module Notes
   module Sections
-    class SectionNotesController < ApplicationController
+    class SectionNotesController < AuthenticatedController
       before_action :authorize_user
 
       def new

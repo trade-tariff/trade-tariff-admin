@@ -1,5 +1,5 @@
 module Synonyms
-  class SearchReferencesController < ApplicationController
+  class SearchReferencesController < AuthenticatedController
     before_action :authorize_user
 
     def index
@@ -48,7 +48,7 @@ module Synonyms
       export_service = SearchReference::ExportService.new(
         search_reference_parent.search_references,
       )
-      filename = "#{search_reference_parent.reference_title}-synonyms-#{Time.now.to_i}.csv"
+      filename = "#{search_reference_parent.reference_title}-synonyms-#{Time.zone.now.to_i}.csv"
       send_data export_service.to_csv, filename: filename
     end
 

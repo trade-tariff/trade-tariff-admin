@@ -11,7 +11,7 @@ class SectionNote
 
   belongs_to :section
 
-  # NOTE singular resource
+  # NOTE: singular resource
   def request_path
     self.class.build_request_path('/admin/sections/:section_id/section_note', attributes.dup)
   end

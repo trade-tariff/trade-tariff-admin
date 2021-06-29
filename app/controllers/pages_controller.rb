@@ -1,4 +1,4 @@
-class PagesController < ApplicationController
+class PagesController < AuthenticatedController
   def index
     @sections = Section.all
   end

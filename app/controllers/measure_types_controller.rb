@@ -1,4 +1,4 @@
-class MeasureTypesController < ApplicationController
+class MeasureTypesController < AuthenticatedController
   respond_to :json
 
   def show; end
