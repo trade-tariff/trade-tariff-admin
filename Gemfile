@@ -52,8 +52,8 @@ gem 'lograge'
 gem 'logstash-event'
 
 # Background jobs
-gem 'sidekiq', '< 7'
-gem 'sidekiq-scheduler', '~> 3.0'
+gem 'sidekiq'
+gem 'sidekiq-scheduler'
 
 # Misc
 gem 'bootsnap', require: false
