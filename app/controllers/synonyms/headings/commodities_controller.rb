@@ -1,6 +1,6 @@
 module Synonyms
   module Headings
-    class CommoditiesController < ApplicationController
+    class CommoditiesController < AuthenticatedController
       def index
         @commodities = heading.commodities
       end

@@ -9,7 +9,7 @@ class Rollback
   collection_path '/admin/rollbacks'
 
   def enqueued_at
-    Time.parse(super) if super.present?
+    Time.zone.parse(super) if super.present?
   end
 
   def user=(user)

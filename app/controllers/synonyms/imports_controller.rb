@@ -1,5 +1,5 @@
 module Synonyms
-  class ImportsController < ApplicationController
+  class ImportsController < AuthenticatedController
     def show
       @import_tasks = ImportTask.all.order(:created_at).first(5)
     end

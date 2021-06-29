@@ -1,6 +1,6 @@
 module Notes
   module Chapters
-    class ChapterNotesController < ApplicationController
+    class ChapterNotesController < AuthenticatedController
       before_action :authorize_user
 
       def new

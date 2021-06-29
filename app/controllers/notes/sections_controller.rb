@@ -1,5 +1,5 @@
 module Notes
-  class SectionsController < ApplicationController
+  class SectionsController < AuthenticatedController
     respond_to :json
 
     def show

@@ -1,6 +1,6 @@
 module Synonyms
   module Chapters
-    class HeadingsController < ApplicationController
+    class HeadingsController < AuthenticatedController
       def index
         @headings = chapter.headings
       end

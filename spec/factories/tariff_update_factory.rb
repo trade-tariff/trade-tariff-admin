@@ -2,8 +2,8 @@ FactoryBot.define do
   factory :tariff_update do
     update_type { ['TariffSynchronizer::TaricUpdate', 'TariffSynchronizer::ChiefUpdate'].sample }
     state { %w[A M P F].sample }
-    updated_at { Time.now }
-    created_at { Time.now }
+    updated_at { Time.zone.now }
+    created_at { Time.zone.now }
 
     trait :chief do
       update_type { 'TariffSynchronizer::ChiefUpdate' }

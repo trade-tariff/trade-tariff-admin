@@ -4,7 +4,7 @@ module Synonyms
       private
 
       def search_reference_parent
-        @commodity ||= Commodity.find(params[:commodity_id])
+        @search_reference_parent ||= Commodity.find(params[:commodity_id])
       end
       alias_method :commodity, :search_reference_parent
       helper_method :commodity

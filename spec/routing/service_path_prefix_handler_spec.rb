@@ -1,6 +1,5 @@
 require 'rails_helper'
 
-# rubocop:disable RSpec/MultipleExpectations
 describe RoutingFilter::ServicePathPrefixHandler, type: :routing do
   let(:path) { "#{prefix}/rollbacks" }
 
@@ -93,4 +92,3 @@ describe RoutingFilter::ServicePathPrefixHandler, type: :routing do
     end
   end
 end
-# rubocop:enable RSpec/MultipleExpectations

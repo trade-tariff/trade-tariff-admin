@@ -1,4 +1,4 @@
-class GovspeakController < ApplicationController
+class GovspeakController < AuthenticatedController
   def govspeak
     # Keeps either the entire current flash or a specific flash entry
     # available for the next action

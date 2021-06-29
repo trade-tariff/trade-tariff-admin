@@ -1,4 +1,4 @@
-class RollbacksController < ApplicationController
+class RollbacksController < AuthenticatedController
   def index
     @rollbacks = Rollback.all(page: current_page).fetch
   end
