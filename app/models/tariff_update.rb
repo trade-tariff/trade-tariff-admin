@@ -5,7 +5,7 @@ class TariffUpdate
   collection_path '/admin/updates'
 
   attributes :update_type, :state, :issue_date, :created_at, :updated_at, :applied_at, :filesize,
-             :exception_backtrace, :exception_class, :exception_queries, :conformance_errors,
+             :exception_backtrace, :exception_class, :exception_queries,
              :file_presigned_url, :log_presigned_urls, :presence_errors
 
   STATES = {

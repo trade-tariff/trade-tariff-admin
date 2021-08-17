@@ -22,9 +22,6 @@
           <% if tariff_update.exception_class.present? %>
             <%= render "exception", tariff_update: tariff_update %>
           <% end %>
-          <% if tariff_update.conformance_errors.present? %>
-            <%= render "conformance_errors", tariff_update: tariff_update %>
-          <% end %>
           <% if tariff_update.presence_errors.present? %>
             <%= render "presence_errors", tariff_update: tariff_update %>
           <% end %>
