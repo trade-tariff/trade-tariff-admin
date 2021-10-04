@@ -15,26 +15,50 @@ module ApiResponsesHelper
   end
 
   def jsonapi_success_response(type, response = {}, headers = {})
-    response = case response
-               when Hash
-                 { data: { type: type, attributes: response } }
-               when Array
-                 { data: response.map { |r| { type: type, attributes: r } } }
-               else
-                 response
-               end
-    [200, headers, response.to_json]
+    formatted_response = format_json_api_response(type, response)
+
+    [200, headers, formatted_response.to_json]
   end
 
   def api_created_response(body = {}, headers = {})
     api_response(201, headers, body)
   end
 
+  def api_updated_response(resource_url)
+    api_success_response({}, location: resource_url)
+  end
+
   def api_no_content_response(body = {}, headers = {})
     api_response(204, headers, body)
   end
 
+  def api_error_response(errors, headers = {})
+    api_response(422, headers, errors)
+  end
+
   def api_response(status, headers, body)
     [status, headers, body.to_json]
+  end
+
+  def format_json_api_response(type, response)
+    case response
+    when Hash
+      {
+        data: format_json_api_item(type, response),
+      }
+    when Array
+      {
+        data: response.map { |r| format_json_api_item(type, r) },
+      }
+    else
+      response
+    end
+  end
+
+  def format_json_api_item(type, attributes)
+    {
+      type: type,
+      attributes: attributes,
+    }
   end
 end

@@ -1,0 +1,44 @@
+<%= simple_form_for news_item do |f| %>
+  <div class="row">
+    <div class="col-sm-6">
+      <%= f.input :title, input_html: { class: "form-control" } %>
+      <%= f.input :content, as: :text, input_html: { class: "form-control" } %>
+      <%= f.input :start_date, input_html: { class: 'form-control', 'data-behaviour' => 'datepicker' } %>
+      <%= f.input :end_date, hint: 'YYYY/MM/DD or leave blank for no end date',
+                             input_html: { class: 'form-control' } %>
+
+      <div class="checkbox">
+        <%= f.label :show_on_uk do %>
+          <%= f.check_box :show_on_uk %>
+          Show on UK service
+        <% end %>
+      </div>
+
+      <div class="checkbox">
+        <%= f.label :show_on_xi do %>
+          <%= f.check_box :show_on_xi %>
+          Show on XI service
+        <% end %>
+      </div>
+
+      <div class="checkbox">
+        <%= f.label :show_on_home_page do %>
+          <%= f.check_box :show_on_home_page %>
+          Show News story on the Home page
+        <% end %>
+      </div>
+
+      <div class="checkbox">
+        <%= f.label :show_on_updates_page do %>
+          <%= f.check_box :show_on_updates_page %>
+          Show News story on the Updates page
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <%= f.button :submit, class: 'btn btn-success', data: { 'disable-with' => 'Working' } %>
+    <%= link_to "Back", :back, class: 'btn' %>
+  </div>
+<% end %>
