@@ -1,7 +1,7 @@
 require 'rails_helper'
 require 'search_reference'
 
-describe 'Commodity Search Reference management' do
+RSpec.describe 'Commodity Search Reference management' do
   let!(:user)   { create :user, :gds_editor }
   let(:heading) { build :heading }
 

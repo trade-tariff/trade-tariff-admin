@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe ChapterNotePolicy do
+RSpec.describe ChapterNotePolicy do
   subject(:chapter_note_policy) { described_class }
 
   permissions :edit? do

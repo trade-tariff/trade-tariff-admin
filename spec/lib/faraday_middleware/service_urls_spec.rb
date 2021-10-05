@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe FaradayMiddleware::ServiceUrls do
+RSpec.describe FaradayMiddleware::ServiceUrls do
   subject(:response) { connection.get('http://foo') }
 
   before do

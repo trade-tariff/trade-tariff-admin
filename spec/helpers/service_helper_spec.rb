@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe ServiceHelper, type: :helper do
+RSpec.describe ServiceHelper, type: :helper do
   before do
     allow(TradeTariffAdmin::ServiceChooser).to receive(:service_choice).and_return(choice)
   end
