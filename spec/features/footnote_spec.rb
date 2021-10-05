@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Footnote management' do
+RSpec.describe 'Footnote management' do
   let!(:user) { create :user, :gds_editor }
 
   describe 'Footnote editing' do

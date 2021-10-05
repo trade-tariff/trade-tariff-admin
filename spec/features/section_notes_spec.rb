@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'Section Note management' do
+RSpec.describe 'Section Note management' do
   let!(:user) { create :user, :gds_editor }
 
   before do

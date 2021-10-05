@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe SectionNotePolicy do
+RSpec.describe SectionNotePolicy do
   subject(:section_note_policy) { described_class }
 
   permissions :edit? do

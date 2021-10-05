@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe TradeTariffAdmin::ServiceChooser do
+RSpec.describe TradeTariffAdmin::ServiceChooser do
   after do
     Thread.current[:service_choice] = nil
   end
