@@ -2,7 +2,7 @@
   <h1>Edit Measure Type</h1>
 </div>
 
-<%= simple_form_for measure_type, url: measure_type_path(measure_type), class: 'footnote-form' do |f| %>
+<%= simple_form_for measure_type, url: measure_type_path(measure_type) do |f| %>
   <div class='row'>
     <div class='col-sm-6'>
       <%= f.input :description, as: :text, input_html: { class: 'form-control' } %>
