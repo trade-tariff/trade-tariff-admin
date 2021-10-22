@@ -10,6 +10,7 @@ Her::API.setup url: Rails.application.config.api_host do |c|
   # Response
   c.use Her::Middleware::HeaderMetadataParse
   c.use Her::Middleware::TariffJsonapiParser
+  c.use Faraday::Response::RaiseError
 
   # Adapter
   c.adapter Faraday::Adapter::NetHttp

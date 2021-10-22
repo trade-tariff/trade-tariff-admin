@@ -30,5 +30,9 @@ module TradeTariffAdmin
     # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}').to_s]
     # config.i18n.default_locale = :de
     config.active_job.queue_adapter = :sidekiq
+
+    config.action_dispatch.rescue_responses.merge!(
+      'Faraday::ResourceNotFound' => :not_found,
+    )
   end
 end
