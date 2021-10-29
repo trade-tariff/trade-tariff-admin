@@ -147,11 +147,31 @@ SimpleForm.setup do |config|
       ba.use :hint,  wrap_with: { tag: 'p', class: 'help-block' }
     end
   end
+
+  config.wrappers :max_width_form, tag: 'div', class: 'row' do |row|
+    row.wrapper tag: 'div', class: 'col-sm-6' do |col|
+      col.wrapper tag: 'div', class: 'form-group', error_class: 'has-error', valid_class: 'has-success' do |b|
+        b.use :html5
+        b.use :placeholder
+        b.optional :maxlength
+        b.optional :minlength
+        b.optional :pattern
+        b.optional :min_max
+        b.optional :readonly
+        b.use :label, class: 'control-label'
+
+        b.use :input, class: 'form-control'
+        b.use :error, wrap_with: { tag: 'span', class: 'help-block' }
+        b.use :hint,  wrap_with: { tag: 'p', class: 'help-block' }
+      end
+    end
+  end
+
   # Wrappers for forms and inputs using the Bootstrap toolkit.
   # Check the Bootstrap docs (http://getbootstrap.com)
   # to learn about the different styles for forms and inputs,
   # buttons and other elements.
-  config.default_wrapper = :vertical_form
+  config.default_wrapper = :max_width_form
   config.wrapper_mappings = {
     check_boxes: :vertical_radio_and_checkboxes,
     radio_buttons: :vertical_radio_and_checkboxes,

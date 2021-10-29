@@ -3,11 +3,7 @@
 </div>
 
 <%= simple_form_for @section_note, url: notes_section_section_note_path(section) do |f| %>
-  <div class='row'>
-    <div class='col-sm-6'>
-      <%= f.input 'section_title', disabled: true, input_html: { class: 'form-control', value: section.title } %>
-    </div>
-  </div>
+  <%= f.input 'section_title', disabled: true, input_html: { value: section.title } %>
 
   <%= render 'fields', f: f %>
 <% end %>
