@@ -11,7 +11,7 @@ SimpleForm.setup do |config|
   config.browser_validations = false
 
   config.error_notification_class = 'alert alert-danger'
-  config.button_class = 'btn btn-default'
+  config.button_class = 'btn btn-success'
   config.boolean_label_class = nil
 
   config.wrappers :vertical_form, tag: 'div', class: 'form-group', error_class: 'has-error', valid_class: 'has-success' do |b|
