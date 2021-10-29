@@ -18,6 +18,7 @@ gem 'govuk_admin_template'
 gem 'jquery-rails'
 gem 'sass-rails'
 gem 'uglifier'
+gem 'webpacker'
 
 # Markdown
 gem 'addressable'
