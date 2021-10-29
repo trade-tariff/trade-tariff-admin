@@ -13,6 +13,7 @@ SimpleForm.setup do |config|
   config.error_notification_class = 'alert alert-danger'
   config.button_class = 'btn btn-success'
   config.boolean_label_class = nil
+  config.boolean_style = :nested
 
   config.wrappers :vertical_form, tag: 'div', class: 'form-group', error_class: 'has-error', valid_class: 'has-success' do |b|
     b.use :html5
@@ -167,6 +168,20 @@ SimpleForm.setup do |config|
     end
   end
 
+  config.wrappers :max_width_boolean, tag: 'div', class: 'row' do |row|
+    row.wrapper tag: 'div', class: 'col-sm-6' do |col|
+      col.use :html5
+      col.optional :readonly
+
+      col.wrapper tag: 'div', class: 'checkbox' do |ba|
+        ba.use :label_input
+      end
+
+      col.use :error, wrap_with: { tag: 'span', class: 'help-block' }
+      col.use :hint,  wrap_with: { tag: 'p', class: 'help-block' }
+    end
+  end
+
   # Wrappers for forms and inputs using the Bootstrap toolkit.
   # Check the Bootstrap docs (http://getbootstrap.com)
   # to learn about the different styles for forms and inputs,
@@ -176,7 +191,7 @@ SimpleForm.setup do |config|
     check_boxes: :vertical_radio_and_checkboxes,
     radio_buttons: :vertical_radio_and_checkboxes,
     file: :vertical_file_input,
-    boolean: :vertical_boolean,
+    boolean: :max_width_boolean,
     datetime: :multi_select,
     date: :multi_select,
     time: :multi_select,
