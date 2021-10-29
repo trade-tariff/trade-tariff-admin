@@ -149,9 +149,9 @@ SimpleForm.setup do |config|
     end
   end
 
-  config.wrappers :max_width_form, tag: 'div', class: 'row' do |row|
+  config.wrappers :max_width_form, tag: 'div', class: 'row', error_class: 'has-error', valid_class: 'has-success' do |row|
     row.wrapper tag: 'div', class: 'col-sm-6' do |col|
-      col.wrapper tag: 'div', class: 'form-group', error_class: 'has-error', valid_class: 'has-success' do |b|
+      col.wrapper tag: 'div', class: 'form-group' do |b|
         b.use :html5
         b.use :placeholder
         b.optional :maxlength
@@ -168,7 +168,7 @@ SimpleForm.setup do |config|
     end
   end
 
-  config.wrappers :max_width_boolean, tag: 'div', class: 'row' do |row|
+  config.wrappers :max_width_boolean, tag: 'div', class: 'row', error_class: 'has-error', valid_class: 'has-success' do |row|
     row.wrapper tag: 'div', class: 'col-sm-6' do |col|
       col.use :html5
       col.optional :readonly

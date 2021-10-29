@@ -6,6 +6,8 @@ class Rollback
 
   attributes :id, :enqueued_at, :keep, :date, :user_id, :reason
 
+  validates :reason, presence: true
+
   collection_path '/admin/rollbacks'
 
   def enqueued_at
