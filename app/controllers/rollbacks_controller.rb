@@ -12,7 +12,7 @@ class RollbacksController < AuthenticatedController
     @rollback = Rollback.new(rollback_params)
     @rollback.user = current_user
 
-    if @rollback.save
+    if @rollback.valid? && @rollback.save
       redirect_to rollbacks_path, notice: 'Rollback was scheduled'
     else
       @rollback.initialize_errors

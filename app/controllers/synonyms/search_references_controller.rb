@@ -15,8 +15,7 @@ module Synonyms
       @search_reference = search_reference_parent.search_references.build(search_reference_params.to_h)
       @search_reference.referenced_id = search_reference_parent.id
 
-      if @search_reference.valid?
-        @search_reference.save
+      if @search_reference.valid? && @search_reference.save
 
         redirect_to [scope, search_reference_parent, :search_references], notice: 'Search synonym was successfully created.'
       else
@@ -29,9 +28,7 @@ module Synonyms
     def update
       search_reference.assign_attributes(search_reference_params.to_h)
 
-      if search_reference.valid?
-        search_reference.save
-
+      if search_reference.valid? && search_reference.save
         redirect_to [scope, search_reference_parent, :search_references], notice: 'Search synonym was successfully updated.'
       else
         render :edit
