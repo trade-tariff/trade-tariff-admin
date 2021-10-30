@@ -20,6 +20,9 @@ gem 'sass-rails'
 gem 'uglifier'
 gem 'webpacker'
 
+# GovUK
+gem 'govuk-components'
+
 # Markdown
 gem 'addressable'
 gem 'govspeak'
