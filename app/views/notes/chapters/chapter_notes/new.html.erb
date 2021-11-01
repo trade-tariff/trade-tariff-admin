@@ -3,18 +3,12 @@
 </div>
 
 <%= simple_form_for @chapter_note, url: notes_chapter_chapter_note_path(chapter) do |f| %>
-  <div class='row'>
-    <div class='col-sm-6'>
-      <%= f.input 'section_title', disabled: true, input_html: { class: 'form-control', value: chapter.goods_nomenclature_item_id } %>
-    </div>
-  </div>
+  <%= f.input 'section_title', disabled: true, input_html: { value: chapter.goods_nomenclature_item_id } %>
 
   <%= render 'fields', f: f %>
 
-  <div class='row'>
-    <div class="form-actions">
-      <%= f.button :submit, class: 'btn btn-success', data: { 'disable-with' => 'Working' } %>
-      <%= link_to "Back", :back, class: 'btn' %>
-    </div>
+  <div>
+    <%= f.button :submit, data: { 'disable-with' => 'Working' } %>
+    <%= link_to "Back", :back, class: 'btn' %>
   </div>
 <% end %>

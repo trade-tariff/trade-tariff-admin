@@ -10,7 +10,7 @@ module Notes
       def create
         @section_note = section.section_note.build(section_note_create_params.to_h)
 
-        if @section_note.save
+        if @section_note.valid? && @section_note.save
           redirect_to index_url, notice: 'Section note was successfully created.'
         else
           render :new
@@ -25,9 +25,7 @@ module Notes
         @section_note = section.section_note.reload
         @section_note.assign_attributes(section_note_update_params.to_h)
 
-        if @section_note.valid?
-          @section_note.save
-
+        if @section_note.valid? && @section_note.save
           redirect_to index_url, notice: 'Section note was successfully updated.'
         else
           render :edit

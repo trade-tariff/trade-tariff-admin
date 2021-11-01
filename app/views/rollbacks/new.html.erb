@@ -3,22 +3,15 @@
 </div>
 
 <%= simple_form_for @rollback do |f| %>
-  <div class='row'>
-    <div class='col-sm-6'>
-      <%= f.input :reason, as: :text, input_html: { class: "form-control" } %>
-      <%= f.input :date, as: :string, label: 'Rollback to (date)',  input_html: { class: 'form-control', 'data-behaviour' => 'datepicker' } %>
-      <div class="checkbox">
-        <%= f.label :keep do %>
-          <%= f.check_box :keep %>
-          Keep
-        <% end %>
-        <span class="help-block">Keeps update files and records since specified date and just mark them pending</span>
-      </div>
-    </div>
-  </div>
+  <%= f.input :reason, as: :text %>
+  <%= f.input :date, as: :string, label: 'Rollback to (date)',  input_html: { 'data-behaviour' => 'datepicker' } %>
+  <%= f.input :keep,
+              as: :boolean,
+              label: 'Keep',
+              hint: 'Keeps update files and records since specified date and just mark them pending' %>
 
-  <div class='form-actions'>
-    <%= f.button :submit, class: 'btn btn-success', data: { 'disable-with' => 'Working' } %>
+  <div>
+    <%= f.button :submit, data: { 'disable-with' => 'Working' } %>
     <%= link_to "Back", :back, class: 'btn' %>
   </div>
 <% end %>
