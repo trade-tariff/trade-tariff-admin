@@ -1,10 +1,10 @@
 require 'rails_helper'
 
 describe NewsItemsController do
-  subject(:rendered_page) { make_request && response }
+  subject(:rendered_page) { create_user && make_request && response }
 
-  let!(:user) { create :user }
   let(:news_item) { build :news_item }
+  let(:create_user) { create :user }
 
   describe 'GET #index' do
     before do
@@ -18,10 +18,6 @@ describe NewsItemsController do
     let(:make_request) { get news_items_path }
 
     it { is_expected.to have_http_status :success }
-
-    context 'when not authenticated' do
-      it 'needs to be tested'
-    end
   end
 
   describe 'GET #new' do
@@ -129,5 +125,24 @@ describe NewsItemsController do
         session.dig('flash', 'flashes', 'notice'),
       ).to eql('News item removed')
     end
+  end
+
+  context 'when unauthenticated' do
+    before do
+      allow(ENV).to receive(:[]).and_call_original
+      allow(ENV).to receive(:[]).with('GDS_SSO_MOCK_INVALID').and_return 'true'
+    end
+
+    let(:make_request) { get news_items_path }
+
+    it { is_expected.to redirect_to '/auth/gds' }
+  end
+
+  context 'when unauthorised' do
+    let(:create_user) { create :user, permissions: %w[] }
+    let(:make_request) { get news_items_path }
+
+    xit { is_expected.to have_http_status :success }
+    xit { is_expected.to match 'contact your Delivery Manager' }
   end
 end
