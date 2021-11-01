@@ -28,4 +28,12 @@ describe NewsItem do
   it { is_expected.to have_attributes end_date: news_item.end_date }
   it { is_expected.to have_attributes created_at: news_item.created_at }
   it { is_expected.to have_attributes updated_at: news_item.updated_at }
+
+  describe '#preview' do
+    subject { news_item.preview }
+
+    let(:news_item) { build :news_item, content: '# Hello world' }
+
+    it { is_expected.to eql %(<h1 id="hello-world">Hello world</h1>\n) }
+  end
 end

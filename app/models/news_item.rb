@@ -11,4 +11,8 @@ class NewsItem
   validates :title, presence: true
   validates :content, presence: true
   validates :start_date, presence: true
+
+  def preview
+    Govspeak::Document.new(content, sanitize: true).to_html.html_safe
+  end
 end

@@ -1,6 +1,19 @@
 <%= simple_form_for news_item do |f| %>
   <%= f.input :title %>
-  <%= f.input :content, as: :text %>
+
+  <div class="row">
+    <div class="col-sm-6">
+      <%= f.input :content, as: :text, input_html: { rows: 12 }, wrapper: :vertical_form %>
+      <p><%= link_to 'Markdown guide', 'http://govspeak-preview.herokuapp.com/guide', target: '_blank'  %></p>
+    </div>
+      <div class="col-sm-6">
+      <%= f.label :preview, required: false %>
+      <div class='well' data-preview='govspeak' data-preview-for='#news_item_content'>
+        <%= f.object.preview %>
+      </div>
+    </div>
+  </div>
+
   <%= f.input :start_date, input_html: { 'data-behaviour' => 'datepicker' } %>
   <%= f.input :end_date, hint: 'YYYY/MM/DD or leave blank for no end date' %>
   <%= f.input :show_on_uk, as: :boolean, label: 'Show on UK service' %>
