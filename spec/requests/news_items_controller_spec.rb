@@ -24,20 +24,6 @@ describe NewsItemsController do
     end
   end
 
-  describe 'GET #show' do
-    before do
-      stub_api_for NewsItem do |stub|
-        stub.get "/admin/news_items/#{news_item.id}" do |_env|
-          jsonapi_success_response :news_item, news_item.attributes
-        end
-      end
-    end
-
-    let(:make_request) { get news_item_path(news_item.id) }
-
-    it { is_expected.to have_http_status :ok }
-  end
-
   describe 'GET #new' do
     let(:make_request) { get new_news_item_path }
 

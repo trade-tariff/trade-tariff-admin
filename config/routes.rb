@@ -67,7 +67,7 @@ Rails.application.routes.draw do
   resources :rollbacks, only: %i[index new create]
   resources :footnotes, only: %i[index edit update]
   resources :measure_types, only: %i[index edit update]
-  resources :news_items
+  resources :news_items, except: %i[show]
 
   post 'govspeak' => 'govspeak#govspeak', as: :govspeak
   get  'healthcheck' => 'healthcheck#check', as: :healthcheck

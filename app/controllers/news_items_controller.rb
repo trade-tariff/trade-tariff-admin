@@ -7,10 +7,6 @@ class NewsItemsController < AuthenticatedController
     @news_item = NewsItem.new
   end
 
-  def show
-    @news_item = NewsItem.find(params[:id])
-  end
-
   def create
     @news_item = NewsItem.new(news_item_params)
 
