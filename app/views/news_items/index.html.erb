@@ -1,7 +1,7 @@
 <h2>
   News stories
 
-  <%= link_to 'New News story', new_news_item_path, class: 'btn btn-small btn-success pull-right' %>
+  <%= link_to 'Add News story', new_news_item_path, class: 'btn btn-success pull-right' %>
 </h2>
 
 <% if @news_items.any? %>
@@ -15,7 +15,7 @@
         <th>UK</th>
         <th>XI</th>
         <th>Home page</th>
-        <th>Updates</th>
+        <th>Updates page</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -33,13 +33,7 @@
           <td>
             <%= link_to 'Edit',
                         edit_news_item_path(news_item),
-                        class: 'btn btn-default btn-xs' %>
-            &nbsp;
-            <%= button_to 'Remove',
-                          news_item_path(news_item),
-                          method: :delete,
-                          class: 'btn btn-danger btn-xs',
-                          data: { confirm: "Are you sure?" } %>
+                        class: 'btn btn-warning' %>
           </td>
         </tr>
       <% end %>

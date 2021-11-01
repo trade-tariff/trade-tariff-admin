@@ -14,10 +14,9 @@ class NewsItemsController < AuthenticatedController
   def create
     @news_item = NewsItem.new(news_item_params)
 
-    if @news_item.save
+    if @news_item.valid? && @news_item.save
       redirect_to news_items_path, notice: 'News item created'
     else
-      @news_item.assign_errors
       render :new
     end
   end
@@ -30,10 +29,9 @@ class NewsItemsController < AuthenticatedController
     @news_item = NewsItem.find(params[:id])
     @news_item.attributes = news_item_params
 
-    if @news_item.save
+    if @news_item.valid? && @news_item.save
       redirect_to news_items_path, notice: 'News item updated'
     else
-      @news_item.assign_errors
       render :edit
     end
   end
