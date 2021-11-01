@@ -53,20 +53,21 @@ describe NewsItemsController do
 
     let :make_request do
       post news_items_path,
-           params: { news_item: news_item.attributes.without(:id) }
+           params: { news_item: news_item_params }
     end
 
     context 'with valid item' do
+      let(:news_item_params) { news_item.attributes.without(:id) }
       let(:create_response) { api_created_response(news_item.attributes) }
 
       it { is_expected.to redirect_to news_items_path }
     end
 
     context 'with invalid item' do
-      let(:create_response) { api_error_response(title: "is not present") }
+      let(:news_item_params) { news_item.attributes.without(:id, :title) }
 
       it { is_expected.to have_http_status :ok }
-      it { is_expected.to have_attributes body: /is not present/ }
+      it { is_expected.to have_attributes body: /can.+t be blank/ }
     end
   end
 
@@ -97,10 +98,12 @@ describe NewsItemsController do
 
     let :make_request do
       patch news_item_path(news_item),
-            params: { news_item: news_item.attributes }
+            params: { news_item: news_item.attributes.merge(title: new_title) }
     end
 
     context 'with valid change' do
+      let(:new_title) { 'new title' }
+
       let :patch_response do
         api_updated_response("/admin/news_item/#{news_item.id}")
       end
@@ -109,10 +112,10 @@ describe NewsItemsController do
     end
 
     context 'with invalid change' do
-      let(:patch_response) { api_error_response(title: "is not present") }
+      let(:new_title) { '' }
 
       it { is_expected.to have_http_status :ok }
-      it { is_expected.to have_attributes body: /is not present/ }
+      it { is_expected.to have_attributes body: /can.+t be blank/ }
     end
   end
 
