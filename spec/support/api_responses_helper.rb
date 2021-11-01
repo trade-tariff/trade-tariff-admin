@@ -61,4 +61,40 @@ module ApiResponsesHelper
       attributes: attributes,
     }
   end
+
+  # Wrapper around WebMock's stub_request with defaults that apply to all our api requests
+  def stub_api_request(endpoint, method = :get, backend: nil)
+    backend_url = if backend
+                    TradeTariffAdmin::ServiceChooser.service_choices[backend]
+                  else
+                    TradeTariffAdmin::ServiceChooser.api_host
+                  end
+
+    endpoint = "/#{endpoint}" unless endpoint.starts_with?('/')
+    endpoint = "/admin#{endpoint}" unless endpoint.starts_with?('/admin/')
+    url = "#{backend_url}#{endpoint}"
+
+    stub_request(method, url)
+  end
+
+  # Generate a JSONAPI response from data suitable for webmock
+  def jsonapi_response(type, response_data, status: 200, headers: nil)
+    {
+      status: status,
+      headers: headers || { 'content-type' => 'application/json; charset=utf-8' },
+      body: format_json_api_response(type, response_data).to_json,
+    }
+  end
+
+  # Wrapper around the existing api response helpers to allow them to work with
+  # with WebMock
+  def webmock_response(response_type, *args)
+    response_data = send(:"api_#{response_type}_response", *args)
+
+    {
+      status: response_data[0],
+      headers: response_data[1],
+      body: response_data[2],
+    }
+  end
 end

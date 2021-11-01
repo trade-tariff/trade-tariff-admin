@@ -44,24 +44,20 @@ describe NewsItem do
       allow(TradeTariffAdmin::ServiceChooser).to \
         receive(:service_choice).and_return service_choice
 
-      stub_request(:get, "#{uk_backend}/admin/news_items").and_return \
-        status: 200,
-        headers: { 'content-type' => 'application/json; charset=utf-8' },
-        body: { data: [], included: [] }.to_json
+      stub_api_request('/news_items', backend: 'uk').to_return \
+        jsonapi_response(:news_item, attributes_for_list(:news_item, 2))
     end
-
-    let(:uk_backend) { TradeTariffAdmin::ServiceChooser.service_choices['uk'] }
 
     context 'with UK service' do
       let(:service_choice) { 'uk' }
 
-      it { is_expected.to be_empty }
+      it { is_expected.to have_attributes length: 2 }
     end
 
     context 'with XI service' do
       let(:service_choice) { 'xi' }
 
-      it { is_expected.to be_empty }
+      it { is_expected.to have_attributes length: 2 }
     end
   end
 end

@@ -8,11 +8,8 @@ describe NewsItemsController do
 
   describe 'GET #index' do
     before do
-      stub_api_for NewsItem do |stub|
-        stub.get '/admin/news_items' do |_env|
-          jsonapi_success_response :news_item, attributes_for_list(:news_item, 3)
-        end
-      end
+      stub_api_request('/news_items?page=1').and_return \
+        jsonapi_response :news_item, attributes_for_list(:news_item, 3)
     end
 
     let(:make_request) { get news_items_path }
@@ -28,9 +25,7 @@ describe NewsItemsController do
 
   describe 'POST #create' do
     before do
-      stub_api_for NewsItem do |stub|
-        stub.post('/admin/news_items') { create_response }
-      end
+      stub_api_request('/news_items', :post).to_return create_response
     end
 
     let :make_request do
@@ -38,9 +33,10 @@ describe NewsItemsController do
            params: { news_item: news_item_params }
     end
 
+    let(:create_response) { webmock_response(:created, news_item.attributes) }
+
     context 'with valid item' do
       let(:news_item_params) { news_item.attributes.without(:id) }
-      let(:create_response) { api_created_response(news_item.attributes) }
 
       it { is_expected.to redirect_to news_items_path }
     end
@@ -55,11 +51,8 @@ describe NewsItemsController do
 
   describe 'GET #edit' do
     before do
-      stub_api_for NewsItem do |stub|
-        stub.get "/admin/news_items/#{news_item.id}" do |_env|
-          jsonapi_success_response :news_item, news_item.attributes
-        end
-      end
+      stub_api_request("/news_items/#{news_item.id}")
+        .and_return jsonapi_response(:news_item, news_item.attributes)
     end
 
     let(:make_request) { get edit_news_item_path(news_item) }
@@ -69,13 +62,11 @@ describe NewsItemsController do
 
   describe 'PATCH #update' do
     before do
-      stub_api_for NewsItem do |stub|
-        stub.get "/admin/news_items/#{news_item.id}" do
-          jsonapi_success_response :news_item, news_item.attributes
-        end
+      stub_api_request("/news_items/#{news_item.id}")
+        .and_return jsonapi_response(:news_item, news_item.attributes)
 
-        stub.patch("/admin/news_items/#{news_item.id}") { patch_response }
-      end
+      stub_api_request("/news_items/#{news_item.id}", :patch)
+        .and_return patch_response
     end
 
     let :make_request do
@@ -83,12 +74,12 @@ describe NewsItemsController do
             params: { news_item: news_item.attributes.merge(title: new_title) }
     end
 
+    let :patch_response do
+      webmock_response :updated, "/admin/news_item/#{news_item.id}"
+    end
+
     context 'with valid change' do
       let(:new_title) { 'new title' }
-
-      let :patch_response do
-        api_updated_response("/admin/news_item/#{news_item.id}")
-      end
 
       it { is_expected.to redirect_to news_items_path }
     end
@@ -103,15 +94,11 @@ describe NewsItemsController do
 
   describe 'DELETE #destroy' do
     before do
-      stub_api_for NewsItem do |stub|
-        stub.get "/admin/news_items/#{news_item.id}" do
-          jsonapi_success_response :news_item, news_item.attributes
-        end
+      stub_api_request("/news_items/#{news_item.id}")
+        .and_return jsonapi_response(:news_item, news_item.attributes)
 
-        stub.delete "/admin/news_items/#{news_item.id}" do
-          api_no_content_response
-        end
-      end
+      stub_api_request("/news_items/#{news_item.id}", :delete)
+        .and_return webmock_response :no_content
     end
 
     let(:make_request) { delete news_item_path(news_item) }
