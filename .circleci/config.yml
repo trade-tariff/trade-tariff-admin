@@ -190,13 +190,13 @@ workflows:
           filters:
             branches:
               ignore:
-                - master
+                - main
       - deploy_dev:
           context: trade-tariff
           filters:
             branches:
               ignore:
-                - master
+                - main
           requires:
             - test
       - deploy_staging:
@@ -204,13 +204,13 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
       - deploy_prod:
           context: trade-tariff
           filters:
             branches:
               only:
-                - master
+                - main
           requires:
             - deploy_staging
 
