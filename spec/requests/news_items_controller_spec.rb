@@ -4,7 +4,7 @@ describe NewsItemsController do
   subject(:rendered_page) { create_user && make_request && response }
 
   let(:news_item) { build :news_item }
-  let(:create_user) { create :user }
+  let(:create_user) { create :user, permissions: ['signin', 'HMRC Editor'] }
 
   describe 'GET #index' do
     before do
@@ -129,7 +129,7 @@ describe NewsItemsController do
     let(:create_user) { create :user, permissions: %w[] }
     let(:make_request) { get news_items_path }
 
-    xit { is_expected.to have_http_status :success }
-    xit { is_expected.to match 'contact your Delivery Manager' }
+    it { is_expected.to have_http_status :forbidden }
+    it { is_expected.to have_attributes body: /contact your Delivery Manager/ }
   end
 end

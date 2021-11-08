@@ -1,4 +1,6 @@
 class NewsItemsController < AuthenticatedController
+  before_action :authorize_user
+
   def index
     @news_items = NewsItem.all(page: current_page).fetch
   end
@@ -57,5 +59,9 @@ class NewsItemsController < AuthenticatedController
 
   def default_params
     { display_style: NewsItem::DISPLAY_STYLE_REGULAR }
+  end
+
+  def authorize_user
+    authorize NewsItem, :edit?
   end
 end
