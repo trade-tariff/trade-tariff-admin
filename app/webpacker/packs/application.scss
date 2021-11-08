@@ -18,3 +18,8 @@ tbody { @extend .govuk-table__body !optional ; }
 tr { @extend .govuk-table__row !optional ; }
 th { @extend .govuk-table__header ; }
 td { @extend .govuk-table__cell ; }
+
+.govuk-notification-banner--error {
+  border-color: $govuk-error-colour;
+  background-color: $govuk-error-colour;
+}
