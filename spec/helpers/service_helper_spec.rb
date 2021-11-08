@@ -47,5 +47,14 @@ RSpec.describe ServiceHelper, type: :helper do
         end
       end
     end
+
+    context 'with a css class' do
+      subject { switch_service_link class: 'test-class' }
+
+      let(:path) { '/rollbacks/new' }
+      let(:choice) { nil }
+
+      it { is_expected.to have_css 'a.test-class' }
+    end
   end
 end

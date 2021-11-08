@@ -23,3 +23,20 @@ td { @extend .govuk-table__cell ; }
   border-color: $govuk-error-colour;
   background-color: $govuk-error-colour;
 }
+
+.govuk-phase-banner__content {
+  width: 100%;
+}
+
+.govuk-phase-banner__text.current-user {
+  text-align: right
+}
+
+.govuk-phase-banner a {
+  margin-left: 0.6em ;
+}
+
+.non-breaking {
+  white-space: nowrap;
+}
+

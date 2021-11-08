@@ -1,8 +1,10 @@
 module ServiceHelper
-  def switch_service_link
-    return link_to('Switch to XI service', "/xi#{current_path}") if TradeTariffAdmin::ServiceChooser.uk?
-
-    link_to('Switch to UK service', current_path)
+  def switch_service_link(*args)
+    if TradeTariffAdmin::ServiceChooser.uk?
+      link_to('Switch to XI service', "/xi#{current_path}", *args)
+    else
+      link_to('Switch to UK service', current_path, *args)
+    end
   end
 
   private
