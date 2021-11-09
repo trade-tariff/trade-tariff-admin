@@ -38,6 +38,8 @@ en:
         date: Rollback to date
       section_note:
         section_title: Section title
+      chapter_note:
+        chapter_title: Chapter
 
     legend:
       rollback:

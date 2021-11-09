@@ -1,0 +1,21 @@
+<h1>
+  Edit Chapter Note
+</h1>
+
+<%= govuk_form_for @chapter_note, url: notes_chapter_chapter_note_url(@chapter)  do |f| %>
+  <%= f.govuk_text_field :chapter_title, disabled: true, value: @chapter.goods_nomenclature_item_id %>
+
+  <%= govuk_markdown_area f, :content, rows: 12 %>
+
+  <%= submit_and_back_buttons f, notes_section_chapters_path(@chapter) %>
+<% end %>
+
+<h3>
+  Remove Chapter note
+</h3>
+
+<p>
+  Remove this chapter note
+</p>
+
+<%= link_to "Remove", notes_chapter_chapter_note_path(@chapter), method: :delete, data: { confirm: 'Are you sure?', disable: 'Working'}, class: 'govuk-button govuk-button--warning' %>
