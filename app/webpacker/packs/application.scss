@@ -41,7 +41,16 @@ $govuk-image-url-function: frontend-image-url;
   margin-left: 0.6em ;
 }
 
-.non-breaking {
+.hott-non-breaking {
   white-space: nowrap;
 }
 
+.hott-link-group {
+  a { margin-right: 0.6em }
+}
+
+.hott-actions-col {
+  @include govuk-media-query($from: tablet) {
+    width: 20%
+  }
+}
