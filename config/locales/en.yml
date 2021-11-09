@@ -36,6 +36,8 @@ en:
     label:
       rollback:
         date: Rollback to date
+      section_note:
+        section_title: Section title
 
     legend:
       rollback:

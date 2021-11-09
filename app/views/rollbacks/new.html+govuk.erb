@@ -7,8 +7,5 @@
     <%= f.govuk_check_box :keep, 1, 0, multiple: false, link_errors: true %>
   <% end %>
 
-  <div class="govuk-button-group">
-    <%= f.govuk_submit 'Create Rollback' %>
-    <%= link_to "Back", rollbacks_path, class: 'govuk-button govuk-button--secondary' %>
-  </div>
+  <%= submit_and_back_buttons f, rollbacks_path %>
 <% end %>

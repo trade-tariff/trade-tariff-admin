@@ -1,0 +1,7 @@
+<h1>New Section Note</h1>
+
+<%= govuk_form_for @section_note, url: notes_section_section_note_path(section) do |f| %>
+  <%= f.govuk_text_field :section_title, disabled: true, value: section.title %>
+
+  <%= render 'fields', f: f %>
+<% end %>
