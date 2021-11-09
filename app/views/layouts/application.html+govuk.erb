@@ -45,7 +45,9 @@
       <main class="govuk-main-wrapper " id="main-content" role="main">
         <%= render 'flashes' %>
 
-        <%= yield %>
+        <div class="govuk-auto-classes">
+          <%= yield %>
+        </div>
       </main>
     </div>
 

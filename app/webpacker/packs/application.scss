@@ -12,12 +12,17 @@ $govuk-image-url-function: frontend-image-url;
 
 @import "~govuk-frontend/govuk/all";
 
-table { @extend .govuk-table ; }
-thead { @extend .govuk-table__head !optional ; }
-tbody { @extend .govuk-table__body !optional ; }
-tr { @extend .govuk-table__row !optional ; }
-th { @extend .govuk-table__header ; }
-td { @extend .govuk-table__cell ; }
+.govuk-auto-classes {
+  h1 { @extend .govuk-heading-l ; }
+  h2 { @extend .govuk-heading-m ; }
+  h3 { @extend .govuk-heading-s ; }
+  table { @extend .govuk-table ; }
+  thead { @extend .govuk-table__head !optional ; }
+  tbody { @extend .govuk-table__body !optional ; }
+  tr { @extend .govuk-table__row !optional ; }
+  th { @extend .govuk-table__header ; }
+  td { @extend .govuk-table__cell ; }
+}
 
 .govuk-notification-banner--error {
   border-color: $govuk-error-colour;
