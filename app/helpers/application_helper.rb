@@ -21,4 +21,8 @@ module ApplicationHelper
 
     form_for(*args, **merged, &block)
   end
+
+  def govuk_breadcrumbs(breadcrumbs)
+    render GovukComponent::BreadcrumbsComponent.new(breadcrumbs: breadcrumbs)
+  end
 end
