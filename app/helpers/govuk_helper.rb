@@ -31,12 +31,9 @@ module GovukHelper
   end
 
   def govuk_markdown_area(form, field_name, **options)
-    form.govuk_text_area(field_name, **options) +
-      tag.p do
-        link_to 'Markdown guide',
-                'http://govspeak-preview.herokuapp.com/guide',
-                rel: 'noopener',
-                target: '_blank'
-      end
+    render 'application/markdown_field',
+           form: form,
+           field_name: field_name,
+           field_options: options
   end
 end
