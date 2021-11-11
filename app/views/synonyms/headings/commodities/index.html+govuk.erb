@@ -1,0 +1,37 @@
+<%= govuk_breadcrumbs 'Sections': synonyms_sections_path,
+                      'Headings': synonyms_chapter_headings_path(chapter_id: heading.chapter_id) %>
+
+<h2>Commodities search synonyms of heading <%= heading.to_param %>:<%= heading.description.titleize %></h2>
+
+<table class='table table-bordered table-striped table-condensed table-headings'>
+  <thead>
+    <tr>
+      <th>Commodity</th>
+      <th>Title</th>
+      <th class="actions_col">Synonyms</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @commodities.each do |commodity| %>
+      <tr id="<%= dom_id(commodity) %>">
+        <td><%= commodity.goods_nomenclature_item_id %></td>
+        <td><%= commodity.description.titleize %></td>
+        <td class="hott-link-group">
+          <% if commodity.leaf %>
+            <div>
+              <%= pluralize commodity.search_references_count, "synonym" %>
+            </div>
+            <%= link_to 'Edit', synonyms_commodity_search_references_path(commodity) %>
+            <% if commodity.search_references_count > 0 %>
+              <%= link_to 'Export', export_synonyms_commodity_search_references_path(commodity), method: :post %>
+            <% end %>
+          <% else %>
+            <em>Intermediate code</em>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<%= render "synonyms/shared_actions" %>
