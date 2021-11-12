@@ -1,4 +1,5 @@
-import $ from "jquery";
+import $ from 'jquery';
+import 'jquery.autosize' ;
 
 $(document).ready(function(){
   var Previewer = {
@@ -23,5 +24,5 @@ $(document).ready(function(){
     })
   });
 
-  //$('textarea').autosize();
+  $('textarea').autosize();
 });
