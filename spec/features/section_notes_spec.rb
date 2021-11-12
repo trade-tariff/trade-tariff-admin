@@ -39,7 +39,7 @@ RSpec.describe 'Section Note management' do
         end
       end
 
-      create_note_for section, content: section_note.content
+      create_note_for section, 'Content' => section_note.content
 
       verify note_created_for(section)
     end
@@ -63,7 +63,7 @@ RSpec.describe 'Section Note management' do
         stub.patch("/admin/sections/#{section.id}/section_note") { |_env| api_no_content_response }
       end
 
-      update_note_for section, content: new_content
+      update_note_for section, 'Content' => new_content
 
       stub_api_for(SectionNote) do |stub|
         stub.get("/admin/sections/#{section.id}/section_note") { |_env| jsonapi_success_response('section_note', section_note.attributes.merge(content: new_content)) }
@@ -107,7 +107,7 @@ RSpec.describe 'Section Note management' do
     ensure_on new_notes_section_section_note_path(section)
 
     fields_and_values.each do |field, value|
-      fill_in "section_note_#{field}", with: value
+      fill_in field, with: value
     end
 
     yield if block_given?
@@ -119,7 +119,7 @@ RSpec.describe 'Section Note management' do
     ensure_on edit_notes_section_section_note_path(section)
 
     fields_and_values.each do |field, value|
-      fill_in "section_note_#{field}", with: value
+      fill_in field, with: value
     end
 
     yield if block_given?
@@ -130,7 +130,7 @@ RSpec.describe 'Section Note management' do
   def note_updated_for(section, args = {})
     ensure_on edit_notes_section_section_note_path(section)
 
-    page.has_field?('section_note_content', with: args[:content])
+    page.has_field?('Content', with: args[:content])
   end
 
   def note_created_for(section)

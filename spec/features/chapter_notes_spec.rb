@@ -48,7 +48,7 @@ RSpec.describe 'Chapter Note management' do
         end
       end
 
-      create_note_for chapter, content: chapter_note.content
+      create_note_for chapter, 'Content' => chapter_note.content
 
       verify note_created_for(chapter)
     end
@@ -88,7 +88,7 @@ RSpec.describe 'Chapter Note management' do
 
       verify note_created_for(chapter)
 
-      update_note_for chapter, content: new_content
+      update_note_for chapter, 'Content' => new_content
 
       stub_api_for(ChapterNote) do |stub|
         stub.get("/admin/chapters/#{chapter.to_param}/chapter_note") do |_env|
@@ -149,7 +149,7 @@ RSpec.describe 'Chapter Note management' do
     ensure_on new_notes_chapter_chapter_note_path(chapter)
 
     fields_and_values.each do |field, value|
-      fill_in "chapter_note_#{field}", with: value
+      fill_in field, with: value
     end
 
     yield if block_given?
@@ -161,7 +161,7 @@ RSpec.describe 'Chapter Note management' do
     ensure_on edit_notes_chapter_chapter_note_path(chapter)
 
     fields_and_values.each do |field, value|
-      fill_in "chapter_note_#{field}", with: value
+      fill_in field, with: value
     end
 
     yield if block_given?
@@ -172,7 +172,7 @@ RSpec.describe 'Chapter Note management' do
   def note_updated_for(chapter, args = {})
     ensure_on edit_notes_chapter_chapter_note_path(chapter)
 
-    page.has_field?('chapter_note_content', with: args[:content])
+    page.has_field?('Content', with: args[:content])
   end
 
   def note_created_for(chapter)

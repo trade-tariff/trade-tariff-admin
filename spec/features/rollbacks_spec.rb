@@ -46,8 +46,8 @@ RSpec.describe 'Rollbacks management' do
   def create_rollback(rollback)
     ensure_on new_rollback_path
 
-    fill_in 'rollback_reason', with: 'a reason'
-    fill_in 'rollback_date', with: rollback.date
+    fill_in 'Reason', with: 'a reason'
+    fill_in 'Rollback to', with: rollback.date
 
     click_button 'Create Rollback'
   end

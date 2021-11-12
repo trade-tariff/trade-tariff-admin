@@ -35,7 +35,7 @@ RSpec.describe 'Commodity Search Reference management' do
         end
       end
 
-      create_search_reference_for commodity, title: title
+      create_search_reference_for commodity, 'Synonym' => title
 
       verify search_reference_created_for(commodity, title: title)
     end
@@ -110,7 +110,7 @@ RSpec.describe 'Commodity Search Reference management' do
         end
       end
 
-      update_commodity_search_reference_for(commodity, commodity_search_reference, title: new_title)
+      update_commodity_search_reference_for(commodity, commodity_search_reference, 'Synonym' => new_title)
 
       stub_api_for(Commodity::SearchReference) do |stub|
         stub.get("/admin/commodities/#{commodity.to_param}/search_references/#{commodity_search_reference.to_param}") do |_env|
@@ -128,7 +128,7 @@ RSpec.describe 'Commodity Search Reference management' do
     ensure_on new_synonyms_commodity_search_reference_path(commodity)
 
     fields_and_values.each do |field, value|
-      fill_in "search_reference_#{field}", with: value
+      fill_in field, with: value
     end
 
     yield if block_given?
@@ -140,7 +140,7 @@ RSpec.describe 'Commodity Search Reference management' do
     ensure_on edit_synonyms_commodity_search_reference_path(commodity, search_reference)
 
     fields_and_values.each do |field, value|
-      fill_in "search_reference_#{field}", with: value
+      fill_in field, with: value
     end
 
     yield if block_given?
@@ -159,7 +159,7 @@ RSpec.describe 'Commodity Search Reference management' do
   def commodity_search_reference_updated_for(commodity, search_reference, args = {})
     ensure_on edit_synonyms_commodity_search_reference_path(commodity, search_reference)
 
-    page.has_field?('search_reference_title', with: args[:title])
+    page.has_field?('Synonym', with: args[:title])
   end
 
   def search_reference_created_for(commodity, attributes = {})

@@ -35,7 +35,7 @@ RSpec.describe 'Chapter Search Reference management' do
           jsonapi_success_response('search_reference', [chapter_search_reference.attributes], 'x-meta' => { pagination: { total: 1 } }.to_json)
         end
       end
-      create_search_reference_for chapter, title: title
+      create_search_reference_for chapter, 'Synonym' => title
 
       verify search_reference_created_for(chapter, title: title)
     end
@@ -111,7 +111,7 @@ RSpec.describe 'Chapter Search Reference management' do
         end
       end
 
-      update_chapter_search_reference_for(chapter, chapter_search_reference, title: new_title)
+      update_chapter_search_reference_for(chapter, chapter_search_reference, 'Synonym' => new_title)
 
       stub_api_for(Chapter::SearchReference) do |stub|
         stub.get("/admin/chapters/#{chapter.to_param}/search_references/#{chapter_search_reference.to_param}") do |_env|
@@ -129,7 +129,7 @@ RSpec.describe 'Chapter Search Reference management' do
     ensure_on new_synonyms_chapter_search_reference_path(chapter)
 
     fields_and_values.each do |field, value|
-      fill_in "search_reference_#{field}", with: value
+      fill_in field, with: value
     end
 
     yield if block_given?
@@ -141,7 +141,7 @@ RSpec.describe 'Chapter Search Reference management' do
     ensure_on edit_synonyms_chapter_search_reference_path(chapter, search_reference)
 
     fields_and_values.each do |field, value|
-      fill_in "search_reference_#{field}", with: value
+      fill_in field, with: value
     end
 
     yield if block_given?
@@ -160,7 +160,7 @@ RSpec.describe 'Chapter Search Reference management' do
   def chapter_search_reference_updated_for(chapter, search_reference, args = {})
     ensure_on edit_synonyms_chapter_search_reference_path(chapter, search_reference)
 
-    page.has_field?('search_reference_title', with: args[:title])
+    page.has_field?('Synonym', with: args[:title])
   end
 
   def search_reference_created_for(chapter, attributes = {})
