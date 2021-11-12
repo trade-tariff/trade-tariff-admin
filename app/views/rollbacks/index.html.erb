@@ -20,7 +20,7 @@
       <% @rollbacks.each do |rollback| %>
         <tr id='<%= dom_id(rollback) %>'>
           <td><%= rollback.id %></td>
-          <td><%= rollback.user %></td>
+          <td><%= rollback.user || tag.em('unknown user')%></td>
           <td><%= rollback.reason %></td>
           <td><%= rollback.date %></td>
           <td><%= rollback.keep %></td>
