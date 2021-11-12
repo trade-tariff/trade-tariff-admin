@@ -17,5 +17,7 @@ import './application.scss';
 import Rails from 'rails-ujs';
 import { initAll } from 'govuk-frontend';
 
+import '../javascripts/markdown-preview';
+
 Rails.start();
 initAll();

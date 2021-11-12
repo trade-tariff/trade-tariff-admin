@@ -92,5 +92,7 @@ RSpec.describe GovukHelper do
     it { is_expected.to have_link 'Markdown guide' }
     it { is_expected.to have_css '.govuk-grid-column-one-half .hott-markdown-preview' }
     it { is_expected.to have_css '.hott-markdown-preview p', text: 'preview content' }
+    it { is_expected.to have_css '.hott-markdown-preview[data-preview="govspeak"]' }
+    it { is_expected.to have_css '.hott-markdown-preview[data-preview-for="#person-name-field"]' }
   end
 end

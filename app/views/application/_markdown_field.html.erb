@@ -13,7 +13,9 @@
     <div class="govuk-form-group">
       <label class="govuk-label">Preview</label>
 
-      <div class="hott-markdown-preview">
+      <div class="hott-markdown-preview"
+        data-preview="govspeak"
+        data-preview-for="#<%= "#{form.object_name}-#{field_name}-field".gsub('_', '-') %>">
         <%= form.object.preview if form.object.respond_to?(:preview) %>
       </div>
     </div>
