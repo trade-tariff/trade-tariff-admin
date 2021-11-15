@@ -24,3 +24,6 @@ en:
   time:
     formats:
       tariff: "%d/%m/%Y %H:%M:%S %Z"
+  date:
+    formats:
+      tariff: "%d/%m/%Y"

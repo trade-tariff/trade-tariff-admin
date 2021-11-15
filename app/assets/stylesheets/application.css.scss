@@ -4,3 +4,13 @@
  */
 
 @import 'govuk_admin_template';
+
+.control-group.error {
+  label, .controls .help-inline {
+    color: #a94442 ;
+  }
+}
+
+table td form.button_to {
+  display: inline;
+}
