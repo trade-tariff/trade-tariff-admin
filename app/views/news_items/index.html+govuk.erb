@@ -1,0 +1,45 @@
+<h2>
+  News stories
+</h2>
+
+<%= link_to 'Add News story', new_news_item_path, class: 'govuk-button' %>
+
+<% if @news_items.any? %>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Start date</th>
+        <th>End date</th>
+        <th>UK</th>
+        <th>XI</th>
+        <th>Home page</th>
+        <th>Updates page</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @news_items.each do |news_item| %>
+        <tr id="<%= dom_id(news_item) %>">
+          <td><%= news_item.id %></td>
+          <td><%= truncate news_item.title %></td>
+          <td><%= news_item_date news_item.start_date %></td>
+          <td><%= news_item_date news_item.end_date %></td>
+          <td><%= news_item_bool news_item.show_on_uk %></td>
+          <td><%= news_item_bool news_item.show_on_xi %></td>
+          <td><%= news_item_bool news_item.show_on_home_page %></td>
+          <td><%= news_item_bool news_item.show_on_updates_page %></td>
+          <td>
+            <%= link_to 'Edit',
+                        edit_news_item_path(news_item) %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <div class="govuk-inset-text">
+    <p>No News stories</p>
+  </div>
+<% end %>
