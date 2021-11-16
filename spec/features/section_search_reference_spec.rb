@@ -43,7 +43,7 @@ RSpec.describe 'Section Search Reference management' do
         end
       end
 
-      create_search_reference_for section, title: title
+      create_search_reference_for section, 'Synonym' => title
 
       verify search_reference_created_for(section, title: title)
     end
@@ -118,7 +118,7 @@ RSpec.describe 'Section Search Reference management' do
         end
       end
 
-      update_section_search_reference_for(section, section_search_reference, title: new_title)
+      update_section_search_reference_for(section, section_search_reference, 'Synonym' => new_title)
 
       stub_api_for(Section::SearchReference) do |stub|
         stub.get("/admin/sections/#{section.to_param}/search_references/#{section_search_reference.to_param}") do |_env|
@@ -136,7 +136,7 @@ RSpec.describe 'Section Search Reference management' do
     ensure_on new_synonyms_section_search_reference_path(section)
 
     fields_and_values.each do |field, value|
-      fill_in "search_reference_#{field}", with: value
+      fill_in field, with: value
     end
 
     yield if block_given?
@@ -148,7 +148,7 @@ RSpec.describe 'Section Search Reference management' do
     ensure_on edit_synonyms_section_search_reference_path(section, search_reference)
 
     fields_and_values.each do |field, value|
-      fill_in "search_reference_#{field}", with: value
+      fill_in field, with: value
     end
 
     yield if block_given?
@@ -167,7 +167,7 @@ RSpec.describe 'Section Search Reference management' do
   def section_search_reference_updated_for(section, search_reference, args = {})
     ensure_on edit_synonyms_section_search_reference_path(section, search_reference)
 
-    page.has_field?('search_reference_title', with: args[:title])
+    page.has_field?('Synonym', with: args[:title])
   end
 
   def search_reference_created_for(section, attributes = {})
