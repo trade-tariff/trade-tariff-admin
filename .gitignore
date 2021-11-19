@@ -9,10 +9,13 @@ db/schema.rb
 /spec/reports
 *manifest.yml
 cf-ssh.yml
+.byebug_history
 .ruby-gemset
 .idea/*
 REVISION
 .env
+public/packs
+public/packs-test
 public/uploads/*
 public/assets/*
 .nvimlog
@@ -20,3 +23,4 @@ vendor
 .env
 .env.*.local
 /node_modules
+yarn-error.log

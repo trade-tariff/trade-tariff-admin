@@ -1,0 +1,13 @@
+{
+  "name": "trade-tariff-admin",
+  "private": true,
+  "dependencies": {
+    "@rails/webpacker": "^5.4.0",
+    "govuk-frontend": "^3.12.0",
+    "rails-ujs": "^5.2.6"
+  },
+  "devDependencies": {
+    "webpack-dev-server": "^3.11.2"
+  },
+  "license": "MIT"
+}

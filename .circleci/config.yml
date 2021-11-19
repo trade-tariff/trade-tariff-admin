@@ -103,6 +103,9 @@ jobs:
     steps:
       - checkout
       - ruby/install-deps
+      - node/install-packages:
+          pkg-manager: yarn
+          cache-key: "yarn.lock"
   linters:
     docker:
       - image: 'cimg/ruby:3.0.2-node'
