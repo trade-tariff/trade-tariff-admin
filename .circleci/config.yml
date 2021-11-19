@@ -208,6 +208,14 @@ workflows:
             branches:
               only:
                 - main
+      - hold_production:
+          type: approval
+          filters:
+            branches:
+              only:
+                - main
+          requires:
+            - deploy_staging
       - deploy_prod:
           context: trade-tariff
           filters:
@@ -215,5 +223,5 @@ workflows:
               only:
                 - main
           requires:
-            - deploy_staging
+            - hold_production
 
