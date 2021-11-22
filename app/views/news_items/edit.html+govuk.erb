@@ -1,0 +1,21 @@
+<%= govuk_breadcrumbs 'News': news_items_path %>
+
+<h2>Edit News story</h2>
+
+<%= render 'form', news_item: @news_item %>
+
+<hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+<h3>
+  Remove News item
+</h3>
+
+<p>
+  Remove this News item
+</p>
+
+<%= link_to 'Remove',
+                news_item_path(@news_item),
+                method: :delete,
+                class: 'govuk-button govuk-button--warning',
+                data: { confirm: "Are you sure?", disable: 'Working ...' } %>

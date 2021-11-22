@@ -51,3 +51,7 @@ en:
       rollback:
         keep: Keeps update files and records since specified date and just mark them pending
         date: Should be in 'YYYY-MM-DD' format
+
+      news_item:
+        start_date: 'YYYY/MM/DD'
+        end_date: 'YYYY/MM/DD or leave blank for no end date'
