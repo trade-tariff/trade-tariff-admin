@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   ruby: circleci/ruby@1.1.2
+  node: circleci/node@4.7.0
   cloudfoundry: circleci/cloudfoundry@1.0
   slack: circleci/slack@4.3.0
 
@@ -105,7 +106,6 @@ jobs:
       - ruby/install-deps
       - node/install-packages:
           pkg-manager: yarn
-          cache-key: "yarn.lock"
   linters:
     docker:
       - image: 'cimg/ruby:3.0.2-node'
@@ -137,9 +137,41 @@ jobs:
           POSTGRES_DB: tariff_test
           POSTGRES_PASSWORD: postgres
       - image: circleci/redis:4.0.9
+    environment:
+      GOVUK_FRONTEND: false
     steps:
       - checkout
       - ruby/install-deps
+      - node/install-packages:
+          pkg-manager: yarn
+      - run:
+          name: "Setup DB"
+          command: |
+            RAILS_ENV=test bundle exec rails db:migrate --trace
+      - ruby/rspec-test
+      - store_artifacts:
+          path: coverage
+  govuktest:
+    docker:
+      - image: cimg/ruby:3.0.2-node
+        environment:
+          BUNDLE_JOBS: "3"
+          BUNDLE_RETRY: "3"
+          RAILS_ENV: test
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/tariff_test"
+      - image: circleci/postgres:10-alpine
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: tariff_test
+          POSTGRES_PASSWORD: postgres
+      - image: circleci/redis:4.0.9
+    environment:
+      GOVUK_FRONTEND: true
+    steps:
+      - checkout
+      - ruby/install-deps
+      - node/install-packages:
+          pkg-manager: yarn
       - run:
           name: "Setup DB"
           command: |
@@ -194,6 +226,12 @@ workflows:
             branches:
               ignore:
                 - main
+      - govuktest:
+          context: trade-tariff
+          filters:
+            branches:
+              ignore:
+                - main
       - deploy_dev:
           context: trade-tariff
           filters:
@@ -202,6 +240,7 @@ workflows:
                 - main
           requires:
             - test
+            - govuktest
       - deploy_staging:
           context: trade-tariff
           filters:
