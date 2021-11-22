@@ -1,0 +1,17 @@
+<div class="govuk-phase-banner auth-banner">
+  <div class="govuk-phase-banner__content">
+    <div class="govuk-phase-banner__text current-service">
+      You are currently using the
+      <%= TradeTariffAdmin::ServiceChooser.service_name.upcase %>
+      service
+
+      <%= switch_service_link class: 'non-breaking' %>
+    </div>
+
+    <div class="govuk-phase-banner__text current-user">
+      You are signed in as <%= current_user.name %>
+
+      <%= link_to 'Sign out', gds_sign_out_path, class: 'non-breaking' %>
+    </div>
+  </div>
+</div>

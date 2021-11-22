@@ -1,0 +1,23 @@
+<div id="import-synonyms">
+  <h3>Import synonyms</h3>
+
+  <p>
+    Import multiple synonyms from a CSV file
+  </p>
+
+  <%= link_to synonyms_import_path, class: 'govuk-button' do %>
+    Import synonyms CSV
+  <% end %>
+</div>
+
+<div id="export-synonyms">
+  <h3>Export synonyms</h3>
+
+  <p>
+    Export all synonyms as a CSV file
+  </p>
+
+  <%= link_to synonyms_export_path, class: 'govuk-button', method: :post do %>
+    Export all synonyms as CSV
+  <% end %>
+</div>

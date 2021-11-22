@@ -40,8 +40,14 @@
     <% end %>
 
     <div class="govuk-width-container">
+      <%= render 'application/auth_banner' %>
+
       <main class="govuk-main-wrapper " id="main-content" role="main">
-        <%= yield %>
+        <%= render 'flashes' %>
+
+        <div class="govuk-auto-classes">
+          <%= yield %>
+        </div>
       </main>
     </div>
 

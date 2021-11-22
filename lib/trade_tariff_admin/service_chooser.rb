@@ -17,6 +17,10 @@ module TradeTariffAdmin
         Thread.current[:service_choice]
       end
 
+      def service_name
+        service_choice || service_default
+      end
+
       def api_host
         host = service_choices[service_choice]
 
