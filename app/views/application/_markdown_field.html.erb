@@ -1,0 +1,23 @@
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-one-half">
+    <%= form.govuk_text_area field_name, **field_options %>
+
+    <p>
+      <a href="http://govspeak-preview.herokuapp.com/guide" rel="noopener" target="_blank">
+        Markdown guide
+      </a>
+    </p>
+  </div>
+
+  <div class="govuk-grid-column-one-half">
+    <div class="govuk-form-group">
+      <label class="govuk-label">Preview</label>
+
+      <div class="hott-markdown-preview"
+        data-preview="govspeak"
+        data-preview-for="#<%= "#{form.object_name}-#{field_name}-field".gsub('_', '-') %>">
+        <%= form.object.preview if form.object.respond_to?(:preview) %>
+      </div>
+    </div>
+  </div>
+</div>

@@ -54,3 +54,15 @@ $govuk-image-url-function: frontend-image-url;
     width: 20%
   }
 }
+
+.hott-markdown-preview {
+  ul {
+    @extend .govuk-list;
+    @extend .govuk-list--bullet;
+  }
+
+  ol {
+    @extend .govuk-list;
+    @extend .govuk-list--number;
+  }
+}

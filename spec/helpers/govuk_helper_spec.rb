@@ -10,6 +10,10 @@ RSpec.describe GovukHelper do
       def self.name
         'Person'
       end
+
+      def preview
+        '<p>preview content</p>'.html_safe
+      end
     end
   end
 
@@ -83,7 +87,12 @@ RSpec.describe GovukHelper do
       end
     end
 
-    it { is_expected.to have_css 'textarea.govuk-textarea' }
+    it { is_expected.to have_css '.govuk-grid-row .govuk-grid-column-one-half', count: 2 }
+    it { is_expected.to have_css '.govuk-grid-column-one-half textarea.govuk-textarea' }
     it { is_expected.to have_link 'Markdown guide' }
+    it { is_expected.to have_css '.govuk-grid-column-one-half .hott-markdown-preview' }
+    it { is_expected.to have_css '.hott-markdown-preview p', text: 'preview content' }
+    it { is_expected.to have_css '.hott-markdown-preview[data-preview="govspeak"]' }
+    it { is_expected.to have_css '.hott-markdown-preview[data-preview-for="#person-name-field"]' }
   end
 end
