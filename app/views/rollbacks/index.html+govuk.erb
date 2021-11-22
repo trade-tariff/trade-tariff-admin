@@ -1,0 +1,38 @@
+<h2>
+  Database rollbacks
+</h2>
+
+<% if @rollbacks.any? %>
+  <table class="rollbacks">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>User</th>
+        <th>Reason</th>
+        <th>Rollback to (date)</th>
+        <th>Keep?</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @rollbacks.each do |rollback| %>
+        <tr id="<%= dom_id(rollback) %>">
+          <td><%= rollback.id %></td>
+          <td><%= rollback.user || tag.em('unknown user') %></td>
+          <td><%= rollback.reason %></td>
+          <td><%= rollback.date %></td>
+          <td><%= rollback.keep %></td>
+          <td><%= l(Time.zone.now, format: :short) if rollback.enqueued_at %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <%= paginate @rollbacks %>
+<% else %>
+  <p>
+    No database rollback jobs are enqueued at this time
+  </p>
+<% end %>
+
+<%= link_to 'New Rollback', new_rollback_path, class: 'govuk-button' %>

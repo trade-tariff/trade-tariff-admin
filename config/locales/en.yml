@@ -20,10 +20,32 @@
 # available at http://guides.rubyonrails.org/i18n.html.
 
 en:
-  hello: "Hello world"
   time:
     formats:
+      default: "%-d %B %Y %H:%M:%S %Z"
+      short: "%-d %b %Y %H:%M %Z"
       tariff: "%d/%m/%Y %H:%M:%S %Z"
+
   date:
     formats:
+      default: "%-d %M %Y"
+      short: "%-d %m %Y"
       tariff: "%d/%m/%Y"
+
+  helpers:
+    label:
+      rollback:
+        date: Rollback to date
+      section_note:
+        section_title: Section title
+      chapter_note:
+        chapter_title: Chapter
+
+    legend:
+      rollback:
+        keep: Keep
+
+    hint:
+      rollback:
+        keep: Keeps update files and records since specified date and just mark them pending
+        date: Should be in 'YYYY-MM-DD' format
