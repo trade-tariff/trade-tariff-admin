@@ -1,0 +1,10 @@
+<%= govuk_breadcrumbs 'Sections' => synonyms_sections_path,
+                      'Search Synonyms' => synonyms_section_search_references_path(section) %>
+
+<h2>Edit Search Synonym</h2>
+
+<%= govuk_form_for search_reference, url: synonyms_section_search_reference_path(section, search_reference), as: :search_reference do |f| %>
+  <%= f.govuk_text_field :title, width: 'one-half' %>
+
+  <%= submit_and_back_buttons f, synonyms_section_search_references_path(section) %>
+<% end %>
