@@ -5,7 +5,8 @@ class GovspeakController < AuthenticatedController
     flash.keep
 
     if params[:govspeak]
-      doc = Govspeak::Document.new(params[:govspeak], sanitize: true)
+      substituted_content = helpers.replace_service_tags(params[:govspeak].to_s)
+      doc = Govspeak::Document.new(substituted_content, sanitize: true)
 
       respond_to do |format|
         format.json { render json: { govspeak: doc.to_html } }
