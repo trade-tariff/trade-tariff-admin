@@ -1,12 +1,12 @@
 require 'rails_helper'
 
 describe GovspeakController do
-  subject(:rendered_page) { create_user && make_request && response }
+  subject(:rendered_page) { response }
 
-  let(:create_user) { create :user, permissions: ['signin', 'HMRC Editor'] }
+  before { create :user, permissions: ['signin', 'HMRC Editor'] }
 
   describe 'POST #govspeak' do
-    let :make_request do
+    before do
       post govspeak_path(format: :json), params: { govspeak: '# Hello world' }
     end
 
