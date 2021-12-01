@@ -3,6 +3,50 @@
 
   <%= govuk_markdown_area f, :content, rows: 12 %>
 
+  <details class="govuk-details" data-module="govuk-details">
+    <summary class="govuk-details__summary">
+      <span class="govuk-details__summary-text">
+        Replaceable service tags
+      </span>
+    </summary>
+    <div class="govuk-details__text">
+      <p>
+        These are pieces of text you can insert into your content and they
+        will be replaced with content appropriate to the service the user is viewing
+      </p>
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            [[SERVICE_NAME]]
+          </dt>
+          <dd class="govuk-summary-list__value">
+            Either <em>UK Integrated Online Tariff</em> or
+            <em>Northern Ireland Online Tariff</em>
+          </dd>
+        </div>
+
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            [[SERVICE_REGION]]
+          </dt>
+          <dd class="govuk-summary-list__value">
+            Either <em>the UK</em> or <em>Northern Ireland</em>
+          </dd>
+        </div>
+
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            [[SERVICE_PATH]]
+          </dt>
+          <dd class="govuk-summary-list__value">
+            Useful for links that work for both UK and XI services, eg
+            <pre>[Browse]([[SERVICE_PATH]]/browse)</pre>
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </details>
+
   <%= f.govuk_text_field :start_date, width: 'one-third' %>
   <%= f.govuk_text_field :end_date, width: 'one-third' %>
 

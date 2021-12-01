@@ -35,6 +35,16 @@ describe NewsItem do
     let(:news_item) { build :news_item, content: '# Hello world' }
 
     it { is_expected.to eql %(<h1 id="hello-world">Hello world</h1>\n) }
+
+    context 'with service tags' do
+      include_context 'with XI service'
+
+      let :news_item do
+        build :news_item, content: '[Browse]([[SERVICE_PATH]]/browse)'
+      end
+
+      it { is_expected.to eql %(<p><a href="/xi/browse">Browse</a></p>\n) }
+    end
   end
 
   describe '#all' do
