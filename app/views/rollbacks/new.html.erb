@@ -1,17 +1,11 @@
-<div class="page-header">
-  <h1>New Rollback</h1>
-</div>
+<h1>New Rollback</h1>
 
-<%= simple_form_for @rollback do |f| %>
-  <%= f.input :reason, as: :text %>
-  <%= f.input :date, as: :string, label: 'Rollback to (date)',  input_html: { 'data-behaviour' => 'datepicker' } %>
-  <%= f.input :keep,
-              as: :boolean,
-              label: 'Keep',
-              hint: 'Keeps update files and records since specified date and just mark them pending' %>
+<%= govuk_form_for @rollback do |f| %>
+  <%= f.govuk_text_area :reason %>
+  <%= f.govuk_text_field :date, width: 'one-third' %>
+  <%= f.govuk_check_boxes_fieldset :keep, multiple: false do %>
+    <%= f.govuk_check_box :keep, 1, 0, multiple: false, link_errors: true %>
+  <% end %>
 
-  <div>
-    <%= f.button :submit, data: { 'disable-with' => 'Working' } %>
-    <%= link_to "Back", :back, class: 'btn' %>
-  </div>
+  <%= submit_and_back_buttons f, rollbacks_path %>
 <% end %>

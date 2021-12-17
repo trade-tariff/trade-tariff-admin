@@ -1,36 +1,37 @@
-<%= render "synonyms/shared_actions" %>
+<%= govuk_breadcrumbs 'Sections': synonyms_sections_path,
+                      'Chapters': synonyms_section_chapters_path(section_id: chapter.section.id) %>
 
-<%= link_to 'Chapters', synonyms_section_chapters_path(section_id: chapter.section_id) %>
+<h2>Headings search synonyms of chapter <%= chapter.description.titleize %></h2>
 
-<h3>Headings search synonyms of chapter <%= chapter.description.titleize %></h3>
-
-<table class='table table-bordered table-striped table-condensed table-headings'>
+<table>
   <thead>
     <tr>
-      <th class='span1'>Heading</th>
-      <th class='span1'>Commodities</th>
-      <th class='span9'>Title</th>
-      <th class='span1'>Synonyms</th>
+      <th>Heading</th>
+      <th>Commodities</th>
+      <th>Title</th>
+      <th class="hott-actions-col">Synonyms</th>
     </tr>
   </thead>
   <tbody>
     <% @headings.each do |heading| %>
-      <tr id='<%= dom_id(heading) %>'>
+      <tr id="<%= dom_id(heading) %>">
         <td><%= heading.heading_id %></td>
         <td>
           <%= link_to "Commodities in #{heading.to_param}", synonyms_heading_commodities_path(heading) %>
         </td>
         <td><%= heading.description.titleize %></td>
-        <td>
+        <td class="hott-link-group">
           <div>
             <%= pluralize heading.search_references_count, "synonym" %>
           </div>
-          <%= link_to 'Edit', synonyms_heading_search_references_path(heading), class: 'btn btn-small btn-warning' %>
+          <%= link_to 'Edit', synonyms_heading_search_references_path(heading) %>
           <% if heading.search_references_count > 0 %>
-            <%= link_to 'Export', export_synonyms_heading_search_references_path(heading), class: 'btn btn-small btn-info', method: :post %>
+            <%= link_to 'Export', export_synonyms_heading_search_references_path(heading), method: :post %>
           <% end %>
         </td>
       </tr>
     <% end %>
   </tbody>
 </table>
+
+<%= render "synonyms/shared_actions" %>

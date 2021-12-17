@@ -1,31 +1,29 @@
-<%= link_to 'Edit section notes', root_path %>
+<%= govuk_breadcrumbs 'Edit section notes': root_path %>
 
-<h3>Chapters of section: <%= section.title %></h3>
+<h2>
+  Chapters of section: <%= section.title %>
+</h2>
 
-<table class='table table-bordered table-striped table-condensed table-chapters'>
+<table>
   <thead>
     <tr>
-      <th class='span1'>Chapter</th>
-      <th class='span1'>Headings</th>
-      <th class='span9'>Title</th>
-      <th class='span1'>Notes</th>
+      <th>Chapter</th>
+      <th>Headings</th>
+      <th>Title</th>
+      <th>Notes</th>
     </tr>
   </thead>
   <tbody>
     <% @chapters.each do |chapter| %>
-      <tr id='<%= dom_id(chapter) %>'>
+      <tr id="<%= dom_id(chapter) %>">
         <td><%= chapter.short_code %></td>
-        <td>
-          <%= chapter.headings_range %>
-        </td>
-        <td>
-          <%= chapter.description.titleize %>
-        </td>
+        <td><%= chapter.headings_range %></td>
+        <td><%= chapter.description.titleize %></td>
         <td>
           <% if chapter.has_chapter_note? %>
-            <%= link_to "Edit", edit_notes_chapter_chapter_note_path(chapter), class: 'btn btn-small btn-warning' %>
+            <%= link_to "Edit", edit_notes_chapter_chapter_note_path(chapter) %>
           <% else %>
-            <%= link_to "Add", new_notes_chapter_chapter_note_path(chapter), class: 'btn btn-small btn-success' %>
+            <%= link_to "Add", new_notes_chapter_chapter_note_path(chapter) %>
           <% end %>
         </td>
       </tr>

@@ -1,14 +1,9 @@
-<div class="page-header">
-  <h1>New Chapter Note</h1>
-</div>
+<h1>New Chapter Note</h1>
 
-<%= simple_form_for @chapter_note, url: notes_chapter_chapter_note_path(chapter) do |f| %>
-  <%= f.input 'section_title', disabled: true, input_html: { value: chapter.goods_nomenclature_item_id } %>
+<%= govuk_form_for @chapter_note, url: notes_chapter_chapter_note_path(chapter) do |f| %>
+  <%= f.govuk_text_field :section_title, disabled: true, value: chapter.goods_nomenclature_item_id %>
 
-  <%= render 'fields', f: f %>
+  <%= govuk_markdown_area f, :content, rows: 12 %>
 
-  <div>
-    <%= f.button :submit, data: { 'disable-with' => 'Working' } %>
-    <%= link_to "Back", :back, class: 'btn' %>
-  </div>
+  <%= submit_and_back_buttons f, notes_section_chapters_path(chapter) %>
 <% end %>

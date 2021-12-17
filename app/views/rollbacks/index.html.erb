@@ -1,40 +1,38 @@
 <h2>
   Database rollbacks
-
-  <%= link_to 'New Rollback', new_rollback_path, class: 'btn btn-small btn-success pull-right' %>
 </h2>
 
 <% if @rollbacks.any? %>
-  <table class='table table-bordered table-striped table-condensed rollbacks'>
+  <table class="rollbacks">
     <thead>
       <tr>
-        <th class='span1'>ID</th>
-        <th class="span2">User</th>
-        <th class="span3">Reason</th>
-        <th class='span2'>Rollback to (date)</th>
-        <th class='span1'>Keep?</th>
-        <th class='span2'>Date</th>
+        <th>ID</th>
+        <th>User</th>
+        <th>Reason</th>
+        <th>Rollback to (date)</th>
+        <th>Keep?</th>
+        <th>Date</th>
       </tr>
     </thead>
     <tbody>
       <% @rollbacks.each do |rollback| %>
-        <tr id='<%= dom_id(rollback) %>'>
+        <tr id="<%= dom_id(rollback) %>">
           <td><%= rollback.id %></td>
-          <td><%= rollback.user || tag.em('unknown user')%></td>
+          <td><%= rollback.user || tag.em('unknown user') %></td>
           <td><%= rollback.reason %></td>
           <td><%= rollback.date %></td>
           <td><%= rollback.keep %></td>
-          <td><%= l(rollback.enqueued_at, format: :tariff) if rollback.enqueued_at %></td>
+          <td><%= l(Time.zone.now, format: :short) if rollback.enqueued_at %></td>
         </tr>
       <% end %>
     </tbody>
   </table>
 
-  <div class="text-center">
-    <%= paginate @rollbacks %>
-  </div>
+  <%= paginate @rollbacks %>
 <% else %>
-  <div class='alert alert-info'>
-    <strong>No database rollback jobs are enqueued at this time.</strong>
-  </div>
+  <p>
+    No database rollback jobs are enqueued at this time
+  </p>
 <% end %>
+
+<%= link_to 'New Rollback', new_rollback_path, class: 'govuk-button' %>

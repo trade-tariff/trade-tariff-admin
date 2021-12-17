@@ -8,7 +8,7 @@ describe 'news_items/index.html.erb' do
   context 'without news stories' do
     let(:news_items) { [] }
 
-    it { is_expected.to have_css 'strong', text: 'No News stories' }
+    it { is_expected.to have_css '.govuk-inset-text', text: 'No News stories' }
   end
 
   context 'with 3 news items' do

@@ -1,12 +1,12 @@
-<div class="page-header">
-  <h3>New Search Synonym</h3>
-</div>
+<%= govuk_breadcrumbs 'Sections' => synonyms_sections_path,
+                      'Search Synonyms' => synonyms_section_search_references_path(section) %>
 
-<%= simple_form_for [:synonyms, section, @search_reference], html: { class: 'search-reference-form' } do |f| %>
-  <%= f.input :title, label: 'Synonym' %>
+<h2>New Search Synonym</h2>
 
-  <div>
-    <%= f.button :submit, data: { 'disable-with' => 'Working' } %>
-    <%= link_to "Back", :back, class: 'btn' %>
-  </div>
+<%= govuk_form_for @search_reference,
+                  url: synonyms_section_search_references_path(section),
+                  as: :search_reference do |f| %>
+  <%= f.govuk_text_field :title, width: 'one-half' %>
+
+  <%= submit_and_back_buttons f, synonyms_section_search_references_path(section) %>
 <% end %>

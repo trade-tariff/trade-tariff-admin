@@ -1,11 +1,11 @@
 <h2>
   News stories
-
-  <%= link_to 'Add News story', new_news_item_path, class: 'btn btn-success pull-right' %>
 </h2>
 
+<%= link_to 'Add News story', new_news_item_path, class: 'govuk-button' %>
+
 <% if @news_items.any? %>
-  <table class="table table-bordered table-striped table-condensed rollbacks">
+  <table>
     <thead>
       <tr>
         <th>ID</th>
@@ -32,15 +32,14 @@
           <td><%= news_item_bool news_item.show_on_updates_page %></td>
           <td>
             <%= link_to 'Edit',
-                        edit_news_item_path(news_item),
-                        class: 'btn btn-warning' %>
+                        edit_news_item_path(news_item) %>
           </td>
         </tr>
       <% end %>
     </tbody>
   </table>
 <% else %>
-  <div class='alert alert-info'>
-    <strong>No News stories</strong>
+  <div class="govuk-inset-text">
+    <p>No News stories</p>
   </div>
 <% end %>

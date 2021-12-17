@@ -1,34 +1,59 @@
-<% content_for :page_title do %>TradeTariffAdmin<% end %>
-<% content_for :app_title do %>TradeTariffAdmin<% end %>
-<% content_for :app_home_path, root_path %>
+<!DOCTYPE html>
+<html lang="en" class="govuk-template ">
+  <head>
+    <title>TradeTariffAdmin</title>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= tag :meta, name: 'viewport', content: 'width=device-width, initial-scale=1' %>
+    <%= tag :meta, property: 'og:image', content: asset_pack_path('media/images/govuk-opengraph-image.png') %>
+    <%= tag :meta, name: 'theme-color', content: '#0b0c0c' %>
+    <%= favicon_link_tag asset_pack_path('media/images/favicon.ico') %>
+    <%= favicon_link_tag asset_pack_path('media/images/govuk-mask-icon.svg'), rel: 'mask-icon', type: 'image/svg', color: "#0b0c0c" %>
+    <%= favicon_link_tag asset_pack_path('media/images/govuk-apple-touch-icon.png'), rel: 'apple-touch-icon', type: 'image/png' %>
+    <%= favicon_link_tag asset_pack_path('media/images/govuk-apple-touch-icon-152x152.png'), rel: 'apple-touch-icon', type: 'image/png', size: '152x152' %>
+    <%= favicon_link_tag asset_pack_path('media/images/govuk-apple-touch-icon-167x167.png'), rel: 'apple-touch-icon', type: 'image/png', size: '167x167' %>
+    <%= favicon_link_tag asset_pack_path('media/images/govuk-apple-touch-icon-180x180.png'), rel: 'apple-touch-icon', type: 'image/png', size: '180x180' %>
+    <%= stylesheet_pack_tag 'application', 'data-turbolinks-track': 'reload', media: 'all' %>
+    <%= javascript_pack_tag 'application', 'data-turbolinks-track': 'reload', defer: true %>
+  </head>
 
-<% content_for :head do %>
-  <%= stylesheet_link_tag    "application", :media => "all" %>
-  <%= javascript_include_tag "application" %>
-<% end %>
+  <body class="govuk-template__body ">
+    <script>
+      document.body.className = ((document.body.className) ? document.body.className + ' js-enabled' : 'js-enabled');
+    </script>
 
-<% content_for :navbar_items do %>
-  <%= nav_link "Section & chapter notes", root_path, /\/notes|trade-tariff-admin$/ %>
-  <%= nav_link "Search Synonyms", synonyms_sections_path, /\/synonyms/ %>
-  <%= nav_link "News stories", news_items_path, /\/news_items/ %>
-  <%= nav_link "Tariff Updates", tariff_updates_path, /\/tariff_updates/ %>
-  <%= nav_link "Rollbacks", rollbacks_path, /\/rollbacks/ %>
-<% end %>
+    <a href="#main-content" class="govuk-skip-link">Skip to main content</a>
 
-<% content_for :navbar_right do %>
-  <ul class="nav">
-    <li class="dropdown">
-      <span class="dropdown-toggle" data-toggle="dropdown">
-        <%= current_user.name %>
-        <span class="caret"></span>
-      </span>
-      <ul class="dropdown-menu">
-        <li><%= link_to 'Sign out', gds_sign_out_path %></li>
-        <li><%= switch_service_link %></li>
-      </ul>
-    </li>
-  </ul>
-<% end %>
+    <%= govuk_header(service_name: "Trade Tariff Admin") do |header| %>
+      <%= header.navigation_item text: "Section & chapter notes",
+                                 href: root_path,
+                                 active: active_nav_link?(/\/notes|trade-tariff-admin$/) %>
+      <%= header.navigation_item text: "Search Synonyms",
+                                 href: synonyms_sections_path,
+                                 active: active_nav_link?(/\/synonyms/) %>
+      <%= header.navigation_item text: "News",
+                                 href: news_items_path,
+                                 active: active_nav_link?(/\/news_items/) %>
+      <%= header.navigation_item text: "Tariff Updates",
+                                 href: tariff_updates_path,
+                                 active: active_nav_link?(/\/tariff_updates/) %>
+      <%= header.navigation_item text: "Rollbacks",
+                                 href: rollbacks_path,
+                                 active: active_nav_link?(/\/rollbacks/) %>
+    <% end %>
 
-<%= render "flashes" %>
-<%= render template: "layouts/govuk_admin_template" %>
+    <div class="govuk-width-container">
+      <%= render 'application/auth_banner' %>
+
+      <main class="govuk-main-wrapper " id="main-content" role="main">
+        <%= render 'flashes' %>
+
+        <div class="govuk-auto-classes">
+          <%= yield %>
+        </div>
+      </main>
+    </div>
+
+    <%= govuk_footer %>
+  </body>
+</html>

@@ -1,34 +1,34 @@
-<%= render "synonyms/shared_actions" %>
+<%= govuk_breadcrumbs 'Sections': synonyms_sections_path %>
 
-<%= link_to 'Sections', synonyms_sections_path %>
+<h2>Chapter search synonyms of section: <%= section.title %></h2>
 
-<h3>Chapter search synonyms of section: <%= section.title %></h3>
-
-<table class='table table-bordered table-striped table-condensed table-chapters'>
+<table>
   <thead>
     <tr>
-      <th class='span1'>Chapter</th>
-      <th class='span1'>Headings</th>
-      <th class='span9'>Title</th>
-      <th class='span1'>Synonyms</th>
+      <th>Chapter</th>
+      <th>Headings</th>
+      <th>Title</th>
+      <th class="hott-actions-col">Synonyms</th>
     </tr>
   </thead>
   <tbody>
     <% @chapters.each do |chapter| %>
-      <tr id='<%= dom_id(chapter) %>'>
+      <tr id="<%= dom_id chapter %>">
         <td><%= chapter.short_code %></td>
         <td><%= link_to chapter.headings_range, synonyms_chapter_headings_path(chapter) %></td>
         <td><%= chapter.description.titleize %></td>
-        <td>
+        <td class="hott-link-group">
           <div>
             <%= pluralize chapter.search_references_count, "synonym" %>
           </div>
-          <%= link_to "Edit", synonyms_chapter_search_references_path(chapter), class: 'btn btn-small btn-warning' %>
+          <%= link_to "Edit", synonyms_chapter_search_references_path(chapter) %>
           <% if chapter.search_references_count > 0 %>
-            <%= link_to 'Export', export_synonyms_chapter_search_references_path(chapter), class: 'btn btn-small btn-info', method: :post %>
+            <%= link_to 'Export', export_synonyms_chapter_search_references_path(chapter), method: :post %>
           <% end %>
         </td>
       </tr>
     <% end %>
   </tbody>
 </table>
+
+<%= render "synonyms/shared_actions" %>

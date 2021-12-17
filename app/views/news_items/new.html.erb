@@ -1,5 +1,5 @@
-<div class="page-header">
-  <h1>New News story</h1>
-</div>
+<%= govuk_breadcrumbs 'News': news_items_path %>
+
+<h2>New News story</h2>
 
 <%= render 'form', news_item: @news_item %>
