@@ -13,9 +13,5 @@ module TradeTariffAdmin
     def production?
       ENV['GOVUK_APP_DOMAIN'] == 'tariff-admin-production.cloudapps.digital'
     end
-
-    def govuk_frontend?
-      ENV['GOVUK_FRONTEND'].to_s == 'true'
-    end
   end
 end

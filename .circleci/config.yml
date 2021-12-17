@@ -251,36 +251,6 @@ jobs:
           POSTGRES_DB: tariff_test
           POSTGRES_PASSWORD: postgres
       - image: circleci/redis:4.0.9
-    environment:
-      GOVUK_FRONTEND: false
-    steps:
-      - checkout
-      - ruby/install-deps
-      - node/install-packages:
-          pkg-manager: yarn
-      - run:
-          name: "Setup DB"
-          command: |
-            RAILS_ENV=test bundle exec rails db:migrate --trace
-      - ruby/rspec-test
-      - store_artifacts:
-          path: coverage
-  govuktest:
-    docker:
-      - image: cimg/ruby:3.0.3-node
-        environment:
-          BUNDLE_JOBS: "3"
-          BUNDLE_RETRY: "3"
-          RAILS_ENV: test
-          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/tariff_test"
-      - image: circleci/postgres:10-alpine
-        environment:
-          POSTGRES_USER: postgres
-          POSTGRES_DB: tariff_test
-          POSTGRES_PASSWORD: postgres
-      - image: circleci/redis:4.0.9
-    environment:
-      GOVUK_FRONTEND: "true"
     steps:
       - checkout
       - ruby/install-deps
@@ -385,12 +355,6 @@ workflows:
             branches:
               ignore:
                 - main
-      - govuktest:
-          context: trade-tariff
-          filters:
-            branches:
-              ignore:
-                - main
       - deploy_development_docker:
           context: trade-tariff
           filters:
@@ -400,7 +364,6 @@ workflows:
           requires:
             - build_docker_dev
             - test
-            - govuktest
       - build_docker:
           name: build_live
           context: trade-tariff
