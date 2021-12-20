@@ -1,17 +1,17 @@
 <h2>Section Notes</h2>
 
-<table class='table table-bordered table-striped table-condensed table-section-notes'>
+<table>
   <thead>
     <tr>
-      <th class='span1'>Section</th>
-      <th class='span1'>Chapters</th>
-      <th class='span9'>Title</th>
-      <th class='span1'>Notes</th>
+      <th>Section</th>
+      <th>Chapters</th>
+      <th>Title</th>
+      <th>Notes</th>
     </tr>
   </thead>
   <tbody>
     <% @sections.each do |section| %>
-      <tr id='<%= dom_id(section) %>'>
+      <tr id="<%= dom_id(section) %>">
         <td>
           <%= section.position %>
         </td>

@@ -1,52 +1,74 @@
-<%= simple_form_for news_item do |f| %>
-  <%= f.input :title %>
+<%= govuk_form_for news_item do |f| %>
+  <%= f.govuk_text_field :title, width: 'one-half' %>
 
-  <div class="row">
-    <div class="col-sm-6">
-      <%= f.input :content, as: :text, input_html: { rows: 12 }, wrapper: :vertical_form %>
-      <p><%= link_to 'Markdown guide', 'http://govspeak-preview.herokuapp.com/guide', target: '_blank'  %></p>
-      <details>
-        <summary>Replaceable service tags</summary>
-        <p>
-          These are pieces of text you can insert into your content and they
-          will be replaced with content appropriate to the service the user is viewing
-        </p>
-        <dl class="dl-horizontal">
-          <dt>[[SERVICE_NAME]]</dt>
-          <dd>
+  <%= govuk_markdown_area f, :content, rows: 12 %>
+
+  <details class="govuk-details" data-module="govuk-details">
+    <summary class="govuk-details__summary">
+      <span class="govuk-details__summary-text">
+        Replaceable service tags
+      </span>
+    </summary>
+    <div class="govuk-details__text">
+      <p>
+        These are pieces of text you can insert into your content and they
+        will be replaced with content appropriate to the service the user is viewing
+      </p>
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            [[SERVICE_NAME]]
+          </dt>
+          <dd class="govuk-summary-list__value">
             Either <em>UK Integrated Online Tariff</em> or
             <em>Northern Ireland Online Tariff</em>
           </dd>
+        </div>
 
-          <dt>[[SERVICE_REGION]]</dt>
-          <dd>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            [[SERVICE_REGION]]
+          </dt>
+          <dd class="govuk-summary-list__value">
             Either <em>the UK</em> or <em>Northern Ireland</em>
           </dd>
+        </div>
 
-          <dt>[[SERVICE_PATH]]</dt>
-          <dd>
-            Useful for links that work for both UK and XI services, eg <pre>[Browse]([[SERVICE_PATH]]/browse)</pre>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            [[SERVICE_PATH]]
+          </dt>
+          <dd class="govuk-summary-list__value">
+            Useful for links that work for both UK and XI services, eg
+            <pre>[Browse]([[SERVICE_PATH]]/browse)</pre>
           </dd>
-        </dl>
-      </details>
+        </div>
+      </dl>
     </div>
-      <div class="col-sm-6">
-      <%= f.label :preview, required: false %>
-      <div class='well' data-preview='govspeak' data-preview-for='#news_item_content'>
-        <%= f.object.preview %>
-      </div>
-    </div>
-  </div>
+  </details>
 
-  <%= f.input :start_date, input_html: { 'data-behaviour' => 'datepicker' } %>
-  <%= f.input :end_date, hint: 'YYYY/MM/DD or leave blank for no end date' %>
-  <%= f.input :show_on_uk, as: :boolean, label: 'Show on UK service' %>
-  <%= f.input :show_on_xi, as: :boolean,label: 'Show on XI service' %>
-  <%= f.input :show_on_home_page, as: :boolean, label: 'Show News story on the Home page' %>
-  <%= f.input :show_on_updates_page, as: :boolean, label: 'Show News story on the Updates page' %>
+  <%= f.govuk_text_field :start_date, width: 'one-third' %>
+  <%= f.govuk_text_field :end_date, width: 'one-third' %>
 
-  <div>
-    <%= f.button :submit, data: { 'disable-with' => 'Working' } %>
-    <%= link_to "Back", :back, class: 'btn' %>
-  </div>
+  <%= f.govuk_check_box :show_on_uk, 1, 0,
+                        label: { text: 'Show on UK service' },
+                        multiple: false,
+                        link_errors: true %>
+
+  <%= f.govuk_check_box :show_on_xi, 1, 0,
+                        label: { text: 'Show on XI service' },
+                        multiple: false,
+                        link_errors: true %>
+
+  <%= f.govuk_check_box :show_on_home_page, 1, 0,
+                        label: { text: 'Show News story on the Home page' },
+                        multiple: false,
+                        link_errors: true %>
+
+  <%= f.govuk_check_box :show_on_updates_page, 1, 0,
+                        label: { text: 'Show News story on the Updates page' },
+                        multiple: false,
+                        link_errors: true %>
+
+  <%= submit_and_back_buttons f, news_items_path %>
 <% end %>
