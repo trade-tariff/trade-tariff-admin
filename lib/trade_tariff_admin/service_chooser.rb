@@ -6,7 +6,7 @@ module TradeTariffAdmin
       end
 
       def service_choices
-        @service_choices ||= JSON.parse(ENV['API_SERVICE_BACKEND_URL_OPTIONS'])
+        @service_choices ||= JSON.parse(ENV.fetch('API_SERVICE_BACKEND_URL_OPTIONS', '{}'))
       end
 
       def service_choice=(service_choice)
