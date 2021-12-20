@@ -317,7 +317,7 @@ jobs:
     environment:
       SENTRY_ENVIRONMENT: "staging"
     steps:
-      - cf_deploy_docker:
+      - deploy_docker:
           space: "staging"
           environment_key: "staging"
       - sentry-release
@@ -328,7 +328,7 @@ jobs:
     environment:
       SENTRY_ENVIRONMENT: "production"
     steps:
-      - cf_deploy_docker:
+      - deploy_docker:
           space: "production"
           environment_key: "production"
       - sentry-release
@@ -371,12 +371,14 @@ workflows:
             branches:
               only:
                 - main
-      - deploy_staging:
+      - deploy_staging_docker:
           context: trade-tariff
           filters:
             branches:
               only:
                 - main
+          requires:
+            - build_live
       - hold_production:
           type: approval
           filters:
@@ -384,8 +386,8 @@ workflows:
               only:
                 - main
           requires:
-            - deploy_staging
-      - deploy_prod:
+            - deploy_staging_docker
+      - deploy_production_docker:
           context: trade-tariff
           filters:
             branches:
