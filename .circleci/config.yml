@@ -6,6 +6,7 @@ orbs:
   node: circleci/node@4.7.0
   cloudfoundry: circleci/cloudfoundry@1.0
   slack: circleci/slack@4.3.0
+  gh: circleci/github-cli@1.0
 
 commands:
   deploy:
@@ -216,6 +217,34 @@ jobs:
           environment_key: "production"
       - sentry-release
 
+  create-release:
+    docker:
+      - image: cimg/ruby:3.0.3-node
+    steps:
+      - checkout
+      - run:
+          name: Generate release notes
+          command: |
+            LAST_RELEASE=$(git tag --list 'release-202*-*' | sort | tail -n 1)
+
+            if [[ -z "${LAST_RELEASE}" ]]; then
+              echo "First release" > release-notes.txt
+            else
+              git log --merges --format=format:"* %b" $LAST_RELEASE..HEAD > release-notes.txt
+
+              if [[ $(wc -l release-notes.txt | cut -d ' ' -f 1) == "0" ]]; then
+                echo "No merged changes - possible re-release" > release-notes.txt
+              fi
+            fi
+      - run:
+          command: cat release-notes.txt
+      - gh/setup
+      - run:
+          name: Create release
+          command: |
+            NEW_RELEASE=$(date +"%Y%m%d-%H%M")
+            gh release create release-$NEW_RELEASE --notes-file release-notes.txt --title "Release $NEW_RELEASE"
+
 workflows:
   version: 2
   build_and_test:
@@ -269,7 +298,7 @@ workflows:
                 - main
           requires:
             - deploy_staging
-      - deploy_production:
+      - create-release:
           context: trade-tariff
           filters:
             branches:
@@ -277,4 +306,11 @@ workflows:
                 - main
           requires:
             - hold_production
-
+      - deploy_production:
+          context: trade-tariff
+          filters:
+            branches:
+              only:
+                - main
+          requires:
+            - create-release
