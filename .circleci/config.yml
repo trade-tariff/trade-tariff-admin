@@ -217,7 +217,7 @@ jobs:
           environment_key: "production"
       - sentry-release
 
-  create-release:
+  create_production_release:
     docker:
       - image: cimg/ruby:3.0.3-node
     steps:
@@ -227,23 +227,70 @@ jobs:
           command: |
             LAST_RELEASE=$(git tag --list 'release-202*-*' | sort | tail -n 1)
 
+            mkdir release-details
             if [[ -z "${LAST_RELEASE}" ]]; then
-              echo "First release" > release-notes.txt
+              echo "First release" > release-details/notes.txt
             else
-              git log --merges --format=format:"* %b" $LAST_RELEASE..HEAD > release-notes.txt
+              git log --merges --format=format:"* %b" $LAST_RELEASE..HEAD > release-details/notes.txt
 
-              if [[ $(wc -l release-notes.txt | cut -d ' ' -f 1) == "0" ]]; then
-                echo "No merged changes - possible re-release" > release-notes.txt
+              if [[ $(wc -l release-details/notes.txt | cut -d ' ' -f 1) == "0" ]]; then
+                echo "No merged changes - possible re-release" > release-details/notes.txt
               fi
             fi
       - run:
-          command: cat release-notes.txt
+          command: cat release-details/notes.txt
       - gh/setup
       - run:
-          name: Create release
+          name: Create GitHub release
           command: |
             NEW_RELEASE=$(date +"%Y%m%d-%H%M")
-            gh release create release-$NEW_RELEASE --notes-file release-notes.txt --title "Release $NEW_RELEASE"
+            echo "${NEW_RELEASE}" > release-details/name.txt
+
+            gh release create release-$NEW_RELEASE --notes-file release-details/notes.txt --title "Release $NEW_RELEASE"
+      - persist_to_workspace:
+          root: .
+          paths:
+            - "release-details"
+
+  notify_production_release:
+    docker:
+      - image: cimg/ruby:3.0.3-node
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Read release details
+          command: |
+            echo 'export RELEASE_NAME="$(cat release-details/name.txt)"' >> $BASH_ENV
+            cat release-details/notes.txt | jq -aRsr . > release-details/cleaned-notes.txt
+            sed -i 's/\"//g' release-details/cleaned-notes.txt
+            sed -i "s/\'//g" release-details/cleaned-notes.txt
+            sed -i 's/"//g' release-details/cleaned-notes.txt
+            sed -i "s/'//g" release-details/cleaned-notes.txt
+            echo 'export RELEASE_NOTES="$(< release-details/cleaned-notes.txt)"' >> $BASH_ENV
+      - slack/notify:
+          channel: trade_tariff
+          event: pass
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "New release ${RELEASE_NAME} for Admin :tada:",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "${RELEASE_NOTES}"
+                  }
+                }
+              ]
+            }
 
 workflows:
   version: 2
@@ -298,7 +345,7 @@ workflows:
                 - main
           requires:
             - deploy_staging
-      - create-release:
+      - create_production_release:
           context: trade-tariff
           filters:
             branches:
@@ -313,4 +360,12 @@ workflows:
               only:
                 - main
           requires:
-            - create-release
+            - create_production_release
+      - notify_production_release:
+          context: trade-tariff
+          filters:
+            branches:
+              only:
+                - main
+          requires:
+            - deploy_production
