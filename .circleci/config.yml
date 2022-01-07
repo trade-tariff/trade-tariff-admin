@@ -220,14 +220,24 @@ jobs:
   create_production_release:
     docker:
       - image: cimg/ruby:3.0.3-node
+    environment:
+      IMAGE_NAME: tariff-admin
     steps:
       - checkout
+      - setup_remote_docker:
+          version: 20.10.2
+          docker_layer_caching: false
+      - aws-cli/install
       - run:
           name: Generate release notes
           command: |
-            LAST_RELEASE=$(git tag --list 'release-202*-*' | sort | tail -n 1)
-
             mkdir release-details
+
+            NEW_RELEASE=$(date +"%Y%m%d-%H%M")
+            echo "${NEW_RELEASE}" > release-details/name.txt
+            echo "export NEW_RELEASE='${NEW_RELEASE}'" >> $BASH_ENV
+
+            LAST_RELEASE=$(git tag --list 'release-202*-*' | sort | tail -n 1)
             if [[ -z "${LAST_RELEASE}" ]]; then
               echo "First release" > release-details/notes.txt
             else
@@ -239,13 +249,17 @@ jobs:
             fi
       - run:
           command: cat release-details/notes.txt
+      - run:
+          name: Tag Docker Image as production release
+          command: |
+            aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin $ECR_REPO
+            docker pull "${ECR_REPO}/${IMAGE_NAME}:${CIRCLE_SHA1}"
+            docker tag "${ECR_REPO}/${IMAGE_NAME}:${CIRCLE_SHA1}" "${ECR_REPO}/${IMAGE_NAME}:release-${NEW_RELEASE}"
+            docker push "${ECR_REPO}/${IMAGE_NAME}:release-${NEW_RELEASE}"
       - gh/setup
       - run:
           name: Create GitHub release
           command: |
-            NEW_RELEASE=$(date +"%Y%m%d-%H%M")
-            echo "${NEW_RELEASE}" > release-details/name.txt
-
             gh release create release-$NEW_RELEASE --notes-file release-details/notes.txt --title "Release $NEW_RELEASE"
       - persist_to_workspace:
           root: .
