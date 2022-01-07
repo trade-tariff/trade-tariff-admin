@@ -260,7 +260,10 @@ jobs:
       - run:
           name: Create GitHub release
           command: |
-            gh release create release-$NEW_RELEASE --notes-file release-details/notes.txt --title "Release $NEW_RELEASE"
+            gh release create release-$NEW_RELEASE \
+              --notes-file release-details/notes.txt \
+              --title "Release $NEW_RELEASE" \
+              --target "${CIRCLE_SHA1}"
       - persist_to_workspace:
           root: .
           paths:
