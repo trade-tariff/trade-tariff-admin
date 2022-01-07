@@ -105,8 +105,6 @@ commands:
             sentry-cli releases finalize $SENTRY_RELEASE
             sentry-cli releases deploys $SENTRY_RELEASE new -e $SENTRY_ENVIRONMENT
 
-
-
 jobs:
   build:
     environment:
@@ -374,16 +372,16 @@ workflows:
       - deploy_production:
           context: trade-tariff
           filters:
+            tags:
+              only: /^release-202[\d-]+/
             branches:
-              only:
-                - main
-          requires:
-            - create_production_release
+              ignore: /.*/
       - notify_production_release:
           context: trade-tariff
           filters:
+            tags:
+              only: /^release-202[\d-]+/
             branches:
-              only:
-                - main
+              ignore: /.*/
           requires:
             - deploy_production
