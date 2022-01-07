@@ -262,27 +262,30 @@ jobs:
               --notes-file release-details/notes.txt \
               --title "Release $NEW_RELEASE" \
               --target "${CIRCLE_SHA1}"
-      - persist_to_workspace:
-          root: .
-          paths:
-            - "release-details"
 
   notify_production_release:
     docker:
       - image: cimg/ruby:3.0.3-node
     steps:
-      - attach_workspace:
-          at: .
       - run:
-          name: Read release details
+          name: Read release name
           command: |
-            echo 'export RELEASE_NAME="$(cat release-details/name.txt)"' >> $BASH_ENV
-            cat release-details/notes.txt | jq -aRsr . > release-details/cleaned-notes.txt
-            sed -i 's/\"//g' release-details/cleaned-notes.txt
-            sed -i "s/\'//g" release-details/cleaned-notes.txt
-            sed -i 's/"//g' release-details/cleaned-notes.txt
-            sed -i "s/'//g" release-details/cleaned-notes.txt
-            echo 'export RELEASE_NOTES="$(< release-details/cleaned-notes.txt)"' >> $BASH_ENV
+            RELEASE_NAME=$(echo "${CIRCLE_TAG}" | sed 's/^release-//')
+            echo "export RELEASE_NAME='${RELEASE_NAME}'" >> $BASH_ENV
+      - run:
+          name: Fetch release notes
+          command: |
+            REPO_API_URL=$(echo "${CIRCLE_REPOSITORY_URL}/" | sed 's|.git/$||' | sed 's|git@github.com:|https://api.github.com/repos/|')
+            curl --silent --show-error "${REPO_API_URL}/releases/tags/${CIRCLE_TAG}" | jq -r .body > release-notes.txt
+      - run:
+          name: Clean up notes
+          command: |
+            cat release-notes.txt | jq -aRsr . > cleaned-release-notes.txt
+            sed -i 's/\"//g' cleaned-release-notes.txt
+            sed -i "s/\'//g" cleaned-release-notes.txt
+            sed -i 's/"//g' cleaned-release-notes.txt
+            sed -i "s/'//g" cleaned-release-notes.txt
+            echo 'export RELEASE_NOTES="$(< cleaned-release-notes.txt)"' >> $BASH_ENV
       - slack/notify:
           channel: trade_tariff
           event: pass
