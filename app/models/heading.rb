@@ -26,6 +26,10 @@ class Heading
     heading_id.to_s
   end
 
+  def export_filename
+    "#{self.class.name.tableize}-#{heading_id}-synonyms-#{Time.zone.now.iso8601}.csv"
+  end
+
   def reference_title
     "Heading (#{heading_id})"
   end

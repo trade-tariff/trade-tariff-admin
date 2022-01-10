@@ -31,6 +31,10 @@ class Section
     end
   end
 
+  def export_filename
+    "#{self.class.name.tableize}-#{position}-synonyms-#{Time.zone.now.iso8601}.csv"
+  end
+
   def reference_title
     "Section (#{position})"
   end

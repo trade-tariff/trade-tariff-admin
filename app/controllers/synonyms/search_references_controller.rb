@@ -12,11 +12,9 @@ module Synonyms
     end
 
     def create
-      @search_reference = search_reference_parent.search_references.build(search_reference_params.to_h)
-      @search_reference.referenced_id = search_reference_parent.id
+      @search_reference = build_search_reference
 
       if @search_reference.valid? && @search_reference.save
-
         redirect_to [scope, search_reference_parent, :search_references], notice: 'Search synonym was successfully created.'
       else
         render :new
@@ -42,17 +40,17 @@ module Synonyms
     end
 
     def export
-      export_service = SearchReference::ExportService.new(
-        search_reference_parent.search_references,
-      )
-      filename = "#{search_reference_parent.reference_title}-synonyms-#{Time.zone.now.to_i}.csv"
-      send_data export_service.to_csv, filename: filename
+      export_service = SearchReference::ExportService.new(search_reference_parent.search_references)
+
+      send_data export_service.to_csv, filename: search_reference_parent.export_filename
     end
 
     private
 
     def search_reference
-      @search_reference ||= search_reference_parent.search_references.find(params[:id])
+      @search_reference ||= search_reference_parent.search_references.find(params[:id]).tap do |synonym|
+        synonym.referenced_id = search_reference_parent.id
+      end
     end
     helper_method :search_reference
 
@@ -78,6 +76,12 @@ module Synonyms
 
     def scope
       raise NotImplementedError, 'Please override #scope'
+    end
+
+    def build_search_reference
+      search_reference_parent.search_references.build(search_reference_params.to_h).tap do |synonym|
+        synonym.referenced_id = search_reference_parent.id
+      end
     end
   end
 end

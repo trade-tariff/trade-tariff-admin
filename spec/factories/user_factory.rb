@@ -7,5 +7,9 @@ FactoryBot.define do
     trait :gds_editor do
       permissions { [User::Permissions::GDS_EDITOR] }
     end
+
+    trait :hmrc_editor do
+      permissions { [User::Permissions::SIGNIN, User::Permissions::HMRC_EDITOR] }
+    end
   end
 end
