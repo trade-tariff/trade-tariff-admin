@@ -17,16 +17,12 @@
         <td><%= commodity.goods_nomenclature_item_id %></td>
         <td><%= commodity.description.titleize %></td>
         <td class="hott-link-group">
-          <% if commodity.leaf %>
-            <div>
-              <%= pluralize commodity.search_references_count, "synonym" %>
-            </div>
-            <%= link_to 'Edit', synonyms_commodity_search_references_path(commodity) %>
-            <% if commodity.search_references_count > 0 %>
-              <%= link_to 'Export', export_synonyms_commodity_search_references_path(commodity), method: :post %>
-            <% end %>
-          <% else %>
-            <em>Intermediate code</em>
+          <div>
+            <%= pluralize commodity.search_references_count, "synonym" %>
+          </div>
+          <%= link_to 'Edit', synonyms_commodity_search_references_path(commodity) %>
+          <% if commodity.search_references_count > 0 %>
+            <%= link_to 'Export', export_synonyms_commodity_search_references_path(commodity), method: :post %>
           <% end %>
         </td>
       </tr>
