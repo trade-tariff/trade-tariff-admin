@@ -319,6 +319,7 @@ workflows:
             branches:
               ignore:
                 - main
+                - /^dependabot\/.*/
           requires:
             - build_dev
             - test
