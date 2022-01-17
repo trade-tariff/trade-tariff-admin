@@ -242,7 +242,7 @@ jobs:
             else
               git log --merges --format=format:"* %b" $LAST_RELEASE..HEAD > release-details/notes.txt
 
-              if [[ $(wc -l release-details/notes.txt | cut -d ' ' -f 1) == "0" ]]; then
+              if [[ ! -s release-details/notes.txt ]]; then
                 echo "No merged changes - possible re-release" > release-details/notes.txt
               fi
             fi
