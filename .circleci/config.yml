@@ -211,7 +211,7 @@ jobs:
       SENTRY_ENVIRONMENT: "production"
     steps:
       - deploy:
-          docker_image_tag: $CIRCLE_SHA1
+          docker_image_tag: $CIRCLE_TAG
           space: "production"
           environment_key: "production"
       - sentry-release
