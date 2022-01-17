@@ -5,22 +5,28 @@ class Commodity
 
   collection_path '/admin/commodities'
 
+  attributes :id, :description
+
   has_many :search_references, class_name: 'Commodity::SearchReference'
 
-  def id
-    to_param
+  def productline_suffix
+    id.split('-', 2).last
   end
 
-  def to_param
-    goods_nomenclature_item_id
+  def goods_nomenclature_item_id
+    id.split('-', 2).first
   end
 
   def heading_id
     goods_nomenclature_item_id.first(4)
   end
 
+  def export_filename
+    "#{self.class.name.tableize}-#{id}-synonyms-#{Time.zone.now.iso8601}.csv"
+  end
+
   def reference_title
-    "Commodity (#{to_param})"
+    "Commodity (#{goods_nomenclature_item_id})"
   end
 
   def request_path(_opts = {})

@@ -42,7 +42,7 @@ class SearchReference
                 'Chapter'
               elsif goods_nomenclature_item_id.ends_with?('000000')
                 'Heading'
-              elsif goods_nomenclature_item_id.length == 10
+              elsif goods_nomenclature_item_id.ends_with?(/-\d{2}/)
                 'Commodity'
               else
                 'Section'

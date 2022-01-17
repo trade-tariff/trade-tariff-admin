@@ -40,6 +40,10 @@ class Chapter
     short_code
   end
 
+  def export_filename
+    "#{self.class.name.tableize}-#{short_code}-synonyms-#{Time.zone.now.iso8601}.csv"
+  end
+
   def reference_title
     "Chapter (#{short_code})"
   end

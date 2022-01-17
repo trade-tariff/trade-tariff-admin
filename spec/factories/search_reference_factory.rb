@@ -32,10 +32,7 @@ FactoryBot.define do
   end
 
   factory :commodity_search_reference, parent: :search_reference, class: 'Commodity::SearchReference' do
-    transient do
-      referenced { attributes_for(:commodity) }
-    end
     referenced_class { 'Commodity' }
-    referenced_id { referenced[:goods_nomenclature_item_id] }
+    referenced_id { build(:commodity).id }
   end
 end
