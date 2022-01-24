@@ -30,7 +30,7 @@ ENV RAILS_ENV=production
 ENV SECRET_TOKEN="foo"
 ENV SECRET_KEY_BASE="bar"
 
-RUN bundle exec rails assets:precompile
+RUN bundle exec rails webpacker:compile
 
 # Cleanup to save space in the production image
 RUN rm -rf node_modules log tmp && \
