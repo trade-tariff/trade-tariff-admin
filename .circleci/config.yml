@@ -6,6 +6,7 @@ orbs:
   node: circleci/node@4.7.0
   cloudfoundry: circleci/cloudfoundry@1.0
   slack: circleci/slack@4.3.0
+  queue: eddiewebb/queue@1.6.4
   gh: circleci/github-cli@1.0
 
 commands:
@@ -194,6 +195,10 @@ jobs:
     environment:
       SENTRY_ENVIRONMENT: "development"
     steps:
+      - queue/until_front_of_line:
+          time: '10'
+          consider-branch: false
+          dont-quit: true
       - deploy:
           docker_image_tag: dev-$CIRCLE_SHA1
           space: "development"
@@ -206,6 +211,10 @@ jobs:
     environment:
       SENTRY_ENVIRONMENT: "staging"
     steps:
+      - queue/until_front_of_line:
+          time: '10'
+          consider-branch: true
+          dont-quit: true
       - deploy:
           docker_image_tag: $CIRCLE_SHA1
           space: "staging"
