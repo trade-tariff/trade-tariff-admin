@@ -11,13 +11,6 @@ gem 'routing-filter', github: 'svenfuchs/routing-filter'
 gem 'pg'
 
 # Assets
-gem 'bootstrap-datepicker-rails'
-gem 'bootstrap-sass'
-gem 'coffee-rails'
-gem 'govuk_admin_template'
-gem 'jquery-rails'
-gem 'sass-rails'
-gem 'uglifier'
 gem 'webpacker'
 
 # GovUK

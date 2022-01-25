@@ -71,15 +71,8 @@ GEM
     addressable (2.8.0)
       public_suffix (>= 2.0.2, < 5.0)
     ast (2.4.2)
-    autoprefixer-rails (10.3.3.0)
-      execjs (~> 2)
     bootsnap (1.10.2)
       msgpack (~> 1.2)
-    bootstrap-datepicker-rails (1.9.0.1)
-      railties (>= 3.0)
-    bootstrap-sass (3.4.1)
-      autoprefixer-rails (>= 5.2.1)
-      sassc (>= 2.0.0)
     brakeman (5.2.0)
     builder (3.2.4)
     byebug (11.1.3)
@@ -98,13 +91,6 @@ GEM
       ci_reporter (~> 2.0)
       rspec (>= 2.14, < 4)
     coderay (1.1.3)
-    coffee-rails (5.0.0)
-      coffee-script (>= 2.2.0)
-      railties (>= 5.2.0)
-    coffee-script (2.4.1)
-      coffee-script-source
-      execjs
-    coffee-script-source (1.12.2)
     concurrent-ruby (1.1.9)
     connection_pool (2.2.5)
     content_disposition (1.0.0)
@@ -130,7 +116,6 @@ GEM
     erubi (1.10.0)
     et-orbi (1.2.5)
       tzinfo
-    execjs (2.8.1)
     factory_bot (6.2.0)
       activesupport (>= 5.0.0)
     factory_bot_rails (6.2.0)
@@ -161,7 +146,6 @@ GEM
     faraday-retry (1.0.3)
     faraday_middleware (1.2.0)
       faraday (~> 1.0)
-    ffi (1.15.4)
     fugit (1.5.2)
       et-orbi (~> 1.1, >= 1.1.8)
       raabro (~> 1.4)
@@ -190,11 +174,6 @@ GEM
       activemodel (>= 6.0)
       railties (>= 6.0)
       view_component (~> 2.39.0)
-    govuk_admin_template (6.7.0)
-      bootstrap-sass (= 3.4.1)
-      jquery-rails (~> 4.3.1)
-      plek (>= 2.1.0)
-      rails (>= 3.2.0)
     govuk_app_config (4.2.0)
       logstasher (>= 1.2.2, < 2.2.0)
       puma (~> 5.0)
@@ -227,10 +206,6 @@ GEM
     htmlentities (4.3.4)
     i18n (1.8.11)
       concurrent-ruby (~> 1.0)
-    jquery-rails (4.3.5)
-      rails-dom-testing (>= 1, < 3)
-      railties (>= 4.2.0)
-      thor (>= 0.14, < 2.0)
     jwt (2.3.0)
     kaminari (1.2.2)
       activesupport (>= 4.1.0)
@@ -416,16 +391,6 @@ GEM
     sanitize (6.0.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.12.0)
-    sass-rails (6.0.0)
-      sassc-rails (~> 2.1, >= 2.1.1)
-    sassc (2.4.0)
-      ffi (~> 1.9)
-    sassc-rails (2.1.2)
-      railties (>= 4.0.0)
-      sassc (>= 2.0)
-      sprockets (> 3.0)
-      sprockets-rails
-      tilt
     semantic_range (3.0.0)
     sentry-rails (4.5.2)
       railties (>= 5.0)
@@ -478,8 +443,6 @@ GEM
     tilt (2.0.10)
     tzinfo (2.0.4)
       concurrent-ruby (~> 1.0)
-    uglifier (4.2.0)
-      execjs (>= 0.3.0, < 3)
     unicode-display_width (2.1.0)
     unicorn (5.8.0)
       kgio (~> 2.6)
@@ -513,13 +476,10 @@ PLATFORMS
 DEPENDENCIES
   addressable
   bootsnap
-  bootstrap-datepicker-rails
-  bootstrap-sass
   brakeman
   capybara
   ci_reporter
   ci_reporter_rspec
-  coffee-rails
   database_cleaner
   dotenv-rails
   factory_bot_rails
@@ -527,11 +487,9 @@ DEPENDENCIES
   gds-sso
   govspeak
   govuk-components
-  govuk_admin_template
   govuk_design_system_formbuilder
   govuk_publishing_components
   her
-  jquery-rails
   kaminari
   lograge
   logstash-event
@@ -551,7 +509,6 @@ DEPENDENCIES
   rspec-rails
   rspec_junit_formatter
   rubocop-govuk
-  sass-rails
   sentry-raven
   shoulda-matchers
   shrine
@@ -559,7 +516,6 @@ DEPENDENCIES
   sidekiq-scheduler
   simple_form
   simplecov
-  uglifier
   webmock
   webpacker
 
