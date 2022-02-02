@@ -5,7 +5,7 @@ class Commodity
 
   collection_path '/admin/commodities'
 
-  attributes :id, :description
+  attributes :id, :description, :declarable
 
   has_many :search_references, class_name: 'Commodity::SearchReference'
 
