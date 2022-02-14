@@ -22,7 +22,7 @@
       document.body.className = ((document.body.className) ? document.body.className + ' js-enabled' : 'js-enabled');
     </script>
 
-    <a href="#main-content" class="govuk-skip-link">Skip to main content</a>
+    <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
 
     <%= govuk_header(service_name: "Trade Tariff Admin") do |header| %>
       <%= header.navigation_item text: "Section & chapter notes",
