@@ -294,16 +294,15 @@ jobs:
           name: Fetch release notes
           command: |
             REPO_API_URL=$(echo "${CIRCLE_REPOSITORY_URL}/" | sed 's|.git/$||' | sed 's|git@github.com:|https://api.github.com/repos/|')
-            curl --silent --show-error "${REPO_API_URL}/releases/tags/${CIRCLE_TAG}" | jq -r .body > release-notes.txt
+            curl --silent --show-error "${REPO_API_URL}/releases/tags/${CIRCLE_TAG}" | jq -ar .body > release-notes.txt
       - run:
           name: Clean up notes
           command: |
-            cat release-notes.txt | jq -aRsr . > cleaned-release-notes.txt
-            sed -i 's/\"//g' cleaned-release-notes.txt
-            sed -i "s/\'//g" cleaned-release-notes.txt
-            sed -i 's/"//g' cleaned-release-notes.txt
-            sed -i "s/'//g" cleaned-release-notes.txt
-            echo 'export RELEASE_NOTES="$(< cleaned-release-notes.txt)"' >> $BASH_ENV
+            sed -i 's/\\"//g' release-notes.txt
+            sed -i "s/\\'//g" release-notes.txt
+            sed -i 's/"//g' release-notes.txt
+            sed -i "s/'//g" release-notes.txt
+            echo 'export RELEASE_NOTES="$(< release-notes.txt)"' >> $BASH_ENV
       - slack/notify:
           channel: trade_tariff
           event: pass
