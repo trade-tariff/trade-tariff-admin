@@ -3,8 +3,9 @@ source 'https://rubygems.org'
 ruby File.read('.ruby-version').chomp
 
 # Server
+gem "sprockets-rails"
 gem 'puma'
-gem 'rails', '~> 6'
+gem 'rails', '~> 7'
 gem 'routing-filter', github: 'svenfuchs/routing-filter'
 
 # DB

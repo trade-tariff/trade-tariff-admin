@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'news_items/index.html.erb' do
+describe 'news_items/index' do
   subject { render && rendered }
 
   before { assign :news_items, news_items }
