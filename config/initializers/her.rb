@@ -1,6 +1,6 @@
 require 'faraday_middleware/service_urls'
 
-api_host = ENV['TARIFF_API_HOST'].presence || ENV.Plek.new.find('tariff-api')
+api_host = ENV['TARIFF_API_HOST'].presence || Plek.new.find('tariff-api')
 
 # order of used middleware matters: first used last executed
 Her::API.setup url: api_host do |c|
