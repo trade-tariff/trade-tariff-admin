@@ -11,9 +11,7 @@ APP_SLUG = 'trade-tariff-admin'.freeze
 module TradeTariffAdmin
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 6.0
-
-    config.autoloader = :classic
+    config.load_defaults 6.1
 
     require 'trade_tariff_admin'
     require 'trade_tariff_admin/service_chooser'

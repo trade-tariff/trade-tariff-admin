@@ -9,7 +9,7 @@ module RoutingFilter
                                            .join('|')
                                            .freeze
 
-    SERVICE_CHOICE_PREFIXES_REGEX = %r{^/(#{SERVICE_CHOICE_PREFIXES})(?=/|$)}.freeze
+    SERVICE_CHOICE_PREFIXES_REGEX = %r{^/(#{SERVICE_CHOICE_PREFIXES})(?=/|$)}
 
     # Recognising paths
     def around_recognize(path, _env)
