@@ -522,7 +522,7 @@ DEPENDENCIES
   pry-byebug
   puma
   pundit
-  rails (~> 7)
+  rails (~> 7.0)
   redis
   redis-activesupport
   responders
