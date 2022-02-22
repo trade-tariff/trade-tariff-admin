@@ -23,7 +23,7 @@ RSpec.describe 'Heading Search Reference management' do
         end
       end
 
-      refute search_reference_created_for(heading, title: title)
+      refute search_reference_created_for(heading, title:)
 
       stub_api_for(Heading::SearchReference) do |stub|
         stub.post("/admin/headings/#{heading.to_param}/search_references") do |_env|
@@ -37,7 +37,7 @@ RSpec.describe 'Heading Search Reference management' do
 
       create_search_reference_for heading, 'Synonym' => title
 
-      verify search_reference_created_for(heading, title: title)
+      verify search_reference_created_for(heading, title:)
     end
   end
 
