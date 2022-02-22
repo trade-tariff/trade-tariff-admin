@@ -2,7 +2,7 @@ module ApiResponsesHelper
   def stub_api_for(klass, &block)
     klass.use_api(api = Her::API.new)
 
-    api.setup url: Rails.application.config.api_host do |c|
+    api.setup url: ENV['TARIFF_API_HOST'] do |c|
       c.use Her::Middleware::HeaderMetadataParse # lib/her/middleware/header_metadata_parse.rb
       c.use Her::Middleware::AcceptApiV2         # lib/her/middleware/accept_api_v2.rb
       c.use Her::Middleware::TariffJsonapiParser # lib/her/middleware/tariff_jsonapi_parser.rb
