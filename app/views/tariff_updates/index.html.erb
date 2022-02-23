@@ -1,44 +1,51 @@
-<h2>Tariff Updates</h2>
+<h2>Tariff Updates - <%= update_type %></h2>
 
 <table class='table table-bordered table-striped table-condensed table-tariff-updates'>
   <thead>
     <tr>
-      <th class='span2'>Update type</th>
-      <th class='span2'>File name</th>
       <th class='span2'>State</th>
-      <th class='span2'>Created at</th>
+      <th class='span2'>Issue date</th>
       <th class='span2'>Applied at</th>
       <th class='span2'>File size</th>
+      <th class='span2'>Inserts</th>
       <th class='span2'>Actions</th>
     </tr>
   </thead>
   <tbody>
     <% @tariff_updates.each do |tariff_update| %>
       <tr id='<%= dom_id(tariff_update) %>'>
-        <td><%= tariff_update.update_type %></td>
-        <td><%= link_to_if tariff_update.filename.present?, tariff_update.filename, tariff_update.file_presigned_url, target: "_blank" %></td>
         <td>
           <%= tariff_update.state %>
+
           <% if tariff_update.exception_class.present? %>
             <%= render "exception", tariff_update: tariff_update %>
           <% end %>
+
           <% if tariff_update.presence_errors.present? %>
             <%= render "presence_errors", tariff_update: tariff_update %>
           <% end %>
-          <% if tariff_update.log_presigned_urls["created"].present? %>
-            <div>
-              <%= link_to "Created records", tariff_update.log_presigned_urls["created"], target: "_blank" %>
-            </div>
-          <% end %>
-          <% if tariff_update.log_presigned_urls["failed"].present? %>
-            <div>
-                <%= link_to "Failed records", tariff_update.log_presigned_urls["failed"], target: "_blank" %>
-            </div>
-          <% end %>
         </td>
-        <td><%= l tariff_update.created_at, format: :tariff %></td>
+        <td><%= l(tariff_update.issue_date, format: :tariff) %></td>
         <td><%= l(tariff_update.applied_at, format: :tariff) if tariff_update.applied_at %></td>
         <td><%= number_to_human_size(tariff_update.filesize) %></td>
+        <td>
+          <% if tariff_update.inserts.present? %>
+            <details class="govuk-details" data-module="govuk-details">
+              <summary class="govuk-details__summary">
+                <span class="govuk-details__summary-text">
+                  Review inserts
+                </span>
+              </summary>
+              <div class="govuk-details__text">
+                <% tariff_update.inserts.each_with_index do |(key, value), index| %>
+                  <%= tag.br if index.positive? %>
+
+                  <%= key.sub('::Operation', '') %>: <%= value %>
+                <% end %>
+              </div>
+            </details>
+          <% end %>
+        </td>
         <td><%= render "actions", tariff_update: tariff_update %></td>
       </tr>
     <% end %>

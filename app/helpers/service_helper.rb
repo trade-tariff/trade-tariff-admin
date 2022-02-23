@@ -15,6 +15,14 @@ module ServiceHelper
     end
   end
 
+  def update_type
+    if TradeTariffAdmin::ServiceChooser.uk?
+      'CDS'
+    else
+      'Taric'
+    end
+  end
+
   def service_region
     TradeTariffAdmin::ServiceChooser.uk? ? 'the UK' : 'Northern Ireland'
   end
