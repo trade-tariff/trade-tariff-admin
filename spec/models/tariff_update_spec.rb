@@ -46,22 +46,6 @@ RSpec.describe TariffUpdate do
     it_behaves_like 'a tariff update that does not rollback', 'X'
   end
 
-  describe '#file_date' do
-    subject(:file_date) { build(:tariff_update, filename: '0123456789foo', issue_date: '2022-01-01').file_date }
-
-    context 'when on the xi service' do
-      before { allow(TradeTariffAdmin::ServiceChooser).to receive(:xi?).and_return(true) }
-
-      it { is_expected.to eq(Date.parse('2022-01-01')) }
-    end
-
-    context 'when on the uk service' do
-      before { allow(TradeTariffAdmin::ServiceChooser).to receive(:xi?).and_return(false) }
-
-      it { is_expected.to eq('0123456789') }
-    end
-  end
-
   describe '#issue_date' do
     subject(:issue_date) { build(:tariff_update, issue_date: Time.zone.today.iso8601).issue_date }
 

@@ -37,14 +37,6 @@ class TariffUpdate
     attributes[:state].in?(ROLLBACK_APPLICABLE_STATES)
   end
 
-  def file_date
-    if TradeTariffAdmin::ServiceChooser.xi?
-      issue_date
-    else
-      filename.try :slice, 0, 10
-    end
-  end
-
   def issue_date
     Date.parse(attributes[:issue_date])
   end
