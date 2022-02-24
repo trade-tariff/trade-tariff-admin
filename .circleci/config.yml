@@ -8,26 +8,9 @@ orbs:
   slack: circleci/slack@4.3.0
   queue: eddiewebb/queue@1.6.4
   gh: circleci/github-cli@1.0
+  tariff: trade-tariff/trade-tariff-ci-orb@0 # can also change to @dev:<gitsha> for specific version or @dev:alpha to test dev branches
 
 commands:
-  cf_install:
-    parameters:
-      space:
-        type: string
-    steps:
-      - run:
-          name: "Setup CF CLI"
-          command: |
-            curl -L -o cf.deb --retry 3 'https://packages.cloudfoundry.org/stable?release=debian64&version=7.4.0&source=github-rel'
-            file cf.deb
-            sudo dpkg -i cf.deb
-            cf -v
-            cf api "$CF_ENDPOINT"
-            cf auth "$CF_USER" "$CF_PASSWORD"
-            cf add-plugin-repo CF-Community https://plugins.cloudfoundry.org
-            cf install-plugin app-autoscaler-plugin -r CF-Community -f
-            cf target -o "$CF_ORG" -s "<< parameters.space >>"
-
   deploy:
     parameters:
       docker_image_tag:
@@ -38,7 +21,7 @@ commands:
         type: string
     steps:
       - checkout
-      - cf_install:
+      - tariff/cf-install:
           space: << parameters.space >>
       - run:
           name: "Fetch existing manifest"
