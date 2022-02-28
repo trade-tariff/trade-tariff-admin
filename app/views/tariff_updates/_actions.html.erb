@@ -1,4 +1,11 @@
-<% if tariff_update.state == "Applied" || tariff_update.state == "Failed" %>
-  <% date = tariff_update.file_date %>
-  <%= link_to "Rollback to #{date}", new_rollback_path(rollback: {date: date}) %>
+<% if tariff_update.rollback? %>
+  <%= link_to "Rollback to #{tariff_update.issue_date}", new_rollback_path(rollback: {date: tariff_update.issue_date}) %>
+<% end %>
+
+<% if tariff_update.rollback? && tariff_update.filename.present? %>
+  <br>
+<% end %>
+
+<% if tariff_update.filename.present? %>
+  <%= link_to 'Download', tariff_update.file_presigned_url, target: "_blank", title: tariff_update.filename %>
 <% end %>

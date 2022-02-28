@@ -33,6 +33,9 @@ en:
       tariff: "%d/%m/%Y"
 
   helpers:
+    service_update_type:
+      xi: Taric
+      uk: CDS
     label:
       rollback:
         date: Rollback to date

@@ -15,6 +15,10 @@ module ServiceHelper
     end
   end
 
+  def service_update_type
+    t("helpers.service_update_type.#{TradeTariffAdmin::ServiceChooser.service_name}")
+  end
+
   def service_region
     TradeTariffAdmin::ServiceChooser.uk? ? 'the UK' : 'Northern Ireland'
   end

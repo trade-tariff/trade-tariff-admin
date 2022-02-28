@@ -1,6 +1,22 @@
 require 'rails_helper'
 
 RSpec.describe ServiceHelper, type: :helper do
+  describe '.service_update_type' do
+    subject { helper.service_update_type }
+
+    context 'with UK service' do
+      include_context 'with UK service'
+
+      it { is_expected.to eq('CDS') }
+    end
+
+    context 'with XI service' do
+      include_context 'with XI service'
+
+      it { is_expected.to eq('Taric') }
+    end
+  end
+
   describe '.service_name' do
     subject { service_name }
 
