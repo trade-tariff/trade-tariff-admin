@@ -15,12 +15,8 @@ module ServiceHelper
     end
   end
 
-  def update_type
-    if TradeTariffAdmin::ServiceChooser.uk?
-      'CDS'
-    else
-      'Taric'
-    end
+  def service_update_type
+    t("helpers.service_update_type.#{TradeTariffAdmin::ServiceChooser.service_name}")
   end
 
   def service_region

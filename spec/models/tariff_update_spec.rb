@@ -40,9 +40,9 @@ RSpec.describe TariffUpdate do
     end
 
     it_behaves_like 'a tariff update that rolls back', 'A'
-    it_behaves_like 'a tariff update that rolls back', 'P'
 
     it_behaves_like 'a tariff update that does not rollback', 'F'
+    it_behaves_like 'a tariff update that does not rollback', 'P'
     it_behaves_like 'a tariff update that does not rollback', 'X'
   end
 

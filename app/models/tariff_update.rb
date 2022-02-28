@@ -23,7 +23,7 @@ class TariffUpdate
     'F' => 'Failed',
   }.freeze
 
-  ROLLBACK_APPLICABLE_STATES = %w[A P].freeze
+  ROLLBACK_APPLICABLE_STATES = %w[A].freeze
 
   def state
     STATES[super]
@@ -46,6 +46,6 @@ class TariffUpdate
   end
 
   def id
-    created_at.parameterize
+    created_at.to_s.parameterize
   end
 end
