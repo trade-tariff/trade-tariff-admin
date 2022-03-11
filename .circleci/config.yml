@@ -267,7 +267,7 @@ workflows:
                 - main
           requires:
             - build_live
-      - hold_production:
+      - hold_create_release:
           type: approval
           filters:
             branches:
@@ -283,7 +283,14 @@ workflows:
               only:
                 - main
           requires:
-            - hold_production
+            - hold_create_release
+      - hold_deploy_production:
+          type: approval
+          filters:
+            tags:
+              only: /^release-202[\d-]+/
+            branches:
+              ignore: /.*/
       - deploy_production:
           context: trade-tariff
           filters:
@@ -291,3 +298,5 @@ workflows:
               only: /^release-202[\d-]+/
             branches:
               ignore: /.*/
+          requires:
+            - hold_deploy_production
