@@ -6,21 +6,24 @@ FactoryBot.define do
     display_style { NewsItem::DISPLAY_STYLE_REGULAR }
     show_on_uk { true }
     show_on_xi { true }
-    show_on_home_page { true }
+    show_on_home_page { false }
     show_on_updates_page { false }
+    show_on_banner { false }
     start_date { Time.zone.yesterday }
     end_date { nil }
     created_at { 2.days.ago.to_date }
     updated_at { nil }
 
     trait :updates_page do
-      show_on_home_page { false }
       show_on_updates_page { true }
     end
 
-    trait :all_pages do
+    trait :home_page do
       show_on_home_page { true }
-      show_on_updates_page { true }
+    end
+
+    trait :banner do
+      show_on_banner { true }
     end
 
     trait :no_uk do

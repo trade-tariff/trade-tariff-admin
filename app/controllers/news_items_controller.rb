@@ -52,6 +52,7 @@ class NewsItemsController < AuthenticatedController
       show_on_xi
       show_on_home_page
       show_on_updates_page
+      show_on_banner
       start_date
       end_date
     ]).reverse_merge(default_params)

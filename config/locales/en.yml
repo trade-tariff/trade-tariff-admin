@@ -56,5 +56,6 @@ en:
         date: Should be in 'YYYY-MM-DD' format
 
       news_item:
+        title: Not shown on frontend for Banner stories
         start_date: 'YYYY/MM/DD'
         end_date: 'YYYY/MM/DD or leave blank for no end date'

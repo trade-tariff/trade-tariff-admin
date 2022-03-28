@@ -14,8 +14,7 @@
         <th>End date</th>
         <th>UK</th>
         <th>XI</th>
-        <th>Home page</th>
-        <th>Updates page</th>
+        <th>Pages</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -28,8 +27,7 @@
           <td><%= news_item_date news_item.end_date %></td>
           <td><%= news_item_bool news_item.show_on_uk %></td>
           <td><%= news_item_bool news_item.show_on_xi %></td>
-          <td><%= news_item_bool news_item.show_on_home_page %></td>
-          <td><%= news_item_bool news_item.show_on_updates_page %></td>
+          <td><%= format_news_item_pages news_item %></td>
           <td>
             <%= link_to 'Edit',
                         edit_news_item_path(news_item) %>

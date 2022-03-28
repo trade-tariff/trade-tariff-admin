@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 describe NewsItem do
-  subject(:news_item) { build :news_item }
+  subject(:news_item) { build :news_item, :home_page, :updates_page, :banner }
 
   it { is_expected.to respond_to :id }
   it { is_expected.to respond_to :title }
@@ -11,6 +11,7 @@ describe NewsItem do
   it { is_expected.to respond_to :show_on_xi }
   it { is_expected.to respond_to :show_on_home_page }
   it { is_expected.to respond_to :show_on_updates_page }
+  it { is_expected.to respond_to :show_on_banner }
   it { is_expected.to respond_to :start_date }
   it { is_expected.to respond_to :end_date }
   it { is_expected.to respond_to :created_at }
@@ -24,6 +25,7 @@ describe NewsItem do
   it { is_expected.to have_attributes show_on_xi: news_item.show_on_xi }
   it { is_expected.to have_attributes show_on_home_page: news_item.show_on_home_page }
   it { is_expected.to have_attributes show_on_updates_page: news_item.show_on_updates_page }
+  it { is_expected.to have_attributes show_on_banner: news_item.show_on_banner }
   it { is_expected.to have_attributes start_date: news_item.start_date }
   it { is_expected.to have_attributes end_date: news_item.end_date }
   it { is_expected.to have_attributes created_at: news_item.created_at }
