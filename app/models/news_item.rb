@@ -15,8 +15,6 @@ class NewsItem
   validates :start_date, presence: true
 
   def preview
-    substituted_content = ApplicationController.helpers.replace_service_tags(content.to_s)
-
-    Govspeak::Document.new(substituted_content, sanitize: true).to_html.html_safe
+    GovspeakPreview.new(content).render
   end
 end
