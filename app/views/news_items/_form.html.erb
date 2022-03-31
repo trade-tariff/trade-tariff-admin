@@ -70,5 +70,10 @@
                         multiple: false,
                         link_errors: true %>
 
+  <%= f.govuk_check_box :show_on_banner, 1, 0,
+                        label: { text: 'Show News story on the Banner' },
+                        multiple: false,
+                        link_errors: true %>
+
   <%= submit_and_back_buttons f, news_items_path %>
 <% end %>

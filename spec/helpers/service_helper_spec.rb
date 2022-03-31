@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe ServiceHelper, type: :helper do
   describe '.service_update_type' do
-    subject { helper.service_update_type }
+    subject { service_update_type }
 
     context 'with UK service' do
       include_context 'with UK service'
