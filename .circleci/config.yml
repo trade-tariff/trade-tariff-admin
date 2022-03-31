@@ -209,10 +209,6 @@ jobs:
     docker:
       - image: cimg/ruby:3.1.1-node
     steps:
-      - queue/until_front_of_line:
-          time: '10'
-          consider-branch: true
-          dont-quit: true
       - deploy:
           docker_image_tag: $CIRCLE_TAG
           space: "staging"
