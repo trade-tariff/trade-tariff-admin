@@ -189,7 +189,7 @@ jobs:
           environment_key: "dev"
       - sentry-release
 
-  deploy_staging:
+  deploy_main_to_staging:
     docker:
       - image: cimg/ruby:3.1.1-node
     environment:
@@ -204,6 +204,19 @@ jobs:
           space: "staging"
           environment_key: "staging"
       - sentry-release
+
+  deploy_release_to_staging:
+    docker:
+      - image: cimg/ruby:3.1.1-node
+    steps:
+      - queue/until_front_of_line:
+          time: '10'
+          consider-branch: true
+          dont-quit: true
+      - deploy:
+          docker_image_tag: $CIRCLE_TAG
+          space: "staging"
+          environment_key: "staging"
 
   deploy_production:
     docker:
@@ -259,7 +272,7 @@ workflows:
             branches:
               only:
                 - main
-      - deploy_staging:
+      - deploy_main_to_staging:
           context: trade-tariff
           filters:
             branches:
@@ -274,7 +287,7 @@ workflows:
               only:
                 - main
           requires:
-            - deploy_staging
+            - deploy_main_to_staging
       - tariff/create-production-release:
           context: trade-tariff
           image-name: tariff-admin
@@ -284,6 +297,13 @@ workflows:
                 - main
           requires:
             - hold_create_release
+      - deploy_release_to_staging:
+          context: trade-tariff
+          filters:
+            tags:
+              only: /^release-202[\d-]+/
+            branches:
+              ignore: /.*/
       - hold_deploy_production:
           type: approval
           filters:
