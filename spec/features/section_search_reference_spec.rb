@@ -31,7 +31,7 @@ RSpec.describe 'Section Search Reference management' do
         end
       end
 
-      refute search_reference_created_for(section, title:)
+      refute search_reference_created_for(section, title: title)
 
       stub_api_for(Section::SearchReference) do |stub|
         stub.post("/admin/sections/#{section.to_param}/search_references") do |_env|
@@ -45,7 +45,7 @@ RSpec.describe 'Section Search Reference management' do
 
       create_search_reference_for section, 'Synonym' => title
 
-      verify search_reference_created_for(section, title:)
+      verify search_reference_created_for(section, title: title)
     end
   end
 

@@ -141,7 +141,7 @@ jobs:
           name: Inspecting with Brakeman
           when: always
           # See https://github.com/presidentbeef/brakeman/issues/1664
-          command: 'bundle exec brakeman -o test-results/brakeman/brakeman.junit -o brakeman.html --no-progress --separate-models --no-exit-on-error' 
+          command: 'bundle exec brakeman -o test-results/brakeman/brakeman.junit -o brakeman.html --no-progress --separate-models'
       - store_test_results:
           path: test-results/brakeman/
       - store_artifacts:

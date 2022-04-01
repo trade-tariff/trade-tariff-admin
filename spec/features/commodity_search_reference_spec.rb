@@ -23,7 +23,7 @@ RSpec.describe 'Commodity Search Reference management' do
         end
       end
 
-      refute search_reference_created_for(commodity, title:)
+      refute search_reference_created_for(commodity, title: title)
 
       stub_api_for(Commodity::SearchReference) do |stub|
         stub.post("/admin/commodities/#{commodity.to_param}/search_references") do |_env|
@@ -37,7 +37,7 @@ RSpec.describe 'Commodity Search Reference management' do
 
       create_search_reference_for commodity, 'Synonym' => title
 
-      verify search_reference_created_for(commodity, title:)
+      verify search_reference_created_for(commodity, title: title)
     end
   end
 

@@ -8,7 +8,7 @@ class SearchReference
 
     def collection
       'a'.upto('z').inject([]) do |memo, letter|
-        search_references = SearchReference.all(query: { letter: }).fetch
+        search_references = SearchReference.all(query: { letter: letter }).fetch
         memo.concat(search_references)
       end
     end
