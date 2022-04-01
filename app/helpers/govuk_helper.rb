@@ -1,6 +1,6 @@
 module GovukHelper
   def govuk_breadcrumbs(breadcrumbs)
-    render GovukComponent::BreadcrumbsComponent.new(breadcrumbs:)
+    render GovukComponent::BreadcrumbsComponent.new(breadcrumbs: breadcrumbs)
   end
 
   def govuk_form_for(*args, **options, &block)
