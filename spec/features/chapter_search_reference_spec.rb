@@ -24,7 +24,7 @@ RSpec.describe 'Chapter Search Reference management' do
         end
       end
 
-      refute search_reference_created_for(chapter, title: title)
+      refute search_reference_created_for(chapter, title:)
 
       stub_api_for(Chapter::SearchReference) do |stub|
         stub.post("/admin/chapters/#{chapter.to_param}/search_references") do |_env|
@@ -37,7 +37,7 @@ RSpec.describe 'Chapter Search Reference management' do
       end
       create_search_reference_for chapter, 'Synonym' => title
 
-      verify search_reference_created_for(chapter, title: title)
+      verify search_reference_created_for(chapter, title:)
     end
   end
 
