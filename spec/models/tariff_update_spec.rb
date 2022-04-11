@@ -28,13 +28,13 @@ RSpec.describe TariffUpdate do
 
   describe '#rollback?' do
     shared_examples_for 'a tariff update that rolls back' do |state, _will_rollback|
-      subject(:tariff_update) { build(:tariff_update, state: state) }
+      subject(:tariff_update) { build(:tariff_update, state:) }
 
       it { is_expected.to be_rollback }
     end
 
     shared_examples_for 'a tariff update that does not rollback' do |state, _will_rollback|
-      subject(:tariff_update) { build(:tariff_update, state: state) }
+      subject(:tariff_update) { build(:tariff_update, state:) }
 
       it { is_expected.not_to be_rollback }
     end
