@@ -121,7 +121,7 @@ GEM
       addressable (~> 2.8)
     e2mmap (0.1.0)
     erubi (1.10.0)
-    et-orbi (1.2.6)
+    et-orbi (1.2.7)
       tzinfo
     factory_bot (6.2.0)
       activesupport (>= 5.0.0)
@@ -153,8 +153,8 @@ GEM
     faraday-retry (1.0.3)
     faraday_middleware (1.2.0)
       faraday (~> 1.0)
-    fugit (1.5.2)
-      et-orbi (~> 1.1, >= 1.1.8)
+    fugit (1.5.3)
+      et-orbi (~> 1, >= 1.2.7)
       raabro (~> 1.4)
     gds-sso (16.1.0)
       multi_json (~> 1.0)
@@ -435,7 +435,7 @@ GEM
       connection_pool (>= 2.2.2)
       rack (~> 2.0)
       redis (>= 4.2.0)
-    sidekiq-scheduler (3.1.1)
+    sidekiq-scheduler (3.2.0)
       e2mmap
       redis (>= 3, < 5)
       rufus-scheduler (~> 3.2)
