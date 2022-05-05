@@ -28,13 +28,13 @@
       <%= header.navigation_item text: "Section & chapter notes",
                                  href: root_path,
                                  active: active_nav_link?(/\/notes|trade-tariff-admin$/) %>
-      <%= header.navigation_item text: "Search Synonyms",
+      <%= header.navigation_item text: "Search references",
                                  href: synonyms_sections_path,
                                  active: active_nav_link?(/\/synonyms/) %>
       <%= header.navigation_item text: "News",
                                  href: news_items_path,
                                  active: active_nav_link?(/\/news_items/) %>
-      <%= header.navigation_item text: "Tariff Updates",
+      <%= header.navigation_item text: "Updates",
                                  href: tariff_updates_path,
                                  active: active_nav_link?(/\/tariff_updates/) %>
       <%= header.navigation_item text: "Rollbacks",
