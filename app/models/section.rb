@@ -9,7 +9,7 @@ class Section
   has_many :chapters
   has_many :search_references, class_name: 'Section::SearchReference'
 
-  attributes :chapter_from, :chapter_to
+  attributes :chapter_from, :chapter_to, :numeral
 
   def has_section_note?
     section_note_id.present?
