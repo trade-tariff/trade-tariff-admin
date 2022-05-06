@@ -1,9 +1,9 @@
 <%= govuk_breadcrumbs 'Sections': synonyms_sections_path,
                       'Chapters': synonyms_section_chapters_path(section_id: chapter.section.id) %>
 
-<h2>Search synonyms for <%= chapter.reference_title %></h2>
+<h2>Search reference for <%= chapter.reference_title %></h2>
 
-<%= link_to 'New Search Synonym', new_synonyms_chapter_search_reference_path(chapter), class: 'govuk-button' %>
+<%= link_to 'New Search reference', new_synonyms_chapter_search_reference_path(chapter), class: 'govuk-button' %>
 
 <table>
   <thead>

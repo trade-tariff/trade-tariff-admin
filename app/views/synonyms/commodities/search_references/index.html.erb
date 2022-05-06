@@ -1,9 +1,9 @@
 <%= govuk_breadcrumbs 'Sections': synonyms_sections_path,
                       'Commodities': synonyms_heading_commodities_path(heading_id: commodity.heading_id) %>
 
-<h2>Search synonyms <%= commodity.reference_title %></h2>
+<h2>Search references <%= commodity.reference_title %></h2>
 
-<%= link_to 'New Search Synonym', new_synonyms_commodity_search_reference_path(commodity), class: 'govuk-button' %>
+<%= link_to 'New Search reference', new_synonyms_commodity_search_reference_path(commodity), class: 'govuk-button' %>
 
 <table>
   <thead>

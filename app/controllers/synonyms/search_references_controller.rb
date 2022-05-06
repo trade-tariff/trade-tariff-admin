@@ -15,7 +15,7 @@ module Synonyms
       @search_reference = build_search_reference
 
       if @search_reference.valid? && @search_reference.save
-        redirect_to [scope, search_reference_parent, :search_references], notice: 'Search synonym was successfully created.'
+        redirect_to [scope, search_reference_parent, :search_references], notice: 'Search reference was successfully created.'
       else
         render :new
       end
@@ -27,7 +27,7 @@ module Synonyms
       search_reference.assign_attributes(search_reference_params.to_h)
 
       if search_reference.valid? && search_reference.save
-        redirect_to [scope, search_reference_parent, :search_references], notice: 'Search synonym was successfully updated.'
+        redirect_to [scope, search_reference_parent, :search_references], notice: 'Search reference was successfully updated.'
       else
         render :edit
       end
@@ -36,7 +36,7 @@ module Synonyms
     def destroy
       search_reference.destroy
 
-      redirect_to [scope, search_reference_parent, :search_references], notice: 'Search synonym was successfully removed.'
+      redirect_to [scope, search_reference_parent, :search_references], notice: 'Search reference was successfully removed.'
     end
 
     def export
