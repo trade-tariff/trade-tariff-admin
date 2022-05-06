@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/svenfuchs/routing-filter.git
-  revision: 3ce9a7eb8d6f3e9c2ce1e66ca1c21da4a56a60ed
+  revision: e7418d1306b2bb88220b63c790fd0dab321437c2
   specs:
     routing-filter (0.7.0)
       actionpack (>= 6.1)
@@ -238,7 +238,7 @@ GEM
     logstasher (2.1.5)
       activesupport (>= 5.2)
       request_store
-    loofah (2.16.0)
+    loofah (2.17.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
     mail (2.7.1)
@@ -268,7 +268,7 @@ GEM
       net-protocol
       timeout
     nio4r (2.5.8)
-    nokogiri (1.13.4)
+    nokogiri (1.13.5)
       mini_portile2 (~> 2.8.0)
       racc (~> 1.4)
     oauth2 (1.4.9)
@@ -430,7 +430,7 @@ GEM
     shrine (3.4.0)
       content_disposition (~> 1.0)
       down (~> 5.1)
-    sidekiq (6.4.1)
+    sidekiq (6.4.2)
       connection_pool (>= 2.2.2)
       rack (~> 2.0)
       redis (>= 4.2.0)
