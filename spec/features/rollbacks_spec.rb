@@ -4,7 +4,7 @@ RSpec.describe 'Rollbacks management' do
   let!(:user) { create :user, :gds_editor }
 
   describe 'Rollback creation' do
-    let(:rollback) { build :rollback, user: user }
+    let(:rollback) { build :rollback, user: }
 
     specify do
       stub_api_for(Rollback) do |stub|

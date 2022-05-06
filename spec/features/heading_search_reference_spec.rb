@@ -8,7 +8,7 @@ RSpec.describe 'Heading Search Reference management' do
   describe 'Search Reference creation' do
     let(:title)        { 'new title' }
     let(:heading)      { build :heading, title: 'new heading', chapter: { type: 'chapter', id: chapter.id, attributes: chapter.attributes } }
-    let(:heading_search_reference) { build :heading_search_reference, title: title, referenced: heading.attributes }
+    let(:heading_search_reference) { build :heading_search_reference, title:, referenced: heading.attributes }
 
     specify do
       stub_api_for(Heading) do |stub|

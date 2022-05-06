@@ -57,8 +57,8 @@ module ApiResponsesHelper
 
   def format_json_api_item(type, attributes)
     {
-      type: type,
-      attributes: attributes,
+      type:,
+      attributes:,
     }
   end
 
@@ -80,7 +80,7 @@ module ApiResponsesHelper
   # Generate a JSONAPI response from data suitable for webmock
   def jsonapi_response(type, response_data, status: 200, headers: nil)
     {
-      status: status,
+      status:,
       headers: headers || { 'content-type' => 'application/json; charset=utf-8' },
       body: format_json_api_response(type, response_data).to_json,
     }

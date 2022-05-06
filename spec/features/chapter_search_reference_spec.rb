@@ -7,7 +7,7 @@ RSpec.describe 'Chapter Search Reference management' do
 
   describe 'Search Reference creation' do
     let(:title) { 'new title' }
-    let(:chapter_search_reference) { build :chapter_search_reference, title: title, referenced: chapter }
+    let(:chapter_search_reference) { build :chapter_search_reference, title:, referenced: chapter }
     let(:section)      { build :section }
     let(:chapter)      { build :chapter, :with_section, title: 'new chapter', section: { id: section.id, attributes: section.attributes } }
 
