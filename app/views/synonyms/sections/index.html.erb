@@ -1,4 +1,4 @@
-<h2>Section search synonyms</h2>
+<h2>Search references</h2>
 
 <table>
   <thead>
@@ -6,7 +6,6 @@
       <th>Section</th>
       <th>Chapters</th>
       <th>Title</th>
-      <th class="hott-actions-col">Synonyms</th>
     </tr>
   </thead>
   <tbody>
@@ -15,15 +14,6 @@
         <td><%= section.position %></td>
         <td><%= link_to section.chapters_range, synonyms_section_chapters_path(section) %></td>
         <td><%= section.title %></td>
-        <td class="hott-link-group">
-          <div>
-            <%= pluralize section.search_references_count, "synonym" %>
-          </div>
-          <%= link_to 'Edit', synonyms_section_search_references_path(section) %>
-          <% if section.search_references_count > 0 %>
-            <%= link_to 'Export', export_synonyms_section_search_references_path(section), method: :post %>
-          <% end %>
-        </td>
       </tr>
     <% end %>
   </tbody>
