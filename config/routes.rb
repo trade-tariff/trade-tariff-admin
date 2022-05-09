@@ -27,12 +27,9 @@ Rails.application.routes.draw do
     resource :import, only: %i[show create]
     resource :export, only: [:create]
 
-    resources :sections, only: %i[index show] do
+    resources :sections, only: %i[index] do
       scope module: 'sections' do
         resources :chapters, only: [:index]
-        resources :search_references do
-          post :export, on: :collection
-        end
       end
     end
 
