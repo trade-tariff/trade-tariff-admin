@@ -1,7 +1,7 @@
 <%= govuk_breadcrumbs 'Sections': synonyms_sections_path,
                       'Headings': synonyms_chapter_headings_path(chapter_id: heading.chapter_id) %>
 
-<h2>Commodities search synonyms of heading <%= heading.to_param %>:<%= heading.description.titleize %></h2>
+<h2>Commodities search references of heading <%= heading.to_param %>:<%= heading.description.titleize %></h2>
 
 <table class='table table-bordered table-striped table-condensed table-headings'>
   <thead>
@@ -10,7 +10,7 @@
       <th>Title</th>
       <th>Productline Suffix</th>
       <th>Declarable</th>
-      <th class="actions_col">Synonyms</th>
+      <th class="actions_col">References</th>
     </tr>
   </thead>
   <tbody>
@@ -22,7 +22,7 @@
         <td><%= commodity.declarable %></td>
         <td class="hott-link-group">
           <div>
-            <%= pluralize commodity.search_references_count, "synonym" %>
+            <%= pluralize commodity.search_references_count, "reference" %>
           </div>
           <%= link_to 'Edit', synonyms_commodity_search_references_path(commodity) %>
           <% if commodity.search_references_count > 0 %>

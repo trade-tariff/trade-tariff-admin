@@ -1,8 +1,8 @@
 <%= govuk_breadcrumbs 'Sections': synonyms_sections_path,
                       'Headings': synonyms_chapter_headings_path(chapter_id: heading.chapter.id),
-                      'Search Synonyms': synonyms_heading_search_references_path(heading) %>
+                      'Search references': synonyms_heading_search_references_path(heading) %>
 
-<h2>Edit Search Synonym</h2>
+<h2>Edit Search reference</h2>
 
 <%= govuk_form_for search_reference, url: synonyms_heading_search_reference_path(heading, search_reference), as: :search_reference do |f| %>
   <%= f.govuk_text_field :title, width: 'one-half' %>

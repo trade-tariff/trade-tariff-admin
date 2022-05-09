@@ -20,12 +20,12 @@
     </table>
   </div>
 
-  <p>Upload CSV with synonyms. Synonyms are overriden if ID is provided</p>
+  <p>Upload CSV with search references. Search references are overriden if ID is provided</p>
 
   <%= f.govuk_file_field :file, accept: 'text/csv' %>
 
   <div class="govuk-button-group">
-    <%= f.govuk_submit 'Import synonyms from CSV' %>
+    <%= f.govuk_submit 'Import references from CSV' %>
     <%= link_to 'Back', :back, class: 'govuk-button govuk-button--secondary' %>
   </div>
 <% end %>
