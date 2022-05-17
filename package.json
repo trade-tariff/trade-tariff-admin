@@ -5,7 +5,7 @@
     "@rails/webpacker": "^5.4.0",
     "govuk-frontend": "^4.0.1",
     "jquery": "^3.6.0",
-    "rails-ujs": "^5.2.7"
+    "rails-ujs": "^5.2.8"
   },
   "devDependencies": {
     "webpack-dev-server": "^4.8.1"
