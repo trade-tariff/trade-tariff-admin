@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe NewsItem do
+RSpec.describe NewsItem do
   subject(:news_item) { build :news_item, :home_page, :updates_page, :banner }
 
   it { is_expected.to respond_to :id }

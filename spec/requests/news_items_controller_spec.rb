@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe NewsItemsController do
+RSpec.describe NewsItemsController do
   subject(:rendered_page) { create_user && make_request && response }
 
   let(:news_item) { build :news_item }
