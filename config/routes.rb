@@ -60,11 +60,12 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :tariff_updates, only: [:index]
+  resources :tariff_updates, only: %i[index]
   resources :rollbacks, only: %i[index new create]
   resources :footnotes, only: %i[index edit update]
   resources :measure_types, only: %i[index edit update]
   resources :news_items, except: %i[show]
+  resources :reports, only: %i[index]
 
   post 'govspeak' => 'govspeak#govspeak', as: :govspeak
   get  'healthcheck' => 'healthcheck#check', as: :healthcheck
