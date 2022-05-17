@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe 'news_items/form' do
+RSpec.describe 'news_items/form' do
   subject(:form) { render_partial && rendered }
 
   let(:render_partial) { render 'news_items/form', news_item: }

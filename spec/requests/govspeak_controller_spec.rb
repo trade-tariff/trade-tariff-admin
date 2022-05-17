@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe GovspeakController do
+RSpec.describe GovspeakController do
   subject(:rendered_page) { response }
 
   before { create :user, permissions: ['signin', 'HMRC Editor'] }
