@@ -8,7 +8,7 @@ RSpec.describe 'Commodity Search Reference management' do
   describe 'Search Reference creation' do
     let(:title)        { 'new title' }
     let(:commodity)    { build :commodity, title: 'new commodity', heading: { type: 'heading', id: heading.id, attributes: heading.attributes } }
-    let(:commodity_search_reference) { build :commodity_search_reference, title: title, referenced: commodity.attributes }
+    let(:commodity_search_reference) { build :commodity_search_reference, title:, referenced: commodity.attributes }
 
     specify do
       stub_api_for(Commodity) do |stub|

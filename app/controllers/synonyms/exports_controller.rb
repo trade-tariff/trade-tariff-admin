@@ -4,7 +4,7 @@ module Synonyms
       export_service = SearchReference::ExportAllService.new
       filename = "all-synonyms-#{Time.zone.now.iso8601}.csv"
       send_data export_service.to_csv,
-                filename: filename
+                filename:
     end
   end
 end
