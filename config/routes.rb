@@ -65,7 +65,7 @@ Rails.application.routes.draw do
   resources :footnotes, only: %i[index edit update]
   resources :measure_types, only: %i[index edit update]
   resources :news_items, except: %i[show]
-  resources :reports, only: %i[index]
+  resources :reports, only: %i[index show]
 
   post 'govspeak' => 'govspeak#govspeak', as: :govspeak
   get  'healthcheck' => 'healthcheck#check', as: :healthcheck
