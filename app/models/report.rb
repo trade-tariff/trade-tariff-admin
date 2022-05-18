@@ -24,7 +24,7 @@ class Report
     def csv_api_client
       @csv_api_client ||= Faraday.new(TradeTariffAdmin::ServiceChooser.api_host) do |conn|
         conn.use FaradayMiddleware::AcceptApiV2
-        conn.use FaradayMiddleware::BearerTokenAuthentication, ENV['BEARER_TOKEN'] || 'tariff-api-test-token'
+        conn.use FaradayMiddleware::BearerTokenAuthentication, ENV['BEARER_TOKEN']
         conn.use Faraday::Response::RaiseError
         conn.use FaradayMiddleware::ServiceUrls
 

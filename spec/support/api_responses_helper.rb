@@ -16,10 +16,7 @@ module ApiResponsesHelper
   end
 
   def jsonapi_success_response(type, response = {}, headers = {})
-    formatted_response = format_json_api_response(
-      type,
-      response,
-    )
+    formatted_response = format_json_api_response(type, response)
 
     [200, headers, formatted_response.to_json]
   end
