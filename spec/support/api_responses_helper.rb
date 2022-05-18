@@ -3,9 +3,10 @@ module ApiResponsesHelper
     klass.use_api(api = Her::API.new)
 
     api.setup url: ENV['TARIFF_API_HOST'] do |c|
-      c.use Her::Middleware::HeaderMetadataParse # lib/her/middleware/header_metadata_parse.rb
-      c.use Her::Middleware::AcceptApiV2         # lib/her/middleware/accept_api_v2.rb
-      c.use Her::Middleware::TariffJsonapiParser # lib/her/middleware/tariff_jsonapi_parser.rb
+      c.use FaradayMiddleware::AcceptApiV2
+      c.use Her::Middleware::HeaderMetadataParse
+      c.use Her::Middleware::TariffJsonapiParser
+
       c.adapter(:test, &block)
     end
   end
@@ -15,7 +16,10 @@ module ApiResponsesHelper
   end
 
   def jsonapi_success_response(type, response = {}, headers = {})
-    formatted_response = format_json_api_response(type, response)
+    formatted_response = format_json_api_response(
+      type,
+      response,
+    )
 
     [200, headers, formatted_response.to_json]
   end

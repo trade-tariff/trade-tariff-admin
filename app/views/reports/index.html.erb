@@ -21,7 +21,7 @@
         CSV
       </td>
       <td>
-        <%= link_to 'Download', "#{TradeTariffAdmin::ServiceChooser.api_host}/admin/commodities.csv" %>
+        <%= link_to 'Download', report_path('commodities', format: :csv) %>
       </td>
     </tr>
   </tbody>

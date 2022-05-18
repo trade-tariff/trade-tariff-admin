@@ -1,5 +1,3 @@
-require 'faraday'
-
 module FaradayMiddleware
   class ServiceUrls < Faraday::Middleware
     def call(env)

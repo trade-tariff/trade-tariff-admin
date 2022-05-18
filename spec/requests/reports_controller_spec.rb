@@ -1,7 +1,5 @@
-require 'rails_helper'
-
 RSpec.describe ReportsController do
-  subject(:rendered_page) { make_request && response }
+  subject(:do_response) { make_request && response }
 
   before do
     create :user, permissions: %w[signin]
@@ -15,7 +13,37 @@ RSpec.describe ReportsController do
     it 'contain the report' do
       make_request
 
-      expect(rendered_page.body).to include('Commodities extract')
+      expect(do_response.body).to include('Commodities extract')
+    end
+  end
+
+  describe 'GET #show' do
+    before do
+      stub_request(:get, "#{TradeTariffAdmin::ServiceChooser.api_host}/admin/commodities.csv").and_return(
+        status: 200,
+        headers: {
+          'content-disposition' => 'attachment; filename=uk-commodities-2022-05-18.csv',
+          'content-type' => 'text/csv; charset=utf-8',
+          'content-transfer-encoding' => 'binary',
+        },
+        body: "foo,bar\nbaz,qux\n",
+      )
+    end
+
+    let(:make_request) { get report_path('commodities', format: :csv) }
+
+    it { is_expected.to have_http_status :success }
+
+    it 'returns the report csv' do
+      make_request
+
+      expect(do_response.body).to include("foo,bar\nbaz,qux\n")
+    end
+
+    it 'returns the report filename' do
+      make_request
+
+      expect(do_response['content-disposition']).to include('filename=uk-commodities-2022-05-18.csv')
     end
   end
 end
