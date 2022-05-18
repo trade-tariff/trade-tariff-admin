@@ -1,6 +1,7 @@
 # TODO: Remove these and autoload from lib correctly
 require 'faraday_middleware/accept_api_v2'
 require 'faraday_middleware/bearer_token_authentication'
+require 'faraday_middleware/service_urls'
 require 'her/middleware/header_metadata_parse'
 require 'her/middleware/tariff_jsonapi_parser'
 require 'redis_resolver'
