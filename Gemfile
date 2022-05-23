@@ -30,7 +30,6 @@ gem 'oj'
 
 # Cache
 gem 'redis'
-gem 'redis-activesupport'
 
 # Authorization / SSO
 gem 'gds-sso'
