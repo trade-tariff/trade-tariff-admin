@@ -22,7 +22,7 @@
         <td><%= heading.description.titleize %></td>
         <td class="hott-link-group">
           <div>
-            <%= pluralize heading.search_references_count, "refence" %>
+            <%= pluralize heading.search_references_count, "reference" %>
           </div>
           <%= link_to 'Edit', synonyms_heading_search_references_path(heading) %>
           <% if heading.search_references_count > 0 %>
