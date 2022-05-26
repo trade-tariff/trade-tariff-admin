@@ -203,5 +203,27 @@ RSpec.describe ServiceHelper, type: :helper do
         it { is_expected.to eql expected }
       end
     end
+
+    context 'with LOCALE_PATH' do
+      let(:content) { '[Browse]([[LOCALE_PATH]]/browse)' }
+
+      it { is_expected.to eql '[Browse](/browse)' }
+    end
+
+    context 'with PREFIX_PATH' do
+      let(:content) { '[Browse]([[PREFIX_PATH]]/browse)' }
+
+      context 'with UK service' do
+        include_context 'with UK service'
+
+        it { is_expected.to eql '[Browse](/browse)' }
+      end
+
+      context 'with XI service' do
+        include_context 'with XI service'
+
+        it { is_expected.to eql '[Browse](/xi/browse)' }
+      end
+    end
   end
 end

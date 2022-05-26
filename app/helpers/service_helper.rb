@@ -25,15 +25,27 @@ module ServiceHelper
     TradeTariffAdmin::ServiceChooser.uk? ? 'the UK' : 'Northern Ireland'
   end
 
+  def service_path_prefix
+    TradeTariffAdmin::ServiceChooser.xi? ? '/xi' : ''
+  end
+
+  def locale_path_prefix
+    I18n.locale == I18n.default_locale ? '' : "/#{I18n.locale}"
+  end
+
   def replace_service_tags(content)
-    content.gsub %r{\[\[SERVICE_[A-Z_]+\]\]} do |match|
+    content.gsub %r{\[\[[A-Z]+_[A-Z_]+\]\]} do |match|
       case match
       when '[[SERVICE_NAME]]'
         service_name
       when '[[SERVICE_PATH]]'
-        TradeTariffAdmin::ServiceChooser.uk? ? '' : '/xi'
+        service_path_prefix
       when '[[SERVICE_REGION]]'
         service_region
+      when '[[LOCALE_PATH]]'
+        ''
+      when '[[PREFIX_PATH]]'
+        service_path_prefix
       else
         match
       end
