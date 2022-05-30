@@ -71,7 +71,7 @@
         Review Inserts
       </dt>
       <dd class="govuk-summary-list__value">
-        <% if @tariff_update.inserts && @tariff_update.inserts.parsed_inserts.present? %>
+        <% if @tariff_update.inserts&.parsed_inserts.present? %>
           <% @tariff_update.inserts.parsed_inserts.each_with_index do |(key, value), index| %>
             <%= tag.br if index.positive? %>
 
@@ -80,7 +80,6 @@
         <% elsif @tariff_update.inserts.nil? %>
           No insert information for this file
         <% else %>
-
           This file was empty
         <% end %>
       </dd>

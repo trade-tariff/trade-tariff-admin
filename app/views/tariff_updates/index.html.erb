@@ -30,7 +30,7 @@
         <td><%= number_to_human_size(tariff_update.filesize) %></td>
         <td>
           <a class="govuk-link" href="#">
-            <%= link_to "Review inserts", tariff_update_path(tariff_update, target: "_blank", title: tariff_update.filename) %>
+            <%= link_to "Review inserts", tariff_update_path(tariff_update) %>
           </a>
         </td>
         <td><%= render "actions", tariff_update: tariff_update %></td>
