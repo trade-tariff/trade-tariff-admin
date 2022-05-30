@@ -29,7 +29,7 @@
         <td><%= l(tariff_update.applied_at, format: :tariff) if tariff_update.applied_at %></td>
         <td><%= number_to_human_size(tariff_update.filesize) %></td>
         <td>
-          <% if tariff_update.inserts.present? %>
+          <% if tariff_update.parsed_inserts.present? %>
             <details class="govuk-details" data-module="govuk-details">
               <summary class="govuk-details__summary">
                 <span class="govuk-details__summary-text">
@@ -37,11 +37,9 @@
                 </span>
               </summary>
               <div class="govuk-details__text">
-                <% tariff_update.inserts.each_with_index do |(key, value), index| %>
-                  <%= tag.br if index.positive? %>
-
-                  <%= key.sub('::Operation', '') %>: <%= value %>
-                <% end %>
+                <pre>
+                  <%= tariff_update.parsed_inserts %>
+                </pre>
               </div>
             </details>
           <% end %>

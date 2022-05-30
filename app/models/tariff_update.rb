@@ -29,8 +29,12 @@ class TariffUpdate
     STATES[super]
   end
 
-  def inserts
-    JSON.parse(attributes[:inserts].presence || '{}')
+  def parsed_inserts
+    parsed = JSON.parse(inserts.presence || '{}')
+
+    return '' if parsed.blank?
+
+    YAML.dump(parsed).strip
   end
 
   def rollback?

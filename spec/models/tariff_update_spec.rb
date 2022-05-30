@@ -12,20 +12,6 @@ RSpec.describe TariffUpdate do
     it_behaves_like 'a tariff update state', 'X', nil
   end
 
-  describe '#inserts' do
-    context 'when the inserts are supplied' do
-      subject(:inserts) { build(:tariff_update, :with_inserts).inserts }
-
-      it { is_expected.to eq('something' => 'parseable') }
-    end
-
-    context 'when the inserts are not supplied' do
-      subject(:inserts) { build(:tariff_update).inserts }
-
-      it { is_expected.to eq({}) }
-    end
-  end
-
   describe '#rollback?' do
     shared_examples_for 'a tariff update that rolls back' do |state, _will_rollback|
       subject(:tariff_update) { build(:tariff_update, state:) }
@@ -64,5 +50,21 @@ RSpec.describe TariffUpdate do
     subject(:id) { build(:tariff_update, created_at: '2022-01-01T12:13Z').id }
 
     it { is_expected.to eq('2022-01-01t12-13z') }
+  end
+
+  describe '#parsed_inserts' do
+    subject(:parsed_inserts) { build(:tariff_update, inserts:).parsed_inserts }
+
+    context 'when there are inserts' do
+      let(:inserts) { '{"foo":"bar"}' }
+
+      it { is_expected.to eq("---\nfoo: bar") }
+    end
+
+    context 'when there are no inserts' do
+      let(:inserts) { nil }
+
+      it { is_expected.to eq('') }
+    end
   end
 end
