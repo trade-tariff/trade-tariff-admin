@@ -60,19 +60,19 @@ RSpec.describe TariffUpdate do
     end
   end
 
-  describe '#parsed_inserts' do
-    subject(:parsed_inserts) { build(:tariff_update, inserts:).parsed_inserts }
+  describe '#formatted_update_type' do
+    subject(:parsed_inserts) { build(:tariff_update, update_type:).formatted_update_type }
 
-    context 'when there are inserts' do
-      let(:inserts) { '{"foo":"bar"}' }
+    context 'when the update type is TariffSynchronizer::TaricUpdate' do
+      let(:update_type) { 'TariffSynchronizer::TaricUpdate' }
 
-      it { is_expected.to eq('foo' => 'bar') }
+      it { is_expected.to eq('Taric Update') }
     end
 
-    context 'when there are no inserts' do
-      let(:inserts) { '{}' }
+    context 'when the update type is TariffSynchronizer::CdsUpdate' do
+      let(:update_type) { 'TariffSynchronizer::CdsUpdate' }
 
-      it { is_expected.to eq({}) }
+      it { is_expected.to eq('Cds Update') }
     end
   end
 end
