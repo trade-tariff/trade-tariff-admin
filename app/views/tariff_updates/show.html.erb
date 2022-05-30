@@ -11,7 +11,7 @@
     </dd>
     <dd class="govuk-summary-list__actions">
       <a class="govuk-link" href="#">
-        <%= link_to "Download", sanitize(@tariff_update.file_presigned_url), target: "_blank", title: @tariff_update.filename %>
+        <%= link_to "Download", @tariff_update.file_presigned_url, target: "_blank", title: @tariff_update.filename %>
       </a>
     </dd>
   </div>
