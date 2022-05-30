@@ -60,7 +60,7 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :tariff_updates, only: %i[index]
+  resources :tariff_updates, only: %i[index show]
   resources :rollbacks, only: %i[index new create]
   resources :footnotes, only: %i[index edit update]
   resources :measure_types, only: %i[index edit update]

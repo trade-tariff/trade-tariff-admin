@@ -47,9 +47,17 @@ RSpec.describe TariffUpdate do
   end
 
   describe '#id' do
-    subject(:id) { build(:tariff_update, created_at: '2022-01-01T12:13Z').id }
+    context 'when the filename contains an gzip suffix' do
+      subject(:id) { build(:tariff_update, filename: 'foo.gzip').id }
 
-    it { is_expected.to eq('2022-01-01t12-13z') }
+      it { is_expected.to eq('foo') }
+    end
+
+    context 'when the filename contains an xml suffix' do
+      subject(:id) { build(:tariff_update, filename: 'foo.xml').id }
+
+      it { is_expected.to eq('foo') }
+    end
   end
 
   describe '#parsed_inserts' do
@@ -58,13 +66,13 @@ RSpec.describe TariffUpdate do
     context 'when there are inserts' do
       let(:inserts) { '{"foo":"bar"}' }
 
-      it { is_expected.to eq("---\nfoo: bar") }
+      it { is_expected.to eq('foo' => 'bar') }
     end
 
     context 'when there are no inserts' do
-      let(:inserts) { nil }
+      let(:inserts) { '{}' }
 
-      it { is_expected.to eq('') }
+      it { is_expected.to eq({}) }
     end
   end
 end
