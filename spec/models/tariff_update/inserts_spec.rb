@@ -58,7 +58,7 @@ RSpec.describe TariffUpdate::Inserts do
       ]
     end
 
-    it { is_expected.to eq(entity_updates) }
+    it { is_expected.to eq(expected_entity_updates) }
   end
 
   describe '#updated_inserts?' do
@@ -91,7 +91,3 @@ RSpec.describe TariffUpdate::Inserts do
     end
   end
 end
-
-# Get to a point where Madhu can review the impact of the changes
-# Update the importer so that when we soft delete missing and cascading rows we use the updates filename rather than the previous rows filename
-# Roll back to just before the file where the condition was present in thefile/ roll forward to the current day -< should fix the broken conditions
