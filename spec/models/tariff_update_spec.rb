@@ -12,20 +12,6 @@ RSpec.describe TariffUpdate do
     it_behaves_like 'a tariff update state', 'X', nil
   end
 
-  describe '#inserts' do
-    context 'when the inserts are supplied' do
-      subject(:inserts) { build(:tariff_update, :with_inserts).inserts }
-
-      it { is_expected.to eq('something' => 'parseable') }
-    end
-
-    context 'when the inserts are not supplied' do
-      subject(:inserts) { build(:tariff_update).inserts }
-
-      it { is_expected.to eq({}) }
-    end
-  end
-
   describe '#rollback?' do
     shared_examples_for 'a tariff update that rolls back' do |state, _will_rollback|
       subject(:tariff_update) { build(:tariff_update, state:) }
@@ -61,8 +47,32 @@ RSpec.describe TariffUpdate do
   end
 
   describe '#id' do
-    subject(:id) { build(:tariff_update, created_at: '2022-01-01T12:13Z').id }
+    context 'when the filename contains an gzip suffix' do
+      subject(:id) { build(:tariff_update, filename: 'foo.gzip').id }
 
-    it { is_expected.to eq('2022-01-01t12-13z') }
+      it { is_expected.to eq('foo') }
+    end
+
+    context 'when the filename contains an xml suffix' do
+      subject(:id) { build(:tariff_update, filename: 'foo.xml').id }
+
+      it { is_expected.to eq('foo') }
+    end
+  end
+
+  describe '#formatted_update_type' do
+    subject(:parsed_inserts) { build(:tariff_update, update_type:).formatted_update_type }
+
+    context 'when the update type is TariffSynchronizer::TaricUpdate' do
+      let(:update_type) { 'TariffSynchronizer::TaricUpdate' }
+
+      it { is_expected.to eq('Taric Update') }
+    end
+
+    context 'when the update type is TariffSynchronizer::CdsUpdate' do
+      let(:update_type) { 'TariffSynchronizer::CdsUpdate' }
+
+      it { is_expected.to eq('Cds Update') }
+    end
   end
 end

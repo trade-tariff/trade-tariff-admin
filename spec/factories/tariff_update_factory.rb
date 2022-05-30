@@ -20,10 +20,6 @@ FactoryBot.define do
       update_type { 'TariffSynchronizer::CdsUpdate' }
     end
 
-    trait :with_inserts do
-      inserts { '{"something": "parseable"}' }
-    end
-
     trait :with_exception do
       exception_class { 'CdsImporter::ImportException' }
       exception_queries { "(Sequel::Mysql2::Database) BEGIN \n(Sequel::Mysql2::Database) SELECT * FROM `measures` LIMIT 1 \n(Sequel::Mysql2::Database) ROLLBACK \n(Sequel::Mysql2::Database) UPDATE `tariff_updates` SET `state` = 'F', `updated_at` = '2014-07-22 16:16:15' WHERE ((`tariff_updates`.`update_type` IN ('TariffSynchronizer::TaricUpdate')) AND (`filename` = '2014-07-22_TGB14203.xml')) LIMIT 1 " }
@@ -32,6 +28,55 @@ FactoryBot.define do
 
     trait :missing do
       state { 'M' }
+    end
+
+    trait :with_inserts do
+      inserts do
+        {
+          "operations": {
+            "create": {
+              "count": 2909,
+              "duration": 4863.6220703125,
+              "allocations": 0,
+              "QuotaBalanceEvent": { "count": 2869, "allocations": 0, "duration": 4745.491455078125, "mapping_path": 'quotaBalanceEvent' },
+              "QuotaAssociation": { "count": 12, "allocations": 0, "duration": 26.2646484375, "mapping_path": 'quotaAssociation' },
+              "QuotaCriticalEvent": { "count": 12, "allocations": 0, "duration": 40.99951171875, "mapping_path": 'quotaCriticalEvent' },
+              "QuotaReopeningEvent": { "count": 5, "allocations": 0, "duration": 14.496337890625, "mapping_path": 'quotaReopeningEvent' },
+              "QuotaExhaustionEvent": { "count": 10, "allocations": 0, "duration": 25.343017578125, "mapping_path": 'quotaExhaustionEvent' },
+              "MeasureExcludedGeographicalArea": { "count": 1, "allocations": 0, "duration": 11.027099609375, "mapping_path": 'measureExcludedGeographicalArea' },
+            },
+            "update": {
+              "count": 93,
+              "duration": 334.093017578125,
+              "allocations": 0,
+              "QuotaDefinition": { "count": 57, "allocations": 0, "duration": 192.965576171875, "mapping_path": nil },
+              "Measure": { "count": 18, "allocations": 0, "duration": 87.497802734375, "mapping_path": nil },
+              "MeasureComponent": { "count": 18, "allocations": 0, "duration": 53.629638671875, "mapping_path": 'measureComponent' },
+            },
+            "destroy": { "count": 4, "duration": 0, "allocations": 0 },
+            "destroy_cascade": { "count": 5, "duration": 0, "allocations": 0 },
+            "destroy_missing": { "count": 7, "duration": 0, "allocations": 0 },
+          },
+          "total_count": 3002,
+          "total_duration": 5197.715087890625,
+          "total_allocations": 0,
+        }.to_json
+      end
+    end
+
+    trait :with_old_inserts do
+      inserts do
+        {
+          "FootnoteType::Operation": 1,
+          "FootnoteTypeDescription::Operation": 1,
+          "QuotaDefinition::Operation": 59,
+          "QuotaBalanceEvent::Operation": 2581,
+          "QuotaCriticalEvent::Operation": 13,
+          "QuotaAssociation::Operation": 13,
+          "QuotaReopeningEvent::Operation": 4,
+          "QuotaExhaustionEvent::Operation": 9,
+        }.to_json
+      end
     end
   end
 end

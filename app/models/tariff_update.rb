@@ -29,10 +29,6 @@ class TariffUpdate
     STATES[super]
   end
 
-  def inserts
-    JSON.parse(attributes[:inserts].presence || '{}')
-  end
-
   def rollback?
     attributes[:state].in?(ROLLBACK_APPLICABLE_STATES)
   end
@@ -46,6 +42,14 @@ class TariffUpdate
   end
 
   def id
-    created_at.to_s.parameterize
+    filename&.sub(/\.(xml|gzip)\Z/, '')
+  end
+
+  def formatted_update_type
+    update_type.sub(/\ATariffSynchronizer::/, '').titleize
+  end
+
+  def inserts
+    attributes[:inserts] ? TariffUpdate::Inserts.new(attributes[:inserts]) : nil
   end
 end

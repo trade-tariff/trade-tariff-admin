@@ -29,22 +29,9 @@
         <td><%= l(tariff_update.applied_at, format: :tariff) if tariff_update.applied_at %></td>
         <td><%= number_to_human_size(tariff_update.filesize) %></td>
         <td>
-          <% if tariff_update.inserts.present? %>
-            <details class="govuk-details" data-module="govuk-details">
-              <summary class="govuk-details__summary">
-                <span class="govuk-details__summary-text">
-                  Review inserts
-                </span>
-              </summary>
-              <div class="govuk-details__text">
-                <% tariff_update.inserts.each_with_index do |(key, value), index| %>
-                  <%= tag.br if index.positive? %>
-
-                  <%= key.sub('::Operation', '') %>: <%= value %>
-                <% end %>
-              </div>
-            </details>
-          <% end %>
+          <a class="govuk-link" href="#">
+            <%= link_to "Review inserts", tariff_update_path(tariff_update) %>
+          </a>
         </td>
         <td><%= render "actions", tariff_update: tariff_update %></td>
       </tr>

@@ -1,0 +1,121 @@
+<h1><%= @tariff_update.formatted_update_type %></h1>
+
+<dl class="govuk-summary-list">
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">
+      Filename
+    </dt>
+    <dd class="govuk-summary-list__value">
+      <p class="govuk-body"><%= @tariff_update.filename %></p>
+      <p class="govuk-body"><%= number_to_human_size(@tariff_update.filesize) %></p>
+    </dd>
+    <dd class="govuk-summary-list__actions">
+      <a class="govuk-link" href="#">
+        <%= link_to "Download", @tariff_update.file_presigned_url, target: "_blank", title: @tariff_update.filename %>
+      </a>
+    </dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">
+      Imported on
+    </dt>
+    <dd class="govuk-summary-list__value">
+      <%= l(@tariff_update.created_at.to_date, format: :tariff) %>
+    </dd>
+    <dd class="govuk-summary-list__actions">
+    </dd>
+  </div>
+  <% if @tariff_update.inserts&.updated_inserts? %>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">
+        Records changed
+      </dt>
+      <dd class="govuk-summary-list__value">
+        <p class="govuk-body"><%= @tariff_update.inserts.total_records_affected %> total</p>
+        <% if @tariff_update.inserts.total_records_created.positive? %>
+          <p class="govuk-body"><%= @tariff_update.inserts.total_records_created %> created</p>
+        <% end %>
+
+        <% if @tariff_update.inserts.total_records_updated.positive? %>
+          <p class="govuk-body"><%= @tariff_update.inserts.total_records_updated %> updated</p>
+        <% end %>
+
+        <% if @tariff_update.inserts.total_records_destroyed.positive? %>
+          <p class="govuk-body"><%= @tariff_update.inserts.total_records_destroyed %> destroyed</p>
+        <% end %>
+
+        <% if @tariff_update.inserts.total_records_destroyed_missing.positive? %>
+          <p class="govuk-body"><%= @tariff_update.inserts.total_records_destroyed_missing %> destroyed because now missing</p>
+        <% end %>
+
+        <% if @tariff_update.inserts.total_records_destroyed_cascade.positive? %>
+          <p class="govuk-body"><%= @tariff_update.inserts.total_records_destroyed_cascade %> destroyed because cascade deletion</p>
+        <% end %>
+      </dd>
+      <dd class="govuk-summary-list__actions">
+      </dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">
+        Import duration
+      </dt>
+      <dd class="govuk-summary-list__value">
+        <p class="govuk-body"><%= @tariff_update.inserts.total_duration_in_seconds.round %> seconds</p>
+      </dd>
+      <dd class="govuk-summary-list__actions">
+      </dd>
+    </div>
+  <% else %>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">
+        Review Inserts
+      </dt>
+      <dd class="govuk-summary-list__value">
+        <% if @tariff_update.inserts&.parsed_inserts.present? %>
+          <% @tariff_update.inserts.parsed_inserts.each_with_index do |(key, value), index| %>
+            <%= tag.br if index.positive? %>
+
+            <%= key.sub('::Operation', '') %>: <%= value %>
+          <% end %>
+        <% elsif @tariff_update.inserts.nil? %>
+          No insert information for this file
+        <% else %>
+          This file was empty
+        <% end %>
+      </dd>
+      <dd class="govuk-summary-list__actions">
+      </dd>
+    </div>
+  <% end %>
+</dl>
+
+<% if @tariff_update.inserts&.updated_inserts? && @tariff_update.inserts.total_records_affected.positive? %>
+  <p class="govuk-body">
+    As part of the CDS/Taric (UK/EU) import process we extract, transform and load various tariff records.
+    The following table indicates the specific rows that got inserted and the operation that was specified in the file that triggered this update.
+  </p>
+
+  <table class="govuk-table">
+    <caption class="govuk-table__caption govuk-table__caption--m">Imported entities</caption>
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th scope="col" class="govuk-table__header govuk-!-width-one-half">Entity</th>
+        <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Created</th>
+        <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Updated</th>
+        <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Destroyed</th>
+        <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Missing</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+      <% @tariff_update.inserts.entity_updates.each do |entity| %>
+        <tr class="govuk-table__row">
+          <th scope="row" class="govuk-table__header"><%= entity[:entity] %></th>
+          <td class="govuk-table__cell"><%= entity[:creates] %></td>
+          <td class="govuk-table__cell"><%= entity[:updates] %></td>
+          <td class="govuk-table__cell"><%= entity[:destroys] %></td>
+          <td class="govuk-table__cell"><%= entity[:missing] %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>
