@@ -37,29 +37,51 @@ FactoryBot.define do
             "create": {
               "count": 2909,
               "duration": 4863.6220703125,
-              "allocations": 0,
-              "QuotaBalanceEvent": { "count": 2869, "allocations": 0, "duration": 4745.491455078125, "mapping_path": 'quotaBalanceEvent' },
-              "QuotaAssociation": { "count": 12, "allocations": 0, "duration": 26.2646484375, "mapping_path": 'quotaAssociation' },
-              "QuotaCriticalEvent": { "count": 12, "allocations": 0, "duration": 40.99951171875, "mapping_path": 'quotaCriticalEvent' },
-              "QuotaReopeningEvent": { "count": 5, "allocations": 0, "duration": 14.496337890625, "mapping_path": 'quotaReopeningEvent' },
-              "QuotaExhaustionEvent": { "count": 10, "allocations": 0, "duration": 25.343017578125, "mapping_path": 'quotaExhaustionEvent' },
-              "MeasureExcludedGeographicalArea": { "count": 1, "allocations": 0, "duration": 11.027099609375, "mapping_path": 'measureExcludedGeographicalArea' },
+              "QuotaBalanceEvent": { "count": 2869, "duration": 4745.491455078125, "mapping_path": 'quotaBalanceEvent' },
+              "QuotaAssociation": { "count": 12, "duration": 26.2646484375, "mapping_path": 'quotaAssociation' },
+              "QuotaCriticalEvent": { "count": 12, "duration": 40.99951171875, "mapping_path": 'quotaCriticalEvent' },
+              "QuotaReopeningEvent": { "count": 5, "duration": 14.496337890625, "mapping_path": 'quotaReopeningEvent' },
+              "QuotaExhaustionEvent": { "count": 10, "duration": 25.343017578125, "mapping_path": 'quotaExhaustionEvent' },
+              "MeasureExcludedGeographicalArea": { "count": 1, "duration": 11.027099609375, "mapping_path": 'measureExcludedGeographicalArea' },
             },
             "update": {
               "count": 93,
               "duration": 334.093017578125,
-              "allocations": 0,
-              "QuotaDefinition": { "count": 57, "allocations": 0, "duration": 192.965576171875, "mapping_path": nil },
-              "Measure": { "count": 18, "allocations": 0, "duration": 87.497802734375, "mapping_path": nil },
-              "MeasureComponent": { "count": 18, "allocations": 0, "duration": 53.629638671875, "mapping_path": 'measureComponent' },
+              "QuotaDefinition": { "count": 57, "duration": 192.965576171875, "mapping_path": nil },
+              "Measure": { "count": 18, "duration": 87.497802734375, "mapping_path": nil },
+              "MeasureComponent": { "count": 18, "duration": 53.629638671875, "mapping_path": 'measureComponent' },
             },
-            "destroy": { "count": 4, "duration": 0, "allocations": 0 },
-            "destroy_cascade": { "count": 5, "duration": 0, "allocations": 0 },
-            "destroy_missing": { "count": 7, "duration": 0, "allocations": 0 },
+            "destroy": { "count": 4, "duration": 0 },
+            "destroy_cascade": { "count": 5, "duration": 0 },
+            "destroy_missing": {
+              "count": 7,
+              "duration": 0,
+              'MeasureExcludedGeographicalArea' => {
+                "count": 1,
+                "duration": 0,
+                "mapping_path": 'measureExcludedGeographicalArea',
+                "records": [{ "oid": 1, "measure_sid": 123, "geographical_area_id": 'IT' }],
+              },
+            },
           },
           "total_count": 3002,
           "total_duration": 5197.715087890625,
-          "total_allocations": 0,
+        }.to_json
+      end
+    end
+
+    trait :with_empty_inserts do
+      inserts do
+        {
+          "operations": {
+            "create": { "count": 0, "duration": 0 },
+            "update": { "count": 0, "duration": 0 },
+            "destroy": { "count": 0, "duration": 0 },
+            "destroy_cascade": { "count": 0, "duration": 0 },
+            "destroy_missing": { "count": 0, "duration": 0 },
+          },
+          "total_count": 0,
+          "total_duration": 0,
         }.to_json
       end
     end

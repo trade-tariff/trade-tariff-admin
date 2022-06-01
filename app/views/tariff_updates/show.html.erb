@@ -89,14 +89,15 @@
   <% end %>
 </dl>
 
-<% if @tariff_update.inserts&.updated_inserts? && @tariff_update.inserts.total_records_affected.positive? %>
-  <p class="govuk-body">
-    As part of the CDS/Taric (UK/EU) import process we extract, transform and load various tariff records.
-    The following table indicates the specific rows that got inserted and the operation that was specified in the file that triggered this update.
-  </p>
-
+<% if @tariff_update.inserts&.updated_inserts? && @tariff_update.inserts.any_updates? %>
   <table class="govuk-table">
     <caption class="govuk-table__caption govuk-table__caption--m">Imported entities</caption>
+
+    <p class="govuk-body">
+      As part of the CDS/Taric (UK/EU) import process we extract, transform and load various tariff records.
+      The following table indicates the specific rows that got inserted and the operation that was specified in the file that triggered this update.
+    </p>
+
     <thead class="govuk-table__head">
       <tr class="govuk-table__row">
         <th scope="col" class="govuk-table__header govuk-!-width-one-half">Entity</th>
@@ -107,7 +108,7 @@
       </tr>
     </thead>
     <tbody class="govuk-table__body">
-      <% @tariff_update.inserts.entity_updates.each do |entity| %>
+      <% @tariff_update.inserts.updated_entities.each do |entity| %>
         <tr class="govuk-table__row">
           <th scope="row" class="govuk-table__header"><%= entity[:entity] %></th>
           <td class="govuk-table__cell"><%= entity[:creates] %></td>
@@ -118,4 +119,43 @@
       <% end %>
     </tbody>
   </table>
+
+  <% if @tariff_update.inserts.any_missing? %>
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--m">Missing entities</caption>
+
+      <p class="govuk-body">
+        Missing entities are entities that were present in a previous file but are no longer present. CDS
+        remove entities occasionally by no longer including them in the response. We can't infer missing entities
+        just by looking at the file so they are reported here for review.
+      </p>
+
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header govuk-!-width-one-half">Entity</th>
+          <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Missing</th>
+          <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Identifiers</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        <% @tariff_update.inserts.missing_entities.each do |entity| %>
+          <tr class="govuk-table__row">
+            <th scope="row" class="govuk-table__header"><%= entity[:entity] %></th>
+            <td class="govuk-table__cell"><%= entity[:missing] %></td>
+            <td class="govuk-table__cell">
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Review Missing Inserts</dt>
+                <dd class="govuk-summary-list__value">
+                  <% entity[:records] do |record| %>
+                    <pre><%= record %></pre>
+                  <% end %>
+                </dd>
+                <dd class="govuk-summary-list__actions"></dd>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
 <% end %>

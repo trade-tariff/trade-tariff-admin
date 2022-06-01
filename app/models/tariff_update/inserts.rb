@@ -32,7 +32,7 @@ class TariffUpdate
       parsed_inserts.dig('operations', 'destroy_cascade', 'count').presence || 0
     end
 
-    def entity_updates
+    def updated_entities
       creates = inserts_for('create')
       updates = inserts_for('update')
       destroys = inserts_for('destroy')
@@ -55,6 +55,28 @@ class TariffUpdate
           missing: destroys_missing.dig(entity, 'count') || 0,
         }
       end
+    end
+
+    def missing_entities
+      destroys_missing = inserts_for('destroy_missing')
+
+      destroys_missing.each_with_object([]) do |(entity, _entity_info), entities|
+        records = destroys_missing.dig(entity, 'records') || []
+
+        entities << {
+          entity:,
+          missing: destroys_missing.dig(entity, 'count') || 0,
+          records: YAML.dump(records),
+        }
+      end
+    end
+
+    def any_updates?
+      updated_entities.any?
+    end
+
+    def any_missing?
+      missing_entities.any?
     end
 
     def updated_inserts?
