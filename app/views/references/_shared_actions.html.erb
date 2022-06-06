@@ -1,0 +1,19 @@
+<div id="import-export-references">
+  <h3>Import and Export search references</h3>
+
+  <p>
+    Import multiple search references from a CSV file
+  </p>
+
+  <%= link_to references_import_path, class: 'govuk-button' do %>
+    Import search references CSV
+  <% end %>
+
+  <p>
+    Export all search references as a CSV file
+  </p>
+
+  <%= link_to references_export_path, class: 'govuk-button', method: :post do %>
+    Export all search references as CSV
+  <% end %>
+</div>

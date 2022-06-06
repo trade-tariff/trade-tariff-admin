@@ -22,7 +22,7 @@ class Commodity
   end
 
   def export_filename
-    "#{self.class.name.tableize}-#{id}-synonyms-#{Time.zone.now.iso8601}.csv"
+    "#{self.class.name.tableize}-#{id}-references-#{Time.zone.now.iso8601}.csv"
   end
 
   def reference_title

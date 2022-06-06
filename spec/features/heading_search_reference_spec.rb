@@ -35,7 +35,7 @@ RSpec.describe 'Heading Search Reference management' do
         end
       end
 
-      create_search_reference_for heading, 'Synonym' => title
+      create_search_reference_for heading, 'Reference' => title
 
       verify search_reference_created_for(heading, title:)
     end
@@ -110,7 +110,7 @@ RSpec.describe 'Heading Search Reference management' do
         end
       end
 
-      update_heading_search_reference_for(heading, heading_search_reference, 'Synonym' => new_title)
+      update_heading_search_reference_for(heading, heading_search_reference, 'Reference' => new_title)
 
       stub_api_for(Heading::SearchReference) do |stub|
         stub.get("/admin/headings/#{heading.to_param}/search_references/#{heading_search_reference.to_param}") do |_env|
@@ -125,7 +125,7 @@ RSpec.describe 'Heading Search Reference management' do
   private
 
   def create_search_reference_for(heading, fields_and_values = {})
-    ensure_on new_synonyms_heading_search_reference_path(heading)
+    ensure_on new_references_heading_search_reference_path(heading)
 
     fields_and_values.each do |field, value|
       fill_in field, with: value
@@ -137,7 +137,7 @@ RSpec.describe 'Heading Search Reference management' do
   end
 
   def update_heading_search_reference_for(heading, search_reference, fields_and_values = {})
-    ensure_on edit_synonyms_heading_search_reference_path(heading, search_reference)
+    ensure_on edit_references_heading_search_reference_path(heading, search_reference)
 
     fields_and_values.each do |field, value|
       fill_in field, with: value
@@ -149,7 +149,7 @@ RSpec.describe 'Heading Search Reference management' do
   end
 
   def remove_heading_search_reference_for(heading, heading_search_reference)
-    ensure_on synonyms_heading_search_references_path(heading)
+    ensure_on references_heading_search_references_path(heading)
 
     within(dom_id_selector(heading_search_reference)) do
       click_link 'Remove'
@@ -157,13 +157,13 @@ RSpec.describe 'Heading Search Reference management' do
   end
 
   def heading_search_reference_updated_for(heading, search_reference, args = {})
-    ensure_on edit_synonyms_heading_search_reference_path(heading, search_reference)
+    ensure_on edit_references_heading_search_reference_path(heading, search_reference)
 
-    page.has_field?('Synonym', with: args[:title])
+    page.has_field?('Reference', with: args[:title])
   end
 
   def search_reference_created_for(heading, attributes = {})
-    ensure_on synonyms_heading_search_references_path(heading)
+    ensure_on references_heading_search_references_path(heading)
 
     within('table') do
       page.has_content? attributes.fetch(:title)

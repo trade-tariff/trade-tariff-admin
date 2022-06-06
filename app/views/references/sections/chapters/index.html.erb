@@ -1,0 +1,35 @@
+<%= govuk_breadcrumbs 'Sections': references_sections_path,
+                      "Section #{section.numeral}": references_section_chapters_path(section.id) %>
+
+<h2>Search references of section <%= section.numeral %>: <%= section.title %></h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Chapter</th>
+      <th>Headings</th>
+      <th>Title</th>
+      <th class="hott-actions-col">Search references</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @chapters.each do |chapter| %>
+      <tr id="<%= dom_id chapter %>">
+        <td><%= chapter.short_code %></td>
+        <td><%= link_to chapter.headings_range, references_chapter_headings_path(chapter) %></td>
+        <td><%= chapter.description.titleize %></td>
+        <td class="hott-link-group">
+          <div>
+            <%= pluralize chapter.search_references_count, "reference" %>
+          </div>
+          <%= link_to "Edit", references_chapter_search_references_path(chapter) %>
+          <% if chapter.search_references_count > 0 %>
+            <%= link_to 'Export', export_references_chapter_search_references_path(chapter), method: :post %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<%= render "references/shared_actions" %>

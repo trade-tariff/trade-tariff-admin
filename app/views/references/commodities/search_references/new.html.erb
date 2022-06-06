@@ -1,0 +1,12 @@
+<%= govuk_breadcrumbs 'Sections': references_sections_path,
+                      'Commodities': references_heading_commodities_path(heading_id: commodity.heading_id),
+                      'Search references': references_commodity_search_references_path(commodity) %>
+
+<h2>New Search reference</h2>
+
+<%= govuk_form_for search_reference, url: references_commodity_search_references_path(commodity), as: :search_reference do |f| %>
+  <%= f.govuk_text_field :title, width: 'one-half' %>
+
+  <%= submit_and_back_buttons f, references_commodity_search_references_path(commodity) %>
+<% end %>
+
