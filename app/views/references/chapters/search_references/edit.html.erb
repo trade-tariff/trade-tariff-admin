@@ -1,0 +1,12 @@
+<%= govuk_breadcrumbs 'Sections': references_sections_path,
+                      'Chapters': references_section_chapters_path(section_id: chapter.section.id),
+                      'Search references': references_chapter_search_references_path(chapter) %>
+
+<h2>Edit Search reference</h2>
+
+<%= govuk_form_for search_reference, url: references_chapter_search_reference_path(chapter, search_reference), as: :search_reference do |f| %>
+  <%= f.govuk_text_field :title, width: 'one-half' %>
+
+  <%= submit_and_back_buttons f, references_chapter_search_references_path(chapter) %>
+<% end %>
+

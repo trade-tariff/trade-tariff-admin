@@ -23,7 +23,7 @@ Rails.application.routes.draw do
     end
   end
 
-  namespace :synonyms, module: :synonyms, path: 'search_references' do
+  namespace :references, path: 'search_references' do
     resource :import, only: %i[show create]
     resource :export, only: [:create]
 

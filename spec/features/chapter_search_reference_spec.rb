@@ -35,7 +35,7 @@ RSpec.describe 'Chapter Search Reference management' do
           jsonapi_success_response('search_reference', [chapter_search_reference.attributes], 'x-meta' => { pagination: { total: 1 } }.to_json)
         end
       end
-      create_search_reference_for chapter, 'Synonym' => title
+      create_search_reference_for chapter, 'Reference' => title
 
       verify search_reference_created_for(chapter, title:)
     end
@@ -111,7 +111,7 @@ RSpec.describe 'Chapter Search Reference management' do
         end
       end
 
-      update_chapter_search_reference_for(chapter, chapter_search_reference, 'Synonym' => new_title)
+      update_chapter_search_reference_for(chapter, chapter_search_reference, 'Reference' => new_title)
 
       stub_api_for(Chapter::SearchReference) do |stub|
         stub.get("/admin/chapters/#{chapter.to_param}/search_references/#{chapter_search_reference.to_param}") do |_env|
@@ -126,7 +126,7 @@ RSpec.describe 'Chapter Search Reference management' do
   private
 
   def create_search_reference_for(chapter, fields_and_values = {})
-    ensure_on new_synonyms_chapter_search_reference_path(chapter)
+    ensure_on new_references_chapter_search_reference_path(chapter)
 
     fields_and_values.each do |field, value|
       fill_in field, with: value
@@ -138,7 +138,7 @@ RSpec.describe 'Chapter Search Reference management' do
   end
 
   def update_chapter_search_reference_for(chapter, search_reference, fields_and_values = {})
-    ensure_on edit_synonyms_chapter_search_reference_path(chapter, search_reference)
+    ensure_on edit_references_chapter_search_reference_path(chapter, search_reference)
 
     fields_and_values.each do |field, value|
       fill_in field, with: value
@@ -150,7 +150,7 @@ RSpec.describe 'Chapter Search Reference management' do
   end
 
   def remove_chapter_search_reference_for(chapter, chapter_search_reference)
-    ensure_on synonyms_chapter_search_references_path(chapter)
+    ensure_on references_chapter_search_references_path(chapter)
 
     within(dom_id_selector(chapter_search_reference)) do
       click_link 'Remove'
@@ -158,13 +158,13 @@ RSpec.describe 'Chapter Search Reference management' do
   end
 
   def chapter_search_reference_updated_for(chapter, search_reference, args = {})
-    ensure_on edit_synonyms_chapter_search_reference_path(chapter, search_reference)
+    ensure_on edit_references_chapter_search_reference_path(chapter, search_reference)
 
-    page.has_field?('Synonym', with: args[:title])
+    page.has_field?('Reference', with: args[:title])
   end
 
   def search_reference_created_for(chapter, attributes = {})
-    ensure_on synonyms_chapter_search_references_path(chapter)
+    ensure_on references_chapter_search_references_path(chapter)
 
     within('table') do
       page.has_content? attributes.fetch(:title)

@@ -1,0 +1,37 @@
+<%= govuk_breadcrumbs 'Sections': references_sections_path,
+                      'Headings': references_chapter_headings_path(chapter_id: heading.chapter_id) %>
+
+<h2>Commodities search references of heading <%= heading.to_param %>:<%= heading.description.titleize %></h2>
+
+<table class='table table-bordered table-striped table-condensed table-headings'>
+  <thead>
+    <tr>
+      <th>Commodity</th>
+      <th>Title</th>
+      <th>Productline Suffix</th>
+      <th>Declarable</th>
+      <th class="hott-actions-col">Search references</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @commodities.each do |commodity| %>
+      <tr id="<%= dom_id(commodity) %>">
+        <td><%= commodity.goods_nomenclature_item_id %></td>
+        <td><%= commodity.description.titleize %></td>
+        <td><%= commodity.productline_suffix %></td>
+        <td><%= commodity.declarable %></td>
+        <td class="hott-link-group">
+          <div>
+            <%= pluralize commodity.search_references_count, "reference" %>
+          </div>
+          <%= link_to 'Edit', references_commodity_search_references_path(commodity) %>
+          <% if commodity.search_references_count > 0 %>
+            <%= link_to 'Export', export_references_commodity_search_references_path(commodity), method: :post %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<%= render "references/shared_actions" %>

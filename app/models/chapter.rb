@@ -41,7 +41,7 @@ class Chapter
   end
 
   def export_filename
-    "#{self.class.name.tableize}-#{short_code}-synonyms-#{Time.zone.now.iso8601}.csv"
+    "#{self.class.name.tableize}-#{short_code}-references-#{Time.zone.now.iso8601}.csv"
   end
 
   def reference_title

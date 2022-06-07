@@ -35,7 +35,7 @@ RSpec.describe 'Commodity Search Reference management' do
         end
       end
 
-      create_search_reference_for commodity, 'Synonym' => title
+      create_search_reference_for commodity, 'Reference' => title
 
       verify search_reference_created_for(commodity, title:)
     end
@@ -110,7 +110,7 @@ RSpec.describe 'Commodity Search Reference management' do
         end
       end
 
-      update_commodity_search_reference_for(commodity, commodity_search_reference, 'Synonym' => new_title)
+      update_commodity_search_reference_for(commodity, commodity_search_reference, 'Reference' => new_title)
 
       stub_api_for(Commodity::SearchReference) do |stub|
         stub.get("/admin/commodities/#{commodity.to_param}/search_references/#{commodity_search_reference.to_param}") do |_env|
@@ -125,7 +125,7 @@ RSpec.describe 'Commodity Search Reference management' do
   private
 
   def create_search_reference_for(commodity, fields_and_values = {})
-    ensure_on new_synonyms_commodity_search_reference_path(commodity)
+    ensure_on new_references_commodity_search_reference_path(commodity)
 
     fields_and_values.each do |field, value|
       fill_in field, with: value
@@ -137,7 +137,7 @@ RSpec.describe 'Commodity Search Reference management' do
   end
 
   def update_commodity_search_reference_for(commodity, search_reference, fields_and_values = {})
-    ensure_on edit_synonyms_commodity_search_reference_path(commodity, search_reference)
+    ensure_on edit_references_commodity_search_reference_path(commodity, search_reference)
 
     fields_and_values.each do |field, value|
       fill_in field, with: value
@@ -149,7 +149,7 @@ RSpec.describe 'Commodity Search Reference management' do
   end
 
   def remove_commodity_search_reference_for(commodity, commodity_search_reference)
-    ensure_on synonyms_commodity_search_references_path(commodity)
+    ensure_on references_commodity_search_references_path(commodity)
 
     within(dom_id_selector(commodity_search_reference)) do
       click_link 'Remove'
@@ -157,13 +157,13 @@ RSpec.describe 'Commodity Search Reference management' do
   end
 
   def commodity_search_reference_updated_for(commodity, search_reference, args = {})
-    ensure_on edit_synonyms_commodity_search_reference_path(commodity, search_reference)
+    ensure_on edit_references_commodity_search_reference_path(commodity, search_reference)
 
-    page.has_field?('Synonym', with: args[:title])
+    page.has_field?('Reference', with: args[:title])
   end
 
   def search_reference_created_for(commodity, attributes = {})
-    ensure_on synonyms_commodity_search_references_path(commodity)
+    ensure_on references_commodity_search_references_path(commodity)
 
     within('table') do
       page.has_content? attributes.fetch(:title)
