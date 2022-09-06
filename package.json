@@ -8,7 +8,7 @@
     "rails-ujs": "^5.2.8"
   },
   "devDependencies": {
-    "webpack-dev-server": "^4.10.0"
+    "webpack-dev-server": "^4.10.1"
   },
   "license": "MIT"
 }
