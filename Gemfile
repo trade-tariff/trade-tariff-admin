@@ -56,6 +56,7 @@ gem 'sidekiq-scheduler'
 # Misc
 gem 'bootsnap', require: false
 gem 'nokogiri', '>= 1.10.10'
+gem 'sentry-rails'
 
 group :development, :test do
   gem 'brakeman'
@@ -78,8 +79,4 @@ group :test do
   gem 'shoulda-matchers'
   gem 'simplecov'
   gem 'webmock'
-end
-
-group :production do
-  gem 'sentry-raven'
 end
