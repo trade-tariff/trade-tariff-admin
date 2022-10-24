@@ -12,7 +12,7 @@ Her::API.setup url: api_host do |c|
   # Response
   c.use Her::Middleware::HeaderMetadataParse
   c.use Her::Middleware::TariffJsonapiParser
-  c.use Faraday::Response::RaiseError
+  c.use Her::Middleware::RaiseError
 
   # Adapter
   c.adapter Faraday::Adapter::NetHttp
@@ -27,7 +27,7 @@ Her::UK_API.setup url: TradeTariffAdmin::ServiceChooser.service_choices['uk'] do
   # Response
   c.use Her::Middleware::HeaderMetadataParse
   c.use Her::Middleware::TariffJsonapiParser
-  c.use Faraday::Response::RaiseError
+  c.use Her::Middleware::RaiseError
 
   # Adapter
   c.adapter Faraday::Adapter::NetHttp
