@@ -1,0 +1,11 @@
+<h2>Search for a quota order number</h2>
+
+<p>
+    Enter the 6-digit quota order number ID to return the details of the quota's definitions,
+    balance updates and other events.
+</p>
+
+<%= form_with url: search_quotas_results_path do |form| %>
+    <%= form.text_field :title %>
+    <%= submit_tag 'Search'  %>
+<% end %>
