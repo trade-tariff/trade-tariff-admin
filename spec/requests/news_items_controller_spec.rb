@@ -28,12 +28,12 @@ RSpec.describe NewsItemsController do
       stub_api_request('/news_items', :post).to_return create_response
     end
 
+    let(:create_response) { webmock_response(:created, news_item.attributes) }
+
     let :make_request do
       post news_items_path,
            params: { news_item: news_item_params }
     end
-
-    let(:create_response) { webmock_response(:created, news_item.attributes) }
 
     context 'with valid item' do
       let(:news_item_params) { news_item.attributes.without(:id) }
