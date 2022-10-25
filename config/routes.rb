@@ -7,6 +7,11 @@ Rails.application.routes.draw do
   filter :service_path_prefix_handler
   default_url_options(host: TradeTariffAdmin.host)
 
+  resources :quota_order_numbers, module: :quota_order_numbers, only: %i[] do
+    member do
+      get 'quota_definitions/current'
+    end
+  end
   namespace :notes, module: :notes do
     resources :sections, only: %i[index show] do
       scope module: 'sections' do
