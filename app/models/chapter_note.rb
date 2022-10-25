@@ -1,5 +1,5 @@
 class ChapterNote
-  include Her::JsonApi::Model
+  include Her::JsonApi::TariffModel
   extend ActiveModel::Naming
 
   resource_path '/admin/chapters/:chapter_id/chapter_note'

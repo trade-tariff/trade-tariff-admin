@@ -1,7 +1,7 @@
 require 'section/search_reference'
 
 class Section
-  include Her::JsonApi::Model
+  include Her::JsonApi::TariffModel
 
   collection_path '/admin/sections'
 

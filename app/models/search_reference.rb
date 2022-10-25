@@ -1,5 +1,5 @@
 class SearchReference
-  include Her::JsonApi::Model
+  include Her::JsonApi::TariffModel
 
   collection_path '/admin/search_references'
   type name.demodulize.tableize

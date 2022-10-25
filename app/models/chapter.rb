@@ -1,7 +1,7 @@
 require 'chapter/search_reference'
 
 class Chapter
-  include Her::JsonApi::Model
+  include Her::JsonApi::TariffModel
 
   collection_path '/admin/chapters'
 

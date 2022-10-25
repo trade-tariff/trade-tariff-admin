@@ -1,7 +1,7 @@
 require 'commodity/search_reference'
 
 class Commodity
-  include Her::JsonApi::Model
+  include Her::JsonApi::TariffModel
 
   collection_path '/admin/commodities'
 

@@ -1,7 +1,7 @@
 require 'heading/search_reference'
 
 class Heading
-  include Her::JsonApi::Model
+  include Her::JsonApi::TariffModel
 
   collection_path '/admin/headings'
 

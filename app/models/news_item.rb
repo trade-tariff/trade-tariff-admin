@@ -1,5 +1,5 @@
 class NewsItem
-  include Her::JsonApi::Model
+  include Her::JsonApi::TariffModel
   use_api Her::UK_API
 
   DISPLAY_STYLE_REGULAR = 0

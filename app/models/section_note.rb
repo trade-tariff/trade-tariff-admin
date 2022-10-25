@@ -1,5 +1,5 @@
 class SectionNote
-  include Her::JsonApi::Model
+  include Her::JsonApi::TariffModel
   extend ActiveModel::Naming
 
   resource_path '/admin/sections/:section_id/section_note'

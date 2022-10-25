@@ -1,5 +1,5 @@
 class TariffUpdate
-  include Her::JsonApi::Model
+  include Her::JsonApi::TariffModel
   extend HerPaginatable
 
   collection_path '/admin/updates'
