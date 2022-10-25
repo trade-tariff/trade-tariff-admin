@@ -15,6 +15,7 @@ module TradeTariffAdmin
 
     require 'trade_tariff_admin'
     require 'trade_tariff_admin/service_chooser'
+    require 'her/json_api/tariff_model'
 
     config.active_job.queue_adapter = :sidekiq
 
