@@ -1,0 +1,22 @@
+{
+  "data" : {
+    "meta": { "foo": "bar" },
+    "id": "123",
+    "type": "mock_entity",
+    "attributes": {
+      "name": "Joe",
+      "age": 21
+    },
+    "relationships": {
+      "parts": {
+        "data": [
+          {
+            "id": 456,
+            "type": "part"
+          }
+        ]
+      }
+    }
+  },
+  "included": []
+}
