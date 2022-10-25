@@ -11,9 +11,7 @@ module QuotaOrderNumbers
                :validity_start_date,
                :validity_end_date,
                :initial_volume,
-               :measurement_unit,
-               :monetary_unit_code,
-               :measurement_unit_qualifier_code
+               :measurement_unit
 
     has_many :quota_balance_events
 
