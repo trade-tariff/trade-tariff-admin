@@ -7,8 +7,6 @@ class ChapterNote
 
   attributes :content
 
-  validates :content, presence: true
-
   belongs_to :chapter
 
   # NOTE: singular resource

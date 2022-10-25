@@ -6,8 +6,6 @@ class SearchReference
 
   attributes :title, :referenced_id, :referenced_class
 
-  validates :title, presence: true
-
   def referenced_entity
     referenced_class.find(referenced_id)
   end

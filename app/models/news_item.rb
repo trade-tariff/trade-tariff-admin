@@ -10,10 +10,6 @@ class NewsItem
              :show_on_home_page, :show_on_updates_page, :show_on_banner,
              :start_date, :end_date
 
-  validates :title, presence: true
-  validates :content, presence: true
-  validates :start_date, presence: true
-
   def preview
     GovspeakPreview.new(content).render
   end
