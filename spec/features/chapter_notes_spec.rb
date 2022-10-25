@@ -19,11 +19,13 @@ RSpec.describe 'Chapter Note management' do
 
     specify do
       stub_api_for(Chapter) do |stub|
+        chapter_params = chapter.attributes
+        chapter_params[:section] = section.attributes
         stub.get("/admin/sections/#{section.id}/chapters") do |_env|
-          jsonapi_success_response('chapter', [chapter.attributes])
+          jsonapi_success_response('chapter', [chapter_params.deep_symbolize_keys])
         end
         stub.get("/admin/chapters/#{chapter.to_param}") do |_env|
-          jsonapi_success_response('chapter', chapter.attributes)
+          jsonapi_success_response('chapter', chapter_params.deep_symbolize_keys)
         end
       end
 
@@ -62,11 +64,13 @@ RSpec.describe 'Chapter Note management' do
 
     specify do
       stub_api_for(Chapter) do |stub|
+        chapter_params = chapter.attributes
+        chapter_params[:section] = section.attributes
         stub.get("/admin/sections/#{section.id}/chapters") do |_env|
-          jsonapi_success_response('chapter', [chapter.attributes])
+          jsonapi_success_response('chapter', [chapter_params.deep_symbolize_keys])
         end
         stub.get("/admin/chapters/#{chapter.to_param}") do |_env|
-          jsonapi_success_response('chapter', chapter.attributes)
+          jsonapi_success_response('chapter', chapter_params.deep_symbolize_keys)
         end
       end
 
@@ -113,11 +117,13 @@ RSpec.describe 'Chapter Note management' do
       end
 
       stub_api_for(Chapter) do |stub|
+        chapter_params = chapter.attributes
+        chapter_params[:section] = section.attributes
         stub.get("/admin/sections/#{section.id}/chapters") do |_env|
-          jsonapi_success_response('chapter', [chapter.attributes])
+          jsonapi_success_response('chapter', [chapter_params.deep_symbolize_keys])
         end
         stub.get("/admin/chapters/#{chapter.to_param}") do |_env|
-          jsonapi_success_response('chapter', chapter.attributes)
+          jsonapi_success_response('chapter', chapter_params.deep_symbolize_keys)
         end
       end
 

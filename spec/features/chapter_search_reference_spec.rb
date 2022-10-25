@@ -9,12 +9,14 @@ RSpec.describe 'Chapter Search Reference management' do
     let(:title) { 'new title' }
     let(:chapter_search_reference) { build :chapter_search_reference, title:, referenced: chapter }
     let(:section)      { build :section }
-    let(:chapter)      { build :chapter, :with_section, title: 'new chapter', section: { id: section.id, attributes: section.attributes } }
+    let(:chapter)      { build :chapter, title: 'new chapter' }
 
     specify do
       stub_api_for(Chapter) do |stub|
+        chapter_params = chapter.attributes
+        chapter_params[:section] = section.attributes
         stub.get("/admin/chapters/#{chapter.to_param}") do |_env|
-          jsonapi_success_response('chapter', chapter.attributes)
+          jsonapi_success_response('chapter', chapter_params.deep_symbolize_keys)
         end
       end
 
@@ -47,8 +49,10 @@ RSpec.describe 'Chapter Search Reference management' do
 
     specify do
       stub_api_for(Chapter) do |stub|
+        chapter_params = chapter.attributes
+        chapter_params[:section] = section.attributes
         stub.get("/admin/chapters/#{chapter.to_param}") do |_env|
-          jsonapi_success_response('chapter', chapter.attributes)
+          jsonapi_success_response('chapter', chapter_params.deep_symbolize_keys)
         end
       end
 
@@ -86,8 +90,10 @@ RSpec.describe 'Chapter Search Reference management' do
 
     specify do
       stub_api_for(Chapter) do |stub|
+        chapter_params = chapter.attributes
+        chapter_params[:section] = section.attributes
         stub.get("/admin/chapters/#{chapter.to_param}") do |_env|
-          jsonapi_success_response('chapter', chapter.attributes)
+          jsonapi_success_response('chapter', chapter_params.deep_symbolize_keys)
         end
       end
 

@@ -1,3 +1,5 @@
+require_relative '../../json_api_parser'
+
 module Her
   module Middleware
     class TariffJsonapiParser < ParseJSON

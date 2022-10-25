@@ -7,13 +7,15 @@ RSpec.describe 'Heading Search Reference management' do
 
   describe 'Search Reference creation' do
     let(:title)        { 'new title' }
-    let(:heading)      { build :heading, title: 'new heading', chapter: { type: 'chapter', id: chapter.id, attributes: chapter.attributes } }
+    let(:heading)      { build :heading, title: 'new heading' }
     let(:heading_search_reference) { build :heading_search_reference, title:, referenced: heading.attributes }
 
     specify do
       stub_api_for(Heading) do |stub|
         stub.get("/admin/headings/#{heading.to_param}") do |_env|
-          jsonapi_success_response('heading', heading.attributes)
+          heading_params = heading.attributes
+          heading_params[:chapter] = chapter.attributes
+          jsonapi_success_response('heading', heading_params.deep_symbolize_keys)
         end
       end
 
@@ -42,13 +44,15 @@ RSpec.describe 'Heading Search Reference management' do
   end
 
   describe 'Search Reference deletion' do
-    let(:heading)                  { build :heading, :with_chapter, chapter: { type: 'chapter', id: chapter.id, attributes: chapter.attributes } }
-    let(:heading_search_reference) { build :heading_search_reference, referenced: heading.attributes }
+    let(:heading)                  { build(:heading) }
+    let(:heading_search_reference) { build(:heading_search_reference, referenced: heading.attributes) }
 
     specify do
       stub_api_for(Heading) do |stub|
         stub.get("/admin/headings/#{heading.to_param}") do |_env|
-          jsonapi_success_response('heading', heading.attributes)
+          heading_params = heading.attributes
+          heading_params[:chapter] = chapter.attributes
+          jsonapi_success_response('heading', heading_params.deep_symbolize_keys)
         end
       end
 
@@ -79,14 +83,16 @@ RSpec.describe 'Heading Search Reference management' do
   end
 
   describe 'Search reference editing' do
-    let(:heading)                  { build :heading, :with_chapter, chapter: { type: 'chapter', id: chapter.id, attributes: chapter.attributes } }
-    let(:heading_search_reference) { build :heading_search_reference, referenced: heading.attributes }
+    let(:heading)                  { build(:heading) }
+    let(:heading_search_reference) { build(:heading_search_reference, referenced: heading.attributes) }
     let(:new_title) { 'new title' }
 
     specify do
       stub_api_for(Heading) do |stub|
         stub.get("/admin/headings/#{heading.to_param}") do |_env|
-          jsonapi_success_response('heading', heading.attributes)
+          heading_params = heading.attributes
+          heading_params[:chapter] = chapter.attributes
+          jsonapi_success_response('heading', heading_params.deep_symbolize_keys)
         end
       end
 
