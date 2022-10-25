@@ -66,5 +66,5 @@ en:
         quota_search:
           attributes:
             order_number:
-              blank: Enter a valid quota order number
+              not_a_number: Enter a valid quota order number
               wrong_length: Enter a valid quota order number

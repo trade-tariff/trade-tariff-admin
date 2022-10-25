@@ -25,9 +25,9 @@
     <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
 
     <%= govuk_header(service_name: "Trade Tariff Admin") do |header| %>
-      <%= header.navigation_item text: "Search Quotas",
-                                 href: search_quotas_path,
-                                 active: active_nav_link?(/\/search_quotas/) %>
+      <%= header.navigation_item text: "Quotas",
+                                 href: new_quota_path,
+                                 active: active_nav_link?(/\/quotas/) %>
       <%= header.navigation_item text: "Section & chapter notes",
                                  href: root_path,
                                  active: active_nav_link?(/\/notes|trade-tariff-admin$/) %>

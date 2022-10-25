@@ -1,15 +1,19 @@
 class QuotasController < AuthenticatedController
-  def search
+  def new
     @quota_search = QuotaSearch.new
   end
 
-  def search_results
-    @quota_search = QuotaSearch.new(params[:quota_search][:order_number])
+  def search
+    @quota_search = QuotaSearch.new(quota_params)
 
     if @quota_search.valid?
-      # Calls to the quota search/filter
+      @quota_definition = QuotaOrderNumbers::QuotaDefinition.find(@quota_search.order_number)
     else
-      render 'quotas/search'
+      render 'new'
     end
+  end
+
+  def quota_params
+    params.require(:quota_search).permit(:order_number)
   end
 end
