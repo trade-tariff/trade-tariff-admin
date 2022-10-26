@@ -1,9 +1,9 @@
 FactoryBot.define do
-  factory :news_item do
+  factory :news_item, class: 'News::Item' do
     sequence(:id) { |n| n }
     title { "News item #{id}" }
     content { 'Lorem **ipsum**' }
-    display_style { NewsItem::DISPLAY_STYLE_REGULAR }
+    display_style { News::Item::DISPLAY_STYLE_REGULAR }
     show_on_uk { true }
     show_on_xi { true }
     show_on_home_page { false }

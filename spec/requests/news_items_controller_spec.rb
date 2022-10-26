@@ -8,7 +8,7 @@ RSpec.describe NewsItemsController do
 
   describe 'GET #index' do
     before do
-      stub_api_request('/news_items?page=1').and_return \
+      stub_api_request('/news/items?page=1').and_return \
         jsonapi_response :news_item, attributes_for_list(:news_item, 3)
     end
 
@@ -25,7 +25,7 @@ RSpec.describe NewsItemsController do
 
   describe 'POST #create' do
     before do
-      stub_api_request('/news_items', :post).to_return create_response
+      stub_api_request('/news/items', :post).to_return create_response
     end
 
     let :make_request do
@@ -51,7 +51,7 @@ RSpec.describe NewsItemsController do
 
   describe 'GET #edit' do
     before do
-      stub_api_request("/news_items/#{news_item.id}")
+      stub_api_request("/news/items/#{news_item.id}")
         .and_return jsonapi_response(:news_item, news_item.attributes)
     end
 
@@ -62,10 +62,10 @@ RSpec.describe NewsItemsController do
 
   describe 'PATCH #update' do
     before do
-      stub_api_request("/news_items/#{news_item.id}")
+      stub_api_request("/news/items/#{news_item.id}")
         .and_return jsonapi_response(:news_item, news_item.attributes)
 
-      stub_api_request("/news_items/#{news_item.id}", :patch)
+      stub_api_request("/news/items/#{news_item.id}", :patch)
         .and_return patch_response
     end
 
@@ -76,7 +76,7 @@ RSpec.describe NewsItemsController do
 
     context 'with valid change' do
       let(:new_title) { 'new title' }
-      let(:patch_response) { webmock_response :updated, "/admin/news_item/#{news_item.id}" }
+      let(:patch_response) { webmock_response :updated, "/admin/news/item/#{news_item.id}" }
 
       it { is_expected.to redirect_to news_items_path }
     end
@@ -92,10 +92,10 @@ RSpec.describe NewsItemsController do
 
   describe 'DELETE #destroy' do
     before do
-      stub_api_request("/news_items/#{news_item.id}")
+      stub_api_request("/news/items/#{news_item.id}")
         .and_return jsonapi_response(:news_item, news_item.attributes)
 
-      stub_api_request("/news_items/#{news_item.id}", :delete)
+      stub_api_request("/news/items/#{news_item.id}", :delete)
         .and_return webmock_response :no_content
     end
 
