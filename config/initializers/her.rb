@@ -1,7 +1,7 @@
 require 'faraday_middleware/service_urls'
-require 'her/model/propogate_errors'
+require 'her/model/propagate_errors'
 
-Her::Model.include(Her::Model::PropogateErrors)
+Her::Model.include(Her::Model::PropagateErrors)
 
 api_host = ENV['TARIFF_API_HOST'].presence || Plek.new.find('tariff-api')
 

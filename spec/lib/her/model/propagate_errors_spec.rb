@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe Her::Model::PropogateErrors do
+RSpec.describe Her::Model::PropagateErrors do
   let :her_model do
     Class.new do
       # has to be defined before including Her
@@ -56,6 +56,16 @@ RSpec.describe Her::Model::PropogateErrors do
 
       it { is_expected.to include name: ['Name cannot be blank'] }
       it { is_expected.to include age: ['Age must be over 18'] }
+
+      context 'with renamed attribute' do
+        before do
+          allow(her_model).to receive(:human_attribute_name).and_call_original
+          allow(her_model).to receive(:human_attribute_name).with('name')
+                                                            .and_return('Full name')
+        end
+
+        it { is_expected.to include name: ['Full name cannot be blank'] }
+      end
     end
   end
 end

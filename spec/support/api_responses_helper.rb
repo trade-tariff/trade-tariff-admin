@@ -71,7 +71,7 @@ module ApiResponsesHelper
         {
           status: 422,
           title: error,
-          description: "#{attribute.to_s.humanize} #{error}",
+          detail: "#{attribute.to_s.humanize} #{error}",
           source: {
             pointer: "/data/attributes/#{attribute}",
           },
