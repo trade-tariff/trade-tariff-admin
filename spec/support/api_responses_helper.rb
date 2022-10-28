@@ -16,7 +16,7 @@ module ApiResponsesHelper
   end
 
   def jsonapi_success_response(type, response = {}, headers = {})
-    formatted_response = format_json_api_response(type, response)
+    formatted_response = format_jsonapi_response(type, response)
 
     [200, headers, formatted_response.to_json]
   end
@@ -34,32 +34,49 @@ module ApiResponsesHelper
   end
 
   def api_error_response(errors, headers = {})
-    api_response(422, headers, errors)
+    api_response(422,
+                 headers.reverse_merge('content-type' => 'application/json'),
+                 format_jsonapi_errors(errors))
   end
 
   def api_response(status, headers, body)
     [status, headers, body.to_json]
   end
 
-  def format_json_api_response(type, response)
+  def format_jsonapi_response(type, response)
     case response
     when Hash
       {
-        data: format_json_api_item(type, response),
+        data: format_jsonapi_item(type, response),
       }
     when Array
       {
-        data: response.map { |r| format_json_api_item(type, r) },
+        data: response.map { |r| format_jsonapi_item(type, r) },
       }
     else
       response
     end
   end
 
-  def format_json_api_item(type, attributes)
+  def format_jsonapi_item(type, attributes)
     {
       type:,
       attributes:,
+    }
+  end
+
+  def format_jsonapi_errors(errors)
+    {
+      errors: errors.map do |attribute, error|
+        {
+          status: 422,
+          title: error,
+          detail: "#{attribute.to_s.humanize} #{error}",
+          source: {
+            pointer: "/data/attributes/#{attribute}",
+          },
+        }
+      end,
     }
   end
 
@@ -83,7 +100,7 @@ module ApiResponsesHelper
     {
       status:,
       headers: headers || { 'content-type' => 'application/json; charset=utf-8' },
-      body: format_json_api_response(type, response_data).to_json,
+      body: format_jsonapi_response(type, response_data).to_json,
     }
   end
 

@@ -1,4 +1,7 @@
 require 'faraday_middleware/service_urls'
+require 'her/model/propagate_errors'
+
+Her::Model.include(Her::Model::PropagateErrors)
 
 api_host = ENV['TARIFF_API_HOST'].presence || Plek.new.find('tariff-api')
 
@@ -12,7 +15,7 @@ Her::API.setup url: api_host do |c|
   # Response
   c.use Her::Middleware::HeaderMetadataParse
   c.use Her::Middleware::TariffJsonapiParser
-  c.use Faraday::Response::RaiseError
+  c.use Her::Middleware::RaiseError
 
   # Adapter
   c.adapter Faraday::Adapter::NetHttp
@@ -27,7 +30,7 @@ Her::UK_API.setup url: TradeTariffAdmin::ServiceChooser.service_choices['uk'] do
   # Response
   c.use Her::Middleware::HeaderMetadataParse
   c.use Her::Middleware::TariffJsonapiParser
-  c.use Faraday::Response::RaiseError
+  c.use Her::Middleware::RaiseError
 
   # Adapter
   c.adapter Faraday::Adapter::NetHttp

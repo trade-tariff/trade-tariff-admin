@@ -7,6 +7,8 @@ RSpec.describe GovukHelper do
 
       attr_accessor :name
 
+      validates :name, presence: true
+
       def self.name
         'Person'
       end
@@ -41,6 +43,12 @@ RSpec.describe GovukHelper do
     let(:instance) { model.new name: 'Joe' }
 
     it { is_expected.to have_css 'form .govuk-form-group label' }
+
+    context 'with errors' do
+      let(:instance) { model.new.tap(&:valid?) }
+
+      it { is_expected.to have_css 'form .govuk-error-summary ul li' }
+    end
   end
 
   describe 'submit_button_label' do

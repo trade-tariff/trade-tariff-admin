@@ -9,7 +9,12 @@ module GovukHelper
     merged[:html] ||= {}
     merged[:html][:novalidate] = true
 
-    form_for(*args, **merged, &block)
+    form_for(*args, **merged) do |form|
+      safe_join [
+        form.govuk_error_summary,
+        capture(form, &block),
+      ], "\n"
+    end
   end
 
   def submit_button_label(form)
