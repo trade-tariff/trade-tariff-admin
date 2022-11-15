@@ -10,6 +10,7 @@ RSpec.describe 'news_items/form' do
     let(:news_item) { News::Item.new }
 
     it { is_expected.to have_css 'form input' }
+    it { is_expected.not_to have_css 'input[name="news_item[slug]"]' }
     it { is_expected.to have_css 'fieldset legend', text: /News collections/ }
 
     context 'without collections available' do
@@ -21,6 +22,8 @@ RSpec.describe 'news_items/form' do
 
   context 'with valid news item' do
     let(:news_item) { build :news_item }
+
+    it { is_expected.to have_css 'input[name="news_item[slug]"]' }
 
     it 'populates fields' do
       expect(form).to have_css \

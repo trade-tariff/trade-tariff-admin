@@ -1,7 +1,7 @@
 <%= govuk_form_for news_item do |f| %>
   <%= f.govuk_text_field :title, width: 'one-half' %>
 
-  <%= f.govuk_text_field :slug, width: 'one-half' %>
+  <%= f.govuk_text_field :slug, width: 'one-half' if f.object.persisted? || f.object.slug.present? %>
 
   <%= govuk_markdown_area f, :precis, rows: 6 %>
 
