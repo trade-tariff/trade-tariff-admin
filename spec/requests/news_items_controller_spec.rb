@@ -3,6 +3,11 @@ require 'rails_helper'
 RSpec.describe NewsItemsController do
   subject(:rendered_page) { create_user && make_request && response }
 
+  before do
+    stub_api_request('/news/collections').and_return \
+      jsonapi_response :news_collection, attributes_for_pair(:news_collection)
+  end
+
   let(:news_item) { build :news_item }
   let(:create_user) { create :user, permissions: ['signin', 'HMRC Editor'] }
 

@@ -7,6 +7,7 @@ class NewsItemsController < AuthenticatedController
 
   def new
     @news_item = News::Item.new
+    @collections = News::Collection.all.fetch
   end
 
   def create
@@ -15,12 +16,14 @@ class NewsItemsController < AuthenticatedController
     if @news_item.valid? && @news_item.save
       redirect_to news_items_path, notice: 'News item created'
     else
+      @collections = News::Collection.all.fetch
       render :new
     end
   end
 
   def edit
     @news_item = News::Item.find(params[:id])
+    @collections = News::Collection.all.fetch
   end
 
   def update
@@ -30,6 +33,7 @@ class NewsItemsController < AuthenticatedController
     if @news_item.valid? && @news_item.save
       redirect_to news_items_path, notice: 'News item updated'
     else
+      @collections = News::Collection.all.fetch
       render :edit
     end
   end
@@ -46,7 +50,9 @@ class NewsItemsController < AuthenticatedController
   def news_item_params
     params.require(:news_item).permit(%i[
       title
+      slug
       content
+      precis
       display_style
       show_on_uk
       show_on_xi
@@ -55,7 +61,7 @@ class NewsItemsController < AuthenticatedController
       show_on_banner
       start_date
       end_date
-    ]).reverse_merge(default_params)
+    ], collection_ids: []).reverse_merge(default_params)
   end
 
   def default_params

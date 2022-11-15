@@ -50,6 +50,10 @@ en:
       rollback:
         keep: Keep
 
+      news_item:
+        collection_ids: Show in News collections
+        display: Pages to include on
+
     hint:
       rollback:
         keep: Keeps update files and records since specified date and just mark them pending
@@ -57,10 +61,14 @@ en:
 
       news_item:
         title: Not shown on frontend for Banner stories
+        slug: Leave blank to automatically assign
         start_date: 'YYYY/MM/DD'
         end_date: 'YYYY/MM/DD or leave blank for no end date'
 
   activemodel:
+    attributes:
+      news/item:
+        collection_ids: Collections
     errors:
       models:
         quota_search:

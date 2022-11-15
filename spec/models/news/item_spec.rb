@@ -72,4 +72,10 @@ RSpec.describe News::Item do
       it { is_expected.to have_attributes length: 2 }
     end
   end
+
+  describe '#collection_ids' do
+    subject { described_class.new.collection_ids }
+
+    it { is_expected.to be_instance_of Array }
+  end
 end
