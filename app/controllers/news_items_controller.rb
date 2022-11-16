@@ -2,15 +2,15 @@ class NewsItemsController < AuthenticatedController
   before_action :authorize_user
 
   def index
-    @news_items = NewsItem.all(page: current_page).fetch
+    @news_items = News::Item.all(page: current_page).fetch
   end
 
   def new
-    @news_item = NewsItem.new
+    @news_item = News::Item.new
   end
 
   def create
-    @news_item = NewsItem.new(news_item_params)
+    @news_item = News::Item.new(news_item_params)
 
     if @news_item.valid? && @news_item.save
       redirect_to news_items_path, notice: 'News item created'
@@ -20,11 +20,11 @@ class NewsItemsController < AuthenticatedController
   end
 
   def edit
-    @news_item = NewsItem.find(params[:id])
+    @news_item = News::Item.find(params[:id])
   end
 
   def update
-    @news_item = NewsItem.find(params[:id])
+    @news_item = News::Item.find(params[:id])
     @news_item.attributes = news_item_params
 
     if @news_item.valid? && @news_item.save
@@ -35,7 +35,7 @@ class NewsItemsController < AuthenticatedController
   end
 
   def destroy
-    @news_item = NewsItem.find(params[:id])
+    @news_item = News::Item.find(params[:id])
     @news_item.destroy
 
     redirect_to news_items_path, notice: 'News item removed'
@@ -59,10 +59,10 @@ class NewsItemsController < AuthenticatedController
   end
 
   def default_params
-    { display_style: NewsItem::DISPLAY_STYLE_REGULAR }
+    { display_style: News::Item::DISPLAY_STYLE_REGULAR }
   end
 
   def authorize_user
-    authorize NewsItem, :edit?
+    authorize News::Item, :edit?
   end
 end

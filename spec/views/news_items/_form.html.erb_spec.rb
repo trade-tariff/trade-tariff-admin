@@ -6,7 +6,7 @@ RSpec.describe 'news_items/form' do
   let(:render_partial) { render 'news_items/form', news_item: }
 
   context 'with new news item' do
-    let(:news_item) { NewsItem.new }
+    let(:news_item) { News::Item.new }
 
     it { is_expected.to have_css 'form input' }
   end

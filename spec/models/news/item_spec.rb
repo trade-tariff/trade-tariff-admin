@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe NewsItem do
+RSpec.describe News::Item do
   subject(:news_item) { build :news_item, :home_page, :updates_page, :banner }
 
   it { is_expected.to respond_to :id }
@@ -56,7 +56,7 @@ RSpec.describe NewsItem do
       allow(TradeTariffAdmin::ServiceChooser).to \
         receive(:service_choice).and_return service_choice
 
-      stub_api_request('/news_items', backend: 'uk').to_return \
+      stub_api_request('/news/items', backend: 'uk').to_return \
         jsonapi_response(:news_item, attributes_for_list(:news_item, 2))
     end
 
