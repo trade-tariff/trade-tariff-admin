@@ -28,8 +28,6 @@ RSpec.describe NewsItemsController do
       stub_api_request('/news_items', :post).to_return create_response
     end
 
-    let(:create_response) { webmock_response(:created, news_item.attributes) }
-
     let :make_request do
       post news_items_path,
            params: { news_item: news_item_params }
@@ -37,12 +35,14 @@ RSpec.describe NewsItemsController do
 
     context 'with valid item' do
       let(:news_item_params) { news_item.attributes.without(:id) }
+      let(:create_response) { webmock_response(:created, news_item.attributes) }
 
       it { is_expected.to redirect_to news_items_path }
     end
 
     context 'with invalid item' do
       let(:news_item_params) { news_item.attributes.without(:id, :title) }
+      let(:create_response) { webmock_response(:error, title: "can't be blank'") }
 
       it { is_expected.to have_http_status :ok }
       it { is_expected.to have_attributes body: /can.+t be blank/ }
@@ -74,18 +74,16 @@ RSpec.describe NewsItemsController do
             params: { news_item: news_item.attributes.merge(title: new_title) }
     end
 
-    let :patch_response do
-      webmock_response :updated, "/admin/news_item/#{news_item.id}"
-    end
-
     context 'with valid change' do
       let(:new_title) { 'new title' }
+      let(:patch_response) { webmock_response :updated, "/admin/news_item/#{news_item.id}" }
 
       it { is_expected.to redirect_to news_items_path }
     end
 
     context 'with invalid change' do
       let(:new_title) { '' }
+      let(:patch_response) { webmock_response :error, title: "can't be blank" }
 
       it { is_expected.to have_http_status :ok }
       it { is_expected.to have_attributes body: /can.+t be blank/ }

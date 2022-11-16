@@ -7,8 +7,6 @@ class SectionNote
 
   attributes :content
 
-  validates :content, presence: true
-
   belongs_to :section
 
   # NOTE: singular resource
