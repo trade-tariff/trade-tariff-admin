@@ -2,6 +2,8 @@ FactoryBot.define do
   factory :news_item, class: 'News::Item' do
     sequence(:id) { |n| n }
     title { "News item #{id}" }
+    slug { "news-item-#{id}" }
+    precis { 'precis content' }
     content { 'Lorem **ipsum**' }
     display_style { News::Item::DISPLAY_STYLE_REGULAR }
     show_on_uk { true }

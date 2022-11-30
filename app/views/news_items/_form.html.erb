@@ -1,6 +1,10 @@
 <%= govuk_form_for news_item do |f| %>
   <%= f.govuk_text_field :title, width: 'one-half' %>
 
+  <%= f.govuk_text_field :slug, width: 'one-half' if f.object.persisted? || f.object.slug.present? %>
+
+  <%= govuk_markdown_area f, :precis, rows: 6 %>
+
   <%= govuk_markdown_area f, :content, rows: 12 %>
 
   <details class="govuk-details" data-module="govuk-details">
@@ -50,30 +54,38 @@
   <%= f.govuk_text_field :start_date, width: 'one-third' %>
   <%= f.govuk_text_field :end_date, width: 'one-third' %>
 
-  <%= f.govuk_check_box :show_on_uk, 1, 0,
-                        label: { text: 'Show on UK service' },
-                        multiple: false,
-                        link_errors: true %>
+  <%= f.govuk_check_boxes_fieldset :display do %>
 
-  <%= f.govuk_check_box :show_on_xi, 1, 0,
-                        label: { text: 'Show on XI service' },
-                        multiple: false,
-                        link_errors: true %>
+    <%= f.govuk_check_box :show_on_uk, 1, 0,
+                          label: { text: 'Show on UK service' },
+                          multiple: false,
+                          link_errors: true %>
 
-  <%= f.govuk_check_box :show_on_home_page, 1, 0,
-                        label: { text: 'Show News story on the Home page' },
-                        multiple: false,
-                        link_errors: true %>
+    <%= f.govuk_check_box :show_on_xi, 1, 0,
+                          label: { text: 'Show on XI service' },
+                          multiple: false,
+                          link_errors: true %>
 
-  <%= f.govuk_check_box :show_on_updates_page, 1, 0,
-                        label: { text: 'Show News story on the Updates page' },
-                        multiple: false,
-                        link_errors: true %>
+    <%= f.govuk_check_box :show_on_home_page, 1, 0,
+                          label: { text: 'Show News story on the Home page' },
+                          multiple: false,
+                          link_errors: true %>
 
-  <%= f.govuk_check_box :show_on_banner, 1, 0,
-                        label: { text: 'Show News story on the Banner' },
-                        multiple: false,
-                        link_errors: true %>
+    <%= f.govuk_check_box :show_on_updates_page, 1, 0,
+                          label: { text: 'Show News story on the Updates page' },
+                          multiple: false,
+                          link_errors: true %>
+
+    <%= f.govuk_check_box :show_on_banner, 1, 0,
+                          label: { text: 'Show News story on the Banner' },
+                          multiple: false,
+                          link_errors: true %>
+  <% end %>
+
+  <%= f.govuk_collection_check_boxes :collection_ids,
+                                     collections,
+                                     :id,
+                                     :name if collections.any? %>
 
   <%= submit_and_back_buttons f, news_items_path %>
 <% end %>

@@ -72,4 +72,30 @@ RSpec.describe News::Item do
       it { is_expected.to have_attributes length: 2 }
     end
   end
+
+  describe '#collection_ids' do
+    subject { described_class.new.collection_ids }
+
+    it { is_expected.to be_instance_of Array }
+  end
+
+  describe 'slug generation' do
+    subject { news_item.slug }
+
+    let(:news_item) { build :news_item, slug: nil }
+
+    it { is_expected.to be_blank }
+
+    context 'when after validation called' do
+      before { news_item.valid? }
+
+      it { is_expected.to be_present }
+
+      context 'with manually assigned slug' do
+        let(:news_item) { build :news_item, slug: 'some-test-slug' }
+
+        it { is_expected.to eql 'some-test-slug' }
+      end
+    end
+  end
 end
