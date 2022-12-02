@@ -3,12 +3,10 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     <%= govuk_form_for @quota_search, url: perform_search_quotas_path, method: :get do |f| %>
-        <%= f.govuk_error_summary %>
+      <%= f.govuk_text_field :order_number, label: { text: "Enter the 6-digit quota order number ID to return the details of the quota's definitions,
+      balance updates and other events." }, width: 'one-third' %>
 
-        <%= f.govuk_text_field :order_number, label: { text: "Enter the 6-digit quota order number ID to return the details of the quota's definitions,
-        balance updates and other events." }, width: 'one-third' %>
-
-        <%= submit_and_back_buttons f, rollbacks_path %>
+      <%= submit_and_back_buttons f, rollbacks_path %>
     <% end %>
   </div>
 </div>
