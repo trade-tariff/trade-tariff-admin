@@ -109,7 +109,7 @@ jobs:
         default: false
         type: boolean
     docker:
-      - image: cimg/ruby:3.1.2-node
+      - image: cimg/ruby:3.1.3-node
     steps:
       - checkout
       - setup_remote_docker:
@@ -134,7 +134,7 @@ jobs:
             docker push $ECR_REPO/$IMAGE_NAME:$DOCKER_TAG
   linters:
     docker:
-      - image: 'cimg/ruby:3.1.2-node'
+      - image: 'cimg/ruby:3.1.3-node'
     steps:
       - checkout
       - ruby/install-deps
@@ -152,7 +152,7 @@ jobs:
           path: brakeman.html
   test:
     docker:
-      - image: cimg/ruby:3.1.2-node
+      - image: cimg/ruby:3.1.3-node
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
@@ -179,7 +179,7 @@ jobs:
 
   deploy_development:
     docker:
-      - image: cimg/ruby:3.1.2
+      - image: cimg/ruby:3.1.3
     environment:
       SENTRY_ENVIRONMENT: "development"
     steps:
@@ -195,7 +195,7 @@ jobs:
 
   deploy_main_to_staging:
     docker:
-      - image: cimg/ruby:3.1.2-node
+      - image: cimg/ruby:3.1.3-node
     environment:
       SENTRY_ENVIRONMENT: "staging"
     steps:
@@ -211,7 +211,7 @@ jobs:
 
   deploy_release_to_staging:
     docker:
-      - image: cimg/ruby:3.1.2-node
+      - image: cimg/ruby:3.1.3-node
     steps:
       - deploy:
           docker_image_tag: $CIRCLE_TAG
@@ -220,7 +220,7 @@ jobs:
 
   deploy_production:
     docker:
-      - image: cimg/ruby:3.1.2-node
+      - image: cimg/ruby:3.1.3-node
     environment:
       SENTRY_ENVIRONMENT: "production"
     steps:
