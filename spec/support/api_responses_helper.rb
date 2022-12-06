@@ -52,6 +52,13 @@ module ApiResponsesHelper
     when Array
       {
         data: response.map { |r| format_jsonapi_item(type, r) },
+        meta: {
+          pagination: {
+            page: 1,
+            per_page: response.length,
+            total_count: response.length * 5,
+          },
+        },
       }
     else
       response
