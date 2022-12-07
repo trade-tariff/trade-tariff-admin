@@ -2,6 +2,7 @@ module News
   class Item
     include Her::JsonApi::Model
     use_api Her::UK_API
+    extend HerPaginatable
 
     DISPLAY_STYLE_REGULAR = 0
     MAX_SLUG_LENGTH = 254
