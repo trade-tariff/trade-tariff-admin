@@ -6,10 +6,10 @@ RSpec.describe 'Chapter Search Reference management' do
   let(:section) { build :section }
 
   describe 'Search Reference creation' do
-    let(:title) { 'new title' }
-    let(:chapter_search_reference) { build :chapter_search_reference, title:, referenced: chapter }
+    let(:title)        { '  New    title ' }
+    let(:chapter_search_reference) { build :chapter_search_reference, title: 'new title', referenced: chapter }
     let(:section)      { build :section }
-    let(:chapter)      { build :chapter, :with_section, title: 'new chapter', section: { id: section.id, attributes: section.attributes } }
+    let(:chapter)      { build :chapter, :with_section, section: { id: section.id, attributes: section.attributes } }
 
     specify do
       stub_api_for(Chapter) do |stub|
@@ -24,7 +24,7 @@ RSpec.describe 'Chapter Search Reference management' do
         end
       end
 
-      refute search_reference_created_for(chapter, title:)
+      refute search_reference_created_for(chapter, title: 'new title')
 
       stub_api_for(Chapter::SearchReference) do |stub|
         stub.post("/admin/chapters/#{chapter.to_param}/search_references") do |_env|
@@ -37,7 +37,7 @@ RSpec.describe 'Chapter Search Reference management' do
       end
       create_search_reference_for chapter, 'Reference' => title
 
-      verify search_reference_created_for(chapter, title:)
+      verify search_reference_created_for(chapter, title: 'new title')
     end
   end
 
@@ -81,8 +81,8 @@ RSpec.describe 'Chapter Search Reference management' do
   describe 'Search reference editing' do
     let(:section)                  { build :section }
     let(:chapter)                  { build :chapter, :with_section, section: { type: 'section', attributes: section.attributes } }
-    let(:chapter_search_reference) { build :chapter_search_reference, referenced: chapter.attributes }
-    let(:new_title) { 'new title' }
+    let(:chapter_search_reference) { build :chapter_search_reference, title: 'old title', referenced: chapter.attributes }
+    let(:new_title) { '  new Title' }
 
     specify do
       stub_api_for(Chapter) do |stub|
@@ -119,7 +119,7 @@ RSpec.describe 'Chapter Search Reference management' do
         end
       end
 
-      verify chapter_search_reference_updated_for(chapter, chapter_search_reference, title: new_title)
+      verify chapter_search_reference_updated_for(chapter, chapter_search_reference, title: 'new title')
     end
   end
 

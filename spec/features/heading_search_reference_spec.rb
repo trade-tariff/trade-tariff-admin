@@ -6,9 +6,9 @@ RSpec.describe 'Heading Search Reference management' do
   let(:chapter) { build :chapter }
 
   describe 'Search Reference creation' do
-    let(:title)        { 'new title' }
-    let(:heading)      { build :heading, title: 'new heading', chapter: { type: 'chapter', id: chapter.id, attributes: chapter.attributes } }
-    let(:heading_search_reference) { build :heading_search_reference, title:, referenced: heading.attributes }
+    let(:title)        { '  New    title ' }
+    let(:heading)      { build :heading, chapter: { type: 'chapter', id: chapter.id, attributes: chapter.attributes } }
+    let(:heading_search_reference) { build :heading_search_reference, title: 'new title', referenced: heading.attributes }
 
     specify do
       stub_api_for(Heading) do |stub|
@@ -23,7 +23,7 @@ RSpec.describe 'Heading Search Reference management' do
         end
       end
 
-      refute search_reference_created_for(heading, title:)
+      refute search_reference_created_for(heading, title: 'new title')
 
       stub_api_for(Heading::SearchReference) do |stub|
         stub.post("/admin/headings/#{heading.to_param}/search_references") do |_env|
@@ -37,7 +37,7 @@ RSpec.describe 'Heading Search Reference management' do
 
       create_search_reference_for heading, 'Reference' => title
 
-      verify search_reference_created_for(heading, title:)
+      verify search_reference_created_for(heading, title: 'new title')
     end
   end
 
@@ -81,7 +81,7 @@ RSpec.describe 'Heading Search Reference management' do
   describe 'Search reference editing' do
     let(:heading)                  { build :heading, :with_chapter, chapter: { type: 'chapter', id: chapter.id, attributes: chapter.attributes } }
     let(:heading_search_reference) { build :heading_search_reference, referenced: heading.attributes }
-    let(:new_title) { 'new title' }
+    let(:new_title) { ' fLim   flam   ' }
 
     specify do
       stub_api_for(Heading) do |stub|
@@ -110,15 +110,15 @@ RSpec.describe 'Heading Search Reference management' do
         end
       end
 
-      update_heading_search_reference_for(heading, heading_search_reference, 'Reference' => new_title)
+      update_heading_search_reference_for(heading, heading_search_reference, 'Reference' => 'flim flam')
 
       stub_api_for(Heading::SearchReference) do |stub|
         stub.get("/admin/headings/#{heading.to_param}/search_references/#{heading_search_reference.to_param}") do |_env|
-          jsonapi_success_response('search_reference', heading_search_reference.attributes.merge(title: new_title))
+          jsonapi_success_response('search_reference', heading_search_reference.attributes.merge(title: 'flim flam'))
         end
       end
 
-      verify heading_search_reference_updated_for(heading, heading_search_reference, title: new_title)
+      verify heading_search_reference_updated_for(heading, heading_search_reference, title: 'flim flam')
     end
   end
 

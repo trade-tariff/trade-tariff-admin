@@ -24,7 +24,7 @@ module References
     def edit; end
 
     def update
-      search_reference.assign_attributes(search_reference_params.to_h)
+      search_reference.assign_attributes(title: normalised_title)
 
       if search_reference.valid? && search_reference.save
         redirect_to [scope, search_reference_parent, :search_references], notice: 'Search reference was successfully updated.'
@@ -58,6 +58,12 @@ module References
       authorize SearchReference, :edit?
     end
 
+    def normalised_title
+      title = search_reference_params[:title] || ''
+
+      title.scan(/\w+/).join(' ').downcase
+    end
+
     def search_reference_params
       params.require(:search_reference).permit(:title)
     end
@@ -79,7 +85,7 @@ module References
     end
 
     def build_search_reference
-      search_reference_parent.search_references.build(search_reference_params.to_h).tap do |reference|
+      search_reference_parent.search_references.build(title: normalised_title).tap do |reference|
         reference.referenced_id = search_reference_parent.id
       end
     end
