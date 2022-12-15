@@ -27,7 +27,8 @@ RSpec.describe 'Chapter Search Reference management' do
       refute search_reference_created_for(chapter, title: 'new title')
 
       stub_api_for(Chapter::SearchReference) do |stub|
-        stub.post("/admin/chapters/#{chapter.to_param}/search_references") do |_env|
+        stub.post("/admin/chapters/#{chapter.to_param}/search_references") do |env|
+          expect(env.body.dig(:data, :attributes, :title)).to eq('new title')
           api_created_response
         end
 
@@ -81,7 +82,7 @@ RSpec.describe 'Chapter Search Reference management' do
   describe 'Search reference editing' do
     let(:section)                  { build :section }
     let(:chapter)                  { build :chapter, :with_section, section: { type: 'section', attributes: section.attributes } }
-    let(:chapter_search_reference) { build :chapter_search_reference, title: 'old title', referenced: chapter.attributes }
+    let(:chapter_search_reference) { build :chapter_search_reference, title: 'new title', referenced: chapter.attributes }
     let(:new_title) { '  new Title' }
 
     specify do
@@ -103,7 +104,8 @@ RSpec.describe 'Chapter Search Reference management' do
         stub.get("/admin/chapters/#{chapter.to_param}/search_references/#{chapter_search_reference.to_param}") do |_env|
           jsonapi_success_response('search_reference', chapter_search_reference.attributes)
         end
-        stub.patch("/admin/chapters/#{chapter.to_param}/search_references/#{chapter_search_reference.to_param}") do |_env|
+        stub.patch("/admin/chapters/#{chapter.to_param}/search_references/#{chapter_search_reference.to_param}") do |env|
+          expect(env.body.dig(:data, :attributes, :title)).to eq('new title')
           api_no_content_response
         end
         stub.get("/admin/chapters/#{chapter.to_param}/search_references") do |_env|
@@ -111,11 +113,11 @@ RSpec.describe 'Chapter Search Reference management' do
         end
       end
 
-      update_chapter_search_reference_for(chapter, chapter_search_reference, 'Reference' => new_title)
+      update_chapter_search_reference_for(chapter, chapter_search_reference, 'Reference' => 'new title')
 
       stub_api_for(Chapter::SearchReference) do |stub|
         stub.get("/admin/chapters/#{chapter.to_param}/search_references/#{chapter_search_reference.to_param}") do |_env|
-          jsonapi_success_response('search_reference', chapter_search_reference.attributes.merge(title: new_title))
+          jsonapi_success_response('search_reference', chapter_search_reference.attributes.merge(title: 'new title'))
         end
       end
 

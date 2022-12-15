@@ -26,7 +26,8 @@ RSpec.describe 'Heading Search Reference management' do
       refute search_reference_created_for(heading, title: 'new title')
 
       stub_api_for(Heading::SearchReference) do |stub|
-        stub.post("/admin/headings/#{heading.to_param}/search_references") do |_env|
+        stub.post("/admin/headings/#{heading.to_param}/search_references") do |env|
+          expect(env.body.dig(:data, :attributes, :title)).to eq('new title')
           api_created_response
         end
 
@@ -102,7 +103,8 @@ RSpec.describe 'Heading Search Reference management' do
         stub.get("/admin/headings/#{heading.to_param}/search_references/#{heading_search_reference.to_param}") do |_env|
           jsonapi_success_response('search_reference', heading_search_reference.attributes)
         end
-        stub.patch("/admin/headings/#{heading.to_param}/search_references/#{heading_search_reference.to_param}") do |_env|
+        stub.patch("/admin/headings/#{heading.to_param}/search_references/#{heading_search_reference.to_param}") do |env|
+          expect(env.body.dig(:data, :attributes, :title)).to eq('flim flam')
           api_no_content_response
         end
         stub.get("/admin/headings/#{heading.to_param}/search_references") do |_env|

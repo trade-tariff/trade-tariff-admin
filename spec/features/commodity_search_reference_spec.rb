@@ -26,7 +26,8 @@ RSpec.describe 'Commodity Search Reference management' do
       refute search_reference_created_for(commodity, title:)
 
       stub_api_for(Commodity::SearchReference) do |stub|
-        stub.post("/admin/commodities/#{commodity.to_param}/search_references") do |_env|
+        stub.post("/admin/commodities/#{commodity.to_param}/search_references") do |env|
+          expect(env.body.dig(:data, :attributes, :title)).to eq('new title')
           api_created_response
         end
 
@@ -102,7 +103,8 @@ RSpec.describe 'Commodity Search Reference management' do
         stub.get("/admin/commodities/#{commodity.to_param}/search_references/#{commodity_search_reference.to_param}") do |_env|
           jsonapi_success_response('search_reference', commodity_search_reference.attributes)
         end
-        stub.patch("/admin/commodities/#{commodity.to_param}/search_references/#{commodity_search_reference.to_param}") do |_env|
+        stub.patch("/admin/commodities/#{commodity.to_param}/search_references/#{commodity_search_reference.to_param}") do |env|
+          expect(env.body.dig(:data, :attributes, :title)).to eq('new title')
           api_no_content_response
         end
         stub.get("/admin/commodities/#{commodity.to_param}/search_references") do |_env|
