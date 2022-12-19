@@ -6,9 +6,9 @@ RSpec.describe 'Commodity Search Reference management' do
   let(:heading) { build :heading }
 
   describe 'Search Reference creation' do
-    let(:title)        { 'new title' }
-    let(:commodity)    { build :commodity, title: 'new commodity', heading: { type: 'heading', id: heading.id, attributes: heading.attributes } }
-    let(:commodity_search_reference) { build :commodity_search_reference, title:, referenced: commodity.attributes }
+    let(:title)        { '  New    title ' }
+    let(:commodity)    { build :commodity, heading: { type: 'heading', id: heading.id, attributes: heading.attributes } }
+    let(:commodity_search_reference) { build :commodity_search_reference, title: 'new title', referenced: commodity.attributes }
 
     specify do
       stub_api_for(Commodity) do |stub|
@@ -26,7 +26,8 @@ RSpec.describe 'Commodity Search Reference management' do
       refute search_reference_created_for(commodity, title:)
 
       stub_api_for(Commodity::SearchReference) do |stub|
-        stub.post("/admin/commodities/#{commodity.to_param}/search_references") do |_env|
+        stub.post("/admin/commodities/#{commodity.to_param}/search_references") do |env|
+          expect(env.body.dig(:data, :attributes, :title)).to eq('new title')
           api_created_response
         end
 
@@ -37,7 +38,7 @@ RSpec.describe 'Commodity Search Reference management' do
 
       create_search_reference_for commodity, 'Reference' => title
 
-      verify search_reference_created_for(commodity, title:)
+      verify search_reference_created_for(commodity, title: 'new title')
     end
   end
 
@@ -80,8 +81,8 @@ RSpec.describe 'Commodity Search Reference management' do
 
   describe 'Search reference editing' do
     let(:commodity)                  { build :commodity, :with_heading, heading: { type: 'heading', id: heading.id, attributes: heading.attributes } }
-    let(:commodity_search_reference) { build :commodity_search_reference, referenced: commodity.attributes }
-    let(:new_title) { 'new title' }
+    let(:commodity_search_reference) { build :commodity_search_reference, title: 'new title', referenced: commodity.attributes }
+    let(:new_title)                  { '  New    title ' }
 
     specify do
       stub_api_for(Commodity) do |stub|
@@ -102,7 +103,8 @@ RSpec.describe 'Commodity Search Reference management' do
         stub.get("/admin/commodities/#{commodity.to_param}/search_references/#{commodity_search_reference.to_param}") do |_env|
           jsonapi_success_response('search_reference', commodity_search_reference.attributes)
         end
-        stub.patch("/admin/commodities/#{commodity.to_param}/search_references/#{commodity_search_reference.to_param}") do |_env|
+        stub.patch("/admin/commodities/#{commodity.to_param}/search_references/#{commodity_search_reference.to_param}") do |env|
+          expect(env.body.dig(:data, :attributes, :title)).to eq('new title')
           api_no_content_response
         end
         stub.get("/admin/commodities/#{commodity.to_param}/search_references") do |_env|
@@ -114,11 +116,11 @@ RSpec.describe 'Commodity Search Reference management' do
 
       stub_api_for(Commodity::SearchReference) do |stub|
         stub.get("/admin/commodities/#{commodity.to_param}/search_references/#{commodity_search_reference.to_param}") do |_env|
-          jsonapi_success_response('search_reference', commodity_search_reference.attributes.merge(title: new_title))
+          jsonapi_success_response('search_reference', commodity_search_reference.attributes.merge(title: 'new title'))
         end
       end
 
-      verify commodity_search_reference_updated_for(commodity, commodity_search_reference, title: new_title)
+      verify commodity_search_reference_updated_for(commodity, commodity_search_reference, title: 'new title')
     end
   end
 
