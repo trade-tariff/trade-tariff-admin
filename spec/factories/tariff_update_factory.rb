@@ -63,6 +63,20 @@ FactoryBot.define do
                 "records": [{ "oid": 1, "measure_sid": 123, "geographical_area_id": 'IT' }],
               },
             },
+            "skipped": {
+              'count' => 30,
+              'duration' => 0.0830078125,
+              'QuotaClosedAndTransferredEvent' => {
+                'count' => 30,
+                'duration' => 0.0830078125,
+                'mapping_path' => 'quotaClosedAndTransferredEvent',
+                'records' => [
+                  { 'oid' => nil, 'quota_definition_sid' => 21_322, 'occurrence_timestamp' => '2022-05-03T13:04:00.000Z' },
+                  { 'oid' => nil, 'quota_definition_sid' => 21_744, 'occurrence_timestamp' => '2022-10-28T16:17:00.000Z' },
+                  { 'oid' => nil, 'quota_definition_sid' => 21_264, 'occurrence_timestamp' => '2022-10-28T16:17:00.000Z' },
+                ],
+              },
+            },
           },
           "total_count": 3002,
           "total_duration": 5197.715087890625,
@@ -79,6 +93,7 @@ FactoryBot.define do
             "destroy": { "count": 0, "duration": 0 },
             "destroy_cascade": { "count": 0, "duration": 0 },
             "destroy_missing": { "count": 0, "duration": 0 },
+            "skipped": { "count": 0, "duration": 0 },
           },
           "total_count": 0,
           "total_duration": 0,
