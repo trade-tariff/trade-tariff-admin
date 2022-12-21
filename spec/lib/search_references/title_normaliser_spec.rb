@@ -1,4 +1,4 @@
-RSpec.describe SearchReferenceTitleNormaliser do
+RSpec.describe SearchReferences::TitleNormaliser do
   describe '#normalise_title' do
     subject(:normalised_title) { described_class.normalise_title(title) }
 

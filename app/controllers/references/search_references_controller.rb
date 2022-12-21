@@ -61,7 +61,7 @@ module References
     def normalised_title
       title = search_reference_params[:title] || ''
 
-      SearchReferenceTitleNormaliser.normalise_title(title)
+      SearchReferences::TitleNormaliser.normalise_title(title)
     end
 
     def search_reference_params
