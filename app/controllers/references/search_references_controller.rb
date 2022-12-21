@@ -61,7 +61,7 @@ module References
     def normalised_title
       title = search_reference_params[:title] || ''
 
-      title.scan(/\w+/).join(' ').downcase
+      SearchReferences::TitleNormaliser.normalise_title(title)
     end
 
     def search_reference_params

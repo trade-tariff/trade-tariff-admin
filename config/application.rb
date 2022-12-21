@@ -15,6 +15,7 @@ module TradeTariffAdmin
 
     require 'trade_tariff_admin'
     require 'trade_tariff_admin/service_chooser'
+    require 'search_references/title_normaliser'
 
     config.active_job.queue_adapter = :sidekiq
 
