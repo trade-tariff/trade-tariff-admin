@@ -31,8 +31,10 @@ module News
       super Array.wrap(ids).map(&:presence).compact.map(&:to_i).uniq
     end
 
-    def preview
-      GovspeakPreview.new(content).render
+    def preview(field_name = nil)
+      markdown = field_name.to_s == 'precis' ? precis : content
+
+      GovspeakPreview.new(markdown).render
     end
 
     private

@@ -14,7 +14,7 @@ class ChapterNote
     self.class.build_request_path('/admin/chapters/:chapter_id/chapter_note', attributes.dup.merge('chapter_id' => chapter.reload.to_param))
   end
 
-  def preview
+  def preview(...)
     Govspeak::Document.new(content, sanitize: true).to_html.html_safe
   end
 end

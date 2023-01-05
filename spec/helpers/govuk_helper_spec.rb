@@ -13,7 +13,7 @@ RSpec.describe GovukHelper do
         'Person'
       end
 
-      def preview
+      def preview(...)
         '<p>preview content</p>'.html_safe
       end
     end
