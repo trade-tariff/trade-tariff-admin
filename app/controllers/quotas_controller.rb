@@ -9,9 +9,9 @@ class QuotasController < AuthenticatedController
     if @quota_search.valid? && quota_definition
       render perform_search_quotas_path
     elsif !@quota_search.valid?
-      render new_quota_path
+      render quota_search_quotas_path
     elsif !quota_definition
-      redirect_to new_quota_path, alert: "Quota #{@quota_search.order_number} not found."
+      redirect_to quota_search_quotas_path, alert: "Quota #{@quota_search.order_number} not found."
     end
   end
 

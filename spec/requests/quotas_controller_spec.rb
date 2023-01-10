@@ -3,7 +3,7 @@ RSpec.describe QuotasController do
     subject(:do_request) do
       create(:user, :hmrc_editor)
 
-      get new_quota_path
+      get quota_search_quotas_path
 
       response
     end

@@ -6,7 +6,7 @@
       <%= f.govuk_text_field :order_number, label: { text: "Enter the 6-digit quota order number ID to return the details of the quota's definitions,
       balance updates and other events." }, width: 'one-third' %>
 
-      <%= submit_and_back_buttons f, rollbacks_path %>
+      <%= f.govuk_submit 'Search' %>
     <% end %>
   </div>
 </div>
