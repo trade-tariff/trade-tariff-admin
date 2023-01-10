@@ -1,6 +1,53 @@
 <%= link_to 'Back', quota_search_path, class: 'govuk-back-link' %>
 
-<h1>Quota <%= @quota_definition.quota_order_number_id %></h1>
+<h1>Quota <%= @quota_definition.quota_order_number_id %> - definitions and balances</h1>
+
+<dl class="govuk-summary-list">
+  <h2>Core quota data</h2>
+
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">
+      Quota order number
+    </dt>
+    <dd class="govuk-summary-list__value">
+      <%= @quota_definition.quota_order_number_id %>
+    </dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">
+      Quota type
+    </dt>
+    <dd class="govuk-summary-list__value">
+      <%= @quota_definition.quota_order_number_id %>
+    </dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">
+      Origin(s)
+    </dt>
+    <dd class="govuk-summary-list__value">
+      <%= @quota_definition.quota_order_number_id %>
+    </dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">
+      Quota dates
+    </dt>
+    <dd class="govuk-summary-list__value">
+      <%= @quota_definition.validity_start_date.to_date.to_formatted_s(:govuk) %> to <%= @quota_definition.validity_end_date.to_date.to_formatted_s(:govuk) %>
+    </dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">
+      Commodities and measures
+    </dt>
+    <dd class="govuk-summary-list__value">
+      <%= @quota_definition.validity_start_date.to_date.to_formatted_s(:govuk) %>
+    </dd>
+  </div>
+</dl>
+
+<h1>Definition periods for quota <%= @quota_definition.quota_order_number_id %></h1>
 
 <p>
   Changes to quota balance for quota definition <%= @quota_definition.id %> running from <%= @quota_definition.validity_start_date.to_date.to_formatted_s(:govuk) %> to <%= @quota_definition.validity_end_date.to_date.to_formatted_s(:govuk) %>
