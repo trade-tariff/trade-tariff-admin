@@ -34,7 +34,7 @@ RSpec.describe News::Item do
   describe '#preview' do
     subject { news_item.preview }
 
-    let(:news_item) { build :news_item, content: '# Hello world' }
+    let(:news_item) { build :news_item, content: '# Hello world', precis: 'precis test' }
 
     it { is_expected.to eql %(<h1 id="hello-world">Hello world</h1>\n) }
 
@@ -46,6 +46,12 @@ RSpec.describe News::Item do
       end
 
       it { is_expected.to eql %(<p><a href="/xi/browse">Browse</a></p>\n) }
+    end
+
+    context 'with precis field' do
+      subject { news_item.preview 'precis' }
+
+      it { is_expected.to eql "<p>precis test</p>\n" }
     end
   end
 
