@@ -17,7 +17,7 @@ class QuotasController < AuthenticatedController
 
   def quota_definition
     @quota_definition = QuotaOrderNumbers::QuotaDefinition.find(@quota_search.order_number)
-  rescue Faraday::ResourceNotFound
+  rescue Faraday::ResourceNotFound, KeyError
     nil
   end
 
