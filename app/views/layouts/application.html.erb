@@ -26,7 +26,7 @@
 
     <%= govuk_header(service_name: "Trade Tariff Admin") do |header| %>
       <%= header.navigation_item text: "Quotas",
-                                 href: new_quota_path,
+                                 href: quota_search_path,
                                  active: active_nav_link?(/\/quotas/) %>
       <%= header.navigation_item text: "Section & chapter notes",
                                  href: root_path,

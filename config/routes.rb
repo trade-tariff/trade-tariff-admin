@@ -67,11 +67,8 @@ Rails.application.routes.draw do
   resources :news_items, except: %i[show]
   resources :reports, only: %i[index show]
 
-  resources :quotas, only: %i[new] do
-    collection do
-      get '/search', as: :perform_search, via: %i[get post], to: 'quotas#search'
-    end
-  end
+  get '/quota_search', as: :quota_search, via: %i[get], to: 'quotas#new'
+  get '/quotas/search', as: :perform_quota_search, via: %i[get post], to: 'quotas#search'
 
   post 'govspeak' => 'govspeak#govspeak', as: :govspeak
   get  'healthcheck' => 'healthcheck#check', as: :healthcheck
