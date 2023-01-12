@@ -105,6 +105,7 @@
         <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Updated</th>
         <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Destroyed</th>
         <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Missing</th>
+        <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Skipped</th>
       </tr>
     </thead>
     <tbody class="govuk-table__body">
@@ -115,6 +116,7 @@
           <td class="govuk-table__cell"><%= entity[:updates] %></td>
           <td class="govuk-table__cell"><%= entity[:destroys] %></td>
           <td class="govuk-table__cell"><%= entity[:missing] %></td>
+          <td class="govuk-table__cell"><%= entity[:skipped] %></td>
         </tr>
       <% end %>
     </tbody>
@@ -147,6 +149,44 @@
                 <summary class="govuk-details__summary">
                   <span class="govuk-details__summary-text">
                     Review Missing Inserts
+                  </span>
+                </summary>
+                <div class="govuk-details__text">
+  <pre><%= entity[:records] %></pre>
+                </div>
+              </details>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+
+  <% if @tariff_update.inserts.any_skipped? %>
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--m">Skipped entities</caption>
+
+      <p class="govuk-body">
+        Skipped entities are not imported because of a known protocol failure from CDS/Taric
+      </p>
+
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header govuk-!-width-one-half">Entity</th>
+          <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Skipped</th>
+          <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Identifiers</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        <% @tariff_update.inserts.skipped_entities.each do |entity| %>
+          <tr class="govuk-table__row">
+            <th scope="row" class="govuk-table__header"><%= entity[:entity] %></th>
+            <td class="govuk-table__cell"><%= entity[:skipped] %></td>
+            <td class="govuk-table__cell">
+              <details class="govuk-details" data-module="govuk-details">
+                <summary class="govuk-details__summary">
+                  <span class="govuk-details__summary-text">
+                    Review Skipped Inserts
                   </span>
                 </summary>
                 <div class="govuk-details__text">

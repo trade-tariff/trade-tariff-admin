@@ -46,15 +46,16 @@ RSpec.describe TariffUpdate::Inserts do
 
     let(:expected_updated_entities) do
       [
-        { entity: 'QuotaBalanceEvent', creates: 2869, updates: 0, destroys: 0, missing: 0 },
-        { entity: 'QuotaAssociation', creates: 12, updates: 0, destroys: 0, missing: 0 },
-        { entity: 'QuotaCriticalEvent', creates: 12, updates: 0, destroys: 0, missing: 0 },
-        { entity: 'QuotaReopeningEvent', creates: 5, updates: 0, destroys: 0, missing: 0 },
-        { entity: 'QuotaExhaustionEvent', creates: 10, updates: 0, destroys: 0, missing: 0 },
-        { entity: 'MeasureExcludedGeographicalArea', creates: 1, updates: 0, destroys: 0, missing: 1 },
-        { entity: 'QuotaDefinition', creates: 0, updates: 57, destroys: 0, missing: 0 },
-        { entity: 'Measure', creates: 0, updates: 18, destroys: 0, missing: 0 },
-        { entity: 'MeasureComponent', creates: 0, updates: 18, destroys: 0, missing: 0 },
+        { entity: 'QuotaBalanceEvent', creates: 2869, updates: 0, destroys: 0, missing: 0, skipped: 0 },
+        { entity: 'QuotaAssociation', creates: 12, updates: 0, destroys: 0, missing: 0, skipped: 0 },
+        { entity: 'QuotaCriticalEvent', creates: 12, updates: 0, destroys: 0, missing: 0, skipped: 0 },
+        { entity: 'QuotaReopeningEvent', creates: 5, updates: 0, destroys: 0, missing: 0, skipped: 0 },
+        { entity: 'QuotaExhaustionEvent', creates: 10, updates: 0, destroys: 0, missing: 0, skipped: 0 },
+        { entity: 'MeasureExcludedGeographicalArea', creates: 1, updates: 0, destroys: 0, missing: 1, skipped: 0 },
+        { entity: 'QuotaDefinition', creates: 0, updates: 57, destroys: 0, missing: 0, skipped: 0 },
+        { entity: 'Measure', creates: 0, updates: 18, destroys: 0, missing: 0, skipped: 0 },
+        { entity: 'MeasureComponent', creates: 0, updates: 18, destroys: 0, missing: 0, skipped: 0 },
+        { entity: 'QuotaClosedAndTransferredEvent', creates: 0, updates: 0, destroys: 0, missing: 0, skipped: 30 },
       ]
     end
 
