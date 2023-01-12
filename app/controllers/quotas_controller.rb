@@ -1,9 +1,13 @@
 class QuotasController < AuthenticatedController
   def new
+    return render 'errors/not_found' if TradeTariffAdmin::ServiceChooser.xi?
+
     @quota_search = QuotaSearch.new
   end
 
   def search
+    return render 'errors/not_found' if TradeTariffAdmin::ServiceChooser.xi?
+
     @quota_search = QuotaSearch.new(quota_params)
 
     if @quota_search.valid? && quota_definition

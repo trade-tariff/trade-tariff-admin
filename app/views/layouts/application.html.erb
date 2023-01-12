@@ -27,7 +27,7 @@
     <%= govuk_header(service_name: "Trade Tariff Admin") do |header| %>
       <%= header.navigation_item text: "Quotas",
                                  href: quota_search_path,
-                                 active: active_nav_link?(/\/quotas/) %>
+                                 active: active_nav_link?(/\/quotas/) if TradeTariffAdmin::ServiceChooser.uk? %>
       <%= header.navigation_item text: "Section & chapter notes",
                                  href: root_path,
                                  active: active_nav_link?(/\/notes|trade-tariff-admin$/) %>
