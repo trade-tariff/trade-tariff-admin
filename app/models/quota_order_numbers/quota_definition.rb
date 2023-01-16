@@ -11,9 +11,11 @@ module QuotaOrderNumbers
                :validity_start_date,
                :validity_end_date,
                :initial_volume,
-               :measurement_unit
+               :measurement_unit,
+               :quota_type
 
     has_many :quota_balance_events
+    has_many :quota_order_number_origins
 
     def occurrence_timestamps
       chart_data[:occurrence_timestamps]

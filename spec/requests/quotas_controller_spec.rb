@@ -30,7 +30,12 @@ RSpec.describe QuotasController do
       response
     end
 
-    let(:quota_definition) { build(:quota_definition, :with_quota_balance_events) }
+    let(:quota_definition) { build(:quota_definition, :with_quota_balance_events, :with_quota_order_number_origins) }
+
+    before do
+      create(:user, :hmrc_editor)
+      allow(QuotaOrderNumbers::QuotaDefinition).to receive(:find).and_return(quota_definition)
+    end
 
     context 'when on uk service' do
       include_context 'with UK service'
