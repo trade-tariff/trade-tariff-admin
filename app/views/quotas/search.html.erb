@@ -1,6 +1,6 @@
 <%= link_to 'Back', quota_search_path, class: 'govuk-back-link' %>
 
-<h1>Quota <%= @quota_definition.quota_order_number_id %> - definitions and balances</h1>
+<h1>Quota <%= @current_quota_definition.quota_order_number_id %> - definitions and balances</h1>
 
 <dl class="govuk-summary-list">
   <h2>Core quota data</h2>
@@ -10,7 +10,7 @@
       Quota order number
     </dt>
     <dd class="govuk-summary-list__value">
-      <%= @quota_definition.quota_order_number_id %>
+      <%= @current_quota_definition.quota_order_number_id %>
     </dd>
   </div>
   <div class="govuk-summary-list__row">
@@ -18,7 +18,7 @@
       Quota type
     </dt>
     <dd class="govuk-summary-list__value">
-      <%= @quota_definition.quota_type %>
+      <%= @current_quota_definition.quota_type %>
     </dd>
   </div>
   <div class="govuk-summary-list__row">
@@ -26,7 +26,7 @@
       Origin(s)
     </dt>
     <dd class="govuk-summary-list__value">
-      <% @quota_definition.quota_order_number_origins.each do |quota_order_number_origin| %>
+      <% @current_quota_definition.quota_order_number_origins.each do |quota_order_number_origin| %>
         <%= quota_order_number_origin.geographical_area_id %>(<%= quota_order_number_origin.geographical_area_description %>) <%= format_quota_dates quota_order_number_origin %></br>
       <% end %>
     </dd>
@@ -36,7 +36,7 @@
       Quota dates
     </dt>
     <dd class="govuk-summary-list__value">
-      <%= format_quota_dates(@quota_definition).upcase_first %>
+      <%= format_quota_dates(@current_quota_definition).upcase_first %>
     </dd>
   </div>
   <div class="govuk-summary-list__row">
@@ -48,26 +48,38 @@
   </div>
 </dl>
 
-<h1>Definition periods for quota <%= @quota_definition.quota_order_number_id %></h1>
+<h1>Definition periods for quota <%= @current_quota_definition.quota_order_number_id %></h1>
 
 <p>
-  Changes to quota balance for quota definition <%= @quota_definition.id %> running from <%= @quota_definition.validity_start_date.to_date.to_formatted_s(:govuk) %> to <%= @quota_definition.validity_end_date.to_date.to_formatted_s(:govuk) %>
+  Changes to quota balance for quota definition <%= @current_quota_definition.id %> running from <%= @current_quota_definition.validity_start_date.to_date.to_formatted_s(:govuk) %> to <%= @current_quota_definition.validity_end_date.to_date.to_formatted_s(:govuk) %>
 </p>
 
 <p>
-  Initial volume is <%= @quota_definition.initial_volume %> <%= @quota_definition.measurement_unit %>
+  Initial volume is <%= @current_quota_definition.initial_volume %> <%= @current_quota_definition.measurement_unit %>
 </p>
 
 <%= tag.div tag.canvas(
   id: "quota-definitions-chart",
   width: "800",
   height: "450",
-  data: { 
-    measurementunitcode: @quota_definition.measurement_unit,
-    importedamounts: @quota_definition.imported_amounts,
-    newbalances: @quota_definition.new_balances,
-    occurrencetimestamps: @quota_definition.occurrence_timestamps,
+  data: {
+    measurementunitcode: @current_quota_definition.measurement_unit,
+    importedamounts: @current_quota_definition.imported_amounts,
+    newbalances: @current_quota_definition.new_balances,
+    occurrencetimestamps: @current_quota_definition.occurrence_timestamps,
   }
 ) %>
+
+<% @quota_definitions.each do |quota_definition|  %>
+  <p>
+    <%= quota_definition.id %>
+    <br>
+    <%= quota_definition.validity_start_date %>
+    <br>
+    <%= quota_definition.validity_end_date %>
+    <br>
+    <%= quota_definition.quota_balance_events.first.imported_amount %>
+  </p>
+<% end %>
 
 <%= javascript_pack_tag 'quota-definition-chart' %>

@@ -3,8 +3,9 @@ module QuotaOrderNumbers
     include Her::JsonApi::Model
 
     resource_path '/admin/quota_order_numbers/:quota_order_number_id/quota_definitions/current'
+    collection_path '/admin/quota_order_numbers/:quota_order_number_id/quota_definitions'
 
-    primary_key :quota_order_number_id
+    scope :by_quota_order_number, ->(order_number) { all(_quota_order_number_id: order_number) }
 
     attributes :id,
                :quota_order_number_id,
