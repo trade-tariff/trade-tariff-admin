@@ -2,7 +2,7 @@ module QuotaOrderNumbers
   class QuotaDefinition
     include Her::JsonApi::Model
 
-    resource_path '/admin/quota_order_numbers/:quota_order_number_id/quota_definitions/current'
+    resource_path '/admin/quota_order_numbers/:quota_order_number_id/quota_definitions/:id'
     collection_path '/admin/quota_order_numbers/:quota_order_number_id/quota_definitions'
 
     scope :by_quota_order_number, ->(order_number) { all(_quota_order_number_id: order_number) }
