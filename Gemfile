@@ -61,6 +61,7 @@ gem 'sentry-rails'
 group :development, :test do
   gem 'brakeman'
   gem 'dotenv-rails'
+  gem 'pry-rails'
   gem 'pry-byebug'
 end
 
