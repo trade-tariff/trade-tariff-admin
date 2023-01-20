@@ -13,6 +13,8 @@ RSpec.describe QuotaOrderNumbers::QuotaDefinition do
         measurement_unit: 'Kilogram (kg)',
         initial_volume: '18181000.0',
         quota_type: 'First Come First Served',
+        critical_state: 'N',
+        critical_threshold: '90',
       },
     )
   end
@@ -54,7 +56,7 @@ RSpec.describe QuotaOrderNumbers::QuotaDefinition do
       subject(:quota_definition) { build(:quota_definition, :with_quota_order_number_origins) }
   
       it { expect(quota_definition.quota_order_number_origins.count).to eq(1) }
-      
+
       it { expect(quota_definition.quota_order_number_origins.first).to be_instance_of QuotaOrderNumbers::QuotaOrderNumberOrigin }
     end
 

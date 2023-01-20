@@ -13,7 +13,9 @@ module QuotaOrderNumbers
                :validity_end_date,
                :initial_volume,
                :measurement_unit,
-               :quota_type
+               :quota_type,
+               :critical_state,
+               :critical_threshold
 
     has_many :quota_balance_events
     has_many :quota_order_number_origins

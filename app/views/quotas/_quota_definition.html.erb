@@ -1,0 +1,70 @@
+<div class="govuk-accordion" data-module="govuk-accordion" id="accordion-default">
+  <% quota_definitions.each do |quota_definition|  %>
+    <div class="govuk-accordion__section ">
+      <div class="govuk-accordion__section-header">
+        <h2 class="govuk-accordion__section-heading">
+          <span class="govuk-accordion__section-button" id="accordion-default-heading-1">
+            <%= quota_definition.validity_start_date&.to_date&.to_formatted_s(:govuk) %> to <%= quota_definition.validity_end_date&.to_date&.to_formatted_s(:govuk) %> - Definition <%= quota_definition.id %>
+          </span>
+        </h2>
+      </div>
+      <div id="accordion-default-content-1" class="govuk-accordion__section-content" aria-labelledby="accordion-default-heading-1">
+        <dl class="govuk-summary-list">
+          <h2>Core definition data</h2>
+
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">
+              Definition ID
+            </dt>
+            <dd class="govuk-summary-list__value">
+              <%= quota_definition.id %>
+            </dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">
+              Start date
+            </dt>
+            <dd class="govuk-summary-list__value">
+              <%= quota_definition.validity_start_date&.to_date&.to_formatted_s(:govuk) %>
+            </dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">
+              End date
+            </dt>
+            <dd class="govuk-summary-list__value">
+              <%= quota_definition.validity_end_date&.to_date&.to_formatted_s(:govuk) %>
+            </dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">
+              Initial volume
+            </dt>
+            <dd class="govuk-summary-list__value">
+              <%= quota_definition.initial_volume %> <%= quota_definition.measurement_unit %> 
+            </dd>
+          </div>
+           <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">
+              Critical state
+            </dt>
+            <dd class="govuk-summary-list__value">
+              <%= quota_definition.critical_state %>
+            </dd>
+          </div>
+           <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">
+              Critical threshold
+            </dt>
+            <dd class="govuk-summary-list__value">
+              <%= quota_definition.critical_threshold %>
+            </dd>
+          </div>
+        </dl>
+
+        <%= render "quotas/balance_events", quota_definition: quota_definition %>
+
+      </div>
+    </div>
+  <% end %>
+</div>

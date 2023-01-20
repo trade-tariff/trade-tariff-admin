@@ -30,26 +30,24 @@ RSpec.describe QuotasController do
       response
     end
 
+    let(:quota_definitions) { [quota_definition, quota_definition] }
     let(:quota_definition) { build(:quota_definition, :with_quota_balance_events, :with_quota_order_number_origins) }
 
     before do
       create(:user, :hmrc_editor)
-      allow(QuotaOrderNumbers::QuotaDefinition).to receive(:find).and_return(quota_definition)
+
+      allow(QuotaOrderNumbers::QuotaDefinition).to receive(:by_quota_order_number).and_return(quota_definitions)
     end
 
     context 'when on uk service' do
       include_context 'with UK service'
-
-      before do
-        allow(QuotaOrderNumbers::QuotaDefinition).to receive(:find).and_return(quota_definition)
-      end
 
       let(:quota_definition) { build(:quota_definition, :with_quota_balance_events) }
 
       it 'fetches the quota definition' do
         do_request
 
-        expect(QuotaOrderNumbers::QuotaDefinition).to have_received(:find).with(quota_definition.quota_order_number_id)
+        expect(QuotaOrderNumbers::QuotaDefinition).to have_received(:by_quota_order_number).with(quota_definition.quota_order_number_id)
       end
 
       it { is_expected.to render_template(:search) }

@@ -7,6 +7,8 @@ FactoryBot.define do
     initial_volume { '18181000.0' }
     measurement_unit { 'Kilogram (kg)' }
     quota_type { 'First Come First Served' }
+    critical_state { 'N' }
+    critical_threshold { '90' }
 
     trait :with_quota_balance_events do
       quota_balance_events { [build(:quota_balance_event)] }

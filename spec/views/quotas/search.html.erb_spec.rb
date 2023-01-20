@@ -3,7 +3,8 @@ require 'rails_helper'
 RSpec.describe 'quotas/search' do
   subject { render && rendered }
 
-  before { assign :quota_definition, quota_definition }
+  before { assign :current_quota_definition, quota_definition }
+  before { assign :quota_definitions, [quota_definition, quota_definition] }
 
   context 'with quota order number origins' do
     let(:quota_definition) { build(:quota_definition, :with_quota_balance_events, :with_quota_order_number_origins) }
