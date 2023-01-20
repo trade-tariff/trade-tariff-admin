@@ -16,6 +16,8 @@ RSpec.describe GovspeakPreview do
   describe '#render' do
     subject(:rendered) { preview.render }
 
+    include_context 'with UK service'
+
     it 'converts markdown' do
       expect(rendered).to match '<h1 id="heading">Heading</h1>'
     end
