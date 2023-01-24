@@ -1,24 +1,24 @@
 <h2>Balance events for quota <%= quota_definition.quota_order_number_id %></h2>
 
 <table class='table'>
-    <thead>
+  <thead>
     <tr>
-        <th>Event date</th>
-        <th>Last allocation date</th>
-        <th>Last balance (KGM)</th>
-        <th>Imported amount (KGM)</th>
-        <th>New balance (KGM)</th>
+      <th>Event date</th>
+      <th>Last allocation date</th>
+      <th>Last balance (KGM)</th>
+      <th>Imported amount (KGM)</th>
+      <th>New balance (KGM)</th>
     </tr>
-    </thead>
-    <tbody>
-    <% quota_definition.quota_balance_events.each do |balance_event| %>
-        <tr>
-        <td><%= balance_event.occurrence_timestamp&.to_date&.to_formatted_s(:govuk) %></td>
-        <td><%= balance_event.last_import_date_in_allocation&.to_date&.to_formatted_s(:govuk) %></td>
-        <td><%= balance_event.old_balance %></td>
-        <td><%= balance_event.imported_amount %></td>
-        <td><%= balance_event.new_balance %></td>
-        </tr>
-    <% end %>
-    </tbody>
+  </thead>
+  <tbody>
+  <% quota_definition.quota_balance_events.each do |balance_event| %>
+    <tr>
+      <td><%= balance_event.occurrence_timestamp&.to_date&.to_formatted_s(:govuk) %></td>
+      <td><%= balance_event.last_import_date_in_allocation&.to_date&.to_formatted_s(:govuk) %></td>
+      <td><%= balance_event.old_balance %></td>
+      <td><%= balance_event.imported_amount %></td>
+      <td><%= balance_event.new_balance %></td>
+    </tr>
+  <% end %>
+  </tbody>
 </table>

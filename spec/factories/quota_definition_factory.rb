@@ -25,5 +25,45 @@ FactoryBot.define do
     trait :without_quota_order_number_origins do
       quota_order_number_origins { [] }
     end
+
+    trait :with_quota_unsuspension_events do
+      quota_unsuspension_events { [build(:quota_unsuspension_event)] }
+    end
+
+    trait :without_quota_unsuspension_events do
+      quota_unsuspension_events { [] }
+    end
+
+    trait :with_quota_exhaustion_events do
+      quota_exhaustion_events { [build(:quota_exhaustion_event)] }
+    end
+
+    trait :without_quota_exhaustion_events do
+      quota_exhaustion_events { [] }
+    end
+
+    trait :with_quota_reopening_events do
+      quota_reopening_events { [build(:quota_reopening_event)] }
+    end
+
+    trait :without_quota_reopening_events do
+      quota_reopening_events { [] }
+    end
+
+    trait :with_quota_unblocking_events do
+      quota_unblocking_events { [build(:quota_unblocking_event)] }
+    end
+
+    trait :without_quota_unblocking_events do
+      quota_unblocking_events { [] }
+    end
+
+    trait :with_quota_critical_events do
+      quota_critical_events { [build(:quota_critical_event)] }
+    end
+
+    trait :without_quota_critical_events do
+      quota_critical_events { [] }
+    end
   end
 end

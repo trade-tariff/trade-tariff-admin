@@ -31,7 +31,13 @@ RSpec.describe QuotasController do
     end
 
     let(:quota_definitions) { [quota_definition, quota_definition] }
-    let(:quota_definition) { build(:quota_definition, :with_quota_balance_events, :with_quota_order_number_origins) }
+    let(:quota_definition) { build(:quota_definition, :with_quota_balance_events, 
+                                                      :with_quota_order_number_origins,
+                                                      :without_quota_critical_events, 
+                                                      :without_quota_unsuspension_events, 
+                                                      :without_quota_exhaustion_events, 
+                                                      :without_quota_reopening_events, 
+                                                      :without_quota_unblocking_events) }
 
     before do
       create(:user, :hmrc_editor)

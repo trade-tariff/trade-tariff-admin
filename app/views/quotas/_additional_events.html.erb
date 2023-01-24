@@ -1,0 +1,22 @@
+<h2>Additional events</h2>
+
+<table class='table'>
+  <thead>
+    <tr>
+      <th>Event date</th>
+      <th>Event type</th>
+      <th>Updated state</th>
+    </tr>
+  </thead>
+  <tbody>
+
+  <% quota_definition.additional_events.each do |additional_event| %>
+    <tr>
+      <td><%= additional_event.event_date %></td>
+      <td><%= additional_event.event_type %></td>
+      <td><%= additional_event.critical_state if additional_event.respond_to?(:critical_state) %></td>
+      <td></td>
+    </tr>
+  <% end %>
+  </tbody>
+</table>

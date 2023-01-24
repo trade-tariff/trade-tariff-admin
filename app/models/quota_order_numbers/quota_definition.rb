@@ -19,6 +19,11 @@ module QuotaOrderNumbers
 
     has_many :quota_balance_events
     has_many :quota_order_number_origins
+    has_many :quota_unsuspension_events
+    has_many :quota_exhaustion_events
+    has_many :quota_reopening_events
+    has_many :quota_unblocking_events
+    has_many :quota_critical_events
 
     def occurrence_timestamps
       chart_data[:occurrence_timestamps]
@@ -30,6 +35,10 @@ module QuotaOrderNumbers
 
     def new_balances
       chart_data[:new_balances]
+    end
+
+    def additional_events
+      quota_exhaustion_events + quota_unsuspension_events + quota_reopening_events + quota_unblocking_events + quota_critical_events
     end
 
     private

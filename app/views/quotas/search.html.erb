@@ -6,7 +6,7 @@
 
 <h1>Definition periods for quota <%= @current_quota_definition.quota_order_number_id %></h1>
 
-<%= render "quotas/quota_definition", quota_definitions: @quota_definitions %>
+<%= render "quotas/quota_definitions", quota_definitions: @quota_definitions %>
 
 <p>
   Changes to quota balance for quota definition <%= @current_quota_definition.id %> running from <%= @current_quota_definition.validity_start_date&.to_date&.to_formatted_s(:govuk) %> to <%= @current_quota_definition.validity_end_date&.to_date&.to_formatted_s(:govuk) %>
