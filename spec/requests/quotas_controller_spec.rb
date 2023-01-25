@@ -3,7 +3,7 @@ RSpec.describe QuotasController do
     subject(:do_request) do
       create(:user, :hmrc_editor)
 
-      get quota_search_path
+      get new_quota_path
 
       response
     end
@@ -53,8 +53,6 @@ RSpec.describe QuotasController do
 
     context 'when on uk service' do
       include_context 'with UK service'
-
-      let(:quota_definition) { build(:quota_definition, :with_quota_balance_events) }
 
       it 'fetches the quota definition' do
         do_request
