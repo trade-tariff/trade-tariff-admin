@@ -34,7 +34,7 @@ RSpec.describe QuotaOrderNumbers::QuotaDefinition do
     end
   end
 
-  describe '#quota_order_number_origins' do
+  describe '#quota_balance_events' do
     context 'when there are quota balance events' do
       subject(:quota_definition) { build(:quota_definition, :with_quota_balance_events) }
 

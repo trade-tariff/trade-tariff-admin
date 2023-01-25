@@ -5,7 +5,7 @@ RSpec.describe 'quotas/_current_quota_definition' do
 
   let :render_page do
     render 'quotas/current_quota_definition',
-    current_quota_definition: quota_definition
+           current_quota_definition: quota_definition
   end
 
   context 'with quota order number origins' do

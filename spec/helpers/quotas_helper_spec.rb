@@ -12,7 +12,7 @@ RSpec.describe QuotasHelper do
 
     context 'with validity start date only' do
       before { quota_order_number_origin.validity_end_date = nil }
-      
+
       it { is_expected.to eql 'from 1 July 2021' }
     end
   end

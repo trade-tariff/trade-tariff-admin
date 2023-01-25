@@ -5,15 +5,17 @@ RSpec.describe 'quotas/_additional_events' do
 
   let :render_page do
     render 'quotas/additional_events',
-    quota_definition: quota_definition
+           quota_definition:
   end
 
   context 'with quota critical events' do
-    let(:quota_definition) { build(:quota_definition, :with_quota_critical_events, 
-                                                      :without_quota_unsuspension_events, 
-                                                      :without_quota_exhaustion_events, 
-                                                      :without_quota_reopening_events, 
-                                                      :without_quota_unblocking_events) }
+    let(:quota_definition) do
+      build(:quota_definition, :with_quota_critical_events,
+            :without_quota_unsuspension_events,
+            :without_quota_exhaustion_events,
+            :without_quota_reopening_events,
+            :without_quota_unblocking_events)
+    end
 
     let(:critical_event) { quota_definition.quota_critical_events.first }
 
@@ -25,11 +27,13 @@ RSpec.describe 'quotas/_additional_events' do
   end
 
   context 'with quota unsuspension events' do
-    let(:quota_definition) { build(:quota_definition, :without_quota_critical_events, 
-                                                      :with_quota_unsuspension_events, 
-                                                      :without_quota_exhaustion_events, 
-                                                      :without_quota_reopening_events, 
-                                                      :without_quota_unblocking_events) }
+    let(:quota_definition) do
+      build(:quota_definition, :without_quota_critical_events,
+            :with_quota_unsuspension_events,
+            :without_quota_exhaustion_events,
+            :without_quota_reopening_events,
+            :without_quota_unblocking_events)
+    end
 
     let(:unsuspension_event) { quota_definition.quota_unsuspension_events.first }
 
