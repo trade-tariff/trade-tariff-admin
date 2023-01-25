@@ -1,0 +1,13 @@
+<%= tag.div tag.canvas(
+  id: "quota-definitions-chart",
+  width: "800",
+  height: "450",
+  data: {
+    measurementunitcode: @quota_definition.measurement_unit,
+    importedamounts: @quota_definition.imported_amounts,
+    newbalances: @quota_definition.new_balances,
+    occurrencetimestamps: @quota_definition.occurrence_timestamps,
+  }
+) %>
+
+<%= javascript_pack_tag 'quota-definition-chart' %>
