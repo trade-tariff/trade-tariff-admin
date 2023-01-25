@@ -1,5 +1,9 @@
 <h2>Balance events for quota <%= quota_definition.quota_order_number_id %></h2>
 
+<p>
+  <%= link_to "See the graph of quota balance events", balance_event_path(quota_definition.quota_order_number_id) %>
+</p>
+
 <table class='table'>
   <thead>
     <tr>

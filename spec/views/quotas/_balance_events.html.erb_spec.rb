@@ -23,5 +23,7 @@ RSpec.describe 'quotas/_balance_events' do
     it { is_expected.to have_css 'td', text: balance_event.imported_amount }
 
     it { is_expected.to have_css 'td', text: balance_event.new_balance }
+
+    it { is_expected.to have_css 'a', text: 'See the graph of quota balance events' }
   end
 end
