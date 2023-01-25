@@ -5,7 +5,7 @@
     <tr>
       <th>Event date</th>
       <th>Event type</th>
-      <th>Updated state</th>
+      <th>Critical state</th>
     </tr>
   </thead>
   <tbody>
@@ -14,7 +14,7 @@
     <tr>
       <td><%= additional_event.event_date %></td>
       <td><%= additional_event.event_type %></td>
-      <td><%= additional_event.critical_state if additional_event.respond_to?(:critical_state) %></td>
+      <td><%= additional_event.try(:critical_state).presence || 'n/a' %></td>
       <td></td>
     </tr>
   <% end %>

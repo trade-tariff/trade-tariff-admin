@@ -4,6 +4,8 @@
 
 <%= render "quotas/current_quota_definition", current_quota_definition: @current_quota_definition %>
 
-<h1>Definition periods for quota <%= @current_quota_definition.quota_order_number_id %></h1>
+<h2>Definition periods for quota <%= @current_quota_definition.quota_order_number_id %></h1>
 
-<%= render "quotas/quota_definitions", quota_definitions: @quota_definitions %>
+<div class="govuk-accordion" data-module="govuk-accordion" id="accordion-default" data-i18n.show-all-sections="Show all definitions" data-i18n.hide-all-sections="Hide all definitions">
+  <%= render partial: "quotas/quota_definition", collection: @quota_definitions, as: :quota_definition %>
+</div>
