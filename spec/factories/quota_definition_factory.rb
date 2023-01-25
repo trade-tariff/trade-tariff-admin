@@ -10,6 +10,14 @@ FactoryBot.define do
     critical_state { 'N' }
     critical_threshold { '90' }
 
+    trait :with_quota_order_number do
+      quota_order_number { build(:quota_order_number) }
+    end
+
+    trait :without_quota_order_number do
+      quota_order_number {}
+    end
+
     trait :with_quota_balance_events do
       quota_balance_events { [build(:quota_balance_event)] }
     end

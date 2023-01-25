@@ -32,7 +32,7 @@ class QuotasController < AuthenticatedController
   def quota_definition
     @quota_definition ||= QuotaOrderNumbers::QuotaDefinition.find(
       id: params[:id],
-      quota_order_number_id: params[:order_number],
+      _quota_order_number_id: params[:order_number],
     )
   end
 

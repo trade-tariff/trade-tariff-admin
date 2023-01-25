@@ -19,42 +19,59 @@ RSpec.describe QuotaOrderNumbers::QuotaDefinition do
     )
   end
 
-  context 'when there are quota balance events' do
-    subject(:quota_definition) { build(:quota_definition, :with_quota_balance_events) }
+  describe '#quota_order_number' do
+    context 'when there is an quota order number' do
+      subject(:quota_definition) { build(:quota_definition, :with_quota_order_number) }
 
-    describe '#occurrence_timestamps' do
-      it { expect(quota_definition.occurrence_timestamps).to eq(['12 Jan 2022']) }
+      it { expect(quota_definition.quota_order_number).to be_present }
+      it { expect(quota_definition.quota_order_number).to be_instance_of QuotaOrderNumbers::QuotaOrderNumber }
     end
 
-    describe '#imported_amounts' do
-      it { expect(quota_definition.imported_amounts).to eq(['35040.0']) }
-    end
+    context 'when there is not quota order number' do
+      subject(:quota_definition) { build(:quota_definition, :without_quota_order_number) }
 
-    describe '#new_balances' do
-      it { expect(quota_definition.new_balances).to eq(['18145960.0']) }
-    end
-  end
-
-  context 'when there are no quota balance events' do
-    subject(:quota_definition) { build(:quota_definition, :without_quota_balance_events) }
-
-    describe '#occurrence_timestamps' do
-      it { expect(quota_definition.occurrence_timestamps).to eq([]) }
-    end
-
-    describe '#imported_amounts' do
-      it { expect(quota_definition.imported_amounts).to eq([]) }
-    end
-
-    describe '#new_balances' do
-      it { expect(quota_definition.new_balances).to eq([]) }
+      it { expect(quota_definition.quota_order_number).to be_nil }
     end
   end
 
-  context 'quota order number origins' do
+  describe '#quota_order_number_origins' do
+    context 'when there are quota balance events' do
+      subject(:quota_definition) { build(:quota_definition, :with_quota_balance_events) }
+
+      describe '#occurrence_timestamps' do
+        it { expect(quota_definition.occurrence_timestamps).to eq(['12 Jan 2022']) }
+      end
+
+      describe '#imported_amounts' do
+        it { expect(quota_definition.imported_amounts).to eq(['35040.0']) }
+      end
+
+      describe '#new_balances' do
+        it { expect(quota_definition.new_balances).to eq(['18145960.0']) }
+      end
+    end
+
+    context 'when there are no quota balance events' do
+      subject(:quota_definition) { build(:quota_definition, :without_quota_balance_events) }
+
+      describe '#occurrence_timestamps' do
+        it { expect(quota_definition.occurrence_timestamps).to eq([]) }
+      end
+
+      describe '#imported_amounts' do
+        it { expect(quota_definition.imported_amounts).to eq([]) }
+      end
+
+      describe '#new_balances' do
+        it { expect(quota_definition.new_balances).to eq([]) }
+      end
+    end
+  end
+
+  describe '#quota_order_number_origins' do
     context 'when there are quota order number origins' do
       subject(:quota_definition) { build(:quota_definition, :with_quota_order_number_origins) }
-  
+
       it { expect(quota_definition.quota_order_number_origins.count).to eq(1) }
 
       it { expect(quota_definition.quota_order_number_origins.first).to be_instance_of QuotaOrderNumbers::QuotaOrderNumberOrigin }
@@ -62,15 +79,15 @@ RSpec.describe QuotaOrderNumbers::QuotaDefinition do
 
     context 'when there are no quota order number origins' do
       subject(:quota_definition) { build(:quota_definition, :without_quota_order_number_origins) }
-  
+
       it { expect(quota_definition.quota_order_number_origins).to eq([]) }
     end
   end
 
-  context 'quota unsuspension events' do
+  describe '#quota_unsuspension_events' do
     context 'when there are quota unsuspension events' do
       subject(:quota_definition) { build(:quota_definition, :with_quota_unsuspension_events) }
-  
+
       it { expect(quota_definition.quota_unsuspension_events.count).to eq(1) }
 
       it { expect(quota_definition.quota_unsuspension_events.first).to be_instance_of QuotaOrderNumbers::QuotaUnsuspensionEvent }
@@ -78,15 +95,15 @@ RSpec.describe QuotaOrderNumbers::QuotaDefinition do
 
     context 'when there are no quota unsuspension events' do
       subject(:quota_definition) { build(:quota_definition, :without_quota_unsuspension_events) }
-  
+
       it { expect(quota_definition.quota_unsuspension_events).to eq([]) }
     end
   end
 
-  context 'quota exhaustion events' do
+  describe '#quota_exhaustion_events' do
     context 'when there are quota exhaustion events' do
       subject(:quota_definition) { build(:quota_definition, :with_quota_exhaustion_events) }
-  
+
       it { expect(quota_definition.quota_exhaustion_events.count).to eq(1) }
 
       it { expect(quota_definition.quota_exhaustion_events.first).to be_instance_of QuotaOrderNumbers::QuotaExhaustionEvent }
@@ -94,15 +111,15 @@ RSpec.describe QuotaOrderNumbers::QuotaDefinition do
 
     context 'when there are no quota exhaustion events' do
       subject(:quota_definition) { build(:quota_definition, :without_quota_exhaustion_events) }
-  
+
       it { expect(quota_definition.quota_exhaustion_events).to eq([]) }
     end
   end
 
-  context 'quota reopening events' do
+  describe '#quota_reopening_events' do
     context 'when there are quota reopening events' do
       subject(:quota_definition) { build(:quota_definition, :with_quota_reopening_events) }
-  
+
       it { expect(quota_definition.quota_reopening_events.count).to eq(1) }
 
       it { expect(quota_definition.quota_reopening_events.first).to be_instance_of QuotaOrderNumbers::QuotaReopeningEvent }
@@ -110,15 +127,15 @@ RSpec.describe QuotaOrderNumbers::QuotaDefinition do
 
     context 'when there are no quota reopening events' do
       subject(:quota_definition) { build(:quota_definition, :without_quota_reopening_events) }
-  
+
       it { expect(quota_definition.quota_reopening_events).to eq([]) }
     end
   end
 
-  context 'quota unblocking events' do
+  describe '#quota_unblocking_events' do
     context 'when there are quota unblocking events' do
       subject(:quota_definition) { build(:quota_definition, :with_quota_unblocking_events) }
-  
+
       it { expect(quota_definition.quota_unblocking_events.count).to eq(1) }
 
       it { expect(quota_definition.quota_unblocking_events.first).to be_instance_of QuotaOrderNumbers::QuotaUnblockingEvent }
@@ -126,15 +143,15 @@ RSpec.describe QuotaOrderNumbers::QuotaDefinition do
 
     context 'when there are no quota unblocking events' do
       subject(:quota_definition) { build(:quota_definition, :without_quota_unblocking_events) }
-  
+
       it { expect(quota_definition.quota_unblocking_events).to eq([]) }
     end
   end
 
-  context 'quota critical events' do
+  describe '#quota_critical_events' do
     context 'when there are quota critical events' do
       subject(:quota_definition) { build(:quota_definition, :with_quota_critical_events) }
-  
+
       it { expect(quota_definition.quota_critical_events.count).to eq(1) }
 
       it { expect(quota_definition.quota_critical_events.first).to be_instance_of QuotaOrderNumbers::QuotaCriticalEvent }
@@ -142,29 +159,33 @@ RSpec.describe QuotaOrderNumbers::QuotaDefinition do
 
     context 'when there are no quota unblocking events' do
       subject(:quota_definition) { build(:quota_definition, :without_quota_critical_events) }
-  
+
       it { expect(quota_definition.quota_critical_events).to eq([]) }
     end
   end
 
-  context 'quota additional events' do
+  describe '#quota_additional_events' do
     context 'when there are quota additional events' do
-      subject(:quota_definition) { build(:quota_definition, :with_quota_critical_events, 
-                                                            :with_quota_unsuspension_events, 
-                                                            :with_quota_exhaustion_events, 
-                                                            :with_quota_reopening_events, 
-                                                            :with_quota_unblocking_events) }
-  
+      subject(:quota_definition) do
+        build(:quota_definition, :with_quota_critical_events,
+              :with_quota_unsuspension_events,
+              :with_quota_exhaustion_events,
+              :with_quota_reopening_events,
+              :with_quota_unblocking_events)
+      end
+
       it { expect(quota_definition.additional_events.count).to eq(5) }
     end
 
-    context 'when there are no quota unadditional events' do
-      subject(:quota_definition) { build(:quota_definition, :without_quota_critical_events, 
-                                                            :without_quota_unsuspension_events, 
-                                                            :without_quota_exhaustion_events, 
-                                                            :without_quota_reopening_events, 
-                                                            :without_quota_unblocking_events) }
-  
+    context 'when there are no quota additional events' do
+      subject(:quota_definition) do
+        build(:quota_definition, :without_quota_critical_events,
+              :without_quota_unsuspension_events,
+              :without_quota_exhaustion_events,
+              :without_quota_reopening_events,
+              :without_quota_unblocking_events)
+      end
+
       it { expect(quota_definition.additional_events).to eq([]) }
     end
   end

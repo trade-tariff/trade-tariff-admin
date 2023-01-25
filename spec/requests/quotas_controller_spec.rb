@@ -31,13 +31,19 @@ RSpec.describe QuotasController do
     end
 
     let(:quota_definitions) { [quota_definition, quota_definition] }
-    let(:quota_definition) { build(:quota_definition, :with_quota_balance_events, 
-                                                      :with_quota_order_number_origins,
-                                                      :without_quota_critical_events, 
-                                                      :without_quota_unsuspension_events, 
-                                                      :without_quota_exhaustion_events, 
-                                                      :without_quota_reopening_events, 
-                                                      :without_quota_unblocking_events) }
+    let(:quota_definition) do
+      build(
+        :quota_definition,
+        :with_quota_order_number,
+        :with_quota_balance_events,
+        :with_quota_order_number_origins,
+        :without_quota_critical_events,
+        :without_quota_unsuspension_events,
+        :without_quota_exhaustion_events,
+        :without_quota_reopening_events,
+        :without_quota_unblocking_events,
+      )
+    end
 
     before do
       create(:user, :hmrc_editor)
@@ -64,5 +70,46 @@ RSpec.describe QuotasController do
 
       it { is_expected.to render_template(:not_found) }
     end
+  end
+
+  describe 'GET #show' do
+    subject(:do_request) do
+      get quota_path(
+        id: quota_definition.id,
+        order_number: quota_definition.quota_order_number_id,
+      )
+
+      response
+    end
+
+    before do
+      create(:user, :hmrc_editor)
+
+      allow(QuotaOrderNumbers::QuotaDefinition).to receive(:find).with(id: '22619', _quota_order_number_id: '051822').and_return(quota_definition)
+    end
+
+    let(:quota_definition) do
+      build(
+        :quota_definition,
+        :with_quota_balance_events,
+        :with_quota_order_number,
+        :with_quota_order_number_origins,
+        :without_quota_critical_events,
+        :without_quota_unsuspension_events,
+        :without_quota_exhaustion_events,
+        :without_quota_reopening_events,
+        :without_quota_unblocking_events,
+      )
+    end
+
+    it 'fetches the quota definition' do
+      do_request
+
+      expect(QuotaOrderNumbers::QuotaDefinition)
+        .to have_received(:find)
+        .with(id: quota_definition.id, _quota_order_number_id: quota_definition.quota_order_number_id)
+    end
+
+    it { is_expected.to render_template(:show) }
   end
 end

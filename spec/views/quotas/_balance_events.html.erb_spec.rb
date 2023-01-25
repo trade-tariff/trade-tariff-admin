@@ -3,10 +3,7 @@ require 'rails_helper'
 RSpec.describe 'quotas/_balance_events' do
   subject(:rendered_page) { render_page && rendered }
 
-  let :render_page do
-    render 'quotas/balance_events',
-    quota_definition: quota_definition
-  end
+  let(:render_page) { render('quotas/balance_events', quota_definition:) }
 
   context 'with quota balance events' do
     let(:quota_definition) { build(:quota_definition, :with_quota_balance_events) }

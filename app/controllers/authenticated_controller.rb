@@ -1,5 +1,5 @@
 class AuthenticatedController < ApplicationController
-  include Pundit
+  include Pundit::Authorization
   include GDS::SSO::ControllerMethods
 
   protect_from_forgery

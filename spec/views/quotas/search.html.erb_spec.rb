@@ -3,11 +3,20 @@ require 'rails_helper'
 RSpec.describe 'quotas/search' do
   subject { render && rendered }
 
-  before { assign :current_quota_definition, quota_definition }
-  before { assign :quota_definitions, [] }
+  before do
+    assign :current_quota_definition, quota_definition
+    assign :quota_definitions, []
+  end
 
   context 'with quota order number origins' do
-    let(:quota_definition) { build(:quota_definition, :with_quota_balance_events, :with_quota_order_number_origins) }
+    let(:quota_definition) do
+      build(
+        :quota_definition,
+        :with_quota_order_number,
+        :with_quota_balance_events,
+        :with_quota_order_number_origins,
+      )
+    end
 
     it { is_expected.to have_css 'h1', text: /Quota 051822 - definitions/ }
 

@@ -4,17 +4,18 @@ RSpec.describe 'quotas/_quota_definitions' do
   subject(:rendered_page) { render_page && rendered }
 
   let :render_page do
-    render 'quotas/quota_definitions',
-    quota_definitions: [quota_definition]
+    render partial: 'quotas/quota_definition', collection: [quota_definition]
   end
 
   context 'with quota balance events' do
-    let(:quota_definition) { build(:quota_definition, :with_quota_balance_events,
-                                                      :without_quota_critical_events, 
-                                                      :without_quota_unsuspension_events, 
-                                                      :without_quota_exhaustion_events, 
-                                                      :without_quota_reopening_events, 
-                                                      :without_quota_unblocking_events) }
+    let(:quota_definition) do
+      build(:quota_definition, :with_quota_balance_events,
+            :without_quota_critical_events,
+            :without_quota_unsuspension_events,
+            :without_quota_exhaustion_events,
+            :without_quota_reopening_events,
+            :without_quota_unblocking_events)
+    end
 
     let(:quota_order_number_origin) { quota_definition.quota_order_number_origins.first }
 

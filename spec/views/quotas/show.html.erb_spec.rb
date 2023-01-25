@@ -1,9 +1,9 @@
 require 'rails_helper'
 
-RSpec.describe 'balance_events/show' do
+RSpec.describe 'quotas/show' do
   subject { render && rendered }
 
-  before { assign :current_quota_definition, quota_definition }
+  before { assign :quota_definition, quota_definition }
 
   context 'with quota definition' do
     let(:quota_definition) { build(:quota_definition, :with_quota_balance_events, :with_quota_order_number_origins) }
