@@ -1,4 +1,8 @@
 class QuotasController < AuthenticatedController
+  def show
+    quota_definition
+  end
+
   def new
     return render 'errors/not_found' if TradeTariffAdmin::ServiceChooser.xi?
 
@@ -23,6 +27,13 @@ class QuotasController < AuthenticatedController
     @current_quota_definition ||= quota_definitions.max_by(&:validity_end_date)
   rescue Faraday::ResourceNotFound
     nil
+  end
+
+  def quota_definition
+    @quota_definition ||= QuotaOrderNumbers::QuotaDefinition.find(
+      id: params[:id],
+      quota_order_number_id: params[:order_number],
+    )
   end
 
   def quota_definitions
