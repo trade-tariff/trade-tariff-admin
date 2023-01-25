@@ -17,6 +17,7 @@ module QuotaOrderNumbers
                :critical_state,
                :critical_threshold
 
+    has_one :quota_order_number
     has_many :quota_balance_events
     has_many :quota_order_number_origins
     has_many :quota_unsuspension_events
