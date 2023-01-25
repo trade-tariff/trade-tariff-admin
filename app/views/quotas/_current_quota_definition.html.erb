@@ -23,7 +23,7 @@
     </dt>
     <dd class="govuk-summary-list__value">
       <% current_quota_definition.quota_order_number_origins.each do |quota_order_number_origin| %>
-        <%= quota_order_number_origin.geographical_area_id %>(<%= quota_order_number_origin.geographical_area_description %>) <%= format_quota_dates quota_order_number_origin %></br>
+        <%= quota_order_number_origin.geographical_area_id %> (<%= quota_order_number_origin.geographical_area_description %>) <%= format_quota_dates quota_order_number_origin %></br>
       <% end %>
     </dd>
   </div>
@@ -32,7 +32,7 @@
       Quota dates
     </dt>
     <dd class="govuk-summary-list__value">
-      <%= format_quota_dates(current_quota_definition).upcase_first %>
+      <%= format_quota_dates(current_quota_definition.quota_order_number).upcase_first %>
     </dd>
   </div>
   <div class="govuk-summary-list__row">
