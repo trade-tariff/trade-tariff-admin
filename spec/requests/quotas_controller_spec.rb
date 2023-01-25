@@ -25,7 +25,7 @@ RSpec.describe QuotasController do
     subject(:do_request) do
       create(:user, :hmrc_editor)
 
-      get perform_quota_search_path(quota_search: { order_number: quota_definition.quota_order_number_id })
+      get perform_search_quotas_path(quota_search: { order_number: quota_definition.quota_order_number_id })
 
       response
     end
