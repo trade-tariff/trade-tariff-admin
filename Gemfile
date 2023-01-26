@@ -62,6 +62,7 @@ group :development, :test do
   gem 'brakeman'
   gem 'dotenv-rails'
   gem 'pry-byebug'
+  gem 'pry-rails'
 end
 
 group :development do

@@ -1,4 +1,8 @@
 class QuotasController < AuthenticatedController
+  def show
+    quota_definition
+  end
+
   def new
     return render 'errors/not_found' if TradeTariffAdmin::ServiceChooser.xi?
 
@@ -10,19 +14,30 @@ class QuotasController < AuthenticatedController
 
     @quota_search = QuotaSearch.new(quota_params)
 
-    if @quota_search.valid? && quota_definition
-      render perform_quota_search_path
+    if @quota_search.valid? && current_quota_definition
+      render perform_search_quotas_path
     elsif !@quota_search.valid?
-      render quota_search_path
-    elsif !quota_definition
-      redirect_to quota_search_path, alert: "Quota #{@quota_search.order_number} not found."
+      render new_quota_path
+    elsif !current_quota_definition
+      redirect_to new_quota_path, alert: "Quota #{@quota_search.order_number} not found."
     end
   end
 
-  def quota_definition
-    @quota_definition = QuotaOrderNumbers::QuotaDefinition.find(@quota_search.order_number)
+  def current_quota_definition
+    @current_quota_definition ||= quota_definitions.max_by(&:validity_end_date)
   rescue Faraday::ResourceNotFound
     nil
+  end
+
+  def quota_definition
+    @quota_definition ||= QuotaOrderNumbers::QuotaDefinition.find(
+      id: params[:id],
+      _quota_order_number_id: params[:order_number],
+    )
+  end
+
+  def quota_definitions
+    @quota_definitions ||= QuotaOrderNumbers::QuotaDefinition.by_quota_order_number(@quota_search.order_number)
   end
 
   def quota_params

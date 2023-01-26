@@ -1,0 +1,45 @@
+<dl class="govuk-summary-list">
+  <h2>Core quota data</h2>
+
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">
+      Quota order number
+    </dt>
+    <dd class="govuk-summary-list__value">
+      <%= current_quota_definition.quota_order_number_id %>
+    </dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">
+      Quota type
+    </dt>
+    <dd class="govuk-summary-list__value">
+      <%= current_quota_definition.quota_type %>
+    </dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">
+      Origin(s)
+    </dt>
+    <dd class="govuk-summary-list__value">
+      <% current_quota_definition.quota_order_number_origins.each do |quota_order_number_origin| %>
+        <%= quota_order_number_origin.geographical_area_id %> (<%= quota_order_number_origin.geographical_area_description %>) <%= format_quota_dates quota_order_number_origin %></br>
+      <% end %>
+    </dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">
+      Quota dates
+    </dt>
+    <dd class="govuk-summary-list__value">
+      <%= format_quota_dates(current_quota_definition.quota_order_number).upcase_first %>
+    </dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">
+      Commodities and measures
+    </dt>
+    <dd class="govuk-summary-list__value">
+    </dd>
+  </div>
+</dl>

@@ -2,18 +2,29 @@ module QuotaOrderNumbers
   class QuotaDefinition
     include Her::JsonApi::Model
 
-    resource_path '/admin/quota_order_numbers/:quota_order_number_id/quota_definitions/current'
+    resource_path '/admin/quota_order_numbers/:quota_order_number_id/quota_definitions/:id'
+    collection_path '/admin/quota_order_numbers/:quota_order_number_id/quota_definitions'
 
-    primary_key :quota_order_number_id
+    scope :by_quota_order_number, ->(order_number) { all(_quota_order_number_id: order_number) }
 
     attributes :id,
                :quota_order_number_id,
                :validity_start_date,
                :validity_end_date,
                :initial_volume,
-               :measurement_unit
+               :measurement_unit,
+               :quota_type,
+               :critical_state,
+               :critical_threshold
 
+    has_one :quota_order_number
     has_many :quota_balance_events
+    has_many :quota_order_number_origins
+    has_many :quota_unsuspension_events
+    has_many :quota_exhaustion_events
+    has_many :quota_reopening_events
+    has_many :quota_unblocking_events
+    has_many :quota_critical_events
 
     def occurrence_timestamps
       chart_data[:occurrence_timestamps]
@@ -25,6 +36,10 @@ module QuotaOrderNumbers
 
     def new_balances
       chart_data[:new_balances]
+    end
+
+    def additional_events
+      quota_exhaustion_events + quota_unsuspension_events + quota_reopening_events + quota_unblocking_events + quota_critical_events
     end
 
     private
