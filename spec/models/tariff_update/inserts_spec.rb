@@ -35,12 +35,6 @@ RSpec.describe TariffUpdate::Inserts do
     it { is_expected.to eq(7) }
   end
 
-  describe '#total_records_destroyed_cascade' do
-    subject(:total_records_destroyed_cascade) { build(:tariff_update, :with_inserts).inserts.total_records_destroyed_cascade }
-
-    it { is_expected.to eq(5) }
-  end
-
   describe '#updated_entities' do
     subject(:updated_entities) { build(:tariff_update, :with_inserts).inserts.updated_entities }
 

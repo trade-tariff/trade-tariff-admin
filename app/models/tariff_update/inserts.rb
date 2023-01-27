@@ -28,10 +28,6 @@ class TariffUpdate
       parsed_inserts.dig('operations', 'destroy_missing', 'count').presence || 0
     end
 
-    def total_records_destroyed_cascade
-      parsed_inserts.dig('operations', 'destroy_cascade', 'count').presence || 0
-    end
-
     def total_records_skipped
       parsed_inserts.dig('operations', 'skipped', 'count').presence || 0
     end
@@ -41,7 +37,6 @@ class TariffUpdate
       updates = inserts_for('update')
       destroys = inserts_for('destroy')
       destroys_missing = inserts_for('destroy_missing')
-      destroys_cascade = inserts_for('destroy_cascade')
       skipped = inserts_for('skipped')
 
       all_entities = Set.new
@@ -49,7 +44,6 @@ class TariffUpdate
       all_entities.merge(updates.keys)
       all_entities.merge(destroys.keys)
       all_entities.merge(destroys_missing.keys)
-      all_entities.merge(destroys_cascade.keys)
       all_entities.merge(skipped.keys)
 
       all_entities.each_with_object([]) do |entity, entities|
