@@ -52,7 +52,6 @@ FactoryBot.define do
               "MeasureComponent": { "count": 18, "duration": 53.629638671875, "mapping_path": 'measureComponent' },
             },
             "destroy": { "count": 4, "duration": 0 },
-            "destroy_cascade": { "count": 5, "duration": 0 },
             "destroy_missing": {
               "count": 7,
               "duration": 0,
@@ -91,7 +90,6 @@ FactoryBot.define do
             "create": { "count": 0, "duration": 0 },
             "update": { "count": 0, "duration": 0 },
             "destroy": { "count": 0, "duration": 0 },
-            "destroy_cascade": { "count": 0, "duration": 0 },
             "destroy_missing": { "count": 0, "duration": 0 },
             "skipped": { "count": 0, "duration": 0 },
           },
