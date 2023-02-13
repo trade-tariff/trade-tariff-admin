@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe NewsItemsController do
   subject(:rendered_page) { create_user && make_request && response }
 
@@ -20,12 +18,14 @@ RSpec.describe NewsItemsController do
     let(:make_request) { get news_items_path }
 
     it { is_expected.to have_http_status :success }
+    it { is_expected.not_to include 'div.current-service' }
   end
 
   describe 'GET #new' do
     let(:make_request) { get new_news_item_path }
 
     it { is_expected.to have_http_status :ok }
+    it { is_expected.not_to include 'div.current-service' }
   end
 
   describe 'POST #create' do
@@ -51,6 +51,7 @@ RSpec.describe NewsItemsController do
 
       it { is_expected.to have_http_status :ok }
       it { is_expected.to have_attributes body: /can.+t be blank/ }
+      it { is_expected.not_to include 'div.current-service' }
     end
   end
 
@@ -63,6 +64,7 @@ RSpec.describe NewsItemsController do
     let(:make_request) { get edit_news_item_path(news_item) }
 
     it { is_expected.to have_http_status :success }
+    it { is_expected.not_to include 'div.current-service' }
   end
 
   describe 'PATCH #update' do
@@ -92,6 +94,7 @@ RSpec.describe NewsItemsController do
 
       it { is_expected.to have_http_status :ok }
       it { is_expected.to have_attributes body: /can.+t be blank/ }
+      it { is_expected.not_to include 'div.current-service' }
     end
   end
 

@@ -14,4 +14,8 @@ class AuthenticatedController < ApplicationController
   def current_page
     Integer(params[:page] || 1)
   end
+
+  def disable_service_switching(&block)
+    TradeTariffAdmin::ServiceChooser.service_switching_disabled(&block)
+  end
 end
