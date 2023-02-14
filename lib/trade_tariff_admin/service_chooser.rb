@@ -1,17 +1,6 @@
 module TradeTariffAdmin
   module ServiceChooser
     class << self
-      def service_switching_disabled
-        Thread.current[:switching_enabled] = false
-        yield
-      ensure
-        Thread.current[:switching_enabled] = true
-      end
-
-      def service_switching_enabled?
-        Thread.current[:switching_enabled] != false
-      end
-
       def service_default
         ENV.fetch('SERVICE_DEFAULT', 'uk')
       end
