@@ -291,7 +291,7 @@ workflows:
               ignore:
                 - main
                 - /^hotfix\/.+/
-                - /^dependabot\/.*/
+                - /^dependabot/(?!docker/).*/
       - linters:
           context: trade-tariff
       - test:
@@ -307,7 +307,7 @@ workflows:
               ignore:
                 - main
                 - /^hotfix\/.+/
-                - /^dependabot\/.*/
+                - /^dependabot/(?!docker/).*/
           requires:
             - build_dev
             - test
@@ -319,7 +319,7 @@ workflows:
               ignore:
                 - main
                 - /^hotfix\/.+/
-                - /^dependabot\/.*/
+                - /^dependabot/(?!docker/).*/
           requires:
             - deploy_development
       - build:
