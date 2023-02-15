@@ -1,4 +1,5 @@
 class NewsItemsController < AuthenticatedController
+  before_action :disable_service_switching!
   before_action :authorize_user
 
   def index
