@@ -5,7 +5,7 @@ module News
 
     collection_path '/admin/news/collections'
 
-    attributes :id, :name
+    attributes :id, :name, :description, :priority, :published
 
     def id
       super.to_i

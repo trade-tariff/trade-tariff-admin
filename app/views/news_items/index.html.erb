@@ -1,8 +1,14 @@
 <h2>
-  News stories
+  Manage news stories
 </h2>
 
-<%= link_to 'Add News story', new_news_item_path, class: 'govuk-button' %>
+<p>
+  Use these pages function to manage news stories, 'Stop Press'
+  and tariff notices. You can also use this functionality to
+  <%= link_to 'manage news story collections', news_collections_path %>.
+</p>
+
+<%= link_to 'Add a News story', new_news_item_path, class: 'govuk-button' %>
 
 <% if @news_items.any? %>
   <table>
