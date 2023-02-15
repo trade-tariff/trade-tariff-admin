@@ -36,7 +36,7 @@ RSpec.describe 'Heading Search Reference management' do
         end
       end
 
-      create_search_reference_for heading, 'Reference' => title
+      create_search_reference_for heading, 'Search reference' => title
 
       verify search_reference_created_for(heading, title: 'new title')
     end
@@ -112,7 +112,7 @@ RSpec.describe 'Heading Search Reference management' do
         end
       end
 
-      update_heading_search_reference_for(heading, heading_search_reference, 'Reference' => 'flim flam')
+      update_heading_search_reference_for(heading, heading_search_reference, 'Search reference' => 'flim flam')
 
       stub_api_for(Heading::SearchReference) do |stub|
         stub.get("/admin/headings/#{heading.to_param}/search_references/#{heading_search_reference.to_param}") do |_env|
@@ -161,14 +161,12 @@ RSpec.describe 'Heading Search Reference management' do
   def heading_search_reference_updated_for(heading, search_reference, args = {})
     ensure_on edit_references_heading_search_reference_path(heading, search_reference)
 
-    page.has_field?('Reference', with: args[:title])
+    page.has_field?('Search reference', with: args[:title])
   end
 
   def search_reference_created_for(heading, attributes = {})
     ensure_on references_heading_search_references_path(heading)
 
-    within('table') do
-      page.has_content? attributes.fetch(:title)
-    end
+    page.has_content? attributes.fetch(:title)
   end
 end
