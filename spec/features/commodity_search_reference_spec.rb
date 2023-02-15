@@ -36,7 +36,7 @@ RSpec.describe 'Commodity Search Reference management' do
         end
       end
 
-      create_search_reference_for commodity, 'Reference' => title
+      create_search_reference_for commodity, 'Search reference' => title
 
       verify search_reference_created_for(commodity, title: 'new title')
     end
@@ -112,7 +112,7 @@ RSpec.describe 'Commodity Search Reference management' do
         end
       end
 
-      update_commodity_search_reference_for(commodity, commodity_search_reference, 'Reference' => new_title)
+      update_commodity_search_reference_for(commodity, commodity_search_reference, 'Search reference' => new_title)
 
       stub_api_for(Commodity::SearchReference) do |stub|
         stub.get("/admin/commodities/#{commodity.to_param}/search_references/#{commodity_search_reference.to_param}") do |_env|
@@ -161,14 +161,12 @@ RSpec.describe 'Commodity Search Reference management' do
   def commodity_search_reference_updated_for(commodity, search_reference, args = {})
     ensure_on edit_references_commodity_search_reference_path(commodity, search_reference)
 
-    page.has_field?('Reference', with: args[:title])
+    page.has_field?('Search reference', with: args[:title])
   end
 
   def search_reference_created_for(commodity, attributes = {})
     ensure_on references_commodity_search_references_path(commodity)
 
-    within('table') do
-      page.has_content? attributes.fetch(:title)
-    end
+    page.has_content? attributes.fetch(:title)
   end
 end

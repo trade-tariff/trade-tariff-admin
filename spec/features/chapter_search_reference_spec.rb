@@ -36,7 +36,7 @@ RSpec.describe 'Chapter Search Reference management' do
           jsonapi_success_response('search_reference', [chapter_search_reference.attributes], 'x-meta' => { pagination: { total: 1 } }.to_json)
         end
       end
-      create_search_reference_for chapter, 'Reference' => title
+      create_search_reference_for chapter, 'Search reference' => title
 
       verify search_reference_created_for(chapter, title: 'new title')
     end
@@ -113,7 +113,7 @@ RSpec.describe 'Chapter Search Reference management' do
         end
       end
 
-      update_chapter_search_reference_for(chapter, chapter_search_reference, 'Reference' => 'new title')
+      update_chapter_search_reference_for(chapter, chapter_search_reference, 'Search reference' => 'new title')
 
       stub_api_for(Chapter::SearchReference) do |stub|
         stub.get("/admin/chapters/#{chapter.to_param}/search_references/#{chapter_search_reference.to_param}") do |_env|
@@ -162,14 +162,12 @@ RSpec.describe 'Chapter Search Reference management' do
   def chapter_search_reference_updated_for(chapter, search_reference, args = {})
     ensure_on edit_references_chapter_search_reference_path(chapter, search_reference)
 
-    page.has_field?('Reference', with: args[:title])
+    page.has_field?('Search reference', with: args[:title])
   end
 
   def search_reference_created_for(chapter, attributes = {})
     ensure_on references_chapter_search_references_path(chapter)
 
-    within('table') do
-      page.has_content? attributes.fetch(:title)
-    end
+    page.has_content? attributes.fetch(:title)
   end
 end

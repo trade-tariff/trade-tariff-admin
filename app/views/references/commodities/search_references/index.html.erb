@@ -1,30 +1,34 @@
 <%= govuk_breadcrumbs 'Sections': references_sections_path,
                       'Commodities': references_heading_commodities_path(heading_id: commodity.heading_id) %>
 
-<h2>Search references <%= commodity.reference_title %></h2>
+<h2>Search references for <%= commodity.reference_title %></h2>
 
-<%= link_to 'New Search reference', new_references_commodity_search_reference_path(commodity), class: 'govuk-button' %>
+<%= link_to 'Create new search reference', new_references_commodity_search_reference_path(commodity), class: 'govuk-button' %>
 
-<table>
-  <thead>
-    <tr>
-      <th>Title</th>
-      <th class="hott-actions-col">
-        Actions
-      </th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @search_references.each do |search_reference| %>
-      <tr id="<%= dom_id(search_reference) %>">
-        <td><%= search_reference.title %></td>
-        <td class="hott-link-group">
-          <%= link_to "Edit", edit_references_commodity_search_reference_path(commodity, search_reference) %>
-          <%= link_to "Remove", references_commodity_search_reference_path(commodity, search_reference), method: :delete, data: { confirm: 'Are you sure?', disable: 'Working'} %>
-        </td>
+<% if @search_references.none? %>
+  <p class="govuk-body">No search references are applied to this category.</p>
+<% else %>
+  <table class='table table-bordered table-striped table-condensed table-search-references'>
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th class="hott-actions-col">
+          Actions
+        </th>
       </tr>
-    <% end %>
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      <% @search_references.each do |search_reference| %>
+        <tr id="<%= dom_id(search_reference) %>">
+          <td><%= search_reference.title %></td>
+          <td class="hott-link-group">
+            <%= link_to "Edit", edit_references_commodity_search_reference_path(commodity, search_reference) %>
+            <%= link_to "Remove", references_commodity_search_reference_path(commodity, search_reference), method: :delete, data: { confirm: 'Are you sure?', disable: 'Working'} %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>
 
 <%= paginate @search_references %>
