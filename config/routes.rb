@@ -65,6 +65,7 @@ Rails.application.routes.draw do
   resources :footnotes, only: %i[index edit update]
   resources :measure_types, only: %i[index edit update]
   resources :news_items, except: %i[show]
+  resources :news_collections, only: %i[index]
   resources :reports, only: %i[index show]
   resources :balance_events, only: %i[show]
 
