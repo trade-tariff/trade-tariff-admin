@@ -2,6 +2,8 @@
   Manage news story collections
 </h2>
 
+<%= link_to 'Add a news story collection', new_news_collection_path, class: 'govuk-button' %>
+
 <% if @news_collections.any? %>
   <table>
     <thead>
@@ -21,8 +23,8 @@
           <td><%= news_collection.priority %></td>
           <td><%= news_collection_bool news_collection.published %></td>
           <td>
-            <%#= link_to 'Edit',
-                        edit_news_item_path(news_collection) %>
+            <%= link_to 'Edit',
+                        edit_news_collection_path(news_collection) %>
           </td>
         </tr>
       <% end %>

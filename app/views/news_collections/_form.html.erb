@@ -1,0 +1,11 @@
+<%= govuk_form_for news_collection do |f| %>
+  <%= f.govuk_text_field :name, width: 'one-half' %>
+
+  <%= f.govuk_text_field :priority, width: 'one-half' %>
+
+  <%= govuk_markdown_area f, :description, rows: 6 %>
+
+  <%= f.govuk_collection_radio_buttons :published, {'true' => 'Yes', 'false' => 'No' }, :first, :last %>
+
+  <%= submit_and_back_buttons f, news_collections_path %>
+<% end %>
