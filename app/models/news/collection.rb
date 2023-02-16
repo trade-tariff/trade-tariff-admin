@@ -8,7 +8,7 @@ module News
     attributes :id, :name, :description, :priority, :published
 
     def id
-      super.to_i
+      super&.to_i
     end
   end
 end
