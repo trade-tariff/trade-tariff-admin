@@ -1,11 +1,22 @@
 <%= govuk_form_for news_collection do |f| %>
-  <%= f.govuk_text_field :name, width: 'one-half' %>
+  <%= f.govuk_text_field :name,
+                         label: { text: 'What is the name of the collection?' },
+                         hint: { text: 'The name of the collection is displayed on the news navigation.' },
+                         width: 'one-half' %>
 
-  <%= f.govuk_text_field :priority, width: 'one-half' %>
+  <%= f.govuk_text_field :priority,
+                         label: { text: 'What is the priority of the collection?' },
+                         hint: { text: 'The lower the priority, the higher this will be displayed in the list of collections.' },
+                         width: 'one-half' %>
 
-  <%= govuk_markdown_area f, :description, rows: 6 %>
+  <%= govuk_markdown_area f, :description,
+                             label: { text: 'What content should appear in the footer for stories of this type?' },
+                             hint: { text: 'This field in optional.' },
+                             rows: 6 %>
 
   <%= f.govuk_collection_radio_buttons :published, {'true' => 'Yes', 'false' => 'No' }, :first, :last %>
 
   <%= submit_and_back_buttons f, news_collections_path %>
 <% end %>
+
+<%= govuk_breadcrumbs 'Back to news story collections': news_collections_path %>

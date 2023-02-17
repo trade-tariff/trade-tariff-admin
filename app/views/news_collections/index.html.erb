@@ -2,8 +2,6 @@
   Manage news story collections
 </h2>
 
-<%= link_to 'Add a news story collection', new_news_collection_path, class: 'govuk-button' %>
-
 <% if @news_collections.any? %>
   <table>
     <thead>
@@ -35,3 +33,7 @@
     <p>No News collections</p>
   </div>
 <% end %>
+
+<%= link_to 'Add a news story collection', new_news_collection_path, class: 'govuk-button' %>
+
+<%= govuk_breadcrumbs 'Back to News stories': news_items_path %>
