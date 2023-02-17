@@ -5,5 +5,6 @@ FactoryBot.define do
     priority { 1 }
     published { true }
     description { 'some description' }
+    slug { nil }
   end
 end
