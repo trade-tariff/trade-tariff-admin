@@ -1,8 +1,8 @@
 class NewsCollectionsController < AuthenticatedController
-  #before_action :authorize_user TODO
+  before_action :authorize_user
 
   def index
-    @news_collections = News::Collection.all
+    @news_collections = News::Collection.all.sort_by(&:id)
   end
 
   def new
@@ -43,5 +43,9 @@ class NewsCollectionsController < AuthenticatedController
       description
       name
     ])
+  end
+
+  def authorize_user
+    authorize News::Collection, :edit?
   end
 end

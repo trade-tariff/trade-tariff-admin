@@ -5,9 +5,11 @@ RSpec.describe 'news_collections/index' do
 
   before { assign :news_collections, news_collections }
 
-  context 'without news stories' do
-    let(:news_collections) { [] }
+  let(:news_collections) { [] }
 
+  it { is_expected.to have_css 'a', text: 'Add a news story collection' }
+
+  context 'without news stories' do
     it { is_expected.to have_css '.govuk-inset-text', text: 'No News collections' }
   end
 
