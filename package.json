@@ -2,7 +2,7 @@
   "name": "trade-tariff-admin",
   "private": true,
   "dependencies": {
-    "@rails/webpacker": "^5.4.0",
+    "@rails/webpacker": "^5.4.4",
     "chart.js": "^4.2.1",
     "govuk-frontend": "^4.5.0",
     "jquery": "^3.6.3",
