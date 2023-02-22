@@ -1,6 +1,6 @@
 RSpec.describe RollbacksController do
   subject(:rendered_page) { create_user && make_request && response }
-  
+
   let(:create_user) { create :user, permissions: ['signin', 'Full access'] }
 
   describe 'GET #index' do
