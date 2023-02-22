@@ -11,5 +11,9 @@ FactoryBot.define do
     trait :hmrc_editor do
       permissions { [User::Permissions::SIGNIN, User::Permissions::HMRC_EDITOR] }
     end
+
+    trait :full_access do
+      permissions { [User::Permissions::SIGNIN, User::Permissions::FULL_ACCESS] }
+    end
   end
 end

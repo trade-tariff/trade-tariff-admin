@@ -6,6 +6,20 @@ RSpec.describe User do
     it_behaves_like 'a gds-sso user class'
   end
 
+  describe '#full_access' do
+    context 'when user has full access' do
+      let!(:user) { create :user, :full_access }
+
+      it { expect(user.full_access?).to eq(true) }
+    end
+
+    context 'when user does not have full access' do
+      let!(:user) { create :user }
+
+      it { expect(user.full_access?).not_to eq(true) }
+    end
+  end
+
   describe '#update' do
     let!(:user) { create :user }
     let(:attrs) do

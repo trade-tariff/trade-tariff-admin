@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe 'Tariff Update listing' do
-  let!(:user) { create :user, :gds_editor }
+  let!(:user) { create :user, :full_access }
   let(:tariff_update) { attributes_for(:tariff_update, :cds, :failed, :with_exception) }
 
   before do
