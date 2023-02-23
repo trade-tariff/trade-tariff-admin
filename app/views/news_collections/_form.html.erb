@@ -14,7 +14,7 @@
                              hint: { text: 'This field in optional.' },
                              rows: 6 %>
 
-  <%= f.govuk_collection_radio_buttons :published, {'true' => 'Yes', 'false' => 'No' }, :first, :last %>
+  <%= f.govuk_collection_radio_buttons :published, {'true' => 'Yes', 'false' => 'No' }, :first, :last, legend: { text: "Is this collection published?" } %>
 
   <%= submit_and_back_buttons f, news_collections_path %>
 <% end %>
