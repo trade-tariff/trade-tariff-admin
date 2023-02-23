@@ -1,0 +1,39 @@
+<h2>
+  Manage news story collections
+</h2>
+
+<% if @news_collections.any? %>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Collection title</th>
+        <th>Priority</th>
+        <th>Published</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @news_collections.each do |news_collection| %>
+        <tr>
+          <td><%= news_collection.id %></td>
+          <td><%= news_collection.name %></td>
+          <td><%= news_collection.priority %></td>
+          <td><%= news_collection_bool news_collection.published %></td>
+          <td>
+            <%= link_to 'Edit',
+                        edit_news_collection_path(news_collection) %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <div class="govuk-inset-text">
+    <p>No News collections</p>
+  </div>
+<% end %>
+
+<%= link_to 'Add a news story collection', new_news_collection_path, class: 'govuk-button' %>
+
+<%= govuk_breadcrumbs 'Back to News stories': news_items_path %>
