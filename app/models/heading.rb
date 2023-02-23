@@ -31,7 +31,7 @@ class Heading
   end
 
   def reference_title
-    "Heading (#{heading_id})"
+    "heading #{heading_id}: #{description}"
   end
 
   def request_path(_opts = {})
