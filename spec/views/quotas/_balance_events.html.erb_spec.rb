@@ -11,9 +11,9 @@ RSpec.describe 'quotas/_balance_events' do
 
     it { is_expected.to have_css 'h2', text: quota_definition.quota_order_number_id }
 
-    it { is_expected.to have_css 'td', text: balance_event.occurrence_timestamp&.to_date&.to_formatted_s(:govuk) }
+    it { is_expected.to have_css 'td', text: balance_event.occurrence_timestamp&.to_date&.strftime("%d %b %Y") }
 
-    it { is_expected.to have_css 'td', text: balance_event.last_import_date_in_allocation&.to_date&.to_formatted_s(:govuk) }
+    it { is_expected.to have_css 'td', text: balance_event.last_import_date_in_allocation&.to_date&.strftime("%d %b %Y") }
 
     it { is_expected.to have_css 'td', text: balance_event.old_balance }
 

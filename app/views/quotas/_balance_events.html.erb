@@ -17,8 +17,8 @@
   <tbody>
   <% quota_definition.quota_balance_events.each do |balance_event| %>
     <tr>
-      <td><%= balance_event.occurrence_timestamp&.to_date&.to_formatted_s(:govuk) %></td>
-      <td><%= balance_event.last_import_date_in_allocation&.to_date&.to_formatted_s(:govuk) %></td>
+      <td><%= pretty_date(balance_event.occurrence_timestamp&.to_date) %></td>
+      <td><%= pretty_date(balance_event.last_import_date_in_allocation) %></td>
       <td><%= balance_event.old_balance %></td>
       <td><%= balance_event.imported_amount %></td>
       <td><%= balance_event.new_balance %></td>

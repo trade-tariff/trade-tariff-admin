@@ -7,4 +7,8 @@ module QuotasHelper
 
     safe_join dates, ' '
   end
+
+  def pretty_date(date)
+    date&.to_date&.strftime("%d %b %Y")
+  end
 end
