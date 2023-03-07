@@ -19,7 +19,7 @@ RSpec.describe 'quotas/_additional_events' do
 
     let(:critical_event) { quota_definition.quota_critical_events.first }
 
-    it { is_expected.to have_css 'td', text: critical_event.event_date&.to_date&.strftime("%d %b %Y") }
+    it { is_expected.to have_css 'td', text: critical_event.event_date&.to_date&.strftime('%d %b %Y') }
 
     it { is_expected.to have_css 'td', text: critical_event.event_type }
 
@@ -37,7 +37,7 @@ RSpec.describe 'quotas/_additional_events' do
 
     let(:unsuspension_event) { quota_definition.quota_unsuspension_events.first }
 
-    it { is_expected.to have_css 'td', text: unsuspension_event.event_date&.to_date&.strftime("%d %b %Y") }
+    it { is_expected.to have_css 'td', text: unsuspension_event.event_date&.to_date&.strftime('%d %b %Y') }
 
     it { is_expected.to have_css 'td', text: unsuspension_event.event_type }
   end

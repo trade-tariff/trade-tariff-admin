@@ -9,6 +9,6 @@ module QuotasHelper
   end
 
   def pretty_date(date)
-    date&.to_date&.strftime("%d %b %Y")
+    date&.to_date&.strftime('%d %b %Y')
   end
 end

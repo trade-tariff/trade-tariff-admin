@@ -22,14 +22,14 @@ RSpec.describe QuotasHelper do
 
     let(:quota_order_number_origin) { build :quota_order_number_origin }
 
-    context 'it formats the date' do
+    context 'when date is present' do
       it { is_expected.to eql '01 Jul 2021' }
     end
 
-    context 'with validity start date only' do
+    context 'when date is nil' do
       before { quota_order_number_origin.validity_start_date = nil }
 
-      it { is_expected.to eql nil }
+      it { is_expected.to be nil }
     end
   end
 end
