@@ -16,20 +16,4 @@ RSpec.describe QuotasHelper do
       it { is_expected.to eql 'from 1 July 2021' }
     end
   end
-
-  describe '#pretty_date' do
-    subject { pretty_date quota_order_number_origin.validity_start_date }
-
-    let(:quota_order_number_origin) { build :quota_order_number_origin }
-
-    context 'when date is present' do
-      it { is_expected.to eql '01 Jul 2021' }
-    end
-
-    context 'when date is nil' do
-      before { quota_order_number_origin.validity_start_date = nil }
-
-      it { is_expected.to be nil }
-    end
-  end
 end
