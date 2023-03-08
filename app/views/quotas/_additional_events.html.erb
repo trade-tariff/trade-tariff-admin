@@ -12,7 +12,7 @@
 
   <% quota_definition.additional_events.each do |additional_event| %>
     <tr>
-      <td><%= additional_event.event_date %></td>
+      <td><%= additional_event.event_date&.to_date&.to_formatted_s(:govuk_short) %></td>
       <td><%= additional_event.event_type %></td>
       <td><%= additional_event.try(:critical_state).presence || 'n/a' %></td>
       <td></td>
