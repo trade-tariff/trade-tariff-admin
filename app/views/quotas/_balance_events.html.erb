@@ -9,9 +9,9 @@
     <tr>
       <th>Event date</th>
       <th>Last allocation date</th>
-      <th>Last balance (KGM)</th>
-      <th>Imported amount (KGM)</th>
-      <th>New balance (KGM)</th>
+      <th class="align-right">Last balance (KGM)</th>
+      <th class="align-right">Imported amount (KGM)</th>
+      <th class="align-right grey-background">New balance (KGM)</th>
     </tr>
   </thead>
   <tbody>
@@ -19,9 +19,9 @@
     <tr>
       <td><%= balance_event.occurrence_timestamp&.to_date&.to_formatted_s(:govuk_short) %></td>
       <td><%= balance_event.last_import_date_in_allocation&.to_date&.to_formatted_s(:govuk_short) %></td>
-      <td><%= balance_event.old_balance %></td>
-      <td><%= balance_event.imported_amount %></td>
-      <td><%= balance_event.new_balance %></td>
+      <td class="align-right mono-font"><%= number_with_precision balance_event.old_balance, precision: 3, delimiter: ',' %></td>
+      <td class="align-right mono-font"><%= number_with_precision balance_event.imported_amount, precision: 3, delimiter: ',' %></td>
+      <td class="align-right mono-font grey-background"><%= number_with_precision balance_event.new_balance, precision: 3, delimiter: ',' %></td>
     </tr>
   <% end %>
   </tbody>

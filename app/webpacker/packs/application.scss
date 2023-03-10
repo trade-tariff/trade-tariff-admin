@@ -66,3 +66,15 @@ $govuk-image-url-function: frontend-image-url;
     @extend .govuk-list--number;
   }
 }
+
+.align-right {
+  text-align: right !important;
+}
+
+.grey-background {
+  background-color: govuk-colour("light-grey");
+}
+
+.mono-font {
+  font-family:courier, monospace;
+}
