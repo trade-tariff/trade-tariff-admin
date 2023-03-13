@@ -67,14 +67,16 @@ $govuk-image-url-function: frontend-image-url;
   }
 }
 
-.align-right {
-  text-align: right !important;
-}
-
-.grey-background {
-  background-color: govuk-colour("light-grey");
-}
-
-.mono-font {
-  font-family:courier, monospace;
+.table {
+  .align-right {
+    text-align: right;
+  }
+  
+  .grey-background {
+    background-color: govuk-colour("light-grey");
+  }
+  
+  .mono-font {
+    font-family:courier, monospace;
+  }
 }
