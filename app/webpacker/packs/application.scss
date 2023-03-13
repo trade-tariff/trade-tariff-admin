@@ -74,6 +74,8 @@ $govuk-image-url-function: frontend-image-url;
   
   .grey-background {
     background-color: govuk-colour("light-grey");
+    padding-right: 1em !important;
+    padding-left: 1em;
   }
   
   .mono-font {
