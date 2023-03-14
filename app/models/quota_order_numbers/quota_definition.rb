@@ -38,6 +38,18 @@ module QuotaOrderNumbers
       chart_data[:new_balances]
     end
 
+    def initial_volumes
+      @initial_volumes ||= [initial_volume] * occurrence_timestamps.size
+    end
+
+    def critical_thresholds
+      @critical_thresholds ||= begin
+        threshold = ((100 - critical_threshold.to_f) * initial_volume.to_f) / 100
+
+        [threshold] * occurrence_timestamps.size
+      end
+    end
+
     def additional_events
       quota_exhaustion_events + quota_unsuspension_events + quota_reopening_events + quota_unblocking_events + quota_critical_events
     end
