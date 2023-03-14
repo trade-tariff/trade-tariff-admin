@@ -8,6 +8,7 @@ const newBalances = JSON.parse(chartDataset.newbalances);
 const occurrenceTimestamps = JSON.parse(chartDataset.occurrencetimestamps);
 const criticalThresholds = JSON.parse(chartDataset.criticalthresholds);
 const initialVolumes = JSON.parse(chartDataset.initialvolumes);
+const smallerDot = 2;
 
 const config = {
   type: "line",
@@ -29,13 +30,12 @@ const config = {
         data: newBalances,
       },
       {
-          label: "Critical threshold",
-          borderColor: "#ff0000",
-          backgroundColor: "rgba(29, 112, 184, 0.1)",
-          fill: false,
-          data: criticalThresholds,
-          // Makes the plotted dots smaller
-          radius: 2
+        label: "Critical threshold",
+        borderColor: "#ff0000",
+        backgroundColor: "rgba(29, 112, 184, 0.1)",
+        fill: false,
+        data: criticalThresholds,
+        radius: smallerDot
       },
       {
         label: "Initial volume",
@@ -43,8 +43,7 @@ const config = {
         backgroundColor: "rgba(29, 112, 184, 0.1)",
         fill: false,
         data: initialVolumes,
-        // Makes the plotted dots smaller
-        radius: 2
+        radius: smallerDot
       }
     ],
   },
