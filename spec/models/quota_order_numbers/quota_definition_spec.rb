@@ -49,6 +49,14 @@ RSpec.describe QuotaOrderNumbers::QuotaDefinition do
       describe '#new_balances' do
         it { expect(quota_definition.new_balances).to eq(['18145960.0']) }
       end
+
+      describe '#critical_thresholds' do
+        it { expect(quota_definition.critical_thresholds).to eq([1_818_100.0]) }
+      end
+
+      describe '#initial_volumes' do
+        it { expect(quota_definition.initial_volumes).to eq(['18181000.0']) }
+      end
     end
 
     context 'when there are no quota balance events' do
@@ -64,6 +72,14 @@ RSpec.describe QuotaOrderNumbers::QuotaDefinition do
 
       describe '#new_balances' do
         it { expect(quota_definition.new_balances).to eq([]) }
+      end
+
+      describe '#critical_thresholds' do
+        it { expect(quota_definition.critical_thresholds).to eq([]) }
+      end
+
+      describe '#initial_volumes' do
+        it { expect(quota_definition.initial_volumes).to eq([]) }
       end
     end
   end
