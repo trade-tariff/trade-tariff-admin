@@ -10,7 +10,7 @@ RSpec.describe QuotaOrderNumbers::QuotaDefinition do
         quota_order_number_id: '051822',
         validity_start_date: '2022-01-01T00:00:00.000Z',
         validity_end_date: '2022-12-31T23:59:59.000Z',
-        measurement_unit: 'Kilogram (kg)',
+        formatted_measurement_unit: 'Kilogram (kg)',
         initial_volume: '18181000.0',
         quota_type: 'First Come First Served',
         critical_state: 'N',
@@ -204,5 +204,23 @@ RSpec.describe QuotaOrderNumbers::QuotaDefinition do
 
       it { expect(quota_definition.additional_events).to eq([]) }
     end
+  end
+
+  describe '#formatted_last_balance' do
+    subject(:formatted_last_balance) { build(:quota_definition).formatted_last_balance }
+
+    it { is_expected.to eq('Last balance (kg)') }
+  end
+
+  describe '#formatted_imported_amount' do
+    subject(:formatted_imported_amount) { build(:quota_definition).formatted_imported_amount }
+
+    it { is_expected.to eq('Imported amount (kg)') }
+  end
+
+  describe '#formatted_new_balance' do
+    subject(:formatted_new_balance) { build(:quota_definition).formatted_new_balance }
+
+    it { is_expected.to eq('New balance (kg)') }
   end
 end

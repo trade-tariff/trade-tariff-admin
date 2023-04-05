@@ -7,7 +7,7 @@
 </p>
 
 <p>
-  Initial volume is <%= @quota_definition.initial_volume %> <%= @quota_definition.measurement_unit %>
+  Initial volume is <%= formatted_initial_volume(@quota_definition) %>
 </p>
 
 <%= render 'balance_events_chart' %>

@@ -1,6 +1,14 @@
 require 'rails_helper'
 
 RSpec.describe QuotasHelper do
+  describe '#formatted_initial_volume' do
+    subject(:formatted_initial_volume) { helper.formatted_initial_volume(quota_definition) }
+
+    let(:quota_definition) { build(:quota_definition) }
+
+    it { is_expected.to eq('18,181,000.000 Kilogram (kg)') }
+  end
+
   describe '#format_quota_dates' do
     subject { format_quota_dates quota_order_number_origin }
 
