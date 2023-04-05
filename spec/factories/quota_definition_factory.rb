@@ -5,10 +5,12 @@ FactoryBot.define do
     validity_start_date { '2022-01-01T00:00:00.000Z' }
     validity_end_date { '2022-12-31T23:59:59.000Z' }
     initial_volume { '18181000.0' }
-    measurement_unit { 'Kilogram (kg)' }
+    formatted_measurement_unit { 'Kilogram (kg)' }
     quota_type { 'First Come First Served' }
     critical_state { 'N' }
     critical_threshold { '90' }
+
+    measurement_unit { build(:measurement_unit) }
 
     trait :with_quota_order_number do
       quota_order_number { build(:quota_order_number) }

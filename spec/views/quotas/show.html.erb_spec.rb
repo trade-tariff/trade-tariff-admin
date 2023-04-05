@@ -14,6 +14,6 @@ RSpec.describe 'quotas/show' do
 
     it { is_expected.to have_css 'p', text: 'from 1 January 2022 to 31 December 2022' }
 
-    it { is_expected.to have_css 'p', text: "#{quota_definition.initial_volume} #{quota_definition.measurement_unit}" }
+    it { is_expected.to have_css 'p', text: quota_definition.formatted_initial_volume }
   end
 end

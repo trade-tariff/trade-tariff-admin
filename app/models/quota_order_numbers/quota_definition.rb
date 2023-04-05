@@ -1,5 +1,6 @@
 module QuotaOrderNumbers
   class QuotaDefinition
+    include ActionView::Helpers::NumberHelper
     include Her::JsonApi::Model
 
     resource_path '/admin/quota_order_numbers/:quota_order_number_id/quota_definitions/:id'
@@ -12,11 +13,12 @@ module QuotaOrderNumbers
                :validity_start_date,
                :validity_end_date,
                :initial_volume,
-               :measurement_unit,
+               :formatted_measurement_unit,
                :quota_type,
                :critical_state,
                :critical_threshold
 
+    has_one :measurement_unit
     has_one :quota_order_number
     has_many :quota_balance_events
     has_many :quota_order_number_origins
@@ -25,6 +27,24 @@ module QuotaOrderNumbers
     has_many :quota_reopening_events
     has_many :quota_unblocking_events
     has_many :quota_critical_events
+
+    def formatted_initial_volume
+      volume = number_with_precision initial_volume, precision: 3, delimiter: ','
+
+      "#{volume} #{formatted_measurement_unit}"
+    end
+
+    def last_balance_row_heading
+      "Last balance (#{measurement_unit.abbreviation})"
+    end
+
+    def imported_amount_row_heading
+      "Imported amount (#{measurement_unit.abbreviation})"
+    end
+
+    def new_balance_row_heading
+      "New balance (#{measurement_unit.abbreviation})"
+    end
 
     def occurrence_timestamps
       chart_data[:occurrence_timestamps]

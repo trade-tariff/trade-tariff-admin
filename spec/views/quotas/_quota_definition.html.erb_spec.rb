@@ -27,7 +27,7 @@ RSpec.describe 'quotas/_quota_definitions' do
 
     it { is_expected.to have_css 'dd', text: quota_definition.validity_end_date&.to_date&.to_formatted_s(:govuk) }
 
-    it { is_expected.to have_css 'dd', text: "#{quota_definition.initial_volume} #{quota_definition.measurement_unit}" }
+    it { is_expected.to have_css 'dd', text: quota_definition.formatted_initial_volume }
 
     it { is_expected.to have_css 'dd', text: quota_definition.critical_state }
 
