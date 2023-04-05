@@ -1,6 +1,5 @@
 module QuotaOrderNumbers
   class QuotaDefinition
-    include ActionView::Helpers::NumberHelper
     include Her::JsonApi::Model
 
     resource_path '/admin/quota_order_numbers/:quota_order_number_id/quota_definitions/:id'
@@ -28,21 +27,15 @@ module QuotaOrderNumbers
     has_many :quota_unblocking_events
     has_many :quota_critical_events
 
-    def formatted_initial_volume
-      volume = number_with_precision initial_volume, precision: 3, delimiter: ','
-
-      "#{volume} #{formatted_measurement_unit}"
-    end
-
-    def last_balance_row_heading
+    def formatted_last_balance
       "Last balance (#{measurement_unit.abbreviation})"
     end
 
-    def imported_amount_row_heading
+    def formatted_imported_amount
       "Imported amount (#{measurement_unit.abbreviation})"
     end
 
-    def new_balance_row_heading
+    def formatted_new_balance
       "New balance (#{measurement_unit.abbreviation})"
     end
 

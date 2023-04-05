@@ -206,26 +206,20 @@ RSpec.describe QuotaOrderNumbers::QuotaDefinition do
     end
   end
 
-  describe '#formatted_initial_volume' do
-    subject(:formatted_initial_volume) { build(:quota_definition).formatted_initial_volume }
-
-    it { is_expected.to eq('18,181,000.000 Kilogram (kg)') }
-  end
-
-  describe '#last_balance_row_heading' do
-    subject(:last_balance_row_heading) { build(:quota_definition).last_balance_row_heading }
+  describe '#formatted_last_balance' do
+    subject(:formatted_last_balance) { build(:quota_definition).formatted_last_balance }
 
     it { is_expected.to eq('Last balance (kg)') }
   end
 
-  describe '#imported_amount_row_heading' do
-    subject(:imported_amount_row_heading) { build(:quota_definition).imported_amount_row_heading }
+  describe '#formatted_imported_amount' do
+    subject(:formatted_imported_amount) { build(:quota_definition).formatted_imported_amount }
 
     it { is_expected.to eq('Imported amount (kg)') }
   end
 
-  describe '#new_balance_row_heading' do
-    subject(:new_balance_row_heading) { build(:quota_definition).new_balance_row_heading }
+  describe '#formatted_new_balance' do
+    subject(:formatted_new_balance) { build(:quota_definition).formatted_new_balance }
 
     it { is_expected.to eq('New balance (kg)') }
   end
