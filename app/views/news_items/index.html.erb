@@ -28,7 +28,7 @@
       <% @news_items.each do |news_item| %>
         <tr id="<%= dom_id(news_item) %>">
           <td><%= news_item.id %></td>
-          <td><%= truncate news_item.title %></td>
+          <td><%= news_item.title %></td>
           <td><%= news_item_date news_item.start_date %></td>
           <td><%= news_item_date news_item.end_date %></td>
           <td><%= news_item_bool news_item.show_on_uk %></td>
