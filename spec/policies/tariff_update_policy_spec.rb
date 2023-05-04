@@ -4,8 +4,8 @@ RSpec.describe TariffUpdatePolicy do
   subject(:tariff_update_policy) { described_class }
 
   permissions :access? do
-    it 'grants access to user with full access' do
-      expect(tariff_update_policy).to permit(User.new(permissions: [User::Permissions::FULL_ACCESS]), TariffUpdate.new)
+    it 'grants access to hmrc admin' do
+      expect(tariff_update_policy).to permit(User.new(permissions: [User::Permissions::HMRC_ADMIN]), TariffUpdate.new)
     end
 
     it 'denies access access to gds editor' do

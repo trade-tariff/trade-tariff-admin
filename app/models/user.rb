@@ -7,7 +7,7 @@ class User < ApplicationRecord
     SIGNIN = 'signin'.freeze
     HMRC_EDITOR = 'HMRC Editor'.freeze
     GDS_EDITOR = 'GDS Editor'.freeze
-    FULL_ACCESS = 'Full access'.freeze
+    HMRC_ADMIN = 'HMRC Admin'.freeze
   end
 
   def gds_editor?
@@ -18,8 +18,8 @@ class User < ApplicationRecord
     has_permission?(Permissions::HMRC_EDITOR)
   end
 
-  def full_access?
-    has_permission?(Permissions::FULL_ACCESS)
+  def hmrc_admin?
+    has_permission?(Permissions::HMRC_ADMIN)
   end
 
   def to_s

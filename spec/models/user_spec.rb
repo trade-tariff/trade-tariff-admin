@@ -6,17 +6,17 @@ RSpec.describe User do
     it_behaves_like 'a gds-sso user class'
   end
 
-  describe '#full_access' do
-    context 'when user has full access' do
-      let!(:user) { create :user, :full_access }
+  describe '#hmrc_admin' do
+    context 'when user has hmrc admin access' do
+      let!(:user) { create :user, :hmrc_admin }
 
-      it { expect(user.full_access?).to eq(true) }
+      it { expect(user.hmrc_admin?).to eq(true) }
     end
 
-    context 'when user does not have full access' do
+    context 'when user does not have hmrc admin access' do
       let!(:user) { create :user }
 
-      it { expect(user.full_access?).not_to eq(true) }
+      it { expect(user.hmrc_admin?).not_to eq(true) }
     end
   end
 

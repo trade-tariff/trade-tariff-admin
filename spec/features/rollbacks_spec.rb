@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe 'Rollbacks management' do
-  let!(:user) { create :user, :full_access }
+  let!(:user) { create :user, :hmrc_admin }
 
   describe 'Rollback creation' do
     let(:rollback) { build :rollback, user: }

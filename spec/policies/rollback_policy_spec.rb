@@ -4,8 +4,8 @@ RSpec.describe RollbackPolicy do
   subject(:rollback_policy) { described_class }
 
   permissions :access? do
-    it 'grants access to user with full access' do
-      expect(rollback_policy).to permit(User.new(permissions: [User::Permissions::FULL_ACCESS]), Rollback.new)
+    it 'grants access to hmrc admin' do
+      expect(rollback_policy).to permit(User.new(permissions: [User::Permissions::HMRC_ADMIN]), Rollback.new)
     end
 
     it 'denies access access to gds editor' do
