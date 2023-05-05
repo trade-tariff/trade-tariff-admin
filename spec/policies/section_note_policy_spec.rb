@@ -4,6 +4,10 @@ RSpec.describe SectionNotePolicy do
   subject(:section_note_policy) { described_class }
 
   permissions :edit? do
+    it 'grants access to hmrc admin' do
+      expect(section_note_policy).to permit(User.new(permissions: [User::Permissions::HMRC_ADMIN]), SectionNote.new)
+    end
+
     it 'grants access to gds editor' do
       expect(section_note_policy).to permit(User.new(permissions: [User::Permissions::GDS_EDITOR]), SectionNote.new)
     end

@@ -1,4 +1,4 @@
-TariffUpdatePolicy = Struct.new(:user, :tarif_update) do
+TariffUpdatePolicy = Struct.new(:user, :tariff_update) do
   def access?
     user.hmrc_admin?
   end
