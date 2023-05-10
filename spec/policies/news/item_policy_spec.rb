@@ -4,6 +4,10 @@ RSpec.describe News::ItemPolicy do
   subject(:news_item_policy) { described_class }
 
   permissions :edit? do
+    it 'grants access to hmrc admin' do
+      expect(news_item_policy).to permit(User.new(permissions: [User::Permissions::HMRC_ADMIN]), News::Item.new)
+    end
+
     it 'grants access to gds editor' do
       expect(news_item_policy).to permit(User.new(permissions: [User::Permissions::GDS_EDITOR]), News::Item.new)
     end

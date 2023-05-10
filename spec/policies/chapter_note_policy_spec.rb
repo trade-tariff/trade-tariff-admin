@@ -4,6 +4,10 @@ RSpec.describe ChapterNotePolicy do
   subject(:chapter_note_policy) { described_class }
 
   permissions :edit? do
+    it 'grants access to hmrc admin' do
+      expect(chapter_note_policy).to permit(User.new(permissions: [User::Permissions::HMRC_ADMIN]), ChapterNote.new)
+    end
+
     it 'grants access to gds editor' do
       expect(chapter_note_policy).to permit(User.new(permissions: [User::Permissions::GDS_EDITOR]), ChapterNote.new)
     end

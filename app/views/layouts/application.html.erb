@@ -39,10 +39,10 @@
                                  active: active_nav_link?(/\/quotas/) if TradeTariffAdmin::ServiceChooser.uk? %>
       <%= header.navigation_item text: "Updates",
                                  href: tariff_updates_path,
-                                 active: active_nav_link?(/\/tariff_updates/) %>
+                                 active: active_nav_link?(/\/tariff_updates/) if policy(TariffUpdate).access? %>
       <%= header.navigation_item text: "Rollbacks",
                                  href: rollbacks_path,
-                                 active: active_nav_link?(/\/rollbacks/) %>
+                                 active: active_nav_link?(/\/rollbacks/) if policy(Rollback).access? %>
       <%= header.navigation_item text: 'Reports',
                                  href: reports_path,
                                  active: active_nav_link?(/\/reports/) %>

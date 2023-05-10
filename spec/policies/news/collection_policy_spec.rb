@@ -4,6 +4,10 @@ RSpec.describe News::CollectionPolicy do
   subject(:news_collection_policy) { described_class }
 
   permissions :edit? do
+    it 'grants access to hmrc admin' do
+      expect(news_collection_policy).to permit(User.new(permissions: [User::Permissions::HMRC_ADMIN]), News::Collection.new)
+    end
+
     it 'grants access to gds editor' do
       expect(news_collection_policy).to permit(User.new(permissions: [User::Permissions::GDS_EDITOR]), News::Collection.new)
     end

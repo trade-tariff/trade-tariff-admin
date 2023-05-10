@@ -6,6 +6,20 @@ RSpec.describe User do
     it_behaves_like 'a gds-sso user class'
   end
 
+  describe '#hmrc_admin' do
+    context 'when user has hmrc admin access' do
+      let!(:user) { create :user, :hmrc_admin }
+
+      it { expect(user.hmrc_admin?).to eq(true) }
+    end
+
+    context 'when user does not have hmrc admin access' do
+      let!(:user) { create :user }
+
+      it { expect(user.hmrc_admin?).not_to eq(true) }
+    end
+  end
+
   describe '#update' do
     let!(:user) { create :user }
     let(:attrs) do

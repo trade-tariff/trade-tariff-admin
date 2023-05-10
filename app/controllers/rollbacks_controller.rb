@@ -1,4 +1,6 @@
 class RollbacksController < AuthenticatedController
+  before_action :authorize_user
+
   def index
     @rollbacks = Rollback.all(page: current_page).fetch
   end
@@ -24,5 +26,9 @@ class RollbacksController < AuthenticatedController
 
   def rollback_params
     params.require(:rollback).permit(:date, :keep, :reason).to_h
+  end
+
+  def authorize_user
+    authorize Rollback, :access?
   end
 end
