@@ -9,7 +9,7 @@
     "rails-ujs": "^5.2.8"
   },
   "devDependencies": {
-    "@webpack-cli/serve": "^2.0.3",
+    "@webpack-cli/serve": "^2.0.4",
     "webpack-dev-server": "^4.13.2",
     "eslint": "^8.37.0",
     "eslint-config-google": "^0.14.0"
