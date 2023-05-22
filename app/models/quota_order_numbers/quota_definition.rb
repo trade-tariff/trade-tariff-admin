@@ -70,7 +70,7 @@ module QuotaOrderNumbers
     private
 
     def chart_data
-      @chart_data ||= quota_balance_events.each_with_object(occurrence_timestamps: [], imported_amounts: [], new_balances: []) do |event, acc|
+      @chart_data ||= quota_balance_events.reverse.each_with_object(occurrence_timestamps: [], imported_amounts: [], new_balances: []) do |event, acc|
         acc[:occurrence_timestamps] << event.occurrence_timestamp.to_date.to_formatted_s(:govuk_short)
         acc[:imported_amounts] << event.imported_amount
         acc[:new_balances] << event.new_balance
