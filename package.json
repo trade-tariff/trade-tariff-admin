@@ -4,7 +4,7 @@
   "dependencies": {
     "@rails/webpacker": "^5.4.4",
     "chart.js": "^4.3.0",
-    "govuk-frontend": "^4.5.0",
+    "govuk-frontend": "^4.6.0",
     "jquery": "^3.6.4",
     "rails-ujs": "^5.2.8"
   },
