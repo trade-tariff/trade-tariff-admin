@@ -1,20 +1,26 @@
 RSpec.shared_context 'with UK service' do
-  before do
-    allow(TradeTariffAdmin::ServiceChooser).to \
-      receive(:service_choice).and_return 'uk'
+  around do |example|
+    original = TradeTariffAdmin::ServiceChooser.service_choice
+    TradeTariffAdmin::ServiceChooser.service_choice = 'uk'
+    example.run
+    TradeTariffAdmin::ServiceChooser.service_choice = original
   end
 end
 
 RSpec.shared_context 'with XI service' do
-  before do
-    allow(TradeTariffAdmin::ServiceChooser).to \
-      receive(:service_choice).and_return 'xi'
+  around do |example|
+    original = TradeTariffAdmin::ServiceChooser.service_choice
+    TradeTariffAdmin::ServiceChooser.service_choice = 'xi'
+    example.run
+    TradeTariffAdmin::ServiceChooser.service_choice = original
   end
 end
 
 RSpec.shared_context 'with default service' do
-  before do
-    allow(TradeTariffAdmin::ServiceChooser).to \
-      receive(:service_choice).and_return nil
+  around do |example|
+    original = TradeTariffAdmin::ServiceChooser.service_choice
+    TradeTariffAdmin::ServiceChooser.service_choice = nil
+    example.run
+    TradeTariffAdmin::ServiceChooser.service_choice = original
   end
 end
