@@ -3,7 +3,7 @@
   width: "800",
   height: "450",
   data: {
-    measurementunitcode: @quota_definition.measurement_unit.abbreviation,
+    measurementunitcode: @quota_definition.measurement_unit.try(:abbreviation),
     importedamounts: @quota_definition.imported_amounts,
     newbalances: @quota_definition.new_balances,
     occurrencetimestamps: @quota_definition.occurrence_timestamps,
