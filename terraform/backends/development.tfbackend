@@ -1,4 +1,4 @@
 bucket  = "terraform-state-development-844815912454"
-key     = "tariff-duty-calculator.tfstate"
+key     = "tariff-admin.tfstate"
 region  = "eu-west-2"
 encrypt = true

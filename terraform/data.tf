@@ -37,6 +37,10 @@ data "aws_secretsmanager_secret" "admin_bearer_token" {
   name = "admin-bearer-token"
 }
 
+data "aws_secretsmanager_secret" "newrelic_license_key" {
+  name = "newrelic-license-key"
+}
+
 data "aws_kms_key" "secretsmanager_key" {
   key_id = "alias/secretsmanager-key"
 }

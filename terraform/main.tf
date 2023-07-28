@@ -1,5 +1,5 @@
 module "service" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.6.1"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.8.0"
 
   environment = var.environment
   region      = var.region
@@ -35,7 +35,7 @@ module "service" {
       value = "8080"
     },
     {
-      name  = "API_SERVICE_BACKEND_OPTIONS"
+      name  = "API_SERVICE_BACKEND_URL_OPTIONS"
       value = jsonencode(local.api_service_backend_url_options)
     },
     {
@@ -60,7 +60,7 @@ module "service" {
     },
     {
       name  = "PLEK_SERVICE_TARIFF_API_URI"
-      value = "https://tariff-uk-backend.${var.base_domain}"
+      value = "http://backend-uk.tariff.internal:8080"
     },
     {
       name  = "WEB_CONCURRENCY"
@@ -69,6 +69,10 @@ module "service" {
   ]
 
   service_secrets_config = [
+    {
+      name      = "NEW_RELIC_LICENSE_KEY"
+      valueFrom = data.aws_secretsmanager_secret.newrelic_license_key.arn
+    },
     {
       name      = "BEARER_TOKEN"
       valueFrom = data.aws_secretsmanager_secret.admin_bearer_token.arn
