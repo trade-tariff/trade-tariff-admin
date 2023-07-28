@@ -77,6 +77,7 @@ Rails.application.routes.draw do
 
   post 'govspeak' => 'govspeak#govspeak', as: :govspeak
   get  'healthcheck' => 'healthcheck#check', as: :healthcheck
+  get  'healthcheckz' => 'healthcheck#checkz', as: :healthcheck
   get  '/' => 'pages#index', as: :index
   mount Sidekiq::Web => '/sidekiq', constraints: GdsEditorConstraint.new
   root to: 'pages#index'

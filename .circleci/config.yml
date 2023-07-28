@@ -202,12 +202,12 @@ jobs:
           RAILS_ENV: test
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/tariff_test"
           NODE_OPTIONS: --openssl-legacy-provider
-      - image: circleci/postgres:10-alpine
+      - image: cimg/postgres:13.11
         environment:
           POSTGRES_USER: postgres
           POSTGRES_DB: tariff_test
           POSTGRES_PASSWORD: postgres
-      - image: circleci/redis:4.0.9
+      - image: cimg/redis:5.0.14
     steps:
       - checkout
       - ruby/install-deps
