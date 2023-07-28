@@ -42,7 +42,7 @@ data "aws_secretsmanager_secret" "newrelic_license_key" {
 }
 
 data "aws_secretsmanager_secret" "redis" {
-  name = "redis-admin-${var.environment}"
+  name = "redis-admin-connection-string"
 }
 
 data "aws_kms_key" "secretsmanager_key" {

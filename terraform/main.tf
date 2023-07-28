@@ -47,6 +47,10 @@ module "service" {
       value = "real"
     },
     {
+      name  = "GOVUK_APP_DOMAIN"
+      value = local.govuk_app_domain
+    },
+    {
       name  = "GOVUK_FRONTEND"
       value = "true"
     },
