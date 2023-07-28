@@ -25,6 +25,10 @@ module "service" {
   cpu    = var.cpu
   memory = var.memory
 
+  task_role_policy_arns = [
+    aws_iam_policy.exec.arn
+  ]
+
   execution_role_policy_arns = [
     aws_iam_policy.secrets.arn
   ]
@@ -69,6 +73,10 @@ module "service" {
   ]
 
   service_secrets_config = [
+    {
+      name      = "REDIS_URL"
+      valueFrom = data.aws_secretsmanager_secret.redis.arn
+    },
     {
       name      = "NEW_RELIC_LICENSE_KEY"
       valueFrom = data.aws_secretsmanager_secret.newrelic_license_key.arn

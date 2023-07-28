@@ -11,7 +11,8 @@ data "aws_iam_policy_document" "secrets" {
       data.aws_secretsmanager_secret.admin_secret_key_base,
       data.aws_secretsmanager_secret.admin_bearer_token,
       data.aws_secretsmanager_secret.admin_oauth_id,
-      data.aws_secretsmanager_secret.admin_oauth_secret
+      data.aws_secretsmanager_secret.admin_oauth_secret,
+      data.aws_secretsmanager_secret.redis.arn
     ]
   }
 
@@ -35,4 +36,25 @@ data "aws_iam_policy_document" "secrets" {
 resource "aws_iam_policy" "secrets" {
   name   = "${local.service}-execution-role-secrets-policy"
   policy = data.aws_iam_policy_document.secrets.json
+}
+
+data "aws_iam_policy_document" "exec" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "ssmmessages:CreateControlChannel",
+      "ssmmessages:CreateDataChannel",
+      "ssmmessages:OpenControlChannel",
+      "ssmmessages:OpenDataChannel",
+      "logs:CreateLogStream",
+      "logs:DescribeLogStreams",
+      "logs:PutLogEvents"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "exec" {
+  name   = "backend-task-role-exec-policy"
+  policy = data.aws_iam_policy_document.exec.json
 }
