@@ -8,11 +8,12 @@ data "aws_iam_policy_document" "secrets" {
       "secretsmanager:ListSecretVersionIds"
     ]
     resources = [
-      data.aws_secretsmanager_secret.admin_secret_key_base,
-      data.aws_secretsmanager_secret.admin_bearer_token,
-      data.aws_secretsmanager_secret.admin_oauth_id,
-      data.aws_secretsmanager_secret.admin_oauth_secret,
-      data.aws_secretsmanager_secret.redis.arn
+      data.aws_secretsmanager_secret.admin_secret_key_base.arn,
+      data.aws_secretsmanager_secret.admin_bearer_token.arn,
+      data.aws_secretsmanager_secret.admin_oauth_id.arn,
+      data.aws_secretsmanager_secret.admin_oauth_secret.arn,
+      data.aws_secretsmanager_secret.redis.arn,
+      data.aws_secretsmanager_secret.newrelic_license_key.arn
     ]
   }
 
@@ -55,6 +56,6 @@ data "aws_iam_policy_document" "exec" {
 }
 
 resource "aws_iam_policy" "exec" {
-  name   = "backend-task-role-exec-policy"
+  name   = "${local.service}-task-role-exec-policy"
   policy = data.aws_iam_policy_document.exec.json
 }
