@@ -13,8 +13,10 @@ module "service" {
   target_group_arn          = data.aws_lb_target_group.this.arn
   cloudwatch_log_group_name = "platform-logs-${var.environment}"
 
-  min_capacity = var.min_capacity
-  max_capacity = var.max_capacity
+  min_capacity                       = var.min_capacity
+  max_capacity                       = var.max_capacity
+  deployment_maximum_percent         = 200
+  deployment_minimum_healthy_percent = 100
 
   docker_image = data.aws_ssm_parameter.ecr_url.value
   docker_tag   = var.docker_tag
