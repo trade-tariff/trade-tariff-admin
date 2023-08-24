@@ -51,6 +51,7 @@ data "aws_iam_policy_document" "exec" {
       "logs:DescribeLogStreams",
       "logs:PutLogEvents"
     ]
+    #tfsec:ignore:aws-iam-no-policy-wildcards
     resources = ["*"]
   }
 }

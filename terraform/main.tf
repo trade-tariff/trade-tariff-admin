@@ -1,5 +1,5 @@
 module "service" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.8.0"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.11.2"
 
   environment = var.environment
   region      = var.region
@@ -13,10 +13,8 @@ module "service" {
   target_group_arn          = data.aws_lb_target_group.this.arn
   cloudwatch_log_group_name = "platform-logs-${var.environment}"
 
-  min_capacity                       = var.min_capacity
-  max_capacity                       = var.max_capacity
-  deployment_maximum_percent         = 200
-  deployment_minimum_healthy_percent = 100
+  min_capacity = var.min_capacity
+  max_capacity = var.max_capacity
 
   docker_image = data.aws_ssm_parameter.ecr_url.value
   docker_tag   = var.docker_tag
