@@ -63,7 +63,7 @@ module "service" {
     },
     {
       name  = "PLEK_SERVICE_SIGNON_URI"
-      value = "https://signon.${var.base_domain}"
+      value = "${local.signon_url}/users/sign_in"
     },
     {
       name  = "PLEK_SERVICE_TARIFF_API_URI"

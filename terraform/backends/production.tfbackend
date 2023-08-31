@@ -1,0 +1,5 @@
+bucket         = "terraform-state-production-382373577178"
+key            = "tariff-admin.tfstate"
+region         = "eu-west-2"
+encrypt        = true
+dynamodb_table = "admin-lock-382373577178"

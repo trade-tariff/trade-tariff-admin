@@ -6,4 +6,5 @@ locals {
   }
 
   govuk_app_domain = var.environment != "production" ? var.environment == "development" ? "tariff-admin-dev" : "tariff-admin-staging" : "tariff-admin"
+  signon_url       = var.environment == "production" ? "https://signon.publishing.service.gov.uk" : "https://signon.${var.base_domain}"
 }
