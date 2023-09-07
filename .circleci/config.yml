@@ -454,7 +454,7 @@ workflows:
       - tariff/create-production-release:
           name: create-production-release
           context: trade-tariff
-          image-name: tariff-backend
+          image-name: tariff-admin
           requires:
             - promote-to-production?
           <<: *filter-main
