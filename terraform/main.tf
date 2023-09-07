@@ -81,10 +81,6 @@ module "service" {
       valueFrom = data.aws_secretsmanager_secret.redis.arn
     },
     {
-      name      = "NEW_RELIC_LICENSE_KEY"
-      valueFrom = data.aws_secretsmanager_secret.newrelic_license_key.arn
-    },
-    {
       name      = "BEARER_TOKEN"
       valueFrom = data.aws_secretsmanager_secret.admin_bearer_token.arn
     },
