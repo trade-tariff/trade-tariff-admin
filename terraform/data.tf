@@ -37,6 +37,10 @@ data "aws_secretsmanager_secret" "admin_bearer_token" {
   name = "admin-bearer-token"
 }
 
+data "aws_secretsmanager_secret" "postgres" {
+  name = "postgresadmin-connection-string"
+}
+
 data "aws_secretsmanager_secret" "redis" {
   name = "redis-admin-connection-string"
 }

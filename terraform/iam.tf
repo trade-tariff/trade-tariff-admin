@@ -8,10 +8,11 @@ data "aws_iam_policy_document" "secrets" {
       "secretsmanager:ListSecretVersionIds"
     ]
     resources = [
-      data.aws_secretsmanager_secret.admin_secret_key_base.arn,
       data.aws_secretsmanager_secret.admin_bearer_token.arn,
       data.aws_secretsmanager_secret.admin_oauth_id.arn,
       data.aws_secretsmanager_secret.admin_oauth_secret.arn,
+      data.aws_secretsmanager_secret.admin_secret_key_base.arn,
+      data.aws_secretsmanager_secret.postgres.arn,
       data.aws_secretsmanager_secret.redis.arn,
     ]
   }
@@ -19,13 +20,13 @@ data "aws_iam_policy_document" "secrets" {
   statement {
     effect = "Allow"
     actions = [
-      "kms:Encrypt",
       "kms:Decrypt",
-      "kms:ReEncryptFrom",
-      "kms:ReEncryptTo",
+      "kms:Encrypt",
       "kms:GenerateDataKeyPair",
       "kms:GenerateDataKeyPairWithoutPlainText",
-      "kms:GenerateDataKeyWithoutPlaintext"
+      "kms:GenerateDataKeyWithoutPlaintext",
+      "kms:ReEncryptFrom",
+      "kms:ReEncryptTo",
     ]
     resources = [
       data.aws_kms_key.secretsmanager_key.arn
@@ -42,13 +43,13 @@ data "aws_iam_policy_document" "exec" {
   statement {
     effect = "Allow"
     actions = [
+      "logs:CreateLogStream",
+      "logs:DescribeLogStreams",
+      "logs:PutLogEvents",
       "ssmmessages:CreateControlChannel",
       "ssmmessages:CreateDataChannel",
       "ssmmessages:OpenControlChannel",
       "ssmmessages:OpenDataChannel",
-      "logs:CreateLogStream",
-      "logs:DescribeLogStreams",
-      "logs:PutLogEvents"
     ]
     resources = ["*"]
   }
