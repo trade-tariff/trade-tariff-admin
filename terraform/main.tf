@@ -77,6 +77,10 @@ module "service" {
 
   service_secrets_config = [
     {
+      name      = "DATABASE_URL"
+      valueFrom = data.aws_secretsmanager_secret.postgres.arn
+    },
+    {
       name      = "REDIS_URL"
       valueFrom = data.aws_secretsmanager_secret.redis.arn
     },

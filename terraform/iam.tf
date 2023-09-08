@@ -13,6 +13,7 @@ data "aws_iam_policy_document" "secrets" {
       data.aws_secretsmanager_secret.admin_oauth_id.arn,
       data.aws_secretsmanager_secret.admin_oauth_secret.arn,
       data.aws_secretsmanager_secret.redis.arn,
+      data.aws_secretsmanager_secret.postgres.arn
     ]
   }
 
