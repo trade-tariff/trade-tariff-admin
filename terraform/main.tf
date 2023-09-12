@@ -32,6 +32,8 @@ module "service" {
     aws_iam_policy.secrets.arn
   ]
 
+  enable_ecs_exec = true
+
   service_environment_config = [
     {
       name  = "PORT"
