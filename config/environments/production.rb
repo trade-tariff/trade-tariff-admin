@@ -87,6 +87,11 @@ Rails.application.configure do
     { domain: ENV['GOVUK_APP_DOMAIN'] }
   end
 
+  config.lograge.ignore_actions = [
+    'HealthcheckController#index',
+    'HealthcheckController#checkz',
+  ]
+
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
 end
