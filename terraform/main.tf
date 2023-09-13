@@ -65,7 +65,11 @@ module "service" {
     },
     {
       name  = "PLEK_SERVICE_SIGNON_URI"
-      value = "${local.signon_url}/users/sign_in"
+      value = local.signon_url
+    },
+    {
+      name  = "SENTRY_ENVIRONMENT"
+      value = var.environment
     },
     {
       name  = "PLEK_SERVICE_TARIFF_API_URI"
@@ -101,6 +105,10 @@ module "service" {
     {
       name      = "TARIFF_ADMIN_OAUTH_SECRET"
       valueFrom = data.aws_secretsmanager_secret.admin_oauth_secret.arn
+    },
+    {
+      name      = "SENTRY_DSN"
+      valueFrom = data.aws_secretsmanager_secret.sentry_dsn.arn
     },
   ]
 }

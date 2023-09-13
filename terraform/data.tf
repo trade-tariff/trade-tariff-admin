@@ -45,6 +45,10 @@ data "aws_secretsmanager_secret" "redis" {
   name = "redis-admin-connection-string"
 }
 
+data "aws_secretsmanager_secret" "sentry_dsn" {
+  name = "admin-sentry-dsn"
+}
+
 data "aws_kms_key" "secretsmanager_key" {
   key_id = "alias/secretsmanager-key"
 }
