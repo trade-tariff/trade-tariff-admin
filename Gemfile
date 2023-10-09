@@ -4,7 +4,7 @@ ruby File.read('.ruby-version').chomp
 
 # Server
 gem 'puma'
-gem 'rails', '~> 7.0'
+gem 'rails', '~> 7.1'
 
 gem 'routing-filter', github: 'svenfuchs/routing-filter'
 
