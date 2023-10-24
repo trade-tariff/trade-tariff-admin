@@ -238,7 +238,7 @@ GEM
     kramdown (2.4.0)
       rexml
     language_server-protocol (3.17.0.3)
-    lograge (0.13.0)
+    lograge (0.14.0)
       actionpack (>= 4)
       activesupport (>= 4)
       railties (>= 4)
