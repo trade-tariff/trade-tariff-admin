@@ -87,6 +87,7 @@ module References
     def build_search_reference
       search_reference_parent.search_references.build(title: normalised_title).tap do |reference|
         reference.referenced_id = search_reference_parent.id
+        reference.productline_suffix = search_reference_parent.producline_suffix
       end
     end
   end

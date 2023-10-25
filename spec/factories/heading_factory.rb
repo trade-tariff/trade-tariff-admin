@@ -1,6 +1,7 @@
 FactoryBot.define do
   factory :heading do
     goods_nomenclature_item_id { 10.times.map { Random.rand(1..9) }.join }
+    producline_suffix { 80 }
 
     description { 'Live Horses, Asses, Mules And Hinnies' }
 
