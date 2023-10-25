@@ -4,6 +4,7 @@ FactoryBot.define do
 
   factory :chapter do
     goods_nomenclature_item_id { 10.times.map { Random.rand(1..9) }.join }
+    producline_suffix { 80 }
     goods_nomenclature_sid { generate(:sid) }
     description { generate(:chapter_description) }
 

@@ -6,6 +6,7 @@ FactoryBot.define do
 
       "#{referenced_id}-#{productline_suffix}"
     end
+    producline_suffix { 80 }
 
     referenced_class { 'Commodity' }
 
