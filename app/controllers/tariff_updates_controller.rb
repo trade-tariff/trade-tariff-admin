@@ -9,6 +9,21 @@ class TariffUpdatesController < AuthenticatedController
     @tariff_update = TariffUpdate.find(params[:id])
   end
 
+  def download
+    @download = Download.new
+    @download.user = current_user
+
+    if @download.valid? && @download.save
+      redirect_to tariff_updates_path, notice: 'Download was scheduled'
+    else
+      render :new
+    end
+  end
+
+  def apply
+
+  end
+
   private
 
   def authorize_user
