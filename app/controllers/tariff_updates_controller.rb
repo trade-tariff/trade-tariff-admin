@@ -16,17 +16,30 @@ class TariffUpdatesController < AuthenticatedController
     if @download.valid? && @download.save
       redirect_to tariff_updates_path, notice: 'Download was scheduled'
     else
-      render :new
+      redirect_to tariff_updates_path,
+                  alert: "Unexpected error: #{error_messages_for(@download)}"
     end
   end
 
   def apply
+    @apply = Apply.new
+    @apply.user = current_user
 
+    if @apply.valid? && @apply.save
+      redirect_to tariff_updates_path, notice: 'Apply was scheduled'
+    else
+      redirect_to tariff_updates_path,
+                  alert: "Unexpected error: #{error_messages_for(@apply)}"
+    end
   end
 
   private
 
   def authorize_user
     authorize TariffUpdate, :access?
+  end
+
+  def error_messages_for(model)
+    model.errors.full_messages.join(', ')
   end
 end

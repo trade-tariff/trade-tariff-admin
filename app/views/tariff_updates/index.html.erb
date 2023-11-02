@@ -1,13 +1,11 @@
+<div class="govuk-button-group" style='align-right'>
+  <%= button_to 'Download', download_tariff_updates_path, method: :post, class: 'govuk-button' %>
+  <%= button_to 'Apply', apply_tariff_updates_path, method: :post, class: 'govuk-button' %>
+</div>
+
+
 <h2>Tariff Updates - <%= service_update_type %></h2>
-
-
-<%= link_to 'Download', download_tariff_updates_path %>
-<button class="govuk-button" data-module="govuk-button">Download</button>
-<button class="govuk-button" data-module="govuk-button">
-  Apply
-</button>
-
-
+  
 <table class='table table-bordered table-striped table-condensed table-tariff-updates'>
   <thead>
     <tr>

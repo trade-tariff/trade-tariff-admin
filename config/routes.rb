@@ -62,7 +62,8 @@ Rails.application.routes.draw do
 
   resources :tariff_updates, only: %i[index show] do
     collection do
-      get '/download', to: 'tariff_updates#download'
+      post '/apply', to: 'tariff_updates#apply'
+      post '/download', to: 'tariff_updates#download'
     end
   end
   resources :rollbacks, only: %i[index new create]
