@@ -32,4 +32,52 @@ RSpec.describe TariffUpdatesController do
     it { is_expected.to have_http_status :forbidden }
     it { is_expected.to have_attributes body: /contact your Delivery Manager/ }
   end
+
+  describe 'POST #download' do
+    context 'when authorised download' do
+      before do
+        create_user
+        stub_api_request('/admin/downloads', :post).to_return(status: 200, body: "", headers: {})
+      end
+
+      it "returns success" do
+        post '/tariff_updates/download'
+
+        expect(response.status).to eq(302)
+        expect(flash[:notice]).to eq("Download was scheduled")
+      end
+    end
+
+    context 'when unauthorised download' do
+      let(:create_user) { create :user, permissions: %w[] }
+      let(:make_request) { get download_tariff_updates_path }
+
+      it { is_expected.to have_http_status :forbidden }
+      it { is_expected.to have_attributes body: /contact your Delivery Manager/ }
+    end
+  end
+
+  describe 'POST #apply' do
+    context 'when authorised apply' do
+      before do
+        create_user
+        stub_api_request('/admin/applies', :post).to_return(status: 200, body: "", headers: {})
+      end
+
+      it "returns success" do
+        post '/tariff_updates/apply'
+
+        expect(response.status).to eq(302)
+        expect(flash[:notice]).to eq("Apply was scheduled")
+      end
+    end
+
+    context 'when unauthorised download' do
+      let(:create_user) { create :user, permissions: %w[] }
+      let(:make_request) { get apply_tariff_updates_path }
+
+      it { is_expected.to have_http_status :forbidden }
+      it { is_expected.to have_attributes body: /contact your Delivery Manager/ }
+    end
+  end
 end
