@@ -10,27 +10,21 @@ class TariffUpdatesController < AuthenticatedController
   end
 
   def download
-    @download = Download.new
-    @download.user = current_user
+    @download = Download.new(user: current_user)
+    @download.save
 
-    if @download.valid? && @download.save
-      redirect_to tariff_updates_path, notice: 'Download was scheduled'
-    else
-      redirect_to tariff_updates_path,
-                  alert: "Unexpected error: #{error_messages_for(@download)}"
-    end
+    redirect_to tariff_updates_path, notice: 'Download was scheduled'
+  rescue Faraday::Error => e
+    redirect_to tariff_updates_path, alert: "Unexpected error: #{e}"
   end
 
   def apply
-    @apply = Apply.new
-    @apply.user = current_user
+    @apply = Apply.new(user: current_user)
+    @apply.save
 
-    if @apply.valid? && @apply.save
-      redirect_to tariff_updates_path, notice: 'Apply was scheduled'
-    else
-      redirect_to tariff_updates_path,
-                  alert: "Unexpected error: #{error_messages_for(@apply)}"
-    end
+    redirect_to tariff_updates_path, notice: 'Apply was scheduled'
+  rescue Faraday::Error => e
+    redirect_to tariff_updates_path, alert: "Unexpected error: #{e}"
   end
 
   private
