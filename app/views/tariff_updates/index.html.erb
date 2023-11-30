@@ -1,4 +1,14 @@
-<h2>Tariff Updates - <%= service_update_type %></h2>
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-three-quarters">
+    <h2>Tariff Updates - <%= service_update_type %></h2>
+  </div>
+  <div class="govuk-grid-column-one-quarter">
+    <div class="govuk-button-group">
+      <%= button_to 'Download', download_tariff_updates_path, method: :post, class: 'govuk-button' %>
+      <%= button_to 'Apply', apply_tariff_updates_path, method: :post, class: 'govuk-button' %>
+    </div>
+  </div>
+</div>
 
 <table class='table table-bordered table-striped table-condensed table-tariff-updates'>
   <thead>
