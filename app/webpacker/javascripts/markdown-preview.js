@@ -1,28 +1,37 @@
-import $ from 'jquery';
-import 'jquery.autosize' ;
-
-$(document).ready(function(){
+document.addEventListener("DOMContentLoaded", function () {
   var Previewer = {
-    preview: function(content, output) {
-      $.ajax({
-        type: 'POST',
-        url: "/govspeak",
-        data: { govspeak: content.val() },
-        dataType: 'json'
-      }).done(function(data){
-        output.html(data['govspeak']);
-      });
-    }
+    preview: function (content, output) {
+      fetch("/govspeak", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ govspeak: content.value }),
+      })
+          .then(function (response) {
+            return response.json();
+          })
+          .then(function (data) {
+            output.innerHTML = data.govspeak;
+          })
+          .catch(function (error) {
+            console.error("Error:", error);
+          });
+    },
   };
 
-  $("[data-preview]").each(function(){
-    var source_field = $($(this).data('preview-for'));
-    var render_area = $(this);
+  document.querySelectorAll("[data-preview]").forEach(function (element) {
+    var source_field = document.querySelector(element.dataset.previewFor);
+    var render_area = element;
 
-    source_field.keyup(function() {
+    source_field.addEventListener("input", function () {
       Previewer.preview(source_field, render_area);
-    })
+    });
   });
 
-  $('textarea').autosize();
+  document.querySelectorAll("textarea").forEach(function (textarea) {
+    textarea.addEventListener("input", function () {
+      autosize(this);
+    });
+  });
 });
