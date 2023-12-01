@@ -13,14 +13,14 @@ Rails.application.configure do
     policy.script_src  :self, :https
     policy.style_src   :self, :https
     # Specify URI for violation reports
-    # policy.report_uri "/csp-violation-report-endpoint"
+    policy.report_uri ENV['SENTRY_DSN']
   end
 
 #   # Generate session nonces for permitted importmap and inline scripts
-#   config.content_security_policy_nonce_generator = ->(request) { request.session.id.to_s }
-#   config.content_security_policy_nonce_directives = %w(script-src)
+  config.content_security_policy_nonce_generator = ->(request) { request.session.id.to_s }
+  # config.content_security_policy_nonce_directives = %w(script-src)
 #
 #   # Report CSP violations to a specified URI. See:
 #   # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy-Report-Only
-  config.content_security_policy_report_only = true
+#   config.content_security_policy_report_only = true
 end
