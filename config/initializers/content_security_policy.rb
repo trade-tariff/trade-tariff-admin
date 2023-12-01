@@ -13,7 +13,7 @@ Rails.application.configure do
     policy.script_src  :self, :https
     policy.style_src   :self, :https
     # Specify URI for violation reports
-    policy.report_uri ENV['SENTRY_DSN']
+    policy.report_uri ENV['SENTRY_CSP_ENDPOINT'] if ENV['SENTRY_CSP_ENDPOINT'].present?
   end
 
 #   # Generate session nonces for permitted importmap and inline scripts
