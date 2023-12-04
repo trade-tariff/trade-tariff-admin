@@ -60,7 +60,12 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :tariff_updates, only: %i[index show]
+  resources :tariff_updates, only: %i[index show] do
+    collection do
+      post '/apply', to: 'tariff_updates#apply'
+      post '/download', to: 'tariff_updates#download'
+    end
+  end
   resources :rollbacks, only: %i[index new create]
   resources :footnotes, only: %i[index edit update]
   resources :measure_types, only: %i[index edit update]
