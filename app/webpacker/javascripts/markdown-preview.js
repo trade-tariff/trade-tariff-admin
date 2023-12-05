@@ -7,17 +7,17 @@ document.addEventListener("DOMContentLoaded", function () {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ govspeak: content.value }),
+        body: JSON.stringify({govspeak: content.value}),
       })
-          .then(function (response) {
-            return response.json();
-          })
-          .then(function (data) {
-            output.innerHTML = data.govspeak;
-          })
-          .catch(function (error) {
-            console.error("Error:", error);
-          });
+        .then(function (response) {
+          return response.json();
+        })
+        .then(function (data) {
+          output.innerHTML = data.govspeak;
+        })
+        .catch(function (error) {
+          console.error("Error:", error);
+        });
     },
   };
 
