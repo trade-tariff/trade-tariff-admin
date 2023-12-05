@@ -259,38 +259,6 @@ jobs:
       - store_artifacts:
           path: coverage
 
-  deploy-dev:
-    docker:
-      - image: cimg/ruby:3.2.2-node
-    steps:
-      - queue/until_front_of_line:
-          time: "10"
-          consider-branch: false
-          dont-quit: true
-      - cf-deploy-docker:
-          docker_tag: dev-$CIRCLE_SHA1
-          space: "development"
-          environment_key: "dev"
-          app_domain_prefix: "dev"
-      - tariff/sentry-release:
-          environment: development
-
-  deploy-main-to-staging:
-    docker:
-      - image: cimg/ruby:3.2.2-node
-    steps:
-      - queue/until_front_of_line:
-          time: "10"
-          consider-branch: true
-          dont-quit: true
-      - cf-deploy-docker:
-          docker_tag: $CIRCLE_SHA1
-          space: "staging"
-          environment_key: "staging"
-          app_domain_prefix: "staging"
-      - tariff/sentry-release:
-          environment: staging
-
   deploy-production:
     docker:
       - image: cimg/ruby:3.2.2
@@ -342,12 +310,6 @@ workflows:
             - fmt-terraform-dev
           <<: *filter-not-main
 
-      - build:
-          name: build-dev
-          context: trade-tariff
-          dev-build: true
-          <<: *filter-not-main
-
       - tariff/build-and-push:
           name: build-and-push-dev
           context: trade-tariff-terraform-aws-development
@@ -356,14 +318,8 @@ workflows:
           ssm_parameter: "/development/ADMIN_ECR_URL"
           <<: *filter-not-main
 
-      - deploy-dev:
-          context: trade-tariff
-          requires:
-            - build-dev
-            - test
-          <<: *filter-not-main
-
       - apply-terraform:
+          name: apply-terraform-dev
           context: trade-tariff-terraform-aws-development
           environment: development
           requires:
@@ -378,7 +334,7 @@ workflows:
           url: https://dev.trade-tariff.service.gov.uk
           yarn_run: dev-tariff-admin-smoketests
           requires:
-            - deploy-dev
+            - apply-terraform-dev
           <<: *filter-not-main
 
   deploy-to-staging:
@@ -418,19 +374,13 @@ workflows:
             - build-and-push-live
           <<: *filter-main
 
-      - deploy-main-to-staging:
-          context: trade-tariff
-          requires:
-            - build-live
-          <<: *filter-main
-
       - tariff/smoketests:
           name: smoketest_staging
           context: trade-tariff
           url: https://staging.trade-tariff.service.gov.uk
           yarn_run: staging-tariff-admin-smoketests
           requires:
-            - deploy-main-to-staging
+            - apply-terraform-staging
           <<: *filter-main
 
   deploy-to-production:
