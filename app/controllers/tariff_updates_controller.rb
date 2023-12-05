@@ -9,6 +9,15 @@ class TariffUpdatesController < AuthenticatedController
     @tariff_update = TariffUpdate.find(params[:id])
   end
 
+  def clear_cache
+    @clear_cache = ClearCache.new(user: current_user)
+    @clear_cache.save
+
+    redirect_to tariff_updates_path, notice: 'ClearCache was scheduled'
+  rescue Faraday::Error => e
+    redirect_to tariff_updates_path, alert: "Unexpected error: #{e}"
+  end
+
   def download
     @download = Download.new(user: current_user)
     @download.save
