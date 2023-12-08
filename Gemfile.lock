@@ -759,7 +759,7 @@ DEPENDENCIES
   pry-rails
   puma
   pundit
-  rails (~> 7.1)
+  rails (~> 7.1.2)
   rails-controller-testing
   redis
   responders
