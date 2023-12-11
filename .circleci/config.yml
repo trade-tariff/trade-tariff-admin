@@ -169,17 +169,25 @@ jobs:
       - store_artifacts:
           path: coverage
 
+  notify-production-deployment:
+    docker:
+      - image: cimg/ruby:3.2.2
+    steps:
+      - tariff/notify-production-release:
+          app-name: Admin
+          slack-channel: trade_tariff
+          release-tag: $CIRCLE_TAG
+
 workflows:
   version: 2
 
   deploy-to-development:
     jobs:
       - ruby-checks:
-          context: trade-tariff
           <<: *filter-not-main
 
       - test:
-          context: trade-tariff
+          context: trade-tariff-testing
           <<: *filter-not-main
 
       - write-docker-tag:
@@ -263,7 +271,7 @@ workflows:
 
       - tariff/smoketests:
           name: smoketest_staging
-          context: trade-tariff
+          context: trade-tariff-testing
           url: https://staging.trade-tariff.service.gov.uk
           yarn_run: staging-tariff-admin-smoketests
           requires:
@@ -290,7 +298,7 @@ workflows:
 
       - tariff/create-production-release:
           name: create-production-release
-          context: trade-tariff
+          context: trade-tariff-releases
           image-name: tariff-admin
           requires:
             - promote-to-production?
@@ -307,4 +315,10 @@ workflows:
           environment: production
           requires:
             - write-docker-tag-prod-release
+          <<: *filter-release
+
+      - notify-production-deployment:
+          context: trade-tariff-releases
+          requires:
+            - apply-terraform-prod
           <<: *filter-release
