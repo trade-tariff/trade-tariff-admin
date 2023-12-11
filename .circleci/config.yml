@@ -222,7 +222,7 @@ workflows:
 
       - tariff/smoketests:
           name: smoketest_dev
-          context: trade-tariff
+          context: trade-tariff-testing
           url: https://dev.trade-tariff.service.gov.uk
           yarn_run: dev-tariff-admin-smoketests
           requires:
