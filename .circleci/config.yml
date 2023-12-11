@@ -187,7 +187,6 @@ workflows:
           <<: *filter-not-main
 
       - test:
-          context: trade-tariff-testing
           <<: *filter-not-main
 
       - write-docker-tag:
