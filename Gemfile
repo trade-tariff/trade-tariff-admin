@@ -6,7 +6,7 @@ ruby File.read('.ruby-version').chomp
 gem 'puma'
 gem 'rails', '~> 7.1'
 
-gem 'routing-filter', github: 'svenfuchs/routing-filter'
+gem 'routing-filter', github: 'trade-tariff/routing-filter'
 
 # DB
 gem 'pg'
