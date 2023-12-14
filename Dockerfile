@@ -1,5 +1,5 @@
 # Build compilation image
-FROM ruby:3.2.2-alpine3.16 as builder
+FROM ruby:3.2.2-alpine3.18 as builder
 
 # The application runs from /app
 WORKDIR /app
@@ -29,6 +29,7 @@ ENV GOVUK_WEBSITE_ROOT=http://localhost/
 ENV RAILS_ENV=production
 ENV SECRET_TOKEN="foo"
 ENV SECRET_KEY_BASE="bar"
+ENV NODE_OPTIONS="--openssl-legacy-provider"
 
 RUN bundle exec rails webpacker:compile
 
@@ -42,7 +43,7 @@ RUN rm -rf node_modules log tmp && \
       find /usr/local/bundle/gems -name "*.html" -delete
 
 # Build runtime image
-FROM ruby:3.2.2-alpine3.16 as production
+FROM ruby:3.2.2-alpine3.18 as production
 
 RUN apk add --update --no-cache tzdata postgresql-dev nodejs && \
   cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
