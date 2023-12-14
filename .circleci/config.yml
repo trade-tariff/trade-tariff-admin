@@ -298,7 +298,7 @@ workflows:
       - tariff/create-production-release:
           name: create-production-release
           context: trade-tariff-releases
-          image-name: tariff-admin
+          image-name: tariff-admin-production
           requires:
             - promote-to-production?
           <<: *filter-main
