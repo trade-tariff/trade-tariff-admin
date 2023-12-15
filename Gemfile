@@ -4,9 +4,9 @@ ruby File.read('.ruby-version').chomp
 
 # Server
 gem 'puma'
-gem 'rails', '~> 7.1'
+gem 'rails', '~> 7.0'
 
-gem 'routing-filter', github: 'trade-tariff/routing-filter'
+gem 'routing-filter', github: 'svenfuchs/routing-filter'
 
 # DB
 gem 'pg'
