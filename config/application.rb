@@ -19,6 +19,8 @@ module TradeTariffAdmin
 
     config.active_job.queue_adapter = :sidekiq
 
+    config.exceptions_app = routes
+
     config.action_dispatch.rescue_responses.merge!(
       'Faraday::ResourceNotFound' => :not_found,
     )
