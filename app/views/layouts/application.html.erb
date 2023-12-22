@@ -37,12 +37,15 @@
       <%= header.with_navigation_item text: "Quotas",
                                       href: new_quota_path,
                                       active: active_nav_link?(/\/quotas/) if TradeTariffAdmin::ServiceChooser.uk? %>
-      <%= header.with_navigation_item text: "Updates",
-                                      href: tariff_updates_path,
-                                      active: active_nav_link?(/\/tariff_updates/) if policy(TariffUpdate).access? %>
-      <%= header.with_navigation_item text: "Rollbacks",
-                                      href: rollbacks_path,
-                                      active: active_nav_link?(/\/rollbacks/) if policy(Rollback).access? %>
+      
+      <% if respond_to?(:policy) %>
+        <%= header.with_navigation_item text: "Updates",
+                                        href: tariff_updates_path,
+                                        active: active_nav_link?(/\/tariff_updates/) if policy(TariffUpdate).access? %>
+        <%= header.with_navigation_item text: "Rollbacks",
+                                        href: rollbacks_path,
+                                        active: active_nav_link?(/\/rollbacks/) if policy(Rollback).access? %>
+      <% end %>
       <%= header.with_navigation_item text: 'Reports',
                                       href: reports_path,
                                       active: active_nav_link?(/\/reports/) %>
