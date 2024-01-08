@@ -5,7 +5,8 @@ require 'faraday_middleware/service_urls'
 require 'her/middleware/raise_error'
 require 'her/middleware/header_metadata_parse'
 require 'her/middleware/tariff_jsonapi_parser'
-require 'redis_resolver'
+
+require_relative './trade_tariff_admin'
 
 module TradeTariffAdmin
   class << self
@@ -15,6 +16,12 @@ module TradeTariffAdmin
 
     def production?
       ENV['GOVUK_APP_DOMAIN'] == 'tariff-admin-production.cloudapps.digital'
+    end
+
+    def redis_config
+      url = ENV['REDIS_URL']
+
+      { url:, db: 0, id: nil }
     end
   end
 end
