@@ -49,7 +49,7 @@ module "service" {
     },
     {
       name  = "GOVUK_APP_DOMAIN"
-      value = local.govuk_app_domain
+      value = "admin.${var.base_domain}"
     },
     {
       name  = "GOVUK_FRONTEND"
