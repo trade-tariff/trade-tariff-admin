@@ -23,6 +23,8 @@ Rails.application.routes.draw do
     end
   end
 
+  resolve('ImportTask') { route_for(:references_import) }
+
   namespace :references, path: 'search_references' do
     resource :import, only: %i[show create]
     resource :export, only: [:create]
