@@ -1,9 +1,14 @@
 require 'rails_helper'
 
-RSpec.describe References::ImportsController, type: :controller do
+RSpec.describe References::ImportsController do
+  subject(:rendered) { create_user && make_request && response}
+
+  let(:create_user) { create(:user, :hmrc_editor) }
+
   describe 'GET #show' do
-    subject(:rendered) { create_imports && make_request }
-    let(:create_imports) { create_list(:import_task, 5) }
+    before do
+      create_list(:import_task, 5)
+    end
     let(:make_request) { get references_import_path }
 
     it { is_expected.to have_http_status :success }
@@ -11,8 +16,7 @@ RSpec.describe References::ImportsController, type: :controller do
 
   describe 'POST #create' do
     context 'with valid parameters' do
-      subject(:rendered) { make_request }
-      let(:make_request) { post references_import_path params: { import_task: { file: :import_task }}}
+      let(:make_request) { post references_import_path params: { import_task: { file: fixture_file_upload('search_references.csv', 'text/csv') }}}
 
       it { is_expected.to have_http_status :success }
     end
