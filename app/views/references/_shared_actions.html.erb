@@ -13,7 +13,8 @@
     Export all search references as a CSV file
   </p>
 
-  <%= link_to references_export_path, class: 'govuk-button', method: :post do %>
-    Export all search references as CSV
-  <% end %>
+  <%= button_to 'Export all search references as CSV',
+                 references_export_path,
+                 method: :post, class: 'govuk-button'
+  %>
 </div>
