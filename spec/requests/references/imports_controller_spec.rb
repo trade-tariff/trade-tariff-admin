@@ -16,9 +16,9 @@ RSpec.describe References::ImportsController do
 
   describe 'POST #create' do
     context 'with valid parameters' do
-      let(:make_request) { post references_import_path params: { import_task: { file: fixture_file_upload('search_references.csv', 'text/csv') }}}
+      let(:make_request) { post references_import_path, params: { import_task: { file: fixture_file_upload('search_references.csv', 'text/csv') }}}
 
-      it { is_expected.to have_http_status :success }
+      it { is_expected.to have_http_status :redirect }
     end
   end
 end
