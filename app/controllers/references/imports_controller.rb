@@ -6,7 +6,7 @@ module References
     end
 
     def create
-      import_task = ImportTask.new(file: params[:references_import][:file])
+      import_task = ImportTask.new(file: params[:import_task][:file])
       if import_task.save
         ImportSearchReferencesJob.perform_later(import_task.id)
         redirect_to(references_import_path, notice: 'References import have been scheduled')
