@@ -1,5 +1,5 @@
 module "service" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.11.3"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.12.0"
 
   region = var.region
 
@@ -33,6 +33,10 @@ module "service" {
   ]
 
   enable_ecs_exec = true
+
+  init_container            = true
+  init_container_entrypoint = [""]
+  init_container_command    = ["/bin/sh", "-c", "bundle exec rails db:migrate && bundle exec rails data:migrate"]
 
   service_environment_config = [
     {
