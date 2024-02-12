@@ -6,13 +6,16 @@ module References
     end
 
     def create
-      import_task = ImportTask.new(file: params[:import_task][:file])
-      if import_task.save
-        ImportSearchReferencesJob.perform_later(import_task.id)
-        redirect_to(references_import_path, notice: 'References import have been scheduled')
-      else
-        render show
+      import_params = params[:import_task]
+      if import_params.present?
+        import_task = ImportTask.new(file: import_params[:file])
+        if import_task.save
+          ImportSearchReferencesJob.perform_later(import_task.id)
+          return redirect_to(references_import_path, notice: 'References import have been scheduled')
+        end
       end
+
+      redirect_to references_import_path, alert: 'Please select a valid file'
     end
   end
 end
