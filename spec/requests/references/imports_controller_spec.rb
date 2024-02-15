@@ -28,5 +28,16 @@ RSpec.describe References::ImportsController do
 
       it { is_expected.to have_http_status :redirect }
     end
+
+    context 'without valid parameters' do
+      let(:make_request) do
+        post references_import_path,
+             params: {
+               import_task: {},
+             }
+      end
+
+      it { is_expected.to have_http_status :redirect }
+    end
   end
 end
