@@ -4,7 +4,7 @@ class Rollback
   include Her::JsonApi::Model
   extend HerPaginatable
 
-  attributes :id, :enqueued_at, :keep, :date, :user_id, :reason
+  attributes :id, :enqueued_at, :keep, :date, :user_id, :reason, :confirm_service
 
   collection_path '/admin/rollbacks'
 

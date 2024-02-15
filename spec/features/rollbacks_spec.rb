@@ -48,6 +48,7 @@ RSpec.describe 'Rollbacks management' do
 
     fill_in 'Reason', with: 'a reason'
     fill_in 'Rollback to', with: rollback.date
+    fill_in 'Confirm the service to rollback', with: 'uk'
 
     click_button 'Create Rollback'
   end
