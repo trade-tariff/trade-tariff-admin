@@ -49,7 +49,7 @@ RSpec.describe RollbacksController do
       it { is_expected.to redirect_to rollbacks_path }
     end
 
-    context 'when invalid' do
+    context 'when the confirmation service is NOT correct' do
       let(:rollback_params) do
         attributes_for(:rollback).merge(confirm_service: 'xxx')
       end
