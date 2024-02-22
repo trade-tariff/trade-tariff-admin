@@ -76,3 +76,7 @@ en:
             order_number:
               not_a_number: Enter a valid quota order number
               wrong_length: Enter a valid quota order number
+        rollback:
+          attributes:
+            confirm_service:
+              wrong_service: 'The service you specified does not match the current service.'

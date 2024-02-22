@@ -18,14 +18,14 @@ class RollbacksController < AuthenticatedController
       redirect_to rollbacks_path, notice: 'Rollback was scheduled'
     else
       @rollback.initialize_errors
-      render :new
+      render :new, status: :unprocessable_entity
     end
   end
 
   private
 
   def rollback_params
-    params.require(:rollback).permit(:date, :keep, :reason).to_h
+    params.require(:rollback).permit(:date, :keep, :reason, :confirm_service).to_h
   end
 
   def authorize_user

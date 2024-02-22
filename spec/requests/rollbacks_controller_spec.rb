@@ -32,4 +32,29 @@ RSpec.describe RollbacksController do
     it { is_expected.to have_http_status :forbidden }
     it { is_expected.to have_attributes body: /contact your Delivery Manager/ }
   end
+
+  describe 'POST #create' do
+    let(:rollback_params) { attributes_for :rollback }
+    let(:make_request) { post rollbacks_path, params: { rollback: rollback_params } }
+
+    before do
+      stub_api_request('/rollbacks', :post).and_return jsonapi_response(:rollback, rollback_params)
+    end
+
+    context 'when the confirmation service is correct' do
+      let(:rollback_params) do
+        attributes_for(:rollback).merge(confirm_service: 'uk')
+      end
+
+      it { is_expected.to redirect_to rollbacks_path }
+    end
+
+    context 'when the confirmation service is NOT correct' do
+      let(:rollback_params) do
+        attributes_for(:rollback).merge(confirm_service: 'xxx')
+      end
+
+      it { is_expected.to have_http_status :unprocessable_entity }
+    end
+  end
 end

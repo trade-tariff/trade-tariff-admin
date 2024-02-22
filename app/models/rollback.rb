@@ -4,7 +4,9 @@ class Rollback
   include Her::JsonApi::Model
   extend HerPaginatable
 
-  attributes :id, :enqueued_at, :keep, :date, :user_id, :reason
+  attributes :id, :enqueued_at, :keep, :date, :user_id, :reason, :confirm_service
+
+  validate :validate_service
 
   collection_path '/admin/rollbacks'
 
@@ -25,6 +27,12 @@ class Rollback
       Array(error_messages).each do |error_message|
         errors.add(attribute, error_message)
       end
+    end
+  end
+
+  def validate_service
+    if confirm_service.to_s.downcase != TradeTariffAdmin::ServiceChooser.service_name
+      errors.add(:confirm_service, :wrong_service)
     end
   end
 end
