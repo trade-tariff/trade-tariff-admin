@@ -4,7 +4,7 @@ ruby File.read('.ruby-version').chomp
 
 # Server
 gem 'puma'
-gem 'rails', '~> 7.1.2'
+gem 'rails', '~> 7.1.3'
 
 gem 'routing-filter', github: 'trade-tariff/routing-filter'
 
