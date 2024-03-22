@@ -35,3 +35,18 @@ Her::UK_API.setup url: TradeTariffAdmin::ServiceChooser.service_choices['uk'] do
   # Adapter
   c.adapter Faraday::Adapter::NetHttp
 end
+
+Her::XI_API = Her::API.new
+Her::XI_API.setup url: TradeTariffAdmin::ServiceChooser.service_choices['xi'] do |c|
+  # Request
+  c.use Faraday::Request::UrlEncoded
+  c.use FaradayMiddleware::BearerTokenAuthentication, ENV['BEARER_TOKEN'] || 'tariff-api-test-token'
+
+  # Response
+  c.use Her::Middleware::HeaderMetadataParse
+  c.use Her::Middleware::TariffJsonapiParser
+  c.use Her::Middleware::RaiseError
+
+  # Adapter
+  c.adapter Faraday::Adapter::NetHttp
+end

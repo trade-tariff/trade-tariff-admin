@@ -1,0 +1,38 @@
+<h2>
+  Manage category assessments
+</h2>
+
+<% if @category_assessments.any? %>
+  <table>
+    <thead>
+    <tr>
+      <th>ID</th>
+      <th>Measure type id</th>
+      <th>Regulation id</th>
+      <th>Regulation role</th>
+      <th>Theme id</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% @category_assessments.each do |category| %>
+      <tr id="<%= dom_id(category) %>">
+        <td><%= category.id %></td>
+        <td><%= category.measure_type_id %></td>
+        <td><%= category.regulation_id %></td>
+        <td><%= category.regulation_role %></td>
+        <td><%= category.theme_id %></td>
+
+        <td>
+          <%#= link_to 'Edit', edit_green_lanes_category_assessments_path(category) %>
+        </td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+
+  <%= paginate @category_assessments %>
+<% else %>
+  <div class="govuk-inset-text">
+    <p>No Category Assessments</p>
+  </div>
+<% end %>

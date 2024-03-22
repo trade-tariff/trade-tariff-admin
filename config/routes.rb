@@ -62,6 +62,10 @@ Rails.application.routes.draw do
     end
   end
 
+  namespace :green_lanes, path: 'green_lanes' do
+    resources :category_assessments, only: %i[index]
+  end
+
   resources :tariff_updates, only: %i[index show] do
     collection do
       post '/clear_cache', to: 'tariff_updates#clear_cache'
