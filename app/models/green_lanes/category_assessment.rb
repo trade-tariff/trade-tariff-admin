@@ -12,6 +12,5 @@ module GreenLanes
                :updated_at
 
     collection_path '/admin/category_assessments'
-
   end
 end

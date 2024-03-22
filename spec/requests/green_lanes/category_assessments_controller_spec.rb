@@ -6,7 +6,7 @@ RSpec.describe GreenLanes::CategoryAssessmentsController do
 
   describe 'GET #index' do
     before do
-      stub_api_request('/admin/category_assessments?page=1').and_return \
+      stub_api_request('/admin/category_assessments?page=1', backend: 'xi').and_return \
         jsonapi_response :category_assessments, attributes_for_list(:category_assessment, 3)
     end
 

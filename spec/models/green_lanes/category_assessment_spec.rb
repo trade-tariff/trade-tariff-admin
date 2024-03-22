@@ -19,7 +19,6 @@ RSpec.describe GreenLanes::CategoryAssessment do
   it { is_expected.to have_attributes created_at: category_assessment.created_at }
   it { is_expected.to have_attributes updated_at: category_assessment.updated_at }
 
-
   describe '#all' do
     subject { described_class.all }
 
