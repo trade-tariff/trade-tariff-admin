@@ -4,6 +4,10 @@ RSpec.describe GreenLanes::CategoryAssessmentsController do
   let(:category_assessment) { build :category_assessment }
   let(:create_user) { create :user, permissions: ['signin', 'HMRC Editor'] }
 
+  before do
+    allow(TradeTariffAdmin::ServiceChooser).to receive(:service_choice).and_return 'xi'
+  end
+
   describe 'GET #index' do
     before do
       stub_api_request('/admin/category_assessments?page=1', backend: 'xi').and_return \
