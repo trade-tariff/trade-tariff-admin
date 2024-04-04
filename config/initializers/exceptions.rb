@@ -6,4 +6,5 @@ ActionDispatch::ExceptionWrapper.rescue_responses.merge!(
   'ActionController::UnknownFormat' => :not_found,
   'AbstractController::ActionNotFound' => :not_found,
   'URI::InvalidURIError' => :not_found,
+  'ActionController::RoutingError' => :not_found,
 )

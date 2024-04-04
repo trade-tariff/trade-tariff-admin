@@ -49,9 +49,11 @@
       <%= header.with_navigation_item text: 'Reports',
                                       href: reports_path,
                                       active: active_nav_link?(/\/reports/) %>
-      <%= header.with_navigation_item text: 'Category assessments',
+      <% if TradeTariffAdmin::ServiceChooser.xi? %>
+        <%= header.with_navigation_item text: 'Category assessments',
                                       href: green_lanes_category_assessments_path,
                                       active: active_nav_link?(/\/category_assessments/) %>
+      <% end %>
     <% end %>
 
     <div class="govuk-width-container">
