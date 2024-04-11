@@ -20,6 +20,7 @@ module GreenLanes
     end
 
     private
+
     def short_theme
       theme.length > MAX_LENGTH ? "#{theme[0...MAX_LENGTH]}..." : theme
     end

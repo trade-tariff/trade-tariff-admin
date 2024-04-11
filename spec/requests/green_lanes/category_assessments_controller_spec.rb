@@ -60,5 +60,4 @@ RSpec.describe GreenLanes::CategoryAssessmentsController do
       it { is_expected.not_to include 'div.current-service' }
     end
   end
-
 end

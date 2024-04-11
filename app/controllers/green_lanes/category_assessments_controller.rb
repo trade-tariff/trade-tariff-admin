@@ -30,7 +30,7 @@ module GreenLanes
         :regulation_role,
         :measure_type_id,
         :theme_id,
-        )
+      )
     end
 
     def check_service
