@@ -9,9 +9,7 @@ module GreenLanes
                :subsection,
                :theme,
                :description,
-               :category,
-               :created_at,
-               :updated_at
+               :category
 
     collection_path '/admin/themes'
 
