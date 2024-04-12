@@ -10,7 +10,7 @@ RSpec.describe GreenLanes::CategoryAssessmentsController do
 
   describe 'GET #index' do
     before do
-      stub_api_request('/admin/category_assessments?page=1', backend: 'xi').and_return \
+      stub_api_request('/admin/green_lanes/category_assessments?page=1', backend: 'xi').and_return \
         jsonapi_response :category_assessments, attributes_for_list(:category_assessment, 3)
     end
 
@@ -22,7 +22,7 @@ RSpec.describe GreenLanes::CategoryAssessmentsController do
 
   describe 'GET #new' do
     before do
-      stub_api_request('/admin/themes', backend: 'xi').and_return \
+      stub_api_request('/admin/green_lanes/themes', backend: 'xi').and_return \
         jsonapi_response :themes, attributes_for_list(:green_lanes_theme, 3)
     end
 
@@ -34,8 +34,8 @@ RSpec.describe GreenLanes::CategoryAssessmentsController do
 
   describe 'POST #create' do
     before do
-      stub_api_request('/admin/category_assessments', :post).to_return create_response
-      stub_api_request('/admin/themes', backend: 'xi').and_return \
+      stub_api_request('/admin/green_lanes/category_assessments', :post).to_return create_response
+      stub_api_request('/admin/green_lanes/themes', backend: 'xi').and_return \
         jsonapi_response :themes, attributes_for_list(:green_lanes_theme, 3)
     end
 
