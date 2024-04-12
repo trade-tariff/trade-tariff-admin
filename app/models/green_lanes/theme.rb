@@ -14,13 +14,13 @@ module GreenLanes
     collection_path '/admin/green_lanes/themes'
 
     def label
-      "#{category} - #{short_theme}"
+      formatted_label.length > MAX_LENGTH ? "#{formatted_label[0...MAX_LENGTH]}..." : formatted_label
     end
 
     private
 
-    def short_theme
-      theme.length > MAX_LENGTH ? "#{theme[0...MAX_LENGTH]}..." : theme
+    def formatted_label
+      "#{section}.#{subsection}. #{description}"
     end
   end
 end
