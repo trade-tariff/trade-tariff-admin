@@ -11,7 +11,7 @@ module GreenLanes
                :description,
                :category
 
-    collection_path '/admin/themes'
+    collection_path '/admin/green_lanes/themes'
 
     def label
       "#{category} - #{short_theme}"
