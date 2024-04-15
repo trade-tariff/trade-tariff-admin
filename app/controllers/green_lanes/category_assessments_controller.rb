@@ -22,6 +22,23 @@ module GreenLanes
       end
     end
 
+    def edit
+      @category_assessment = GreenLanes::CategoryAssessment.find(params[:id])
+      @themes = GreenLanes::Theme.all.fetch
+    end
+
+    def update
+      @category_assessment = GreenLanes::CategoryAssessment.find(params[:id])
+      @category_assessment.attributes = ca_params
+
+      if @category_assessment.valid? && @category_assessment.save
+        redirect_to green_lanes_category_assessments_path, notice: 'Category Assessment updated'
+      else
+        @themes = GreenLanes::Theme.all.fetch
+        render :edit
+      end
+    end
+
     private
 
     def ca_params
