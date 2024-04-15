@@ -14,7 +14,7 @@ module GreenLanes
     collection_path '/admin/green_lanes/themes'
 
     def label
-      formatted_label.length > MAX_LENGTH ? "#{formatted_label[0...MAX_LENGTH]}..." : formatted_label
+      formatted_label.length > MAX_LENGTH ? formatted_label.truncate(MAX_LENGTH).to_s : formatted_label
     end
 
     private
