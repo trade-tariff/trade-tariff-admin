@@ -172,6 +172,7 @@ jobs:
     docker:
       - image: cimg/ruby:3.2.2
     steps:
+      - checkout
       - tariff/notify-production-release:
           app-name: Admin
           slack-channel: trade_tariff
