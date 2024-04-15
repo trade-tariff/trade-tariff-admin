@@ -84,7 +84,7 @@ RSpec.describe GreenLanes::CategoryAssessmentsController do
 
     context 'with valid change' do
       let(:new_role) { '2' }
-      let(:patch_response) { webmock_response :updated, "/admin/news/item/#{category_assessment.id}" }
+      let(:patch_response) { webmock_response :updated, "/admin/green_lanes/category_assessments/#{category_assessment.id}" }
 
       it { is_expected.to redirect_to green_lanes_category_assessments_path }
     end
