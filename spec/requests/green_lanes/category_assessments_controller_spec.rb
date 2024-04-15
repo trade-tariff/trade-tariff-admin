@@ -98,4 +98,18 @@ RSpec.describe GreenLanes::CategoryAssessmentsController do
       it { is_expected.not_to include 'div.current-service' }
     end
   end
+
+  describe 'DELETE #destroy' do
+    before do
+      stub_api_request("/admin/green_lanes/category_assessments/#{category_assessment.id}")
+        .and_return jsonapi_response(:category_assessment, category_assessment.attributes)
+
+      stub_api_request("/admin/green_lanes/category_assessments/#{category_assessment.id}", :delete)
+        .and_return webmock_response :no_content
+    end
+
+    let(:make_request) { delete green_lanes_category_assessment_path(category_assessment) }
+
+    it { is_expected.to redirect_to green_lanes_category_assessments_path }
+  end
 end

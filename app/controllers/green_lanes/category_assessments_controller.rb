@@ -39,6 +39,13 @@ module GreenLanes
       end
     end
 
+    def destroy
+      @category_assessment = GreenLanes::CategoryAssessment.find(params[:id])
+      @category_assessment.destroy
+
+      redirect_to green_lanes_category_assessments_path, notice: 'Category Assessment removed'
+    end
+
     private
 
     def ca_params
