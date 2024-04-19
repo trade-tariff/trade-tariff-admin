@@ -10,6 +10,8 @@ environment files, see the backend's [README](https://github.com/trade-tariff/tr
 
 ## Dependencies
 
+> Make sure you install and enable all pre-commit hooks https://pre-commit.com/
+
 * Ruby 3.2.2
 * NodeJS
 * PostgreSQL

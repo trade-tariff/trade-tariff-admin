@@ -37,7 +37,7 @@
       <%= header.with_navigation_item text: "Quotas",
                                       href: new_quota_path,
                                       active: active_nav_link?(/\/quotas/) if TradeTariffAdmin::ServiceChooser.uk? %>
-      
+
       <% if respond_to?(:policy) %>
         <%= header.with_navigation_item text: "Updates",
                                         href: tariff_updates_path,
