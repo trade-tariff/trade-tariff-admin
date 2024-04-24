@@ -63,7 +63,7 @@ Rails.application.routes.draw do
   end
 
   namespace :green_lanes, path: 'green_lanes' do
-    resources :category_assessments, only: %i[index new create]
+    resources :category_assessments, only: %i[index new create edit update destroy]
   end
 
   resources :tariff_updates, only: %i[index show] do
