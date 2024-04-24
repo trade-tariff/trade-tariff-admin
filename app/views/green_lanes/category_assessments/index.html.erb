@@ -2,6 +2,8 @@
   Manage category assessments
 </h2>
 
+<%= link_to 'Add a Category Assessment', new_green_lanes_category_assessment_path, class: 'govuk-button' %>
+
 <% if @category_assessments.any? %>
   <table>
     <thead>
@@ -11,6 +13,7 @@
       <th>Regulation id</th>
       <th>Regulation role</th>
       <th>Theme id</th>
+      <th>Action</th>
     </tr>
     </thead>
     <tbody>
@@ -21,9 +24,9 @@
         <td><%= category.regulation_id %></td>
         <td><%= category.regulation_role %></td>
         <td><%= category.theme_id %></td>
-
         <td>
-          <%#= link_to 'Edit', edit_green_lanes_category_assessments_path(category) %>
+          <%= link_to 'Edit',
+                      edit_green_lanes_category_assessment_path(category) %>
         </td>
       </tr>
     <% end %>

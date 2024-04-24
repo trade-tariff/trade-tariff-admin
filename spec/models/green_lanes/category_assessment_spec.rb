@@ -26,7 +26,7 @@ RSpec.describe GreenLanes::CategoryAssessment do
       allow(TradeTariffAdmin::ServiceChooser).to \
         receive(:service_choice).and_return service_choice
 
-      stub_api_request('/admin/category_assessments', backend: 'xi').to_return \
+      stub_api_request('/admin/green_lanes/category_assessments', backend: 'xi').to_return \
         jsonapi_response(:category_assessment, attributes_for_list(:category_assessment, 2))
     end
 
