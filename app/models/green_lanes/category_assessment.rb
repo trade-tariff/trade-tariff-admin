@@ -11,6 +11,6 @@ module GreenLanes
                :created_at,
                :updated_at
 
-    collection_path '/admin/category_assessments'
+    collection_path '/admin/green_lanes/category_assessments'
   end
 end

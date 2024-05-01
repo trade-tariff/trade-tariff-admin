@@ -1,0 +1,21 @@
+<%= govuk_breadcrumbs 'Category Assessments': green_lanes_category_assessments_path %>
+
+<h2>Edit Category Assessment</h2>
+
+<%= render 'form', category_assessment: @category_assessment %>
+
+<hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+<h3>
+  Remove Category Assessment
+</h3>
+
+<p>
+  Remove this Category Assessment
+</p>
+
+<%= link_to 'Remove',
+            green_lanes_category_assessment_path(@category_assessment),
+            method: :delete,
+            class: 'govuk-button govuk-button--warning',
+            data: { confirm: "Are you sure?", disable: 'Working ...' } %>

@@ -1,0 +1,24 @@
+<%= govuk_form_for category_assessment, as: :category_assessment do |f| %>
+
+  <%= f.govuk_text_field :measure_type_id,
+                         label: { text: 'Measure Type Id' },
+                         width: 'one-half' %>
+
+  <%= f.govuk_text_field :regulation_id,
+                         label: { text: 'Regulation Id' },
+                         width: 'one-half' %>
+
+  <%= f.govuk_text_field :regulation_role,
+                         label: { text: 'Regulation Role' },
+                         width: 'one-half' %>
+
+  <%= f.govuk_collection_select :theme_id,
+                                @themes,
+                                :id,
+                                :label,
+                                options: { include_blank: 'Select Theme' },
+                                label: { text: 'Select Theme' } %>
+
+  <%= submit_and_back_buttons f, green_lanes_category_assessments_path %>
+<% end %>
+
