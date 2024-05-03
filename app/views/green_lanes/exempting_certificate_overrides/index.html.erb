@@ -1,0 +1,32 @@
+<h2>
+  Manage exempting certificate overrides
+</h2>
+
+<%= link_to 'Add a Exempting Certificate Override', new_green_lanes_exempting_certificate_override_path, class: 'govuk-button' %>
+
+<% if @exempting_certificate_overrides.any? %>
+  <table>
+    <thead>
+    <tr>
+      <th>ID</th>
+      <th>certificate_type_code</th>
+      <th>certificate_code</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% @exempting_certificate_overrides.each do |eco| %>
+      <tr id="<%= dom_id(eco) %>">
+        <td><%= eco.id %></td>
+        <td><%= eco.certificate_type_code %></td>
+        <td><%= eco.certificate_code %></td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+
+  <%= paginate @exempting_certificate_overrides %>
+<% else %>
+  <div class="govuk-inset-text">
+    <p>No Exempting Certificate Override</p>
+  </div>
+<% end %>
