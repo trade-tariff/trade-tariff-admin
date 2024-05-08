@@ -592,7 +592,7 @@ GEM
       psych (>= 4.0.0)
     redis (5.0.8)
       redis-client (>= 0.17.0)
-    redis-client (0.19.1)
+    redis-client (0.22.1)
       connection_pool
     regexp_parser (2.8.1)
     reline (0.5.3)
@@ -680,7 +680,7 @@ GEM
     shrine (3.5.0)
       content_disposition (~> 1.0)
       down (~> 5.1)
-    sidekiq (7.2.1)
+    sidekiq (7.2.4)
       concurrent-ruby (< 2)
       connection_pool (>= 2.3.0)
       rack (>= 2.2.4)
