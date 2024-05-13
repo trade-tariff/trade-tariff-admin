@@ -20,6 +20,13 @@ module GreenLanes
       end
     end
 
+    def destroy
+      @exempting_certificate_override = GreenLanes::ExemptingCertificateOverride.find(params[:id])
+      @exempting_certificate_override.destroy
+
+      redirect_to green_lanes_exempting_certificate_overrides_path, notice: 'Exempting Certificate Override removed'
+    end
+
     private
 
     def eco_params

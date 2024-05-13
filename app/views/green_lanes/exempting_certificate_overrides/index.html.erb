@@ -11,6 +11,7 @@
       <th>ID</th>
       <th>Certificate Type Code</th>
       <th>Certificate Code</th>
+      <th>Action</th>
     </tr>
     </thead>
     <tbody>
@@ -19,6 +20,13 @@
         <td><%= eco.id %></td>
         <td><%= eco.certificate_type_code %></td>
         <td><%= eco.certificate_code %></td>
+        <td>
+          <%= link_to 'Remove',
+                      green_lanes_exempting_certificate_override_path(eco),
+                      method: :delete,
+                      class: 'govuk-button govuk-button--warning',
+                      data: { confirm: "Are you sure?", disable: 'Working ...' } %>
+        </td>
       </tr>
     <% end %>
     </tbody>

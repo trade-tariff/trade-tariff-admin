@@ -53,4 +53,18 @@ RSpec.describe GreenLanes::ExemptingCertificateOverridesController do
       it { is_expected.not_to include 'div.current-service' }
     end
   end
+
+  describe 'DELETE #destroy' do
+    before do
+      stub_api_request("/admin/green_lanes/exempting_certificate_overrides/#{exempting_certificate_override.id}")
+        .and_return jsonapi_response(:exempting_certificate_override, exempting_certificate_override.attributes)
+
+      stub_api_request("/admin/green_lanes/exempting_certificate_overrides/#{exempting_certificate_override.id}", :delete)
+        .and_return webmock_response :no_content
+    end
+
+    let(:make_request) { delete green_lanes_exempting_certificate_override_path(exempting_certificate_override) }
+
+    it { is_expected.to redirect_to green_lanes_exempting_certificate_overrides_path }
+  end
 end
