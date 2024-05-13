@@ -11,7 +11,7 @@
 // them with the image_pack_tag helper in views (e.g <%= image_pack_tag 'rails.png' %>)
 // or the `imagePath` JavaScript helper below.
 //
-require.context('govuk-frontend/govuk/assets');
+require.context('govuk-frontend/dist/govuk/assets');
 
 import './application.scss';
 import Rails from 'rails-ujs';
