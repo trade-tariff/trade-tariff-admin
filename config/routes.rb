@@ -64,6 +64,7 @@ Rails.application.routes.draw do
 
   namespace :green_lanes, path: 'green_lanes' do
     resources :category_assessments, only: %i[index new create edit update destroy]
+    resources :exempting_certificate_overrides, only: %i[index new create destroy]
   end
 
   resources :tariff_updates, only: %i[index show] do

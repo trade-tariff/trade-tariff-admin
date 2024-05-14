@@ -48,9 +48,12 @@
                                       href: reports_path,
                                       active: active_nav_link?(/\/reports/) %>
       <% if TradeTariffAdmin::ServiceChooser.xi? %>
-        <%= header.with_navigation_item text: 'Category assessments',
+      <%= header.with_navigation_item text: 'Category assessments',
                                       href: green_lanes_category_assessments_path,
                                       active: active_nav_link?(/\/category_assessments/) %>
+      <%= header.with_navigation_item text: 'Exempting Certificate Overrides',
+                                      href: green_lanes_exempting_certificate_overrides_path,
+                                      active: active_nav_link?(/\/exempting_certificate_overrides/) %>
       <% end %>
     <% end %>
 
