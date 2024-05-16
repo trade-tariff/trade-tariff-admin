@@ -18,8 +18,8 @@
     <% @exemptions.each do |ex| %>
       <tr id="<%= dom_id(ex) %>">
         <td><%= ex.id %></td>
-        <td><%= ex.certificate_type_code %></td>
-        <td><%= ex.certificate_code %></td>
+        <td><%= ex.code %></td>
+        <td><%= ex.description %></td>
         <td>
           <%= link_to 'Edit',
                       edit_green_lanes_exemption_path(ex) %>

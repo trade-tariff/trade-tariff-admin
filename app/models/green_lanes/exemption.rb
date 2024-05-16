@@ -2,7 +2,6 @@ module GreenLanes
   class Exemption
     include Her::JsonApi::Model
     use_api Her::XI_API
-    extend HerPaginatable
 
     attributes :code,
                :description,
