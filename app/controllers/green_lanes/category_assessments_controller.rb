@@ -1,5 +1,7 @@
 module GreenLanes
   class CategoryAssessmentsController < AuthenticatedController
+    include XiOnly
+
     before_action :disable_service_switching!
     before_action :check_service
     def index
@@ -55,12 +57,6 @@ module GreenLanes
         :measure_type_id,
         :theme_id,
       )
-    end
-
-    def check_service
-      if TradeTariffAdmin::ServiceChooser.uk?
-        raise ActionController::RoutingError, 'Invalid service'
-      end
     end
   end
 end
