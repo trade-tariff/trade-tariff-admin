@@ -45,6 +45,5 @@ module GreenLanes
         :description,
       )
     end
-
   end
 end
