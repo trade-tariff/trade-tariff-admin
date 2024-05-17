@@ -1,0 +1,21 @@
+<%= govuk_breadcrumbs 'Exemptions': green_lanes_exemptions_path %>
+
+<h2>Exemption</h2>
+
+<%= render 'form', exemption: @exemption %>
+
+<hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+<h3>
+  Remove Exemption
+</h3>
+
+<p>
+  Remove this Exemption
+</p>
+
+<%= link_to 'Remove',
+            green_lanes_exemption_path(@exemption),
+            method: :delete,
+            class: 'govuk-button govuk-button--warning',
+            data: { confirm: "Are you sure?", disable: 'Working ...' } %>
