@@ -10,6 +10,5 @@ module GreenLanes
     has_one :goods_nomenclature
 
     collection_path '/admin/green_lanes/measures'
-
   end
 end

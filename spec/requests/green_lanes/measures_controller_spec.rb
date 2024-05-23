@@ -9,7 +9,7 @@ RSpec.describe GreenLanes::ExemptionsController do
 
   describe 'GET #index' do
     before do
-      stub_api_request('/admin/green_lanes/measures', backend: 'xi').and_return \
+      stub_api_request('/admin/green_lanes/measures?page=1', backend: 'xi').and_return \
         jsonapi_response :measures, build_list(:green_lanes_measure, 3, :with_category_assessment, :with_goods_nomenclature)
     end
 
