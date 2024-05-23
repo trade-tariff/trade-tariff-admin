@@ -11,6 +11,8 @@ module GreenLanes
                :created_at,
                :updated_at
 
+    has_one :theme
+
     collection_path '/admin/green_lanes/category_assessments'
   end
 end

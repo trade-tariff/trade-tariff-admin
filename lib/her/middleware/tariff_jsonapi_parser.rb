@@ -7,12 +7,8 @@ module Her
         included = json.fetch(:included, [])
         primary_data = json.fetch(:data, {})
 
-        Array.wrap(primary_data).each do |resource|
-          next if resource.blank?
-
-          resource_relationships = resource.delete(:relationships) { {} }
-          resource[:attributes].merge!(populate_relationships(resource_relationships, included))
-        end
+        populate_relationships(included, included)
+        populate_relationships(primary_data, included)
 
         {
           data: primary_data || {},
@@ -36,7 +32,16 @@ module Her
 
       private
 
-      def populate_relationships(relationships, included)
+      def populate_relationships(resource_relationships, included)
+        Array.wrap(resource_relationships).each do |resource|
+          next if resource.blank?
+
+          resource_relationships = resource.delete(:relationships) { {} }
+          resource[:attributes].merge!(populate_relationship(resource_relationships, included))
+        end
+      end
+
+      def populate_relationship(relationships, included)
         return {} if included.empty?
 
         {}.tap do |built|

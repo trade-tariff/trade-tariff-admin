@@ -13,6 +13,10 @@ module GreenLanes
 
     collection_path '/admin/green_lanes/themes'
 
+    def code
+      "#{section}.#{subsection}"
+    end
+
     def label
       formatted_label.truncate(MAX_LENGTH).to_s
     end
