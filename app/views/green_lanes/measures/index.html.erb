@@ -27,7 +27,7 @@
         </td>
         <td><%= me.productline_suffix %></td>
         <td>
-          <%= me.category_assessment&.theme&.code if me.category_assessment.present? && category_assessment.theme.present?%>
+          <%= me.category_assessment&.theme&.code if me.category_assessment.present? && me.category_assessment.theme.present?%>
         </td>
         <td>
           <%= me.category_assessment.measure_type_id if me.category_assessment.present?%>
