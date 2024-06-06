@@ -6,11 +6,11 @@ FactoryBot.define do
     goods_nomenclature {}
 
     trait :with_category_assessment do
-      association :category_assessment, factory: :category_assessment, strategy: :build
+      category_assessment { attributes_for(:category_assessment) }
     end
 
     trait :with_goods_nomenclature do
-      association :goods_nomenclature, factory: :green_lanes_goods_nomenclature, strategy: :build
+      goods_nomenclature { attributes_for(:green_lanes_goods_nomenclature) }
     end
   end
 end
