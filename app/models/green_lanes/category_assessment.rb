@@ -12,6 +12,8 @@ module GreenLanes
                :updated_at
 
     has_one :theme
+    has_many :green_lanes_measures, class_name: 'GreenLanes::Measure'
+    has_many :exemptions
 
     collection_path '/admin/green_lanes/category_assessments'
   end

@@ -8,6 +8,12 @@ RSpec.describe GreenLanes::CategoryAssessmentsController do
     allow(TradeTariffAdmin::ServiceChooser).to receive(:service_choice).and_return 'xi'
     stub_api_request('/admin/green_lanes/themes', backend: 'xi').and_return \
       jsonapi_response :themes, attributes_for_list(:green_lanes_theme, 3)
+
+    stub_api_request("/admin/green_lanes/category_assessments/#{category_assessment.id}/green_lanes_measures", backend: 'xi').and_return \
+      jsonapi_response :green_lanes_measures, attributes_for_list(:green_lanes_measure, 3)
+
+    stub_api_request("/admin/green_lanes/category_assessments/#{category_assessment.id}/exemptions", backend: 'xi').and_return \
+      jsonapi_response :exemptions, attributes_for_list(:exemption, 3)
   end
 
   describe 'GET #index' do

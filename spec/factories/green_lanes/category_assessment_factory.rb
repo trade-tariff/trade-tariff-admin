@@ -13,5 +13,13 @@ FactoryBot.define do
 
       theme_id { green_lanes_theme.id }
     end
+
+    trait :with_green_lanes_measures do
+      association :green_lanes_measures, factory: :green_lanes_measure, strategy: :build
+    end
+
+    trait :with_exemptions do
+      association :exemptions, factory: :exemption, strategy: :build
+    end
   end
 end

@@ -7,6 +7,59 @@
 <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
 <h3>
+  Measures
+</h3>
+
+<% if @category_assessment.green_lanes_measures.any? %>
+  <table>
+    <thead>
+    <tr>
+      <th>Goods Nomenclature Item Id</th>
+      <th>Goods Nomenclature Description</th>
+      <th>Product Line Suffix</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% @category_assessment.green_lanes_measures.each do |me| %>
+      <tr id="<%= dom_id(me) %>">
+        <td>
+          <%= me.goods_nomenclature.goods_nomenclature_item_id if me.goods_nomenclature.present?%>
+        </td>
+        <td>
+          <%= me.goods_nomenclature.description if me.goods_nomenclature.present?%>
+        </td>
+        <td><%= me.productline_suffix %></td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+<% end %>
+
+<h3>
+  Exemptions
+</h3>
+
+<% if @category_assessment.exemptions.any? %>
+  <table>
+    <thead>
+    <tr>
+      <th>Code</th>
+      <th>Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% @category_assessment.exemptions.each do |ex| %>
+      <tr id="<%= dom_id(ex) %>">
+        <td><%= ex.code %></td>
+        <td><%= ex.description %></td>
+
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+<% end %>
+
+<h3>
   Remove Category Assessment
 </h3>
 
