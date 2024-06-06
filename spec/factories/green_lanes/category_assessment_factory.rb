@@ -9,25 +9,21 @@ FactoryBot.define do
     updated_at { nil }
 
     green_lanes_measures do
-      attributes_for_list :green_lanes_measure, 2
+      attributes_for_list(:green_lanes_measure, 2).map do |measure_attributes|
+        { attributes: measure_attributes }
+      end
     end
 
     exemptions do
-      attributes_for_list :exemption, 2
+      attributes_for_list(:exemption, 2).map do |exemption_attributes|
+        { attributes: exemption_attributes }
+      end
     end
 
     trait :with_theme do
       association :green_lanes_theme, strategy: :build
 
       theme_id { green_lanes_theme.id }
-    end
-
-    trait :with_green_lanes_measures do
-      association :green_lanes_measures, factory: :green_lanes_measure, strategy: :build
-    end
-
-    trait :with_exemptions do
-      association :exemptions, factory: :exemption, strategy: :build
     end
   end
 end
