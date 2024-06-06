@@ -8,6 +8,14 @@ FactoryBot.define do
     created_at { 2.days.ago.to_date }
     updated_at { nil }
 
+    green_lanes_measures do
+      attributes_for_list :green_lanes_measure, 2
+    end
+
+    exemptions do
+      attributes_for_list :exemption, 2
+    end
+
     trait :with_theme do
       association :green_lanes_theme, strategy: :build
 
