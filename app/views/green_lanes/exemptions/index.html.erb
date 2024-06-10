@@ -8,7 +8,6 @@
   <table>
     <thead>
     <tr>
-      <th>ID</th>
       <th>Code</th>
       <th>Description</th>
       <th>Action</th>
@@ -17,7 +16,6 @@
     <tbody>
     <% @exemptions.each do |ex| %>
       <tr id="<%= dom_id(ex) %>">
-        <td><%= ex.id %></td>
         <td><%= ex.code %></td>
         <td><%= ex.description %></td>
         <td>
