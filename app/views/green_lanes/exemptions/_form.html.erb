@@ -1,0 +1,13 @@
+<%= govuk_form_for exemption, as: :exemption do |f| %>
+
+  <%= f.govuk_text_field :code,
+                         label: { text: 'Code' },
+                         width: 'one-half' %>
+
+  <%= f.govuk_text_field :description,
+                         label: { text: 'Description' },
+                         width: 'one-half' %>
+
+  <%= submit_and_back_buttons f, green_lanes_exemptions_path %>
+<% end %>
+

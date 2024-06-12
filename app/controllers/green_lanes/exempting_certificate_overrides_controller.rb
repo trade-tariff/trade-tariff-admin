@@ -1,5 +1,7 @@
 module GreenLanes
   class ExemptingCertificateOverridesController < AuthenticatedController
+    include XiOnly
+
     before_action :disable_service_switching!
     before_action :check_service
     def index
@@ -34,12 +36,6 @@ module GreenLanes
         :certificate_type_code,
         :certificate_code,
       )
-    end
-
-    def check_service
-      if TradeTariffAdmin::ServiceChooser.uk?
-        raise ActionController::RoutingError, 'Invalid service'
-      end
     end
   end
 end
