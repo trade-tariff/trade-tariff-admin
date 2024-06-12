@@ -96,4 +96,18 @@ RSpec.describe GreenLanes::ExemptionsController do
       it { is_expected.not_to include 'div.current-service' }
     end
   end
+
+  describe 'DELETE #destroy' do
+    before do
+      stub_api_request("/admin/green_lanes/exemptions/#{exemption.id}")
+        .and_return jsonapi_response(:exemption, exemption.attributes)
+
+      stub_api_request("/admin/green_lanes/exemptions/#{exemption.id}", :delete)
+        .and_return webmock_response :no_content
+    end
+
+    let(:make_request) { delete green_lanes_exemption_path(exemption) }
+
+    it { is_expected.to redirect_to green_lanes_exemptions_path }
+  end
 end

@@ -37,6 +37,13 @@ module GreenLanes
       end
     end
 
+    def destroy
+      @exemption = GreenLanes::Exemption.find(params[:id])
+      @exemption.destroy
+
+      redirect_to green_lanes_exemptions_path, notice: 'Exemption removed'
+    end
+
     private
 
     def ex_params
