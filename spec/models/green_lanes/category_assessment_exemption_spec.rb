@@ -10,7 +10,7 @@ RSpec.describe GreenLanes::CategoryAssessmentExemption do
   it { is_expected.to have_attributes exemption_id: category_assessment_exemption.exemption_id }
 
   describe '#add_exemption' do
-    subject { category_assessment_exemption.add_exemption }
+    subject(:add_exemption) { category_assessment_exemption.add_exemption }
 
     before do
       stub_api_request("/admin/green_lanes/category_assessments/#{category_assessment_exemption.category_assessment_id}/exemptions", :post, backend: 'xi').to_return \
@@ -18,9 +18,8 @@ RSpec.describe GreenLanes::CategoryAssessmentExemption do
     end
 
     context 'when exemption added' do
-
       it 'expect success status' do
-        expect(subject[:response].status).to eq(200)
+        expect(add_exemption[:response].status).to eq(200)
       end
     end
   end

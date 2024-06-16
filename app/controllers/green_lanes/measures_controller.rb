@@ -26,6 +26,5 @@ module GreenLanes
         :productline_suffix,
       )
     end
-
   end
 end
