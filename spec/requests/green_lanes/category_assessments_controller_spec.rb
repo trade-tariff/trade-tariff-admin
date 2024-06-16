@@ -8,6 +8,8 @@ RSpec.describe GreenLanes::CategoryAssessmentsController do
     allow(TradeTariffAdmin::ServiceChooser).to receive(:service_choice).and_return 'xi'
     stub_api_request('/admin/green_lanes/themes', backend: 'xi').and_return \
       jsonapi_response :themes, attributes_for_list(:green_lanes_theme, 3)
+    stub_api_request('/admin/green_lanes/exemptions', backend: 'xi').and_return \
+      jsonapi_response :exemptions, attributes_for_list(:exemption, 3)
   end
 
   describe 'GET #index' do
@@ -92,6 +94,35 @@ RSpec.describe GreenLanes::CategoryAssessmentsController do
     context 'with invalid change' do
       let(:new_role) { '' }
       let(:patch_response) { webmock_response :error, regulation_role: "can't be blank" }
+
+      it { is_expected.to have_http_status :ok }
+      it { is_expected.to have_attributes body: /can.+t be blank/ }
+      it { is_expected.not_to include 'div.current-service' }
+    end
+  end
+
+  describe 'POST #add_exemption' do
+    before do
+      stub_api_request("/admin/green_lanes/category_assessments/#{category_assessment.id}")
+        .and_return jsonapi_response(:category_assessment, category_assessment.attributes)
+
+      stub_api_request("/admin/green_lanes/category_assessments/#{category_assessment.id}/exemptions", :post).to_return \
+        webmock_response(:success)
+    end
+
+    let :make_request do
+      post add_exemption_green_lanes_category_assessment_path(category_assessment),
+           params:
+    end
+
+    context 'with valid exemption id' do
+      let(:params) { { cae: { exemption_id: 2 } } }
+
+      it { is_expected.to redirect_to edit_green_lanes_category_assessment_path(id: category_assessment.id) }
+    end
+
+    context 'with empty exemption id' do
+      let(:params) { { cae: { exemption_id: nil } } }
 
       it { is_expected.to have_http_status :ok }
       it { is_expected.to have_attributes body: /can.+t be blank/ }

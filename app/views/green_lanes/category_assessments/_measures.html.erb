@@ -1,0 +1,29 @@
+<% if @category_assessment.has_measures? %>
+  <table>
+    <thead>
+    <tr>
+      <th>Goods Nomenclature Item Id</th>
+      <th>Goods Nomenclature Description</th>
+      <th>Product Line Suffix</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% @category_assessment.green_lanes_measures.each do |me| %>
+      <tr id="<%= dom_id(me) %>">
+        <td>
+          <%= me.goods_nomenclature.goods_nomenclature_item_id if me.goods_nomenclature.present?%>
+        </td>
+        <td>
+          <%= me.goods_nomenclature.description if me.goods_nomenclature.present?%>
+        </td>
+        <td><%= me.productline_suffix %></td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+<% end %>
+
+<h3>
+  Add Goods Nomenclature
+</h3>
+<%= render 'green_lanes/category_assessments/measure_form', measure: @measure %>

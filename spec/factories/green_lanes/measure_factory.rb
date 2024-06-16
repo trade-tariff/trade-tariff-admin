@@ -2,6 +2,8 @@ FactoryBot.define do
   factory :green_lanes_measure, class: 'GreenLanes::Measure' do
     sequence(:id) { |n| n }
     productline_suffix { '80' }
+    goods_nomenclature_item_id { '8080658080' }
+    category_assessment_id { '1' }
     category_assessment {}
     goods_nomenclature {}
 

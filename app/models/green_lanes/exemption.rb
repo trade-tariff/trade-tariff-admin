@@ -8,5 +8,9 @@ module GreenLanes
                :description
 
     collection_path '/admin/green_lanes/exemptions'
+
+    def label
+      "#{code} - #{description}"
+    end
   end
 end
