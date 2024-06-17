@@ -8,8 +8,7 @@ FactoryBot.define do
     goods_nomenclature {}
 
     trait :with_category_assessment do
-      category_assessment { { attributes: attributes_for(:category_assessment) } }
-      # category_assessment_id { category_assessment.id }
+      category_assessment { { attributes: attributes_for(:category_assessment, id: '10') } }
     end
 
     trait :with_goods_nomenclature do

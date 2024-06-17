@@ -63,8 +63,7 @@ RSpec.describe GreenLanes::MeasuresController do
     end
 
     let(:make_request) { delete green_lanes_measure_path(measure) }
-    let(:ca_id) { measure.category_assessment_id }
 
-    it { is_expected.to redirect_to edit_green_lanes_category_assessment_path(id: ca_id) }
+    it { is_expected.to redirect_to edit_green_lanes_category_assessment_path(id: '10') }
   end
 end
