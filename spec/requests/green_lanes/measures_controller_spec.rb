@@ -52,4 +52,19 @@ RSpec.describe GreenLanes::MeasuresController do
       end
     end
   end
+
+  describe 'DELETE #destroy' do
+    before do
+      stub_api_request("/admin/green_lanes/measures/#{measure.id}")
+        .and_return jsonapi_response(:green_lanes_measure, measure.attributes)
+
+      stub_api_request("/admin/green_lanes/measures/#{measure.id}", :delete)
+        .and_return webmock_response :no_content
+    end
+
+    let(:make_request) { delete green_lanes_measure_path(measure) }
+    let(:ca_id) { measure.category_assessment_id }
+
+    it { is_expected.to redirect_to edit_green_lanes_category_assessment_path(id: ca_id) }
+  end
 end

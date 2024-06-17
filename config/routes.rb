@@ -70,7 +70,7 @@ Rails.application.routes.draw do
     end
     resources :exempting_certificate_overrides, only: %i[index new create destroy]
     resources :exemptions, only: %i[index new create edit update destroy]
-    resources :measures, only: %i[index create]
+    resources :measures, only: %i[index create destroy]
   end
 
   resources :tariff_updates, only: %i[index show] do

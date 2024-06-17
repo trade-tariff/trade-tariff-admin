@@ -19,6 +19,14 @@ module GreenLanes
       redirect_to edit_green_lanes_category_assessment_path(id: category_assessment_id), notice: 'Goods Nomenclature assigned successfully'
     end
 
+    def destroy
+      @measure = GreenLanes::Measure.find(params[:id])
+      category_assessment_id = @measure.category_assessment.id
+      @measure.destroy
+
+      redirect_to edit_green_lanes_category_assessment_path(id: category_assessment_id), notice: 'Goods Nomenclature removed successfully'
+    end
+
     def measure_params
       params.require(:measure).permit(
         :category_assessment_id,
