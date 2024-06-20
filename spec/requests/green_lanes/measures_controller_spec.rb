@@ -11,7 +11,7 @@ RSpec.describe GreenLanes::MeasuresController do
   describe 'GET #index' do
     before do
       stub_api_request('/admin/green_lanes/measures?page=1', backend: 'xi').and_return \
-        jsonapi_response :measures, build_list(:green_lanes_measure, 3, :with_category_assessment, :with_goods_nomenclature)
+        jsonapi_response :measures, attributes_for_list(:green_lanes_measure, 3, :with_category_assessment, :with_goods_nomenclature)
     end
 
     let(:make_request) { get green_lanes_measures_path }
@@ -29,8 +29,16 @@ RSpec.describe GreenLanes::MeasuresController do
         .and_return webmock_response :no_content
     end
 
-    let(:make_request) { delete green_lanes_measure_path(measure) }
+    context 'with category assessment edit' do
+      let(:make_request) { delete green_lanes_measure_path(measure, category_assessment_id: '10') }
 
-    it { is_expected.to redirect_to edit_green_lanes_category_assessment_path(id: '10') }
+      it { is_expected.to redirect_to edit_green_lanes_category_assessment_path(id: '10') }
+    end
+
+    context 'with measure list' do
+      let(:make_request) { delete green_lanes_measure_path(measure) }
+
+      it { is_expected.to redirect_to green_lanes_measures_path }
+    end
   end
 end
