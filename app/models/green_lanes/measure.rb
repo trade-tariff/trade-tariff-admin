@@ -13,5 +13,12 @@ module GreenLanes
     validates :goods_nomenclature_item_id, presence: true
 
     collection_path '/admin/green_lanes/measures'
+
+    def initialize(attributes = {})
+      super
+      @has_goods_nomenclature = attributes[:goods_nomenclature].present?
+    end
+
+    attr_reader :has_goods_nomenclature
   end
 end

@@ -130,6 +130,66 @@ RSpec.describe GreenLanes::CategoryAssessmentsController do
     end
   end
 
+  describe 'POST #remove_exemption' do
+    before do
+      stub_api_request("/admin/green_lanes/category_assessments/#{category_assessment.id}")
+        .and_return jsonapi_response(:category_assessment, category_assessment.attributes)
+
+      stub_api_request("/admin/green_lanes/category_assessments/#{category_assessment.id}/exemptions", :delete).to_return \
+        webmock_response(:success)
+    end
+
+    let :make_request do
+      post remove_exemption_green_lanes_category_assessment_path(category_assessment),
+           params:
+    end
+
+    context 'with valid exemption id' do
+      let(:params) { { cae: { exemption_id: 2 } } }
+
+      it { is_expected.to redirect_to edit_green_lanes_category_assessment_path(id: category_assessment.id) }
+    end
+
+    context 'with empty exemption id' do
+      let(:params) { { cae: { exemption_id: nil } } }
+
+      it { is_expected.to have_http_status :ok }
+      it { is_expected.to have_attributes body: /can.+t be blank/ }
+      it { is_expected.not_to include 'div.current-service' }
+    end
+  end
+
+  describe 'POST #add_measure' do
+    before do
+      stub_api_request("/admin/green_lanes/category_assessments/#{category_assessment.id}")
+        .and_return jsonapi_response(:category_assessment, category_assessment.attributes)
+
+      stub_api_request("/admin/green_lanes/category_assessments/#{category_assessment.id}/measures", :post).to_return \
+        webmock_response(:success)
+    end
+
+    let(:measure) { build :green_lanes_measure, :with_category_assessment }
+
+    let :make_request do
+      post add_measure_green_lanes_category_assessment_path(category_assessment),
+           params:
+    end
+
+    context 'with valid item' do
+      let(:params) { measure.attributes.without(:id) }
+
+      it { is_expected.to redirect_to edit_green_lanes_category_assessment_path(id: category_assessment.id) }
+    end
+
+    context 'with invalid item' do
+      let(:params) { measure.attributes.without(:id, :goods_nomenclature_item_id) }
+
+      it { is_expected.to have_http_status :ok }
+      it { is_expected.to have_attributes body: /can.+t be blank/ }
+      it { is_expected.not_to include 'div.current-service' }
+    end
+  end
+
   describe 'DELETE #destroy' do
     before do
       stub_api_request("/admin/green_lanes/category_assessments/#{category_assessment.id}")
