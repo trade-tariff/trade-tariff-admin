@@ -1,7 +1,7 @@
 RSpec.describe GreenLanes::CategoryAssessmentsController do
   subject(:rendered_page) { create_user && make_request && response }
 
-  let(:category_assessment) { build :category_assessment }
+  let(:category_assessment) { build :category_assessment, :with_theme }
   let(:create_user) { create :user, permissions: ['signin', 'HMRC Editor'] }
 
   before do
@@ -15,7 +15,7 @@ RSpec.describe GreenLanes::CategoryAssessmentsController do
   describe 'GET #index' do
     before do
       stub_api_request('/admin/green_lanes/category_assessments?page=1', backend: 'xi').and_return \
-        jsonapi_response :category_assessments, attributes_for_list(:category_assessment, 3)
+        jsonapi_response :category_assessments, attributes_for_list(:category_assessment, 3, :with_theme)
     end
 
     let(:make_request) { get green_lanes_category_assessments_path }
@@ -123,6 +123,77 @@ RSpec.describe GreenLanes::CategoryAssessmentsController do
 
     context 'with empty exemption id' do
       let(:params) { { cae: { exemption_id: nil } } }
+
+      it { is_expected.to have_http_status :ok }
+      it { is_expected.to have_attributes body: /can.+t be blank/ }
+      it { is_expected.not_to include 'div.current-service' }
+    end
+  end
+
+  describe 'POST #remove_exemption' do
+    before do
+      stub_api_request("/admin/green_lanes/category_assessments/#{category_assessment.id}")
+        .and_return jsonapi_response(:category_assessment, category_assessment.attributes)
+
+      stub_api_request("/admin/green_lanes/category_assessments/#{category_assessment.id}/exemptions", :delete).to_return \
+        webmock_response(:success)
+    end
+
+    let :make_request do
+      delete remove_exemption_green_lanes_category_assessment_path(category_assessment),
+             params:
+    end
+
+    context 'with valid exemption id' do
+      let(:params) { { exemption_id: 2 } }
+
+      it { is_expected.to redirect_to edit_green_lanes_category_assessment_path(id: category_assessment.id) }
+    end
+
+    context 'with empty exemption id' do
+      let(:params) { { cae: { exemption_id: nil } } }
+
+      it { is_expected.to have_http_status :ok }
+      it { is_expected.to have_attributes body: /can.+t be blank/ }
+      it { is_expected.not_to include 'div.current-service' }
+    end
+  end
+
+  describe 'POST #add_measure' do
+    before do
+      stub_api_request("/admin/green_lanes/category_assessments/#{category_assessment.id}")
+        .and_return jsonapi_response(:category_assessment, category_assessment.attributes)
+
+      stub_api_request('/admin/green_lanes/measures', :post).to_return \
+        webmock_response(:success)
+
+      stub_api_request("/admin/green_lanes/category_assessments/#{category_assessment.id}/measures", :post).to_return \
+        webmock_response(:success)
+    end
+
+    let(:measure) { build :green_lanes_measure, :with_category_assessment }
+
+    let :make_request do
+      post add_measure_green_lanes_category_assessment_path(category_assessment),
+           params:
+    end
+
+    context 'with valid item' do
+      let(:params) do
+        { measure: { category_assessment_id: category_assessment.id,
+                     goods_nomenclature_item_id: measure.goods_nomenclature_item_id,
+                     productline_suffix: measure.productline_suffix } }
+      end
+
+      it { is_expected.to redirect_to edit_green_lanes_category_assessment_path(id: category_assessment.id) }
+    end
+
+    context 'with invalid item' do
+      let(:params) do
+        { measure: { category_assessment_id: category_assessment.id,
+                     goods_nomenclature_item_id: nil,
+                     productline_suffix: measure.productline_suffix } }
+      end
 
       it { is_expected.to have_http_status :ok }
       it { is_expected.to have_attributes body: /can.+t be blank/ }

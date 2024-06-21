@@ -12,7 +12,7 @@
       <th>Measure type id</th>
       <th>Regulation id</th>
       <th>Regulation role</th>
-      <th>Theme id</th>
+      <th>Theme</th>
       <th>Action</th>
     </tr>
     </thead>
@@ -23,7 +23,7 @@
         <td><%= category.measure_type_id %></td>
         <td><%= category.regulation_id %></td>
         <td><%= category.regulation_role %></td>
-        <td><%= category.theme_id %></td>
+        <td><%= category.theme.code %></td>
         <td>
           <%= link_to 'Edit',
                       edit_green_lanes_category_assessment_path(category) %>
