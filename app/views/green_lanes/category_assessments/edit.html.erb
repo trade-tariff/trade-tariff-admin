@@ -4,11 +4,18 @@
 
 <%= render 'form', category_assessment: @category_assessment %>
 
+<h2>Direct Goods Nomenclature</h2>
 <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
-<h3>
-  Remove Category Assessment
-</h3>
+<%= render 'green_lanes/category_assessments/measures' %>
+
+<h2>Direct Exemptions</h2>
+<hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+<%= render 'green_lanes/category_assessments/exemptions' %>
+
+<h3>Remove Category Assessment</h3>
+<hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
 <p>
   Remove this Category Assessment

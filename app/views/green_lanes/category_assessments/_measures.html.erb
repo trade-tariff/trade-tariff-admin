@@ -1,0 +1,39 @@
+<% if @category_assessment.has_measures? %>
+  <table>
+    <thead>
+    <tr>
+      <th>Goods Nomenclature Item Id</th>
+      <th>Goods Nomenclature Description</th>
+      <th>Product Line Suffix</th>
+      <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% @category_assessment.green_lanes_measures.each do |me| %>
+      <% if me.has_goods_nomenclature %>
+        <tr id="<%= dom_id(me) %>">
+          <td>
+            <%= me.goods_nomenclature.goods_nomenclature_item_id %>
+          </td>
+          <td>
+            <%= me.goods_nomenclature.description %>
+          </td>
+          <td><%= me.productline_suffix %></td>
+          <td>
+            <%= link_to 'Remove',
+                        green_lanes_measure_path(me, category_assessment_id: @category_assessment.id),
+                        method: :delete,
+                        class: 'govuk-button govuk-button--warning',
+                        data: { confirm: "Are you sure?", disable: 'Working ...' } %>
+          </td>
+        </tr>
+      <% end %>
+    <% end %>
+    </tbody>
+  </table>
+<% end %>
+
+<h3>
+  Add Goods Nomenclature
+</h3>
+<%= render 'green_lanes/category_assessments/measure_form', measure: @measure %>

@@ -2,15 +2,17 @@ FactoryBot.define do
   factory :green_lanes_measure, class: 'GreenLanes::Measure' do
     sequence(:id) { |n| n }
     productline_suffix { '80' }
+    goods_nomenclature_item_id { '8080658080' }
+    category_assessment_id { '1' }
     category_assessment {}
     goods_nomenclature {}
 
     trait :with_category_assessment do
-      association :category_assessment, factory: :category_assessment, strategy: :build
+      category_assessment { { attributes: attributes_for(:category_assessment, :with_theme, id: '10') } }
     end
 
     trait :with_goods_nomenclature do
-      association :goods_nomenclature, factory: :green_lanes_goods_nomenclature, strategy: :build
+      goods_nomenclature { { attributes: attributes_for(:green_lanes_goods_nomenclature) } }
     end
   end
 end

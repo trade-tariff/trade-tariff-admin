@@ -1,0 +1,15 @@
+<%= govuk_form_for @measure, url: add_measure_green_lanes_category_assessment_path(@category_assessment), method: :post, as: :measure do |f| %>
+
+  <%= f.hidden_field :category_assessment_id, value: measure.category_assessment_id %>
+
+  <%= f.govuk_text_field :goods_nomenclature_item_id,
+                         label: { text: 'Goods Nomenclature Item Id' },
+                         width: 'one-half' %>
+
+  <%= f.govuk_text_field :productline_suffix,
+                         label: { text: 'Product Line Suffix' },
+                         width: 'one-half' %>
+
+  <%= f.govuk_submit 'Add' %>
+<% end %>
+
