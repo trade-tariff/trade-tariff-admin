@@ -80,6 +80,10 @@ module GreenLanes
         begin
           if measure.save
             redirect_to edit_green_lanes_category_assessment_path(id: category_assessment_id), notice: 'Goods Nomenclature assigned successfully'
+          else
+            prepare_edit
+            @measure = measure
+            render :edit
           end
         rescue Faraday::ResourceNotFound
           prepare_edit
