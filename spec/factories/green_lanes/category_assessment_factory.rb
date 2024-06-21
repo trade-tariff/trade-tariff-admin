@@ -21,9 +21,7 @@ FactoryBot.define do
     end
 
     trait :with_theme do
-      association :green_lanes_theme, strategy: :build
-
-      theme_id { green_lanes_theme.id }
+      theme { { attributes: attributes_for(:green_lanes_theme) } }
     end
   end
 end

@@ -4,6 +4,7 @@
     <tr>
       <th>Code</th>
       <th>Description</th>
+      <th>Action</th>
     </tr>
     </thead>
     <tbody>
@@ -11,6 +12,13 @@
       <tr id="<%= dom_id(ex) %>">
         <td><%= ex.code %></td>
         <td><%= ex.description %></td>
+        <td>
+          <%= link_to 'Remove',
+                      remove_exemption_green_lanes_category_assessment_path(@category_assessment, exemption_id: ex.id),
+                      method: :delete,
+                      class: 'govuk-button govuk-button--warning',
+                      data: { confirm: "Are you sure?", disable: 'Working ...' } %>
+        </td>
       </tr>
     <% end %>
     </tbody>

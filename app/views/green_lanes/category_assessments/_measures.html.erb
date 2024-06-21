@@ -5,19 +5,29 @@
       <th>Goods Nomenclature Item Id</th>
       <th>Goods Nomenclature Description</th>
       <th>Product Line Suffix</th>
+      <th>Action</th>
     </tr>
     </thead>
     <tbody>
     <% @category_assessment.green_lanes_measures.each do |me| %>
-      <tr id="<%= dom_id(me) %>">
-        <td>
-          <%= me.goods_nomenclature.goods_nomenclature_item_id if me.goods_nomenclature.present?%>
-        </td>
-        <td>
-          <%= me.goods_nomenclature.description if me.goods_nomenclature.present?%>
-        </td>
-        <td><%= me.productline_suffix %></td>
-      </tr>
+      <% if me.has_goods_nomenclature %>
+        <tr id="<%= dom_id(me) %>">
+          <td>
+            <%= me.goods_nomenclature.goods_nomenclature_item_id %>
+          </td>
+          <td>
+            <%= me.goods_nomenclature.description %>
+          </td>
+          <td><%= me.productline_suffix %></td>
+          <td>
+            <%= link_to 'Remove',
+                        green_lanes_measure_path(me, category_assessment_id: @category_assessment.id),
+                        method: :delete,
+                        class: 'govuk-button govuk-button--warning',
+                        data: { confirm: "Are you sure?", disable: 'Working ...' } %>
+          </td>
+        </tr>
+      <% end %>
     <% end %>
     </tbody>
   </table>
