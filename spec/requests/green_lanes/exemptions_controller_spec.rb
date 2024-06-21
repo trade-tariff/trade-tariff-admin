@@ -10,7 +10,7 @@ RSpec.describe GreenLanes::ExemptionsController do
 
   describe 'GET #index' do
     before do
-      stub_api_request('/admin/green_lanes/exemptions', backend: 'xi').and_return \
+      stub_api_request('/admin/green_lanes/exemptions?page=1', backend: 'xi').and_return \
         jsonapi_response :exemptions, attributes_for_list(:exemption, 3)
     end
 

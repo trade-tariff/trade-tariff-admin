@@ -10,6 +10,11 @@ RSpec.describe GreenLanes::CategoryAssessment do
   it { is_expected.to respond_to :theme_id }
   it { is_expected.to respond_to :created_at }
   it { is_expected.to respond_to :updated_at }
+  it { is_expected.to respond_to :green_lanes_measures }
+  it { is_expected.to respond_to :exemptions }
+  it { is_expected.to respond_to :theme }
+  it { is_expected.to respond_to :has_measures? }
+  it { is_expected.to respond_to :has_exemptions? }
 
   it { is_expected.to have_attributes id: category_assessment.id }
   it { is_expected.to have_attributes measure_type_id: category_assessment.measure_type_id }

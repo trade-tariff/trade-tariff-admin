@@ -5,7 +5,7 @@ module GreenLanes
     before_action :disable_service_switching!
     before_action :check_service
     def index
-      @exemptions = GreenLanes::Exemption.all.fetch
+      @exemptions = GreenLanes::Exemption.all(page: current_page).fetch
     end
 
     def new

@@ -1,0 +1,59 @@
+<h2>
+  Manage Green Lanes Measures
+</h2>
+
+<% if @measures.any? %>
+  <table>
+    <thead>
+    <tr>
+      <th>ID</th>
+      <th>Goods Nomenclature Item Id</th>
+      <th>Goods Nomenclature Description</th>
+      <th>Product Line Suffix</th>
+      <th>Theme</th>
+      <th>Measure Type</th>
+      <th>Regulation Id</th>
+      <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% @measures.each do |me| %>
+      <tr id="<%= dom_id(me) %>">
+        <td><%= me.id%></td>
+        <% if me.has_goods_nomenclature %>
+          <td>
+            <%= me.goods_nomenclature.goods_nomenclature_item_id %>
+          </td>
+          <td>
+            <%= me.goods_nomenclature.description %>
+          </td>
+        <% else%>
+          <td colspan="2"> Inactive Goods Nomenclature </td>
+        <% end %>
+        <td><%= me.productline_suffix %></td>
+        <td>
+          <%= me.category_assessment&.theme&.code if me.category_assessment.present? && me.category_assessment.theme.present?%>
+        </td>
+        <td>
+          <%= me.category_assessment.measure_type_id if me.category_assessment.present?%>
+        </td>
+        <td>
+          <%= me.category_assessment.regulation_id if me.category_assessment.present?%>
+        </td>
+        <td>
+          <%= link_to 'Remove',
+                      green_lanes_measure_path(me),
+                      method: :delete,
+                      class: 'govuk-button govuk-button--warning',
+                      data: { confirm: "Are you sure?", disable: 'Working ...' } %>
+        </td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+  <%= paginate @measures %>
+<% else %>
+  <div class="govuk-inset-text">
+    <p>No any Green Lanes Measures</p>
+  </div>
+<% end %>
