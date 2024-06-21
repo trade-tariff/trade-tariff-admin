@@ -5,7 +5,7 @@ module GreenLanes
 
     attributes :category_assessment_id, :exemption_id
 
-    validates :exemption_id, presence: true
+    validates :exemption_id, presence: { message: 'Exemption cannot be blank' }
     validates :category_assessment_id, presence: true
 
     def add_exemption
