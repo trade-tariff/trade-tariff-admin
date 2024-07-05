@@ -70,7 +70,9 @@ Rails.application.routes.draw do
         post 'add_measure'
       end
     end
-    resources :exempting_certificate_overrides, only: %i[index new create destroy]
+    resources :exempting_overrides, only: %i[index]
+    resources :exempting_certificate_overrides, only: %i[new create destroy]
+    resources :exempting_additional_code_overrides, only: %i[new create destroy]
     resources :exemptions, only: %i[index new create edit update destroy]
     resources :measures, only: %i[index destroy]
   end
