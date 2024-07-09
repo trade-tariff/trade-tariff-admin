@@ -8,18 +8,6 @@ RSpec.describe GreenLanes::ExemptingCertificateOverridesController do
     allow(TradeTariffAdmin::ServiceChooser).to receive(:service_choice).and_return 'xi'
   end
 
-  describe 'GET #index' do
-    before do
-      stub_api_request('/admin/green_lanes/exempting_certificate_overrides?page=1', backend: 'xi').and_return \
-        jsonapi_response :exempting_certificate_overrides, attributes_for_list(:exempting_certificate_override, 3)
-    end
-
-    let(:make_request) { get green_lanes_exempting_certificate_overrides_path }
-
-    it { is_expected.to have_http_status :success }
-    it { is_expected.not_to include 'div.current-service' }
-  end
-
   describe 'GET #new' do
     let(:make_request) { get new_green_lanes_exempting_certificate_override_path }
 
@@ -41,7 +29,7 @@ RSpec.describe GreenLanes::ExemptingCertificateOverridesController do
       let(:eco_params) { exempting_certificate_override.attributes.without(:id) }
       let(:create_response) { webmock_response(:created, exempting_certificate_override.attributes) }
 
-      it { is_expected.to redirect_to green_lanes_exempting_certificate_overrides_path }
+      it { is_expected.to redirect_to green_lanes_exempting_overrides_path }
     end
 
     context 'with invalid item' do
@@ -65,6 +53,6 @@ RSpec.describe GreenLanes::ExemptingCertificateOverridesController do
 
     let(:make_request) { delete green_lanes_exempting_certificate_override_path(exempting_certificate_override) }
 
-    it { is_expected.to redirect_to green_lanes_exempting_certificate_overrides_path }
+    it { is_expected.to redirect_to green_lanes_exempting_overrides_path }
   end
 end

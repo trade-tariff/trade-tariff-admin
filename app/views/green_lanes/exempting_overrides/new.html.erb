@@ -1,0 +1,16 @@
+<%= govuk_breadcrumbs 'Exempting Certificate Override': green_lanes_exempting_certificate_overrides_path %>
+
+<h2>New Exempting Certificate Override</h2>
+
+<%= govuk_form_for @exempting_certificate_override, as: :exempting_certificate_override do |f| %>
+
+  <%= f.govuk_text_field :certificate_type_code,
+                         label: { text: 'Certificate Type Code' },
+                         width: 'one-half' %>
+
+  <%= f.govuk_text_field :certificate_code,
+                         label: { text: 'Certificate Code' },
+                         width: 'one-half' %>
+
+  <%= submit_and_back_buttons f, green_lanes_exempting_certificate_overrides_path %>
+<% end %>

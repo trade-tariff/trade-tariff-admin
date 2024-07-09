@@ -1,0 +1,17 @@
+<%= govuk_breadcrumbs 'Exempting Additional Code Override': green_lanes_exempting_additional_code_overrides_path %>
+
+<h2>New Exempting Additional Code Override</h2>
+
+<%= govuk_form_for @exempting_additional_code_override, as: :exempting_additional_code_override do |f| %>
+
+  <%= f.govuk_text_field :additional_code_type_id,
+                         label: { text: 'Additional Code Type' },
+                         width: 'one-half' %>
+
+  <%= f.govuk_text_field :additional_code,
+                         label: { text: 'Additional Code' },
+                         width: 'one-half' %>
+
+  <%= submit_and_back_buttons f, green_lanes_exempting_additional_code_overrides_path %>
+<% end %>
+
