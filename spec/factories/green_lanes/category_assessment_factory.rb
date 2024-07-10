@@ -23,5 +23,9 @@ FactoryBot.define do
     trait :with_theme do
       theme { { attributes: attributes_for(:green_lanes_theme) } }
     end
+
+    trait :with_measure_pagination do
+      measure_pagination { { attributes: attributes_for(:measure_pagination) } }
+    end
   end
 end

@@ -1,7 +1,7 @@
 RSpec.describe GreenLanes::CategoryAssessmentsController do
   subject(:rendered_page) { create_user && make_request && response }
 
-  let(:category_assessment) { build :category_assessment, :with_theme }
+  let(:category_assessment) { build :category_assessment, :with_theme, :with_measure_pagination }
   let(:create_user) { create :user, permissions: ['signin', 'HMRC Editor'] }
 
   before do
@@ -60,7 +60,7 @@ RSpec.describe GreenLanes::CategoryAssessmentsController do
 
   describe 'GET #edit' do
     before do
-      stub_api_request("/admin/green_lanes/category_assessments/#{category_assessment.id}")
+      stub_api_request("/admin/green_lanes/category_assessments/#{category_assessment.id}?page=1")
         .and_return jsonapi_response(:category_assessment, category_assessment.attributes)
     end
 
