@@ -25,7 +25,7 @@ module GreenLanes
     end
 
     def edit
-      @category_assessment = GreenLanes::CategoryAssessment.find(params[:id])
+      @category_assessment = GreenLanes::CategoryAssessment.find(params[:id], page: current_page)
       prepare_edit
     end
 
