@@ -123,10 +123,13 @@ jobs:
 
   ruby-checks:
     docker:
-      - image: "cimg/ruby:3.2.2-node"
+      - image: "cimg/ruby:3.3.4-node"
     steps:
       - checkout
-      - ruby/install-deps
+      - run:
+          name: Install ruby dependencies
+          command: |
+            bundle install
       - ruby/rubocop-check:
           format: progress
           label: Inspecting with Rubocop
@@ -142,7 +145,7 @@ jobs:
 
   test:
     docker:
-      - image: cimg/ruby:3.2.2-node
+      - image: cimg/ruby:3.3.4-node
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
@@ -157,7 +160,10 @@ jobs:
       - image: cimg/redis:5.0.14
     steps:
       - checkout
-      - ruby/install-deps
+      - run:
+          name: Install ruby dependencies
+          command: |
+            bundle install
       - node/install-packages:
           pkg-manager: yarn
       - run:
@@ -170,7 +176,7 @@ jobs:
 
   notify-production-deployment:
     docker:
-      - image: cimg/ruby:3.2.2
+      - image: cimg/ruby:3.3.4
     steps:
       - checkout
       - tariff/notify-production-release:
