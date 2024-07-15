@@ -10,7 +10,7 @@ module Her
     private
 
       def propagate_errors(success)
-        return if success || !@response_errors&.any?
+        return if success || @response_errors&.none?
 
         @response_errors.each do |err|
           next unless err.is_a?(Hash)

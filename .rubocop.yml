@@ -29,6 +29,8 @@ RSpec/DescribeClass:
   Enabled: false
 RSpec/ExampleLength:
   Enabled: false
+RSpec/NoExpectationExample:
+  Enabled: false
 RSpec/LetSetup:
   Enabled: false
 RSpec/MultipleExpectations:
