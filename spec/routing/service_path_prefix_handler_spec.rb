@@ -49,7 +49,7 @@ RSpec.describe RoutingFilter::ServicePathPrefixHandler, type: :routing do
 
       it 'routes to a not_found action in the errors controller' do
         expect(get: path).not_to be_routable
-        expect(Thread.current[:service_choice]).to eq(nil)
+        expect(Thread.current[:service_choice]).to be_nil
       end
     end
   end
