@@ -31,19 +31,4 @@ RSpec.describe GreenLanes::ExemptionsController do
     it { is_expected.to have_http_status :success }
     it { is_expected.not_to include 'div.current-service' }
   end
-
-  describe 'PATCH #update' do
-    before do
-      stub_api_request("/admin/green_lanes/update_notifications/#{update.id}")
-        .and_return jsonapi_response(:update, update.attributes)
-
-      stub_api_request("/admin/green_lanes/update_notifications/#{update.id}", :patch)
-        .and_return patch_response
-    end
-
-    let :make_request do
-      patch green_lanes_exemption_path(exemption),
-            params: { exemption: exemption.attributes.merge(description: new_desc) }
-    end
-  end
 end
