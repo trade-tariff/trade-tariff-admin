@@ -1,0 +1,46 @@
+<%= govuk_breadcrumbs 'Update Notifications': green_lanes_update_notifications_path %>
+
+<h2>Update Notifications</h2>
+
+<div class="govuk-div--with-border">
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h3 class="govuk-heading-s">Measure Type</h3>
+      <p><%= @update.measure_type_id %></p>
+    </div>
+  </div>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h3 class="govuk-heading-s">Measure Type Description</h3>
+      <p><%= @update.measure_type_description %></p>
+    </div>
+  </div>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h3 class="govuk-heading-s">Regulation</h3>
+      <p><%= @update.regulation_id %></p>
+    </div>
+  </div>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h3 class="govuk-heading-s">Regulation Description</h3>
+      <p><%= @update.regulation_description %></p>
+      <% if @update.regulation_url.present? %>
+        <p>
+          <%= link_to 'Further information', @update.regulation_url, target: '_blank' %>
+        </p>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+<h3>
+  Action taken for this data update
+</h3>
+<%= link_to 'Update',
+            green_lanes_update_notification_path(@update),
+            method: :patch,
+            class: 'govuk-button govuk-button--warning',
+            data: { confirm: "Are you sure?", disable: 'Working ...' } %>
