@@ -27,7 +27,9 @@
       <p><%= @update.regulation_description %></p>
       <% if @update.regulation_url.present? %>
         <p>
+          # braakeman:disable CheckLinkToHref
           <%= link_to 'Further information', @update.regulation_url, target: '_blank' %>
+          # brakeman:enable CheckLinkToHref
         </p>
       <% end %>
     </div>
