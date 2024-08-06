@@ -30,6 +30,39 @@
       "user_input": "TariffUpdate.find(params[:id]).file_presigned_url",
       "confidence": "Weak",
       "note": ""
+    },
+    {
+      "warning_type": "Cross-Site Scripting",
+      "warning_code": 4,
+      "fingerprint": "fa3268e55ada78bf2d83b6129e983c03d2210e416cd7191fe515daa83f3414dd",
+      "check_name": "LinkToHref",
+      "message": "Potentially unsafe model attribute in `link_to` href",
+      "file": "app/views/green_lanes/update_notifications/edit.html.erb",
+      "line": 30,
+      "link": "https://brakemanscanner.org/docs/warning_types/link_to_href",
+      "code": "link_to(\"Further information\", GreenLanes::UpdateNotification.find(params[:id]).regulation_url, :target => \"_blank\")",
+      "render_path": [
+        {
+          "type": "controller",
+          "class": "GreenLanes::UpdateNotificationsController",
+          "method": "edit",
+          "line": 13,
+          "file": "app/controllers/green_lanes/update_notifications_controller.rb",
+          "rendered": {
+            "name": "green_lanes/update_notifications/edit",
+            "file": "app/views/green_lanes/update_notifications/edit.html.erb"
+          }
+        }
+      ],
+      "location": {
+        "type": "template",
+        "template": "green_lanes/update_notifications/edit"
+      },
+      "user_input": "GreenLanes::UpdateNotification.find(params[:id]).regulation_url",
+      "confidence": "Weak",
+      "cwe_id": [
+        79
+      ]
     }
   ],
   "updated": "2022-05-30 15:54:11 +0100",
