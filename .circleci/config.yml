@@ -179,10 +179,6 @@ jobs:
       - image: cimg/ruby:3.3.4
     steps:
       - checkout
-      - tariff/notify-production-release:
-          app-name: Admin
-          slack-channel: trade_tariff
-          release-tag: $CIRCLE_TAG
 
 workflows:
   version: 2
