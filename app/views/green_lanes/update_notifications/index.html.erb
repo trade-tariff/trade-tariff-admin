@@ -10,6 +10,7 @@
       <th>Measure Type Id</th>
       <th>Regulation Id</th>
       <th>Regulation Role</th>
+      <th>Status</th>
     </tr>
     </thead>
     <tbody>
@@ -18,6 +19,7 @@
         <td><%= update.measure_type_id %></td>
         <td><%= update.regulation_id %></td>
         <td><%= update.regulation_role %></td>
+        <td><%= update.status_label %></td>
         <td>
           <%= link_to 'Edit',
                       edit_green_lanes_update_notification_path(update) %>

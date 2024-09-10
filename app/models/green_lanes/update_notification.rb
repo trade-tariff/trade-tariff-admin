@@ -13,5 +13,19 @@ module GreenLanes
                :regulation_url
 
     collection_path '/admin/green_lanes/update_notifications'
+
+    def status_label
+      case status
+      when 0
+        'Created'
+      when 1
+        'Updated'
+      when 2
+        'Expired'
+      else
+        ''
+      end
+    end
+
   end
 end
