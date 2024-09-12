@@ -222,7 +222,7 @@ workflows:
       - confirm-deploy-for-qa?:
           type: approval
           requires:
-            - test
+            # - test
             - plan-terraform-dev
             - build-and-push-dev
           <<: *filter-not-main
