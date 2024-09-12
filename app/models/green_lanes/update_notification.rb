@@ -26,6 +26,5 @@ module GreenLanes
         ''
       end
     end
-
   end
 end
