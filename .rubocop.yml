@@ -35,6 +35,8 @@ RSpec/MultipleExpectations:
   Enabled: false
 RSpec/NestedGroups:
   Enabled: false
+RSpec/NoExpectationExample:
+  Enabled: false
 Rails/SaveBang:
   Enabled: false
 RSpec/FilePath:
@@ -48,5 +50,7 @@ Style/FrozenStringLiteralComment:
   EnforcedStyle: never
 Style/GuardClause:
   MinBodyLength: 2
+Style/InverseMethods:
+  Enabled: false
 Style/StringLiterals:
   EnforcedStyle: single_quotes
