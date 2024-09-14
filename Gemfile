@@ -67,6 +67,7 @@ end
 
 group :development do
   gem 'rubocop-govuk'
+  gem 'solargraph'
 end
 
 group :test do
