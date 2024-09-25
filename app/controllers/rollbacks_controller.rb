@@ -25,7 +25,7 @@ class RollbacksController < AuthenticatedController
   private
 
   def rollback_params
-    params.require(:rollback).permit(:date, :keep, :reason, :confirm_service).to_h
+    params.require(:rollback).permit(:date, :keep, :reason).to_h
   end
 
   def authorize_user

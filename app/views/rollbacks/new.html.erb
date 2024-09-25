@@ -7,11 +7,5 @@
     <%= f.govuk_check_box :keep, 1, 0, multiple: false, link_errors: true %>
   <% end %>
 
-  <%= f.govuk_text_field :confirm_service,
-    label: { text: 'Confirm the service to rollback' },
-    hint: { text: 'UK or XI' },
-    width: 2
-  %>
-
   <%= submit_and_back_buttons f, rollbacks_path %>
 <% end %>
