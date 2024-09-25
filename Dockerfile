@@ -60,6 +60,8 @@ ENV RAILS_SERVE_STATIC_FILES=true \
 COPY --from=builder /app /app
 COPY --from=builder /usr/local/bundle/ /usr/local/bundle/
 
+
+RUN bundle config set without 'development test'
 RUN addgroup -S tariff && \
   adduser -S tariff -G tariff && \
   chown -R tariff:tariff /app && \
