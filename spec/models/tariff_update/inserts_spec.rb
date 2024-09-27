@@ -29,47 +29,24 @@ RSpec.describe TariffUpdate::Inserts do
     it { is_expected.to eq(4) }
   end
 
-  describe '#total_records_destroyed_missing' do
-    subject(:total_records_destroyed_missing) { build(:tariff_update, :with_inserts).inserts.total_records_destroyed_missing }
-
-    it { is_expected.to eq(7) }
-  end
-
   describe '#updated_entities' do
     subject(:updated_entities) { build(:tariff_update, :with_inserts).inserts.updated_entities }
 
     let(:expected_updated_entities) do
       [
-        { entity: 'QuotaBalanceEvent', creates: 2869, updates: 0, destroys: 0, missing: 0, skipped: 0 },
-        { entity: 'QuotaAssociation', creates: 12, updates: 0, destroys: 0, missing: 0, skipped: 0 },
-        { entity: 'QuotaCriticalEvent', creates: 12, updates: 0, destroys: 0, missing: 0, skipped: 0 },
-        { entity: 'QuotaReopeningEvent', creates: 5, updates: 0, destroys: 0, missing: 0, skipped: 0 },
-        { entity: 'QuotaExhaustionEvent', creates: 10, updates: 0, destroys: 0, missing: 0, skipped: 0 },
-        { entity: 'MeasureExcludedGeographicalArea', creates: 1, updates: 0, destroys: 0, missing: 1, skipped: 0 },
-        { entity: 'QuotaDefinition', creates: 0, updates: 57, destroys: 0, missing: 0, skipped: 0 },
-        { entity: 'Measure', creates: 0, updates: 18, destroys: 0, missing: 0, skipped: 0 },
-        { entity: 'MeasureComponent', creates: 0, updates: 18, destroys: 0, missing: 0, skipped: 0 },
-        { entity: 'QuotaClosedAndTransferredEvent', creates: 0, updates: 0, destroys: 0, missing: 0, skipped: 30 },
+        { entity: 'QuotaBalanceEvent', creates: 2869, updates: 0, destroys: 0 },
+        { entity: 'QuotaAssociation', creates: 12, updates: 0, destroys: 0 },
+        { entity: 'QuotaCriticalEvent', creates: 12, updates: 0, destroys: 0 },
+        { entity: 'QuotaReopeningEvent', creates: 5, updates: 0, destroys: 0 },
+        { entity: 'QuotaExhaustionEvent', creates: 10, updates: 0, destroys: 0 },
+        { entity: 'MeasureExcludedGeographicalArea', creates: 1, updates: 0, destroys: 0 },
+        { entity: 'QuotaDefinition', creates: 0, updates: 57, destroys: 0 },
+        { entity: 'Measure', creates: 0, updates: 18, destroys: 0 },
+        { entity: 'MeasureComponent', creates: 0, updates: 18, destroys: 0 },
       ]
     end
 
     it { is_expected.to eq(expected_updated_entities) }
-  end
-
-  describe '#missing_entities' do
-    subject(:missing_entities) { build(:tariff_update, :with_inserts).inserts.missing_entities }
-
-    let(:expected_missing_entities) do
-      [
-        {
-          entity: 'MeasureExcludedGeographicalArea',
-          missing: 1,
-          records: "---\n- oid: 1\n  measure_sid: 123\n  geographical_area_id: IT\n",
-        },
-      ]
-    end
-
-    it { is_expected.to eq(expected_missing_entities) }
   end
 
   describe '#any_updates?' do
@@ -83,20 +60,6 @@ RSpec.describe TariffUpdate::Inserts do
       subject(:inserts) { build(:tariff_update, :with_empty_inserts).inserts }
 
       it { is_expected.not_to be_any_updates }
-    end
-  end
-
-  describe '#any_missing?' do
-    context 'when there are missing inserts' do
-      subject(:inserts) { build(:tariff_update, :with_inserts).inserts }
-
-      it { is_expected.to be_any_missing }
-    end
-
-    context 'when there are no inserts' do
-      subject(:inserts) { build(:tariff_update, :with_empty_inserts).inserts }
-
-      it { is_expected.not_to be_any_missing }
     end
   end
 

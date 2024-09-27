@@ -10,13 +10,13 @@ RSpec.describe User do
     context 'when user has hmrc admin access' do
       let!(:user) { create :user, :hmrc_admin }
 
-      it { expect(user.hmrc_admin?).to eq(true) }
+      it { expect(user.hmrc_admin?).to be(true) }
     end
 
     context 'when user does not have hmrc admin access' do
       let!(:user) { create :user }
 
-      it { expect(user.hmrc_admin?).not_to eq(true) }
+      it { expect(user.hmrc_admin?).not_to be(true) }
     end
   end
 

@@ -44,25 +44,22 @@
                                         href: rollbacks_path,
                                         active: active_nav_link?(/\/rollbacks/) if policy(Rollback).access? %>
       <% end %>
-      <%= header.with_navigation_item text: 'Reports',
-                                      href: reports_path,
-                                      active: active_nav_link?(/\/reports/) %>
       <% if TradeTariffAdmin::ServiceChooser.xi? %>
-      <%= header.with_navigation_item text: 'Category assessments',
-                                      href: green_lanes_category_assessments_path,
-                                      active: active_nav_link?(/\/category_assessments/) %>
-      <%= header.with_navigation_item text: 'Exemptions',
-                                      href: green_lanes_exemptions_path,
-                                      active: active_nav_link?(/\/exemptions/) %>
-      <%= header.with_navigation_item text: 'Measures',
-                                      href: green_lanes_measures_path,
-                                      active: active_nav_link?(/\/measures/) %>
-      <%= header.with_navigation_item text: 'Exempting Overrides',
-                                      href: green_lanes_exempting_overrides_path,
-                                      active: active_nav_link?(/\/exempting_overrides/) %>
-      <%= header.with_navigation_item text: 'Update Notifications',
-                                      href: green_lanes_update_notifications_path,
-                                      active: active_nav_link?(/\/update_notifications/) %>
+        <%= header.with_navigation_item text: 'Category assessments',
+                                        href: green_lanes_category_assessments_path,
+                                        active: active_nav_link?(/\/category_assessments/) %>
+        <%= header.with_navigation_item text: 'Exemptions',
+                                        href: green_lanes_exemptions_path,
+                                        active: active_nav_link?(/\/exemptions/) %>
+        <%= header.with_navigation_item text: 'Measures',
+                                        href: green_lanes_measures_path,
+                                        active: active_nav_link?(/\/measures/) %>
+        <%= header.with_navigation_item text: 'Exempting Overrides',
+                                        href: green_lanes_exempting_overrides_path,
+                                        active: active_nav_link?(/\/exempting_overrides/) %>
+        <%= header.with_navigation_item text: 'Update Notifications',
+                                        href: green_lanes_update_notifications_path,
+                                        active: active_nav_link?(/\/update_notifications/) %>
       <% end %>
     <% end %>
 
