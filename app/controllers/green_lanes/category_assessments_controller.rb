@@ -5,7 +5,7 @@ module GreenLanes
     before_action :disable_service_switching!
     before_action :check_service
     def index
-      @category_assessments = GreenLanes::CategoryAssessment.all(query: { exemption_code: params[:exemption_code], page: current_page}).fetch
+      @category_assessments = GreenLanes::CategoryAssessment.all(query: { exemption_code: params[:exemption_code], page: current_page }).fetch
     end
 
     def new
