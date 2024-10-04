@@ -11,7 +11,7 @@
     </legend>
     <div class="govuk-form-group">
       <%= form.label :exemption_code, "Green Lanes Exemption Code", class: "govuk-label" %>
-      <%= form.text_field :exemption_code, class: "govuk-input govuk-!-width-one-third", id: "search-term", width: 'one-third'%>
+      <%= form.text_field :exemption_code, value: params[:exemption_code], class: "govuk-input govuk-!-width-one-third", id: "search-term", width: 'one-third'%>
     </div>
 
     <div class="govuk-form-group">
@@ -25,10 +25,10 @@
     <thead>
     <tr>
       <th>ID</th>
-      <th>Measure type id</th>
-      <th>Regulation id</th>
-      <th>Regulation role</th>
-      <th>Theme</th>
+      <th><%= sortable "measure_type_id", "Measure type id" %></th>
+      <th><%= sortable "regulation_id", "Regulation id" %></th>
+      <th><%= sortable "regulation_role", "Regulation role" %></th>
+      <th><%= sortable "theme_id", "Theme" %></th>
       <th>Action</th>
     </tr>
     </thead>
