@@ -14,11 +14,11 @@ RSpec.describe GreenLanes::CategoryAssessmentsController do
 
   describe 'GET #index' do
     before do
-      stub_api_request('/admin/green_lanes/category_assessments?query[filters]&query[page]=1&query[sort]&query[direction]', backend: 'xi').and_return \
+      stub_api_request('/admin/green_lanes/category_assessments?query[page]=1&query[sort]&query[direction]', backend: 'xi').and_return \
         jsonapi_response :category_assessments, attributes_for_list(:category_assessment, 3, :with_theme)
     end
 
-    let(:make_request) { get green_lanes_category_assessments_path, params: {filters: {}} }
+    let(:make_request) { get green_lanes_category_assessments_path, params: { filters: {} } }
 
     it { is_expected.to have_http_status :success }
     it { is_expected.not_to include 'div.current-service' }

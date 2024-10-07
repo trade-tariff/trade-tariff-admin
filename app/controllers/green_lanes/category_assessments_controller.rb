@@ -128,8 +128,8 @@ module GreenLanes
             filters: params[:filters].to_h,
             page: current_page,
             sort: params[:sort],
-            direction: params[:direction]
-          }
+            direction: params[:direction],
+          },
       }
     end
 
@@ -138,7 +138,7 @@ module GreenLanes
       if params[:exemption_code].present?
         filters.merge!(exemption_code: params[:exemption_code])
       else
-        params[:exemption_code] = params[:filters][:exemption_code]
+        params[:exemption_code] = params.dig(:filters, :exemption_code)
       end
       params[:filters] = ActionController::Parameters.new(filters).permit(:exemption_code)
     end
