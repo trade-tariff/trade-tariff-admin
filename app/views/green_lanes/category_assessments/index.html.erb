@@ -4,15 +4,31 @@
 
 <%= link_to 'Add a Category Assessment', new_green_lanes_category_assessment_path, class: 'govuk-button' %>
 
+<%= form_with url: green_lanes_category_assessments_path, method: :get, class: "govuk-form-group" do |form| %>
+  <fieldset class="govuk-fieldset">
+    <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+      Search Category Assessments
+    </legend>
+    <div class="govuk-form-group">
+      <%= form.label :exemption_code, "Green Lanes Exemption Code", class: "govuk-label" %>
+      <%= form.text_field :exemption_code, value: params[:exemption_code], class: "govuk-input govuk-!-width-one-third", id: "search-term", width: 'one-third'%>
+    </div>
+
+    <div class="govuk-form-group">
+      <%= form.submit "Search", class: "govuk-button" %>
+    </div>
+  </fieldset>
+<% end %>
+
 <% if @category_assessments.any? %>
   <table>
     <thead>
     <tr>
       <th>ID</th>
-      <th>Measure type id</th>
-      <th>Regulation id</th>
-      <th>Regulation role</th>
-      <th>Theme</th>
+      <th><%= sortable "measure_type_id", "Measure type id" %></th>
+      <th><%= sortable "regulation_id", "Regulation id" %></th>
+      <th><%= sortable "regulation_role", "Regulation role" %></th>
+      <th><%= sortable "theme_id", "Theme" %></th>
       <th>Action</th>
     </tr>
     </thead>
