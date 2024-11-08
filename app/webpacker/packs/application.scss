@@ -81,3 +81,16 @@ $govuk-image-url-function: frontend-image-url;
     font-family:courier, monospace;
   }
 }
+
+#ca-search-container {
+  display: flex;
+}
+
+#search-section {
+  flex: 1;
+}
+
+#result-section {
+  flex: 4;
+  padding: 20px;
+}
