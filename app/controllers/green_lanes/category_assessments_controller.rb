@@ -8,6 +8,7 @@ module GreenLanes
     def index
       merge_filters
       @category_assessments = GreenLanes::CategoryAssessment.all(search_params).fetch
+      @themes = GreenLanes::Theme.all.fetch
     end
 
     def new
@@ -133,14 +134,44 @@ module GreenLanes
       }
     end
 
-    def merge_filters
+    def merge_filter
       filters = params.fetch(:filters, {}).permit(:exemption_code).to_h
+
       if params[:exemption_code].present?
         filters.merge!(exemption_code: params[:exemption_code])
       else
         params[:exemption_code] = params.dig(:filters, :exemption_code)
       end
+
       params[:filters] = ActionController::Parameters.new(filters).permit(:exemption_code)
+    end
+
+    def merge_filters
+      filters = params.fetch(:filters, {}).permit(
+        :exemption_code,
+        :measure_type_id,
+        :regulation_id,
+        :regulation_role,
+        :theme_id).to_h
+
+      filter_keys = %i[exemption_code measure_type_id regulation_id regulation_role theme_id]
+      filter_keys.each { |filter_key| add_filter(filters, params, filter_key)}
+
+      params[:filters] = ActionController::Parameters.new(filters).permit(
+        :exemption_code,
+        :measure_type_id,
+        :regulation_id,
+        :regulation_role,
+        :theme_id
+      )
+    end
+
+    def add_filter(filters, params, filter_key)
+      if params[filter_key].present?
+        filters.merge!(filter_key => params[filter_key])
+      else
+        params[filter_key] = params.dig(:filters, filter_key)
+      end
     end
 
     def ca_params

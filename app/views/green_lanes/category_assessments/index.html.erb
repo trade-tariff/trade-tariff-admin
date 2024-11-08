@@ -12,6 +12,14 @@
     <div class="govuk-form-group">
       <%= form.label :exemption_code, "Green Lanes Exemption Code", class: "govuk-label" %>
       <%= form.text_field :exemption_code, value: params[:exemption_code], class: "govuk-input govuk-!-width-one-third", id: "search-term", width: 'one-third'%>
+      <%= form.label :measure_type_id, "Measure Type ID", class: "govuk-label" %>
+      <%= form.text_field :measure_type_id, value: params[:measure_type_id], class: "govuk-input govuk-!-width-one-third", id: "search-term", width: 'one-third'%>
+      <%= form.label :regulation_id, "Regulation ID", class: "govuk-label" %>
+      <%= form.text_field :regulation_id, value: params[:regulation_id], class: "govuk-input govuk-!-width-one-third", id: "search-term", width: 'one-third'%>
+      <%= form.label :regulation_role, "Regulation Role", class: "govuk-label" %>
+      <%= form.text_field :regulation_role, value: params[:regulation_role], class: "govuk-input govuk-!-width-one-third", id: "search-term", width: 'one-third'%>
+      <%= form.label :theme_id, "Theme", class: "govuk-label" %>
+      <%= form.collection_select :theme_id, @themes, :id, :label, {prompt: "Select a Theme", selected: params[:theme_id]}, {class: "govuk-select govuk-!-width-one-third"}%>
     </div>
 
     <div class="govuk-form-group">
