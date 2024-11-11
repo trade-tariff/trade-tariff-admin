@@ -4,54 +4,68 @@
 
 <%= link_to 'Add a Category Assessment', new_green_lanes_category_assessment_path, class: 'govuk-button' %>
 
-<%= form_with url: green_lanes_category_assessments_path, method: :get, class: "govuk-form-group" do |form| %>
-  <fieldset class="govuk-fieldset">
-    <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
-      Search Category Assessments
-    </legend>
-    <div class="govuk-form-group">
-      <%= form.label :exemption_code, "Green Lanes Exemption Code", class: "govuk-label" %>
-      <%= form.text_field :exemption_code, value: params[:exemption_code], class: "govuk-input govuk-!-width-one-third", id: "search-term", width: 'one-third'%>
-    </div>
+<div id="ca-search-container">
+  <div id="search-section">
+    <%= form_with url: green_lanes_category_assessments_path, method: :get, class: "govuk-form-group" do |form| %>
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+          Search Category Assessments
+        </legend>
+        <div class="govuk-form-group">
+          <%= form.label :exemption_code, "Green Lanes Exemption Code", class: "govuk-label" %>
+          <%= form.text_field :exemption_code, value: params[:exemption_code], class: "govuk-input", id: "search-term"%>
+          <%= form.label :measure_type_id, "Measure Type ID", class: "govuk-label" %>
+          <%= form.text_field :measure_type_id, value: params[:measure_type_id], class: "govuk-input", id: "search-term"%>
+          <%= form.label :regulation_id, "Regulation ID", class: "govuk-label" %>
+          <%= form.text_field :regulation_id, value: params[:regulation_id], class: "govuk-input", id: "search-term"%>
+          <%= form.label :regulation_role, "Regulation Role", class: "govuk-label" %>
+          <%= form.text_field :regulation_role, value: params[:regulation_role], class: "govuk-input", id: "search-term"%>
+          <%= form.label :theme_id, "Theme", class: "govuk-label" %>
+          <%= form.collection_select :theme_id, [OpenStruct.new(id: nil, label: "Select a Theme")] + @themes, :id, :label, {selected: params[:theme_id]}, {class: "govuk-select govuk-!-width-one-third"}%>
+        </div>
 
-    <div class="govuk-form-group">
-      <%= form.submit "Search", class: "govuk-button" %>
-    </div>
-  </fieldset>
-<% end %>
-
-<% if @category_assessments.any? %>
-  <table>
-    <thead>
-    <tr>
-      <th>ID</th>
-      <th><%= sortable "measure_type_id", "Measure type id" %></th>
-      <th><%= sortable "regulation_id", "Regulation id" %></th>
-      <th><%= sortable "regulation_role", "Regulation role" %></th>
-      <th><%= sortable "theme_id", "Theme" %></th>
-      <th>Action</th>
-    </tr>
-    </thead>
-    <tbody>
-    <% @category_assessments.each do |category| %>
-      <tr id="<%= dom_id(category) %>">
-        <td><%= category.id %></td>
-        <td><%= category.measure_type_id %></td>
-        <td><%= category.regulation_id %></td>
-        <td><%= category.regulation_role %></td>
-        <td><%= category.theme.code %></td>
-        <td>
-          <%= link_to 'Edit',
-                      edit_green_lanes_category_assessment_path(category) %>
-        </td>
-      </tr>
+        <div class="govuk-form-group">
+          <%= form.submit "Search", class: "govuk-button" %>
+        </div>
+      </fieldset>
     <% end %>
-    </tbody>
-  </table>
-
-  <%= paginate @category_assessments %>
-<% else %>
-  <div class="govuk-inset-text">
-    <p>No Category Assessments</p>
   </div>
-<% end %>
+
+  <div id="result-section">
+    <% if @category_assessments.any? %>
+      <table>
+        <thead>
+        <tr>
+          <th>ID</th>
+          <th><%= sortable "measure_type_id", "Measure type id" %></th>
+          <th><%= sortable "regulation_id", "Regulation id" %></th>
+          <th><%= sortable "regulation_role", "Regulation role" %></th>
+          <th><%= sortable "theme_id", "Theme" %></th>
+          <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <% @category_assessments.each do |category| %>
+          <tr id="<%= dom_id(category) %>">
+            <td><%= category.id %></td>
+            <td><%= category.measure_type_id %></td>
+            <td><%= category.regulation_id %></td>
+            <td><%= category.regulation_role %></td>
+            <td><%= category.theme.code %></td>
+            <td>
+              <%= link_to 'Edit',
+                          edit_green_lanes_category_assessment_path(category) %>
+            </td>
+          </tr>
+        <% end %>
+        </tbody>
+      </table>
+
+      <%= paginate @category_assessments %>
+    <% else %>
+      <div class="govuk-inset-text">
+        <p>No Category Assessments</p>
+      </div>
+    <% end %>
+  </div>
+</div>
