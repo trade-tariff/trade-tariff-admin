@@ -96,7 +96,7 @@ RSpec.describe QuotaOrderNumbers::QuotaDefinition do
     context 'when there are no quota order number origins' do
       subject(:quota_definition) { build(:quota_definition, :without_quota_order_number_origins) }
 
-      it { expect(quota_definition.quota_order_number_origins).to eq([]) }
+      it { expect(quota_definition.quota_order_number_origins.count).to eq(0) }
     end
   end
 
@@ -112,7 +112,7 @@ RSpec.describe QuotaOrderNumbers::QuotaDefinition do
     context 'when there are no quota unsuspension events' do
       subject(:quota_definition) { build(:quota_definition, :without_quota_unsuspension_events) }
 
-      it { expect(quota_definition.quota_unsuspension_events).to eq([]) }
+      it { expect(quota_definition.quota_unsuspension_events.count).to eq(0) }
     end
   end
 
@@ -128,7 +128,7 @@ RSpec.describe QuotaOrderNumbers::QuotaDefinition do
     context 'when there are no quota exhaustion events' do
       subject(:quota_definition) { build(:quota_definition, :without_quota_exhaustion_events) }
 
-      it { expect(quota_definition.quota_exhaustion_events).to eq([]) }
+      it { expect(quota_definition.quota_exhaustion_events.count).to eq(0) }
     end
   end
 
@@ -144,7 +144,7 @@ RSpec.describe QuotaOrderNumbers::QuotaDefinition do
     context 'when there are no quota reopening events' do
       subject(:quota_definition) { build(:quota_definition, :without_quota_reopening_events) }
 
-      it { expect(quota_definition.quota_reopening_events).to eq([]) }
+      it { expect(quota_definition.quota_reopening_events.count).to eq(0) }
     end
   end
 
@@ -160,7 +160,7 @@ RSpec.describe QuotaOrderNumbers::QuotaDefinition do
     context 'when there are no quota unblocking events' do
       subject(:quota_definition) { build(:quota_definition, :without_quota_unblocking_events) }
 
-      it { expect(quota_definition.quota_unblocking_events).to eq([]) }
+      it { expect(quota_definition.quota_unblocking_events.count).to eq(0) }
     end
   end
 
@@ -176,7 +176,7 @@ RSpec.describe QuotaOrderNumbers::QuotaDefinition do
     context 'when there are no quota unblocking events' do
       subject(:quota_definition) { build(:quota_definition, :without_quota_critical_events) }
 
-      it { expect(quota_definition.quota_critical_events).to eq([]) }
+      it { expect(quota_definition.quota_critical_events.count).to eq(0) }
     end
   end
 

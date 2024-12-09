@@ -6,15 +6,15 @@ inherit_gem:
 require: rubocop-rspec
 
 AllCops:
-  TargetRubyVersion: 3.3.4
+  TargetRubyVersion: 3.3.6
   Exclude:
-    - 'db/schema.rb'
-    - 'vendor/**/*'
-    - 'bin/**'
-    - 'db/**/*'
-    - 'tmp/**/*'
-    - 'config/**/*'
-    - 'node_modules/**/*'
+    - "db/schema.rb"
+    - "vendor/**/*"
+    - "bin/**"
+    - "db/**/*"
+    - "tmp/**/*"
+    - "config/**/*"
+    - "node_modules/**/*"
 Layout/LineLength:
   Max: 120
 Layout/AccessModifierIndentation:
@@ -39,7 +39,7 @@ RSpec/NoExpectationExample:
   Enabled: false
 Rails/SaveBang:
   Enabled: false
-RSpec/FilePath:
+Rails/FilePath:
   Enabled: false
 RSpec/VerifiedDoubles:
   Enabled: false
