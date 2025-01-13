@@ -1,6 +1,6 @@
 require_relative 'boot'
 
-require_relative '../lib/activesupport/basic_object'
+require_relative '../lib/activesupport/proxy_object'
 require 'rails/all'
 
 # Require the gems listed in Gemfile, including any gems
@@ -40,5 +40,3 @@ module TradeTariffAdmin
     # config.eager_load_paths << Rails.root.join("extras")
   end
 end
-
-Rails.autoloaders.log!
