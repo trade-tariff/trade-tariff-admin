@@ -116,6 +116,7 @@ GEM
       bigdecimal
       rexml
     crass (1.0.6)
+    csv (3.3.2)
     database_cleaner (2.0.2)
       database_cleaner-active_record (>= 2, < 3)
     database_cleaner-active_record (2.2.0)
@@ -784,6 +785,7 @@ DEPENDENCIES
   capybara
   ci_reporter
   ci_reporter_rspec
+  csv
   database_cleaner
   dotenv-rails
   factory_bot_rails
@@ -826,7 +828,7 @@ DEPENDENCIES
   webpacker
 
 RUBY VERSION
-   ruby 3.3.6p108
+   ruby 3.4.1
 
 BUNDLED WITH
    2.5.11

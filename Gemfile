@@ -55,6 +55,7 @@ gem 'sidekiq-scheduler'
 
 # Misc
 gem 'bootsnap', require: false
+gem 'csv'
 gem 'nokogiri', '>= 1.10.10'
 gem 'sentry-rails'
 
