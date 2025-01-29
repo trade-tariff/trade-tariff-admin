@@ -25,6 +25,8 @@ Metrics/BlockLength:
   Enabled: false
 Metrics/ModuleLength:
   Enabled: false
+Rails/FilePath:
+  Enabled: false
 RSpec/DescribeClass:
   Enabled: false
 RSpec/ExampleLength:
@@ -38,8 +40,6 @@ RSpec/NestedGroups:
 RSpec/NoExpectationExample:
   Enabled: false
 Rails/SaveBang:
-  Enabled: false
-RSpec/FilePath:
   Enabled: false
 RSpec/VerifiedDoubles:
   Enabled: false

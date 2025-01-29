@@ -5,7 +5,6 @@
 .rbenv*
 .rvm*
 coverage
-db/schema.rb
 /spec/reports
 *manifest.yml
 cf-ssh.yml
@@ -26,3 +25,4 @@ vendor
 yarn-error.log
 .byebug_history
 .direnv
+.envrc

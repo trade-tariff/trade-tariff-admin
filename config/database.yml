@@ -5,13 +5,15 @@ default: &default
 
 development:
   <<: *default
+  host: <%= ENV.fetch('PGHOST', 'localhost') %>
+  user: <%= ENV.fetch("DB_USER", "postgres") %>
   database: tariff_admin_development
-  host: localhost
 
 test:
   <<: *default
+  host: <%= ENV.fetch('PGHOST', "localhost") %>
+  user: <%= ENV.fetch("DB_USER", "postgres") %>
   database: tariff_admin_test
-  host: localhost
 
 production:
   <<: *default
