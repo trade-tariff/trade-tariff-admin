@@ -5,7 +5,7 @@ default: &default
 
 development:
   <<: *default
-  host: <%= ENV['PGHOST'] %>
+  host: <%= ENV.fetch('PGHOST', 'localhost') %>
   user: <%= ENV.fetch("DB_USER", "postgres") %>
   database: tariff_admin_development
 
