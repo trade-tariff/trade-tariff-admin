@@ -60,6 +60,9 @@
 
           bundle exec rubocop --autocorrect-all --force-exclusion $changed_files Gemfile
         '';
+        lint-all = pkgs.writeScriptBin "lint-all" ''
+          bundle exec rubocop --autocorrect-all
+        '';
       in {
         devShells.default = pkgs.mkShell {
           shellHook = ''
@@ -83,6 +86,7 @@
           buildInputs = [
             chrome
             lint
+            lint-all
             pg-start
             pkgs.rufo
             pkgs.yarn

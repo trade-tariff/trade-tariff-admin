@@ -152,17 +152,18 @@ module GreenLanes
         :measure_type_id,
         :regulation_id,
         :regulation_role,
-        :theme_id).to_h
+        :theme_id,
+      ).to_h
 
       filter_keys = %i[exemption_code measure_type_id regulation_id regulation_role theme_id]
-      filter_keys.each { |filter_key| add_filter(filters, params, filter_key)}
+      filter_keys.each { |filter_key| add_filter(filters, params, filter_key) }
 
       params[:filters] = ActionController::Parameters.new(filters).permit(
         :exemption_code,
         :measure_type_id,
         :regulation_id,
         :regulation_role,
-        :theme_id
+        :theme_id,
       )
     end
 
