@@ -126,22 +126,17 @@ jobs:
       - image: "cimg/ruby:3.3.4-node"
     steps:
       - checkout
+      - ruby/install-deps
       - run:
-          name: Install ruby dependencies
+          name: Rubocop all files
+          when: always
           command: |
-            bundle install
-      - ruby/rubocop-check:
-          format: progress
-          label: Inspecting with Rubocop
+            bundle exec rubocop
       - run:
           name: Inspecting with Brakeman
           when: always
           # See https://github.com/presidentbeef/brakeman/issues/1664
           command: "bundle exec brakeman -o test-results/brakeman/brakeman.junit -o brakeman.html --no-progress --separate-models"
-      - store_test_results:
-          path: test-results/brakeman/
-      - store_artifacts:
-          path: brakeman.html
 
   test:
     docker:
