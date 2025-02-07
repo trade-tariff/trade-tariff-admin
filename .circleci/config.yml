@@ -223,6 +223,15 @@ workflows:
             - build-and-push-dev
           <<: *filter-not-main
 
+      - tariff/smoketests:
+          name: smoketest_dev
+          context: trade-tariff-testing
+          url: https://dev.trade-tariff.service.gov.uk
+          yarn_run: dev-tariff-admin-smoketests
+          requires:
+            - apply-terraform-dev
+          <<: *filter-not-main
+
   deploy-to-staging:
     jobs:
       - write-docker-tag:
@@ -253,6 +262,15 @@ workflows:
             - write-docker-tag-staging
             - plan-terraform-staging
             - build-and-push-live
+          <<: *filter-main
+
+      - tariff/smoketests:
+          name: smoketest_staging
+          context: trade-tariff-testing
+          url: https://staging.trade-tariff.service.gov.uk
+          yarn_run: staging-tariff-admin-smoketests
+          requires:
+            - apply-terraform-staging
           <<: *filter-main
 
   deploy-to-production:
