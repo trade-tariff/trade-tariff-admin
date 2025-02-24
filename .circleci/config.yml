@@ -219,8 +219,10 @@ workflows:
           context: trade-tariff-terraform-aws-development
           environment: development
           requires:
-            - write-docker-tag-dev
             - build-and-push-dev
+            - ruby-checks
+            - test
+            - write-docker-tag-dev
           <<: *filter-not-main
 
       - tariff/smoketests:
