@@ -1,7 +1,6 @@
 source 'https://rubygems.org'
 
 ruby File.read('.ruby-version').chomp
-gem 'csv'
 
 # Server
 gem 'puma'
@@ -27,10 +26,6 @@ gem 'govuk_publishing_components'
 # API
 gem 'faraday_middleware'
 gem 'her'
-gem 'oj'
-
-# Cache
-gem 'redis'
 
 # Authorization / SSO
 gem 'gds-sso'
@@ -42,17 +37,9 @@ gem 'kaminari'
 gem 'responders'
 gem 'simple_form'
 
-# File upload / mime type
-gem 'marcel'
-gem 'shrine'
-
 # Logging
 gem 'lograge'
 gem 'logstash-event'
-
-# Background jobs
-gem 'sidekiq'
-gem 'sidekiq-scheduler'
 
 # Misc
 gem 'bootsnap', require: false
@@ -67,14 +54,13 @@ group :development, :test do
 end
 
 group :development do
+  gem 'awesome_print'
   gem 'rubocop-govuk'
-  gem 'solargraph'
+  gem 'solargraph-rails'
 end
 
 group :test do
   gem 'capybara'
-  gem 'ci_reporter'
-  gem 'ci_reporter_rspec'
   gem 'database_cleaner'
   gem 'factory_bot_rails'
   gem 'rails-controller-testing'

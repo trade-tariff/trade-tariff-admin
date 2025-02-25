@@ -17,8 +17,6 @@ module TradeTariffAdmin
     require 'trade_tariff_admin/service_chooser'
     require 'search_references/title_normaliser'
 
-    config.active_job.queue_adapter = :sidekiq
-
     config.exceptions_app = routes
 
     config.action_dispatch.rescue_responses.merge!(

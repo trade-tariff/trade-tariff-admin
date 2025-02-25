@@ -1,5 +1,3 @@
-require 'sidekiq/web'
-require 'sidekiq-scheduler/web'
 require 'gds_editor_constraint'
 require 'routing_filter/service_path_prefix_handler'
 
@@ -23,12 +21,7 @@ Rails.application.routes.draw do
     end
   end
 
-  resolve('ImportTask') { route_for(:references_import) }
-
   namespace :references, path: 'search_references' do
-    resource :import, only: %i[show create]
-    resource :export, only: [:create]
-
     resources :sections, only: %i[index] do
       scope module: 'sections' do
         resources :chapters, only: [:index]
@@ -38,26 +31,20 @@ Rails.application.routes.draw do
     resources :chapters, only: %i[index show] do
       scope module: 'chapters' do
         resources :headings, only: [:index]
-        resources :search_references do
-          post :export, on: :collection
-        end
+        resources :search_references
       end
     end
 
     resources :headings do
       scope module: 'headings' do
         resources :commodities, only: [:index]
-        resources :search_references do
-          post :export, on: :collection
-        end
+        resources :search_references
       end
     end
 
     resources :commodities do
       scope module: 'commodities' do
-        resources :search_references do
-          post :export, on: :collection
-        end
+        resources :search_references
       end
     end
   end
@@ -103,7 +90,6 @@ Rails.application.routes.draw do
   get  'healthcheck' => 'healthcheck#check', as: :healthcheck
   get  'healthcheckz' => 'healthcheck#checkz', as: :healthcheckz
   get  '/' => 'pages#index', as: :index
-  mount Sidekiq::Web => '/sidekiq', constraints: GdsEditorConstraint.new
   root to: 'pages#index'
 
   match '/400', to: 'errors#bad_request', via: :all

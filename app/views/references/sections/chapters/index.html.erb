@@ -23,13 +23,8 @@
             <%= pluralize chapter.search_references_count, "reference" %>
           </div>
           <%= link_to "Edit", references_chapter_search_references_path(chapter) %>
-          <% if chapter.search_references_count > 0 %>
-            <%= link_to 'Export', export_references_chapter_search_references_path(chapter), method: :post %>
-          <% end %>
         </td>
       </tr>
     <% end %>
   </tbody>
 </table>
-
-<%= render "references/shared_actions" %>
