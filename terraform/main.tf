@@ -91,10 +91,6 @@ module "service" {
       valueFrom = data.aws_secretsmanager_secret.postgres.arn
     },
     {
-      name      = "REDIS_URL"
-      valueFrom = data.aws_secretsmanager_secret.redis.arn
-    },
-    {
       name      = "BEARER_TOKEN"
       valueFrom = data.aws_secretsmanager_secret.admin_bearer_token.arn
     },

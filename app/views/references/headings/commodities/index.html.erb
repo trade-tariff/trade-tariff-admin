@@ -25,13 +25,8 @@
             <%= pluralize commodity.search_references_count, "reference" %>
           </div>
           <%= link_to 'Edit', references_commodity_search_references_path(commodity) %>
-          <% if commodity.search_references_count > 0 %>
-            <%= link_to 'Export', export_references_commodity_search_references_path(commodity), method: :post %>
-          <% end %>
         </td>
       </tr>
     <% end %>
   </tbody>
 </table>
-
-<%= render "references/shared_actions" %>

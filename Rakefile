@@ -4,6 +4,4 @@
 
 require File.expand_path('config/application', __dir__)
 
-require 'ci/reporter/rake/rspec' if Rails.env.development? || Rails.env.test?
-
 TradeTariffAdmin::Application.load_tasks

@@ -25,13 +25,8 @@
             <%= pluralize heading.search_references_count, "reference" %>
           </div>
           <%= link_to 'Edit', references_heading_search_references_path(heading) %>
-          <% if heading.search_references_count > 0 %>
-            <%= link_to 'Export', export_references_heading_search_references_path(heading), method: :post %>
-          <% end %>
         </td>
       </tr>
     <% end %>
   </tbody>
 </table>
-
-<%= render "references/shared_actions" %>
