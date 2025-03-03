@@ -38,7 +38,7 @@ data "aws_secretsmanager_secret" "admin_bearer_token" {
 }
 
 data "aws_secretsmanager_secret" "postgres" {
-  name = "postgresadmin-connection-string"
+  name = "admin-connection-string"
 }
 
 data "aws_secretsmanager_secret" "sentry_dsn" {
