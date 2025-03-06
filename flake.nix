@@ -63,6 +63,10 @@
         lint-all = pkgs.writeScriptBin "lint-all" ''
           bundle exec rubocop --autocorrect-all
         '';
+        update-providers = pkgs.writeScriptBin "update-providers" ''
+          cd terraform
+          terraform init -backend=false -reconfigure -upgrade
+        '';
       in {
         devShells.default = pkgs.mkShell {
           shellHook = ''
@@ -88,10 +92,12 @@
             lint
             lint-all
             pg-start
+            pkgs.circleci-cli
             pkgs.rufo
             pkgs.yarn
             postgresql
             ruby
+            update-providers
           ];
         };
       });

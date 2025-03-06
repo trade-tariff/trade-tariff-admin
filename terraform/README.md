@@ -1,12 +1,12 @@
 # trade-tariff-duty-calculator terraform
 
 Terraform to deploy the service into AWS.
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | 1.5.5 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.9.8 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 4 |
 
 ## Providers
@@ -59,4 +59,4 @@ Terraform to deploy the service into AWS.
 ## Outputs
 
 No outputs.
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->
