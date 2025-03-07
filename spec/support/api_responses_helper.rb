@@ -3,7 +3,6 @@ module ApiResponsesHelper
     klass.use_api(api = Her::API.new)
 
     api.setup url: ENV['TARIFF_API_HOST'] do |c|
-      c.use FaradayMiddleware::AcceptApiV2
       c.use Her::Middleware::HeaderMetadataParse
       c.use Her::Middleware::TariffJsonapiParser
 
