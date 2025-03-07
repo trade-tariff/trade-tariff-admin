@@ -4,15 +4,15 @@
   "dependencies": {
     "@rails/webpacker": "^5.4.4",
     "autosize": "^6.0.1",
-    "chart.js": "^4.4.7",
-    "govuk-frontend": "5.8.0",
+    "chart.js": "^4.4.8",
+    "govuk-frontend": "5.9.0",
     "rails-ujs": "^5.2.8"
   },
   "devDependencies": {
-    "@webpack-cli/serve": "^2.0.5",
-    "eslint": "^9.19.0",
+    "@webpack-cli/serve": "^3.0.1",
+    "eslint": "^9.21.0",
     "eslint-config-google": "^0.14.0",
-    "webpack-dev-server": "^5.1.0"
+    "webpack-dev-server": "^5.2.0"
   },
   "license": "MIT"
 }
