@@ -56,7 +56,8 @@ end
 group :development do
   gem 'awesome_print'
   gem 'rubocop-govuk'
-  gem 'solargraph-rails'
+  gem 'ruby-lsp-rails'
+  gem 'ruby-lsp-rspec'
 end
 
 group :test do
