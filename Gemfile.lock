@@ -90,7 +90,6 @@ GEM
       public_suffix (>= 2.0.2, < 7.0)
     ast (2.4.2)
     awesome_print (1.9.2)
-    backport (1.2.0)
     base64 (0.2.0)
     benchmark (0.4.0)
     bigdecimal (3.1.9)
@@ -236,7 +235,6 @@ GEM
       pp (>= 0.6.0)
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
-    jaro_winkler (1.6.0)
     json (2.10.1)
     jwt (2.10.1)
       base64
@@ -254,8 +252,6 @@ GEM
     kaminari-core (1.2.2)
     kramdown (2.5.1)
       rexml (>= 3.3.9)
-    kramdown-parser-gfm (1.1.0)
-      kramdown (~> 2.0)
     language_server-protocol (3.17.0.4)
     lint_roller (1.1.0)
     logger (1.6.6)
@@ -308,7 +304,6 @@ GEM
       rack (>= 1.2, < 4)
       snaky_hash (~> 2.0)
       version_gem (~> 1.1)
-    observer (0.1.2)
     omniauth (2.1.3)
       hashie (>= 3.4.6)
       rack (>= 2.2.3)
@@ -534,6 +529,7 @@ GEM
     pp (0.6.2)
       prettyprint
     prettyprint (0.2.0)
+    prism (1.3.0)
     prometheus_exporter (2.2.0)
       webrick
     pry (0.14.2)
@@ -553,7 +549,7 @@ GEM
     pundit (2.5.0)
       activesupport (>= 3.0.0)
     racc (1.8.1)
-    rack (3.1.11)
+    rack (3.1.12)
     rack-protection (4.1.1)
       base64 (>= 0.1.0)
       logger (>= 1.6.0)
@@ -614,8 +610,6 @@ GEM
     responders (3.1.1)
       actionpack (>= 5.2)
       railties (>= 5.2)
-    reverse_markdown (3.0.0)
-      nokogiri
     rexml (3.4.1)
     rinku (2.0.6)
     rouge (4.5.1)
@@ -672,6 +666,15 @@ GEM
     rubocop-rspec (3.5.0)
       lint_roller (~> 1.1)
       rubocop (~> 1.72, >= 1.72.1)
+    ruby-lsp (0.23.11)
+      language_server-protocol (~> 3.17.0)
+      prism (>= 1.2, < 2.0)
+      rbs (>= 3, < 4)
+      sorbet-runtime (>= 0.5.10782)
+    ruby-lsp-rails (0.4.0)
+      ruby-lsp (>= 0.23.0, < 0.24.0)
+    ruby-lsp-rspec (0.1.22)
+      ruby-lsp (~> 0.23.0)
     ruby-progressbar (1.13.0)
     ruby2_keywords (0.0.5)
     sanitize (7.0.0)
@@ -699,28 +702,7 @@ GEM
     snaky_hash (2.0.1)
       hashie
       version_gem (~> 1.1, >= 1.1.1)
-    solargraph (0.52.0)
-      backport (~> 1.2)
-      benchmark
-      bundler (~> 2.0)
-      diff-lcs (~> 1.4)
-      jaro_winkler (~> 1.6)
-      kramdown (~> 2.3)
-      kramdown-parser-gfm (~> 1.1)
-      logger (~> 1.6)
-      observer (~> 0.1)
-      ostruct (~> 0.6)
-      parser (~> 3.0)
-      rbs (~> 3.0)
-      reverse_markdown (>= 2.0, < 4)
-      rubocop (~> 1.38)
-      thor (~> 1.0)
-      tilt (~> 2.0)
-      yard (~> 0.9, >= 0.9.24)
-      yard-solargraph (~> 0.1)
-    solargraph-rails (1.1.0)
-      activesupport
-      solargraph
+    sorbet-runtime (0.5.11919)
     sprockets (4.2.1)
       concurrent-ruby (~> 1.0)
       rack (>= 2.2.4, < 4)
@@ -731,7 +713,6 @@ GEM
     statsd-ruby (1.5.0)
     stringio (3.1.5)
     thor (1.3.2)
-    tilt (2.6.0)
     timeout (0.4.3)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
@@ -763,9 +744,6 @@ GEM
     websocket-extensions (0.1.5)
     xpath (3.2.0)
       nokogiri (~> 1.8)
-    yard (0.9.37)
-    yard-solargraph (0.1.0)
-      yard (~> 0.9)
     zeitwerk (2.7.2)
 
 PLATFORMS
@@ -804,11 +782,12 @@ DEPENDENCIES
   rspec-rails
   rspec_junit_formatter
   rubocop-govuk
+  ruby-lsp-rails
+  ruby-lsp-rspec
   sentry-rails
   shoulda-matchers
   simple_form
   simplecov
-  solargraph-rails
   webmock
   webpacker
 
