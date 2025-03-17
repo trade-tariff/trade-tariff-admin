@@ -1,4 +1,4 @@
-RSpec.describe TariffUpdatesController, skip: 'TODO: Fix intermittent failures' do
+RSpec.describe TariffUpdatesController do
   subject(:rendered_page) { create_user && make_request && response }
 
   let(:create_user) { create :user, permissions: ['signin', 'HMRC Admin'] }
@@ -31,44 +31,6 @@ RSpec.describe TariffUpdatesController, skip: 'TODO: Fix intermittent failures' 
 
     it { is_expected.to have_http_status :forbidden }
     it { is_expected.to have_attributes body: /contact your Delivery Manager/ }
-  end
-
-  describe 'POST #clear_cache' do
-    context 'when the API /clear_cache succeeds' do
-      before do
-        create_user
-        stub_api_request('/admin/clear_caches', :post).to_return(status: 200, body: '', headers: {})
-      end
-
-      it 'returns success' do
-        post '/tariff_updates/clear_cache'
-
-        expect(response).to redirect_to(tariff_updates_path) # it stays on the same page
-        expect(flash[:notice]).to eq('ClearCache was scheduled')
-      end
-    end
-
-    context 'when the API /clear_caches fails' do
-      before do
-        create_user
-        stub_api_request('/admin/clear_caches', :post).to_return(status: 422, body: '', headers: {})
-      end
-
-      it 'displays an error message' do
-        post '/tariff_updates/clear_cache'
-
-        expect(response).to redirect_to(tariff_updates_path) # it stays on the same page
-        expect(flash[:alert]).to include('Unexpected error:')
-      end
-    end
-
-    context 'when unauthorised clear_cache' do
-      let(:create_user) { create :user, permissions: %w[] }
-      let(:make_request) { get clear_cache_tariff_updates_path }
-
-      it { is_expected.to have_http_status :forbidden }
-      it { is_expected.to have_attributes body: /contact your Delivery Manager/ }
-    end
   end
 
   describe 'POST #download' do
@@ -109,7 +71,7 @@ RSpec.describe TariffUpdatesController, skip: 'TODO: Fix intermittent failures' 
     end
   end
 
-  describe 'POST #apply' do
+  describe 'POST #apply_and_clear_cache' do
     context 'when the API /applies succeeds' do
       before do
         create_user
@@ -117,21 +79,21 @@ RSpec.describe TariffUpdatesController, skip: 'TODO: Fix intermittent failures' 
       end
 
       it 'returns success' do
-        post '/tariff_updates/apply'
+        post '/tariff_updates/apply_and_clear_cache'
 
-        expect(response).to redirect_to(tariff_updates_path) # it stays on the same page
-        expect(flash[:notice]).to eq('Apply was scheduled')
+        expect(response).to redirect_to(tariff_updates_path)
+        expect(flash[:notice]).to eq('Apply & ClearCache was scheduled')
       end
     end
 
-    context 'when the API /applies fails', skip: 'TODO: Fix intermittent failures' do
+    context 'when the API /applies fails' do
       before do
         create_user
         stub_api_request('/admin/applies', :post).to_return(status: 422, body: '', headers: {})
       end
 
       it 'displays an error message' do
-        post '/tariff_updates/apply'
+        post '/tariff_updates/apply_and_clear_cache'
 
         expect(response).to redirect_to(tariff_updates_path) # it stays on the same page
         expect(flash[:alert]).to include('Unexpected error:')
@@ -140,7 +102,7 @@ RSpec.describe TariffUpdatesController, skip: 'TODO: Fix intermittent failures' 
 
     context 'when unauthorised apply' do
       let(:create_user) { create :user, permissions: %w[] }
-      let(:make_request) { get apply_tariff_updates_path }
+      let(:make_request) { get apply_and_clear_cache_tariff_updates_path }
 
       it { is_expected.to have_http_status :forbidden }
       it { is_expected.to have_attributes body: /contact your Delivery Manager/ }
