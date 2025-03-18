@@ -26,3 +26,4 @@ yarn-error.log
 .byebug_history
 .direnv
 .envrc
+.tool-versions

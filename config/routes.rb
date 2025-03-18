@@ -67,9 +67,8 @@ Rails.application.routes.draw do
 
   resources :tariff_updates, only: %i[index show] do
     collection do
-      post '/clear_cache', to: 'tariff_updates#clear_cache'
-      post '/apply', to: 'tariff_updates#apply'
       post '/download', to: 'tariff_updates#download'
+      post '/apply_and_clear_cache', to: 'tariff_updates#apply_and_clear_cache'
     end
   end
   resources :rollbacks, only: %i[index new create]
