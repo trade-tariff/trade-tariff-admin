@@ -15,7 +15,7 @@ module "service" {
   min_capacity = var.min_capacity
   max_capacity = var.max_capacity
 
-  docker_image = data.aws_ssm_parameter.ecr_url.value
+  docker_image = "382373577178.dkr.ecr.eu-west-2.amazonaws.com/tariff-admin-production"
   docker_tag   = var.docker_tag
   skip_destroy = true
 

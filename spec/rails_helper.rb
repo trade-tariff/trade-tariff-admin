@@ -11,6 +11,12 @@ require 'rspec/rails'
 require 'pundit/rspec'
 require 'webmock/rspec'
 
+begin
+  ActiveRecord::Migration.maintain_test_schema!
+rescue ActiveRecord::PendingMigrationError => e
+  abort e.to_s.strip
+end
+
 Dir[Rails.root.join('spec/support/**/*.rb')].sort.each { |f| require f }
 
 RSpec.configure do |config|
