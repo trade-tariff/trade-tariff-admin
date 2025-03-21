@@ -28,11 +28,6 @@ variable "max_capacity" {
   type        = number
 }
 
-variable "base_domain" {
-  description = "URL of the service."
-  type        = string
-}
-
 variable "cpu" {
   description = "CPU units to use."
   type        = number

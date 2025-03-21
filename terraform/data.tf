@@ -21,30 +21,14 @@ data "aws_security_group" "this" {
   name = "trade-tariff-ecs-security-group-${var.environment}"
 }
 
-data "aws_secretsmanager_secret" "admin_secret_key_base" {
-  name = "admin-secret-key-base"
-}
-
-data "aws_secretsmanager_secret" "admin_oauth_id" {
-  name = "admin-oauth-id"
-}
-
-data "aws_secretsmanager_secret" "admin_oauth_secret" {
-  name = "admin-oauth-secret"
-}
-
-data "aws_secretsmanager_secret" "admin_bearer_token" {
-  name = "admin-bearer-token"
-}
-
-data "aws_secretsmanager_secret" "postgres" {
-  name = "admin-connection-string"
-}
-
-data "aws_secretsmanager_secret" "sentry_dsn" {
-  name = "admin-sentry-dsn"
-}
-
 data "aws_kms_key" "secretsmanager_key" {
   key_id = "alias/secretsmanager-key"
+}
+
+data "aws_secretsmanager_secret" "this" {
+  name = "admin-configuration"
+}
+
+data "aws_secretsmanager_secret_version" "this" {
+  secret_id = data.aws_secretsmanager_secret.this.id
 }
