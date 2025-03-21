@@ -48,7 +48,3 @@ data "aws_secretsmanager_secret" "sentry_dsn" {
 data "aws_kms_key" "secretsmanager_key" {
   key_id = "alias/secretsmanager-key"
 }
-
-data "aws_ssm_parameter" "ecr_url" {
-  name = "/${var.environment}/ADMIN_ECR_URL"
-}
