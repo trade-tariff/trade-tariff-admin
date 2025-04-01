@@ -16,5 +16,9 @@ module TradeTariffAdmin
     def production?
       ENV['GOVUK_APP_DOMAIN'] == 'tariff-admin-production.cloudapps.digital'
     end
+
+    def authenticate_with_sso?
+      ENV.fetch('AUTHENTICATE_WITH_SSO', 'true') == 'true'
+    end
   end
 end

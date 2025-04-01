@@ -1,4 +1,3 @@
-require 'gds_editor_constraint'
 require 'routing_filter/service_path_prefix_handler'
 
 Rails.application.routes.draw do
@@ -87,7 +86,7 @@ Rails.application.routes.draw do
 
   post 'govspeak' => 'govspeak#govspeak', as: :govspeak
   get  'healthcheck' => 'healthcheck#check', as: :healthcheck
-  get  'healthcheckz' => 'healthcheck#checkz', as: :healthcheckz
+  get 'healthcheckz' => 'rails/health#show', as: :rails_health_check
   get  '/' => 'pages#index', as: :index
   root to: 'pages#index'
 

@@ -5,9 +5,4 @@ RSpec.describe HealthcheckController do
     get :check
     expect(response.status).to eq(200)
   end
-
-  it 'returns success for container' do
-    get :checkz
-    expect(response.status).to eq(200)
-  end
 end
