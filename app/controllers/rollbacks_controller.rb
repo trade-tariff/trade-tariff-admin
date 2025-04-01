@@ -1,5 +1,5 @@
 class RollbacksController < AuthenticatedController
-  before_action :authorize_user
+  before_action :authorize_user if TradeTariffAdmin.authenticate_with_sso?
 
   def index
     @rollbacks = Rollback.all(page: current_page).fetch

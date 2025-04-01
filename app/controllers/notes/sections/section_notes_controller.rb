@@ -1,7 +1,7 @@
 module Notes
   module Sections
     class SectionNotesController < AuthenticatedController
-      before_action :authorize_user
+      before_action :authorize_user if TradeTariffAdmin.authenticate_with_sso?
 
       def new
         @section_note = SectionNote.new

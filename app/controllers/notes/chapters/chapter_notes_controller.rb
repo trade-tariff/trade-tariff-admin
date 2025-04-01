@@ -1,7 +1,7 @@
 module Notes
   module Chapters
     class ChapterNotesController < AuthenticatedController
-      before_action :authorize_user
+      before_action :authorize_user if TradeTariffAdmin.authenticate_with_sso?
 
       def new
         @chapter_note = ChapterNote.new
