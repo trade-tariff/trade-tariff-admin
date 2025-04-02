@@ -18,7 +18,15 @@ module TradeTariffAdmin
     end
 
     def authenticate_with_sso?
-      ENV.fetch('AUTHENTICATE_WITH_SSO', 'true') == 'true'
+      @authenticate_with_sso ||= ENV.fetch('AUTHENTICATE_WITH_SSO', 'true') == 'true'
+    end
+
+    def basic_session_authentication?
+      @basic_session_authentication ||= !authenticate_with_sso? && basic_session_password.present?
+    end
+
+    def basic_session_password
+      @basic_session_password ||= ENV['BASIC_PASSWORD']
     end
   end
 end

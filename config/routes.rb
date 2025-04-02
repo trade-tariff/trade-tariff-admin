@@ -97,4 +97,8 @@ Rails.application.routes.draw do
   match '/422', to: 'errors#unprocessable_entity', via: :all
   match '/500', to: 'errors#internal_server_error', via: :all
   match '/501', to: 'errors#not_implemented', via: :all
+
+  if TradeTariffAdmin.basic_session_authentication?
+    resources :basic_sessions, only: %i[new create]
+  end
 end
