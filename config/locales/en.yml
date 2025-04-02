@@ -76,3 +76,7 @@ en:
             order_number:
               not_a_number: Enter a valid quota order number
               wrong_length: Enter a valid quota order number
+        basic_session:
+          attributes:
+            password:
+              inclusion: "Incorrect password"
