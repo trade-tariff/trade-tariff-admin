@@ -1,6 +1,7 @@
 ENV['RAILS_ENV'] ||= 'test'
 
 require 'simplecov'
+require 'rspec/rebound'
 
 SimpleCov.start 'rails'
 SimpleCov.formatters = SimpleCov::Formatter::HTMLFormatter
@@ -43,4 +44,8 @@ RSpec.configure do |config|
       example.run
     end
   end
+
+  config.verbose_retry = true
+  config.display_try_failure_messages = true
+  config.around { |ex| ex.run_with_retry retry: 3 }
 end

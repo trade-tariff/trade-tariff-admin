@@ -67,6 +67,7 @@ group :test do
   gem 'rails-controller-testing'
   gem 'rspec_junit_formatter'
   gem 'rspec-rails'
+  gem 'rspec-rebound'
   gem 'shoulda-matchers'
   gem 'simplecov'
   gem 'webmock'
