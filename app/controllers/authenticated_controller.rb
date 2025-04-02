@@ -11,9 +11,8 @@ class AuthenticatedController < ApplicationController
 
   else
     before_action :require_authentication, if: :require_auth?
-
     def require_auth?
-      TradeTariffAdmin.basic_authentication?
+      TradeTariffAdmin.basic_session_authentication?
     end
 
     def require_authentication

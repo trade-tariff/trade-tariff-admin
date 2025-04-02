@@ -4,5 +4,5 @@ class BasicSession
   attr_accessor :return_url, :password
 
   validates :return_url, presence: true
-  validates :password, inclusion: { in: [TradeTariffAdmin.basic_password] }
+  validates :password, inclusion: { in: [TradeTariffAdmin.basic_session_password] }
 end
