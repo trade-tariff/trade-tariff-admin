@@ -54,7 +54,7 @@ group :development, :test do
 end
 
 group :development do
-  gem 'awesome_print'
+  gem 'amazing_print'
   gem 'rubocop-govuk'
   gem 'ruby-lsp-rails'
   gem 'ruby-lsp-rspec'
