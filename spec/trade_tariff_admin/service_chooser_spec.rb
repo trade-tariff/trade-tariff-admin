@@ -14,7 +14,7 @@ RSpec.describe TradeTariffAdmin::ServiceChooser do
     end
   end
 
-  describe '.service_choice=', skip: 'TODO: fix intermittent failures' do
+  describe '.service_choice=' do
     it 'assigns the service choice to the current Thread' do
       expect { described_class.service_choice = 'xi' }
         .to change { Thread.current[:service_choice] }

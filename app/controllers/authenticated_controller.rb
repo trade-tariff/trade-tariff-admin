@@ -1,6 +1,6 @@
 class AuthenticatedController < ApplicationController
   if TradeTariffAdmin.authenticate_with_sso?
-    include SSOAuth
+    include SsoAuth
   else
     include BasicSessionAuth
   end

@@ -1,4 +1,4 @@
-module SSOAuth
+module SsoAuth
   extend ActiveSupport::Concern
 
   included do
