@@ -1,4 +1,4 @@
-RSpec.describe NewsItemsController, skip: 'TODO: Need to debug this flaky test' do
+RSpec.describe NewsItemsController do
   subject(:rendered_page) { create_user && make_request && response }
 
   before do
