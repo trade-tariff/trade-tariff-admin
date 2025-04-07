@@ -4,8 +4,11 @@ ruby File.read('.ruby-version').chomp
 
 # Server
 gem 'puma'
-gem 'rails', '~> 7.1.2'
+gem 'rails', '~> 8.0.2'
 
+# Custom gems we've forked
+gem 'faraday_middleware' # Required for backwards compatibility with her which is abandonware
+gem 'her', github: 'trade-tariff/her', branch: 'BAU-rails-8-her'
 gem 'routing-filter', github: 'trade-tariff/routing-filter'
 
 # DB
@@ -22,10 +25,6 @@ gem 'govuk_design_system_formbuilder'
 gem 'addressable'
 gem 'govspeak'
 gem 'govuk_publishing_components'
-
-# API
-gem 'faraday_middleware'
-gem 'her'
 
 # Authorization / SSO
 gem 'gds-sso'
@@ -44,12 +43,10 @@ gem 'logstash-event'
 # Misc
 gem 'bootsnap', require: false
 gem 'nokogiri', '>= 1.10.10'
-gem 'sentry-rails'
 
 group :development, :test do
   gem 'brakeman'
   gem 'dotenv-rails'
-  gem 'pry-byebug'
   gem 'pry-rails'
 end
 
