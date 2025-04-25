@@ -62,6 +62,7 @@ class NewsItemsController < AuthenticatedController
       show_on_banner
       start_date
       end_date
+      chapters
     ], collection_ids: []).reverse_merge(default_params)
   end
 

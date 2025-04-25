@@ -21,6 +21,7 @@ module News
                :show_on_banner,
                :start_date,
                :end_date,
+               :chapters,
                :collection_ids
 
     after_initialize { self.collection_ids = [] unless collection_ids }
