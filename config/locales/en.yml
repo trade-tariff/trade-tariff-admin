@@ -45,6 +45,9 @@ en:
         chapter_title: Chapter
       search_reference:
         title: Search reference
+      news_item:
+        start_date: Start date
+        end_date: End date
 
     legend:
       rollback:
@@ -62,8 +65,9 @@ en:
       news_item:
         title: Not shown on frontend for Banner stories
         slug: Leave blank to automatically assign
-        start_date: 'YYYY/MM/DD'
-        end_date: 'YYYY/MM/DD or leave blank for no end date'
+        start_date: YYYY/MM/DD
+        end_date: YYYY/MM/DD or leave blank for no end date
+        chapters: Separate each 2 digit chapter with a space e.g. 01 39 44 or leave blank
 
   activemodel:
     attributes:
@@ -79,4 +83,4 @@ en:
         basic_session:
           attributes:
             password:
-              inclusion: "Incorrect password"
+              inclusion: Incorrect password
