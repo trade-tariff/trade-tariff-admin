@@ -3,19 +3,19 @@
     {
       "warning_type": "Cross-Site Scripting",
       "warning_code": 4,
-      "fingerprint": "ba185af4c1e0b5851c3fa1dc92738e7febd10c84b9a72ab96a6bcc0fc9e37fee",
+      "fingerprint": "45fc1c8ab944f192e74bbb98c00175ab45a50c992148fa2831b8003ffc198316",
       "check_name": "LinkToHref",
       "message": "Potentially unsafe model attribute in `link_to` href",
       "file": "app/views/tariff_updates/show.html.erb",
       "line": 14,
       "link": "https://brakemanscanner.org/docs/warning_types/link_to_href",
-      "code": "link_to(\"Download\", TariffUpdate.find(params[:id]).file_presigned_url, :target => \"_blank\", :title => TariffUpdate.find(params[:id]).filename)",
+      "code": "link_to(\"Download\", Update.find(params[:id]).file_presigned_url, :target => \"_blank\", :title => Update.find(params[:id]).filename)",
       "render_path": [
         {
           "type": "controller",
           "class": "TariffUpdatesController",
           "method": "show",
-          "line": 8,
+          "line": 10,
           "file": "app/controllers/tariff_updates_controller.rb",
           "rendered": {
             "name": "tariff_updates/show",
@@ -27,8 +27,11 @@
         "type": "template",
         "template": "tariff_updates/show"
       },
-      "user_input": "TariffUpdate.find(params[:id]).file_presigned_url",
+      "user_input": "Update.find(params[:id]).file_presigned_url",
       "confidence": "Weak",
+      "cwe_id": [
+        79
+      ],
       "note": ""
     },
     {
@@ -46,7 +49,7 @@
           "type": "controller",
           "class": "GreenLanes::UpdateNotificationsController",
           "method": "edit",
-          "line": 13,
+          "line": 11,
           "file": "app/controllers/green_lanes/update_notifications_controller.rb",
           "rendered": {
             "name": "green_lanes/update_notifications/edit",
@@ -62,9 +65,9 @@
       "confidence": "Weak",
       "cwe_id": [
         79
-      ]
+      ],
+      "note": ""
     }
   ],
-  "updated": "2022-05-30 15:54:11 +0100",
-  "brakeman_version": "5.2.3"
+  "brakeman_version": "7.0.2"
 }

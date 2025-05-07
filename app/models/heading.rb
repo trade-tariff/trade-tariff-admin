@@ -1,40 +1,30 @@
 require 'heading/search_reference'
 
 class Heading
-  include Her::JsonApi::Model
+  include ApiEntity
 
-  collection_path '/admin/headings'
+  attribute :goods_nomenclature_item_id
 
-  has_many :search_references, class_name: 'Heading::SearchReference'
   has_many :commodities
-  has_one :section
   has_one :chapter
 
+  def search_references(page: 1, per_page: 5)
+    Heading::SearchReference.collection(casted_by: self, page:, per_page:)
+  end
+
   def heading_id
-    goods_nomenclature_item_id.first(4)
+    goods_nomenclature_item_id&.first(4)
   end
 
   def chapter_id
     chapter.short_code
   end
 
-  def id
-    to_param
-  end
-
   def to_param
-    heading_id.to_s
-  end
-
-  def export_filename
-    "#{self.class.name.tableize}-#{heading_id}-references-#{Time.zone.now.iso8601}.csv"
+    heading_id.to_s.presence || resource_id
   end
 
   def reference_title
     "heading #{heading_id}: #{description}"
-  end
-
-  def request_path(_opts = {})
-    self.class.build_request_path("/admin/headings/#{to_param}", attributes.dup)
   end
 end

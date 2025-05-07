@@ -30,7 +30,7 @@ RSpec.describe QuotaOrderNumbers::QuotaDefinition do
     context 'when there is not quota order number' do
       subject(:quota_definition) { build(:quota_definition, :without_quota_order_number) }
 
-      it { expect(quota_definition.quota_order_number).to be_nil }
+      it { expect(quota_definition.quota_order_number.attributes.except(:casted_by)).to be_empty }
     end
   end
 

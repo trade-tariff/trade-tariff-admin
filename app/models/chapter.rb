@@ -1,23 +1,22 @@
 require 'chapter/search_reference'
 
 class Chapter
-  include Her::JsonApi::Model
+  include ApiEntity
 
-  collection_path '/admin/chapters'
-
-  attributes :chapter_note_id, :headings_from, :headings_to, :section_id, :goods_nomenclature_item_id
-
-  has_one :chapter_note, class_name: 'ChapterNote'
-  has_many :headings
-  has_many :search_references, class_name: 'Chapter::SearchReference'
   has_one :section
+  has_one :chapter_note
+  has_many :headings
+
+  def search_references(page: 1, per_page: 5)
+    Chapter::SearchReference.all(casted_by: self, page:, per_page:)
+  end
 
   def has_chapter_note?
-    chapter_note_id.present?
+    self[:chapter_note_id].present?
   end
 
   def short_code
-    goods_nomenclature_item_id.first(2)
+    self[:goods_nomenclature_item_id]&.first(2)
   end
 
   def headings_range
@@ -28,35 +27,17 @@ class Chapter
     end
   end
 
-  def headings_from=(headings_from)
-    attributes[:headings_from] = headings_from.last(2).to_i
-  end
-
-  def headings_to=(headings_to)
-    attributes[:headings_to] = headings_to.last(2).to_i
-  end
-
-  def id
-    short_code
-  end
-
-  def export_filename
-    "#{self.class.name.tableize}-#{short_code}-references-#{Time.zone.now.iso8601}.csv"
-  end
+  alias_method :id, :short_code
 
   def reference_title
     "Chapter (#{short_code})"
   end
 
   def to_param
-    short_code.to_s
+    short_code.to_s.presence || resource_id
   end
 
   def to_s
-    goods_nomenclature_item_id
-  end
-
-  def request_path(_opts = {})
-    self.class.build_request_path("/admin/chapters/#{to_param}", attributes.dup)
+    self[:goods_nomenclature_item_id]
   end
 end

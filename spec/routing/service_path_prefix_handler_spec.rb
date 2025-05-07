@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe RoutingFilter::ServicePathPrefixHandler, type: :routing do
   let(:path) { "#{prefix}/rollbacks" }
 

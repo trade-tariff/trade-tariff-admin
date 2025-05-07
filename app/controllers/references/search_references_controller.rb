@@ -3,8 +3,7 @@ module References
     before_action :authorize_user if TradeTariffAdmin.authenticate_with_sso?
 
     def index
-      @search_references = search_reference_parent.search_references.all(page:, per_page:)
-      @search_references = Kaminari.paginate_array(@search_references, total_count: @search_references.metadata[:pagination][:total]).page(page).per(per_page)
+      @search_references = search_reference_parent.search_references(page:, per_page:)
     end
 
     def new
@@ -15,7 +14,7 @@ module References
       @search_reference = build_search_reference
 
       if @search_reference.valid? && @search_reference.save
-        redirect_to [scope, search_reference_parent, :search_references], notice: 'Search reference was successfully created.'
+        redirect_to [:references, search_reference_parent, :search_references], notice: 'Search reference was successfully created.'
       else
         render :new
       end
@@ -24,10 +23,10 @@ module References
     def edit; end
 
     def update
-      search_reference.assign_attributes(title: normalised_title)
+      search_reference.build(title: normalised_title)
 
       if search_reference.valid? && search_reference.save
-        redirect_to [scope, search_reference_parent, :search_references], notice: 'Search reference was successfully updated.'
+        redirect_to [:references, search_reference_parent, :search_references], notice: 'Search reference was successfully updated.'
       else
         render :edit
       end
@@ -36,19 +35,13 @@ module References
     def destroy
       search_reference.destroy
 
-      redirect_to [scope, search_reference_parent, :search_references], notice: 'Search reference was successfully removed.'
-    end
-
-    def export
-      export_service = SearchReference::ExportService.new(search_reference_parent.search_references)
-
-      send_data export_service.to_csv, filename: search_reference_parent.export_filename
+      redirect_to [:references, search_reference_parent, :search_references], notice: 'Search reference was successfully removed.'
     end
 
     private
 
     def search_reference
-      @search_reference ||= search_reference_parent.search_references.find(params[:id]).tap do |reference|
+      @search_reference ||= search_reference_parent.search_references(page:, per_page:).find(params[:id]).tap do |reference|
         reference.referenced_id = search_reference_parent.id
       end
     end
@@ -80,15 +73,8 @@ module References
       raise NotImplementedError, 'Please override #search_reference_parent'
     end
 
-    def scope
-      raise NotImplementedError, 'Please override #scope'
-    end
-
     def build_search_reference
-      search_reference_parent.search_references.build(title: normalised_title).tap do |reference|
-        reference.referenced_id = search_reference_parent.id
-        reference.productline_suffix = search_reference_parent.producline_suffix
-      end
+      search_reference_parent.search_references(page:, per_page:).build(title: normalised_title)
     end
   end
 end

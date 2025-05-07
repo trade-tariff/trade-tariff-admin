@@ -1,18 +1,13 @@
 class ChapterNote
-  include Her::JsonApi::Model
-  extend ActiveModel::Naming
+  include ApiEntity
 
-  resource_path '/admin/chapters/:chapter_id/chapter_note'
-  collection_path '/admin/chapters/:chapter_id/chapter_note'
+  validates :content, presence: true
 
-  attributes :content
+  attr_accessor :content
 
-  belongs_to :chapter
+  set_singular_path '/admin/chapters/:chapter_id/chapter_note'
 
-  # NOTE: singular resource
-  def request_path
-    self.class.build_request_path('/admin/chapters/:chapter_id/chapter_note', attributes.dup.merge('chapter_id' => chapter.reload.to_param))
-  end
+  has_one :chapter
 
   def preview(...)
     Govspeak::Document.new(content, sanitize: true).to_html.html_safe

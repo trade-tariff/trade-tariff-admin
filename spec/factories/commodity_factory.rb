@@ -1,19 +1,12 @@
 FactoryBot.define do
   factory :commodity do
-    id do
-      referenced_id = 10.times.map { Random.rand(1..9) }.join
-      productline_suffix = 2.times.map { Random.rand(1..9) }.join
-
-      "#{referenced_id}-#{productline_suffix}"
-    end
+    goods_nomenclature_item_id { 10.times.map { Random.rand(1..9) }.join }
     producline_suffix { 80 }
 
-    referenced_class { 'Commodity' }
-
     trait :with_heading do
-      association :heading, strategy: :build
+      heading { attributes_for(:heading) }
 
-      heading_id { heading.to_param }
+      heading_id { heading[:goods_nomenclature_item_id].first(4) }
     end
   end
 end

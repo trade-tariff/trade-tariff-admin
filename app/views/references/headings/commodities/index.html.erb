@@ -18,8 +18,8 @@
       <tr id="<%= dom_id(commodity) %>">
         <td><%= commodity.goods_nomenclature_item_id %></td>
         <td><%= commodity.description.titleize %></td>
-        <td><%= commodity.productline_suffix %></td>
-        <td><%= commodity.declarable %></td>
+        <td><%= commodity.producline_suffix %></td>
+        <td><%= commodity.declarable? %></td>
         <td class="hott-link-group">
           <div>
             <%= pluralize commodity.search_references_count, "reference" %>

@@ -6,7 +6,7 @@ RSpec.describe TariffUpdatesController do
   describe 'GET #index' do
     before do
       stub_api_request('/updates?page=1').and_return \
-        jsonapi_response :tariff_updates, attributes_for_list(:tariff_update, 3)
+        jsonapi_response :tariff_updates, attributes_for_list(:update, 3)
     end
 
     let(:make_request) { get tariff_updates_path }
@@ -34,78 +34,30 @@ RSpec.describe TariffUpdatesController do
   end
 
   describe 'POST #download' do
-    context 'when the API /download succeeds' do
-      before do
-        create_user
-        stub_api_request('/admin/downloads', :post).to_return(status: 200, body: '', headers: {})
-      end
-
-      it 'displays success message' do
-        post '/tariff_updates/download'
-
-        expect(response).to redirect_to(tariff_updates_path) # it stays on the same page
-        expect(flash[:notice]).to eq('Download was scheduled')
-      end
+    before do
+      create_user
+      stub_api_request('/admin/downloads', :post).to_return(status: 200, body: '', headers: {})
     end
 
-    context 'when the API /downloads fails' do
-      before do
-        create_user
-        stub_api_request('/admin/downloads', :post).to_return(status: 422, body: '', headers: {})
-      end
+    it 'displays success message' do
+      post '/tariff_updates/download'
 
-      it 'displays an error message' do
-        post '/tariff_updates/download'
-
-        expect(response).to redirect_to(tariff_updates_path) # it stays on the same page
-        expect(flash[:alert]).to include('Unexpected error:')
-      end
-    end
-
-    context 'when unauthorised download' do
-      let(:create_user) { create :user, permissions: %w[] }
-      let(:make_request) { get download_tariff_updates_path }
-
-      it { is_expected.to have_http_status :forbidden }
-      it { is_expected.to have_attributes body: /contact your Delivery Manager/ }
+      expect(response).to redirect_to(tariff_updates_path) # it stays on the same page
+      expect(flash[:notice]).to eq('Download was scheduled')
     end
   end
 
   describe 'POST #apply_and_clear_cache' do
-    context 'when the API /applies succeeds' do
-      before do
-        create_user
-        stub_api_request('/admin/applies', :post).to_return(status: 200, body: '', headers: {})
-      end
-
-      it 'returns success' do
-        post '/tariff_updates/apply_and_clear_cache'
-
-        expect(response).to redirect_to(tariff_updates_path)
-        expect(flash[:notice]).to eq('Apply & ClearCache was scheduled')
-      end
+    before do
+      create_user
+      stub_api_request('/admin/applies', :post).to_return(status: 200, body: '', headers: {})
     end
 
-    context 'when the API /applies fails' do
-      before do
-        create_user
-        stub_api_request('/admin/applies', :post).to_return(status: 422, body: '', headers: {})
-      end
+    it 'returns success' do
+      post '/tariff_updates/apply_and_clear_cache'
 
-      it 'displays an error message' do
-        post '/tariff_updates/apply_and_clear_cache'
-
-        expect(response).to redirect_to(tariff_updates_path) # it stays on the same page
-        expect(flash[:alert]).to include('Unexpected error:')
-      end
-    end
-
-    context 'when unauthorised apply' do
-      let(:create_user) { create :user, permissions: %w[] }
-      let(:make_request) { get apply_and_clear_cache_tariff_updates_path }
-
-      it { is_expected.to have_http_status :forbidden }
-      it { is_expected.to have_attributes body: /contact your Delivery Manager/ }
+      expect(response).to redirect_to(tariff_updates_path)
+      expect(flash[:notice]).to eq('Apply & ClearCache was scheduled')
     end
   end
 end

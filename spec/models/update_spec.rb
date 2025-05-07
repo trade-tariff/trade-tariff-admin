@@ -1,7 +1,7 @@
-RSpec.describe TariffUpdate do
+RSpec.describe Update do
   describe '#state' do
     shared_examples_for 'a tariff update state' do |actual_state, expected_state|
-      subject(:state) { build(:tariff_update, state: actual_state).state }
+      subject(:state) { build(:update, state: actual_state).state }
 
       it { is_expected.to eq(expected_state) }
     end
@@ -14,13 +14,13 @@ RSpec.describe TariffUpdate do
 
   describe '#rollback?' do
     shared_examples_for 'a tariff update that rolls back' do |state, _will_rollback|
-      subject(:tariff_update) { build(:tariff_update, state:) }
+      subject(:tariff_update) { build(:update, state:) }
 
       it { is_expected.to be_rollback }
     end
 
     shared_examples_for 'a tariff update that does not rollback' do |state, _will_rollback|
-      subject(:tariff_update) { build(:tariff_update, state:) }
+      subject(:tariff_update) { build(:update, state:) }
 
       it { is_expected.not_to be_rollback }
     end
@@ -33,13 +33,13 @@ RSpec.describe TariffUpdate do
   end
 
   describe '#issue_date' do
-    subject(:issue_date) { build(:tariff_update, issue_date: Time.zone.today.iso8601).issue_date }
+    subject(:issue_date) { build(:update, issue_date: Time.zone.today.iso8601).issue_date }
 
     it { is_expected.to eq(Time.zone.today) }
   end
 
   describe '#applied_at' do
-    subject(:issue_date) { build(:tariff_update, applied_at: now.iso8601).applied_at }
+    subject(:issue_date) { build(:update, applied_at: now.iso8601).applied_at }
 
     let(:now) { Time.zone.now }
 
@@ -48,20 +48,20 @@ RSpec.describe TariffUpdate do
 
   describe '#id' do
     context 'when the filename contains an gzip suffix' do
-      subject(:id) { build(:tariff_update, filename: 'foo.gzip').id }
+      subject(:id) { build(:update, filename: 'foo.gzip').id }
 
       it { is_expected.to eq('foo') }
     end
 
     context 'when the filename contains an xml suffix' do
-      subject(:id) { build(:tariff_update, filename: 'foo.xml').id }
+      subject(:id) { build(:update, filename: 'foo.xml').id }
 
       it { is_expected.to eq('foo') }
     end
   end
 
   describe '#formatted_update_type' do
-    subject(:parsed_inserts) { build(:tariff_update, update_type:).formatted_update_type }
+    subject(:parsed_inserts) { build(:update, update_type:).formatted_update_type }
 
     context 'when the update type is TariffSynchronizer::TaricUpdate' do
       let(:update_type) { 'TariffSynchronizer::TaricUpdate' }

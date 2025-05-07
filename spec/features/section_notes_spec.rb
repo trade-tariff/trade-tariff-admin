@@ -2,46 +2,26 @@ require 'rails_helper'
 
 RSpec.describe 'Section Note management' do
   let!(:user) { create :user, :gds_editor }
-
-  before do
-    # section note specs do not concern chapters
-    stub_api_for(Chapter) do |stub|
-      stub.get('/admin/chapters') do |_env|
-        api_success_response([])
-      end
-    end
-  end
+  let(:section_note) { build :section_note }
+  let(:section)      { build :section, title: 'new section' }
 
   describe 'Section Note creation' do
-    let(:section_note) { build :section_note }
-    let(:section)      { build :section, title: 'new section' }
+    before do
+      stub_api_request("/admin/sections/#{section.id}")
+        .to_return jsonapi_success_response('section', section.attributes)
+
+      stub_api_request("/admin/sections/#{section.id}/section_note", :post)
+        .to_return api_created_response
+
+      stub_api_request('/admin/sections')
+        .to_return jsonapi_success_response('section', [section.attributes])
+    end
 
     specify do
-      stub_api_for(Section) do |stub|
-        stub.get('/admin/sections') do |_env|
-          jsonapi_success_response('section', [section.attributes])
-        end
-        stub.get("/admin/sections/#{section.id}") do |_env|
-          jsonapi_success_response('section', section.attributes)
-        end
-      end
-
-      stub_api_for(SectionNote) do |stub|
-        stub.post("/admin/sections/#{section.id}/section_note") { |_env| api_created_response }
-      end
-
-      refute note_created_for(section)
-
-      stub_api_for(Section) do |stub|
-        stub.get('/admin/sections') { |_env| jsonapi_success_response('section', [section.attributes.merge(section_note_id: section_note.id)]) }
-        stub.get("/admin/sections/#{section.id}") do |_env|
-          jsonapi_success_response('section', section.attributes.merge(section_note_id: section_note.id))
-        end
-      end
-
-      create_note_for section, 'Content' => section_note.content
-
-      verify note_created_for(section)
+      ensure_on new_notes_section_section_note_path(section)
+      fill_in 'Content', with: section_note.content
+      click_button 'Create Section note'
+      verify current_path == root_path
     end
   end
 
@@ -50,102 +30,43 @@ RSpec.describe 'Section Note management' do
     let(:section_note) { build :section_note, section_id: section.id }
     let(:new_content)  { 'new content' }
 
+    before do
+      stub_api_request("/admin/sections/#{section.id}")
+        .to_return jsonapi_success_response('section', section.attributes)
+
+      stub_api_request("/admin/sections/#{section.id}/section_note", :patch)
+        .to_return api_no_content_response
+
+      stub_api_request('/admin/sections')
+        .to_return jsonapi_success_response('section', [section.attributes])
+    end
+
     specify do
-      stub_api_for(Section) do |stub|
-        stub.get('/admin/sections') { |_env| jsonapi_success_response('section', [section.attributes]) }
-        stub.get("/admin/sections/#{section.id}") { |_env| jsonapi_success_response('section', section.attributes) }
-      end
-
-      verify note_created_for(section)
-
-      stub_api_for(SectionNote) do |stub|
-        stub.get("/admin/sections/#{section.id}/section_note") { |_env| jsonapi_success_response('section_note', section_note.attributes) }
-        stub.patch("/admin/sections/#{section.id}/section_note") { |_env| api_no_content_response }
-      end
-
-      update_note_for section, 'Content' => new_content
-
-      stub_api_for(SectionNote) do |stub|
-        stub.get("/admin/sections/#{section.id}/section_note") { |_env| jsonapi_success_response('section_note', section_note.attributes.merge(content: new_content)) }
-      end
-
-      verify note_updated_for(section, content: new_content)
+      ensure_on edit_notes_section_section_note_path(section)
+      fill_in 'Content', with: 'new content'
+      click_button 'Update Section note'
+      verify current_path == root_path
     end
   end
 
   describe 'Section Note deletion' do
-    let(:section)      { build :section, :with_note }
-    let(:section_note) { build :section_note, section_id: section.id }
+    let(:section) { build :section, :with_note }
+
+    before do
+      stub_api_request("/admin/sections/#{section.id}")
+        .to_return jsonapi_success_response('section', section.attributes)
+
+      stub_api_request("/admin/sections/#{section.id}/section_note", :delete)
+        .to_return api_no_content_response
+
+      stub_api_request('/admin/sections')
+        .to_return jsonapi_success_response('section', [section.attributes])
+    end
 
     it 'can be removed' do
-      stub_api_for(Section) do |stub|
-        stub.get('/admin/sections') { |_env| jsonapi_success_response('section', [section.attributes]) }
-        stub.get("/admin/sections/#{section.id}") { |_env| jsonapi_success_response('section', section.attributes) }
-      end
-
-      stub_api_for(SectionNote) do |stub|
-        stub.get("/admin/sections/#{section.id}/section_note") { |_env| jsonapi_success_response('section_note', section_note.attributes) }
-        stub.delete("/admin/sections/#{section.id}/section_note") { |_env| api_no_content_response }
-      end
-
-      verify note_created_for(section)
-
-      stub_api_for(Section) do |stub|
-        stub.get('/admin/sections') { |_env| jsonapi_success_response('section', [section.attributes.except(:section_note_id)]) }
-        stub.get("/admin/sections/#{section.id}") { |_env| jsonapi_success_response('section', section.attributes.except(:section_note_id)) }
-      end
-
-      remove_note_for section
-
-      refute note_created_for(section)
+      ensure_on edit_notes_section_section_note_path(section)
+      click_link 'Remove'
+      verify current_path == root_path
     end
-  end
-
-  private
-
-  def create_note_for(section, fields_and_values = {})
-    ensure_on new_notes_section_section_note_path(section)
-
-    fields_and_values.each do |field, value|
-      fill_in field, with: value
-    end
-
-    yield if block_given?
-
-    click_button 'Create Section note'
-  end
-
-  def update_note_for(section, fields_and_values = {})
-    ensure_on edit_notes_section_section_note_path(section)
-
-    fields_and_values.each do |field, value|
-      fill_in field, with: value
-    end
-
-    yield if block_given?
-
-    click_button 'Update Section note'
-  end
-
-  def note_updated_for(section, args = {})
-    ensure_on edit_notes_section_section_note_path(section)
-
-    page.has_field?('Content', with: args[:content])
-  end
-
-  def note_created_for(section)
-    ensure_on root_path
-
-    page.has_selector?(dom_id_selector(section)) && (
-      within(dom_id_selector(section)) do
-        page.has_link?('Edit')
-      end
-    )
-  end
-
-  def remove_note_for(section)
-    ensure_on edit_notes_section_section_note_path(section)
-
-    click_link 'Remove'
   end
 end

@@ -1,7 +1,7 @@
 ENV['RAILS_ENV'] ||= 'test'
 
 require 'simplecov'
-require 'rspec/rebound'
+# require 'rspec/rebound'
 
 SimpleCov.start 'rails'
 SimpleCov.formatters = SimpleCov::Formatter::HTMLFormatter
@@ -30,8 +30,8 @@ RSpec.configure do |config|
   config.expose_dsl_globally = false
 
   config.include Rails.application.routes.url_helpers
-  config.include ApiResponsesHelper
   config.include FactoryBot::Syntax::Methods
+  config.include ApiResponsesHelper
   config.include FeaturesHelper, type: :feature
 
   config.before(:suite) do

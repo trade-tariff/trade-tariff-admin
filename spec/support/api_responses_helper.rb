@@ -1,45 +1,60 @@
 module ApiResponsesHelper
-  def stub_api_for(klass, &block)
-    klass.use_api(api = Her::API.new)
-
-    api.setup url: ENV['TARIFF_API_HOST'] do |c|
-      c.use Her::Middleware::HeaderMetadataParse
-      c.use Her::Middleware::TariffJsonapiParser
-
-      c.adapter(:test, &block)
-    end
-  end
-
   def api_success_response(response = {}, headers = {})
-    [200, headers, response.to_json]
+    {
+      status: 200,
+      headers: headers,
+      body: response.to_json,
+    }
   end
 
   def jsonapi_success_response(type, response = {}, headers = {})
     formatted_response = format_jsonapi_response(type, response)
 
-    [200, headers, formatted_response.to_json]
+    {
+      status: 200,
+      headers: headers,
+      body: formatted_response.to_json,
+    }
   end
 
   def api_created_response(body = {}, headers = {})
-    api_response(201, headers, body)
+    {
+      status: 201,
+      headers: headers,
+      body: body.to_json,
+    }
   end
 
   def api_updated_response(resource_url)
-    api_success_response({}, location: resource_url)
+    {
+      status: 200,
+      headers: { 'location' => resource_url },
+      body: {}.to_json,
+    }
   end
 
-  def api_no_content_response(body = {}, headers = {})
-    api_response(204, headers, body)
+  def api_no_content_response(headers = {})
+    {
+      status: 204,
+      headers: headers,
+      body: nil,
+    }
   end
 
   def api_error_response(errors, headers = {})
-    api_response(422,
-                 headers.reverse_merge('content-type' => 'application/json'),
-                 format_jsonapi_errors(errors))
+    {
+      status: 422,
+      headers: headers.reverse_merge('content-type' => 'application/json'),
+      body: format_jsonapi_errors(errors).to_json,
+    }
   end
 
   def api_response(status, headers, body)
-    [status, headers, body.to_json]
+    {
+      status: status,
+      headers: headers,
+      body: body.to_json,
+    }
   end
 
   def format_jsonapi_response(type, response)
@@ -86,7 +101,6 @@ module ApiResponsesHelper
     }
   end
 
-  # Wrapper around WebMock's stub_request with defaults that apply to all our api requests
   def stub_api_request(endpoint, method = :get, backend: nil)
     backend_url = if backend
                     TradeTariffAdmin::ServiceChooser.service_choices[backend]
@@ -113,12 +127,6 @@ module ApiResponsesHelper
   # Wrapper around the existing api response helpers to allow them to work with
   # with WebMock
   def webmock_response(response_type, *args)
-    response_data = send(:"api_#{response_type}_response", *args)
-
-    {
-      status: response_data[0],
-      headers: response_data[1],
-      body: response_data[2],
-    }
+    send(:"api_#{response_type}_response", *args)
   end
 end

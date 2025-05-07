@@ -2,17 +2,15 @@ module GreenLanes
   class ExemptingAdditionalCodeOverridesController < AuthenticatedController
     include XiOnly
 
-    before_action :disable_service_switching!
-    before_action :check_service
-
     def new
       @exempting_additional_code_override = GreenLanes::ExemptingAdditionalCodeOverride.new
     end
 
     def create
-      @exempting_additional_code_override = GreenLanes::ExemptingAdditionalCodeOverride.new(eaco_params)
+      @exempting_additional_code_override = GreenLanes::ExemptingAdditionalCodeOverride.build(eaco_params)
+      @exempting_additional_code_override.save
 
-      if @exempting_additional_code_override.valid? && @exempting_additional_code_override.save
+      if @exempting_additional_code_override.errors.none?
         redirect_to green_lanes_exempting_overrides_path, notice: 'Exempting Additional Code Override created'
       else
         render :new
@@ -20,7 +18,7 @@ module GreenLanes
     end
 
     def destroy
-      @exempting_additional_code_override = GreenLanes::ExemptingAdditionalCodeOverride.find(params[:id])
+      @exempting_additional_code_override = GreenLanes::ExemptingAdditionalCodeOverride.build(resource_id: params[:id])
       @exempting_additional_code_override.destroy
 
       redirect_to green_lanes_exempting_overrides_path, notice: 'Exempting Additional Code Override removed'

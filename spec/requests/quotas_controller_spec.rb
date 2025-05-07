@@ -48,7 +48,7 @@ RSpec.describe QuotasController do
     before do
       create(:user, :hmrc_editor)
 
-      allow(QuotaOrderNumbers::QuotaDefinition).to receive(:by_quota_order_number).and_return(quota_definitions)
+      allow(QuotaOrderNumbers::QuotaDefinition).to receive(:all).and_return(quota_definitions)
     end
 
     context 'when on uk service' do
@@ -57,7 +57,7 @@ RSpec.describe QuotasController do
       it 'fetches the quota definition' do
         do_request
 
-        expect(QuotaOrderNumbers::QuotaDefinition).to have_received(:by_quota_order_number).with(quota_definition.quota_order_number_id)
+        expect(QuotaOrderNumbers::QuotaDefinition).to have_received(:all).with(quota_order_number_id: quota_definition.quota_order_number_id)
       end
 
       it { is_expected.to render_template(:search) }
@@ -83,7 +83,7 @@ RSpec.describe QuotasController do
     before do
       create(:user, :hmrc_editor)
 
-      allow(QuotaOrderNumbers::QuotaDefinition).to receive(:find).with(id: '22619', _quota_order_number_id: '051822').and_return(quota_definition)
+      allow(QuotaOrderNumbers::QuotaDefinition).to receive(:find).with('22619', quota_order_number_id: '051822').and_return(quota_definition)
     end
 
     let(:quota_definition) do
@@ -105,7 +105,7 @@ RSpec.describe QuotasController do
 
       expect(QuotaOrderNumbers::QuotaDefinition)
         .to have_received(:find)
-        .with(id: quota_definition.id, _quota_order_number_id: quota_definition.quota_order_number_id)
+        .with(quota_definition.id, quota_order_number_id: quota_definition.quota_order_number_id)
     end
 
     it { is_expected.to render_template(:show) }

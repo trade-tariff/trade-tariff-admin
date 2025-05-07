@@ -1,36 +1,36 @@
-RSpec.describe TariffUpdate::Inserts do
+RSpec.describe Update::Inserts do
   describe '#total_duration_in_seconds' do
-    subject(:total_duration_in_seconds) { build(:tariff_update, :with_inserts).inserts.total_duration_in_seconds }
+    subject(:total_duration_in_seconds) { build(:update, :with_inserts).inserts.total_duration_in_seconds }
 
     it { is_expected.to eq(5.197715087890625) }
   end
 
   describe '#total_records_affected' do
-    subject(:total_records_affected) { build(:tariff_update, :with_inserts).inserts.total_records_affected }
+    subject(:total_records_affected) { build(:update, :with_inserts).inserts.total_records_affected }
 
     it { is_expected.to eq(3002) }
   end
 
   describe '#total_records_created' do
-    subject(:total_records_created) { build(:tariff_update, :with_inserts).inserts.total_records_created }
+    subject(:total_records_created) { build(:update, :with_inserts).inserts.total_records_created }
 
     it { is_expected.to eq(2909) }
   end
 
   describe '#total_records_updated' do
-    subject(:total_records_updated) { build(:tariff_update, :with_inserts).inserts.total_records_updated }
+    subject(:total_records_updated) { build(:update, :with_inserts).inserts.total_records_updated }
 
     it { is_expected.to eq(93) }
   end
 
   describe '#total_records_destroyed' do
-    subject(:total_records_destroyed) { build(:tariff_update, :with_inserts).inserts.total_records_destroyed }
+    subject(:total_records_destroyed) { build(:update, :with_inserts).inserts.total_records_destroyed }
 
     it { is_expected.to eq(4) }
   end
 
   describe '#updated_entities' do
-    subject(:updated_entities) { build(:tariff_update, :with_inserts).inserts.updated_entities }
+    subject(:updated_entities) { build(:update, :with_inserts).inserts.updated_entities }
 
     let(:expected_updated_entities) do
       [
@@ -51,13 +51,13 @@ RSpec.describe TariffUpdate::Inserts do
 
   describe '#any_updates?' do
     context 'when there are inserts' do
-      subject(:inserts) { build(:tariff_update, :with_inserts).inserts }
+      subject(:inserts) { build(:update, :with_inserts).inserts }
 
       it { is_expected.to be_any_updates }
     end
 
     context 'when there are no inserts' do
-      subject(:inserts) { build(:tariff_update, :with_empty_inserts).inserts }
+      subject(:inserts) { build(:update, :with_empty_inserts).inserts }
 
       it { is_expected.not_to be_any_updates }
     end
@@ -65,20 +65,20 @@ RSpec.describe TariffUpdate::Inserts do
 
   describe '#updated_inserts?' do
     context 'when the new format of inserts are present' do
-      subject(:inserts) { build(:tariff_update, :with_inserts).inserts }
+      subject(:inserts) { build(:update, :with_inserts).inserts }
 
       it { is_expected.to be_updated_inserts }
     end
 
     context 'when the old format of inserts are present' do
-      subject(:inserts) { build(:tariff_update, :with_old_inserts).inserts }
+      subject(:inserts) { build(:update, :with_old_inserts).inserts }
 
       it { is_expected.not_to be_updated_inserts }
     end
   end
 
   describe '#parsed_inserts' do
-    subject(:parsed_inserts) { build(:tariff_update, inserts:).inserts.parsed_inserts }
+    subject(:parsed_inserts) { build(:update, inserts:).inserts.parsed_inserts }
 
     context 'when there are inserts' do
       let(:inserts) { '{"foo":"bar"}' }
