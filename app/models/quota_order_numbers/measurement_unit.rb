@@ -1,7 +1,7 @@
 module QuotaOrderNumbers
   class MeasurementUnit
-    include Her::JsonApi::Model
+    include ApiEntity
 
-    attributes :description, :measurement_unit_code, :abbreviation
+    attr_accessor :description, :measurement_unit_code, :abbreviation
   end
 end

@@ -2,22 +2,21 @@ class RollbacksController < AuthenticatedController
   before_action :authorize_user if TradeTariffAdmin.authenticate_with_sso?
 
   def index
-    @rollbacks = Rollback.all(page: current_page).fetch
+    @rollbacks = Rollback.all(page: current_page)
   end
 
   def new
     @rollback = Rollback.new
-    @rollback.attributes = rollback_params if params[:rollback].present?
   end
 
   def create
     @rollback = Rollback.new(rollback_params)
     @rollback.user = current_user
+    @rollback.save
 
-    if @rollback.valid? && @rollback.save
+    if @rollback.errors.none?
       redirect_to rollbacks_path, notice: 'Rollback was scheduled'
     else
-      @rollback.initialize_errors
       render :new, status: :unprocessable_entity
     end
   end

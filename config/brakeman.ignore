@@ -9,7 +9,7 @@
       "file": "app/views/tariff_updates/show.html.erb",
       "line": 14,
       "link": "https://brakemanscanner.org/docs/warning_types/link_to_href",
-      "code": "link_to(\"Download\", TariffUpdate.find(params[:id]).file_presigned_url, :target => \"_blank\", :title => TariffUpdate.find(params[:id]).filename)",
+      "code": "link_to(\"Download\", Update.find(params[:id]).file_presigned_url, :target => \"_blank\", :title => Update.find(params[:id]).filename)",
       "render_path": [
         {
           "type": "controller",
@@ -27,7 +27,7 @@
         "type": "template",
         "template": "tariff_updates/show"
       },
-      "user_input": "TariffUpdate.find(params[:id]).file_presigned_url",
+      "user_input": "Update.find(params[:id]).file_presigned_url",
       "confidence": "Weak",
       "note": ""
     },

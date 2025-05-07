@@ -3,7 +3,7 @@ FactoryBot.define do
   sequence(:search_reference_title) { |n| "title #{n}" }
 
   factory :search_reference do
-    id    { generate(:search_reference_id) }
+    resource_id { generate(:search_reference_id) }
     title { generate(:search_reference_title) }
   end
 

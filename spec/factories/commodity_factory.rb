@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :commodity do
-    id do
+    resource_id do
       referenced_id = 10.times.map { Random.rand(1..9) }.join
       productline_suffix = 2.times.map { Random.rand(1..9) }.join
 

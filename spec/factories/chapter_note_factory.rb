@@ -5,7 +5,7 @@ FactoryBot.define do
     content { 'Content of note' }
 
     trait :persisted do
-      id { generate(:chapter_note_id) }
+      resource_id { generate(:chapter_note_id) }
     end
   end
 end

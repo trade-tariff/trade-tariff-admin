@@ -63,4 +63,10 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
+
+  config.x.http.retry_options = {
+    interval: 0,
+    interval_randomness: 0,
+    backoff_factor: 0,
+  }
 end

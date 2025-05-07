@@ -1,9 +1,7 @@
 class Download
-  include Her::JsonApi::Model
+  include ApiEntity
 
-  attributes :user_id
-
-  collection_path '/admin/downloads'
+  attr_accessor :user_id
 
   def user=(user)
     self.user_id = user.id

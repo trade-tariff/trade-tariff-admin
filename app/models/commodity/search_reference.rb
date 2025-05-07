@@ -1,11 +1,5 @@
 class Commodity
   class SearchReference < ::SearchReference
-    attributes :productline_suffix
-
-    collection_path '/admin/commodities/:referenced_id-:productline_suffix/search_references'
-
-    type name.demodulize.tableize
-
     # We special case the commodity with the override below because its id is formed of the composite keys of
     # goods_nomenclature_item_id and the productline_suffix. Without this we would fail to be able to
     # manage subheading commodities that have the same goods_nomenclature_item_id.

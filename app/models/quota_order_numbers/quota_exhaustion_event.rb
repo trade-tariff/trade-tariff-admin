@@ -1,10 +1,10 @@
 module QuotaOrderNumbers
   class QuotaExhaustionEvent
-    include Her::JsonApi::Model
+    include ApiEntity
 
-    attributes :id,
-               :exhaustion_date,
-               :event_type
+    attr_accessor :id,
+                  :exhaustion_date,
+                  :event_type
 
     alias_attribute :event_date, :exhaustion_date
   end

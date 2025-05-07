@@ -24,8 +24,11 @@ gem 'govspeak'
 gem 'govuk_publishing_components'
 
 # API
-gem 'faraday_middleware'
-gem 'her'
+gem 'faraday'
+gem 'faraday-net_http_persistent'
+gem 'faraday-retry'
+gem 'multi_json'
+gem 'net-http-persistent'
 
 # Authorization / SSO
 gem 'gds-sso'
@@ -35,7 +38,6 @@ gem 'pundit'
 # Helpers
 gem 'kaminari'
 gem 'responders'
-gem 'simple_form'
 
 # Logging
 gem 'lograge'

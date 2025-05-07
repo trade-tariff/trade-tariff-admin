@@ -37,12 +37,12 @@
                                       active: active_nav_link?(/\/quotas/) if TradeTariffAdmin::ServiceChooser.uk? %>
 
       <% if respond_to?(:policy) || !TradeTariffAdmin.authenticate_with_sso? %>
-        <% if !TradeTariffAdmin.authenticate_with_sso? || policy(TariffUpdate).access? %>
+        <% if !TradeTariffAdmin.authenticate_with_sso? || policy(Update).access? %>
           <%= header.with_navigation_item text: "Updates",
                                           href: tariff_updates_path,
                                           active: active_nav_link?(/\/tariff_updates/)  %>
         <% end %>
-        <% if !TradeTariffAdmin.authenticate_with_sso? || policy(TariffUpdate).access? %>
+        <% if !TradeTariffAdmin.authenticate_with_sso? || policy(Update).access? %>
           <%= header.with_navigation_item text: "Rollbacks",
                                           href: rollbacks_path,
                                           active: active_nav_link?(/\/rollbacks/) %>

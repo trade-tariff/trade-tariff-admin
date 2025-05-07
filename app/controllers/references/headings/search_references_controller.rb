@@ -8,10 +8,6 @@ module References
       end
       alias_method :heading, :search_reference_parent
       helper_method :heading
-
-      def scope
-        :references
-      end
     end
   end
 end
