@@ -2,11 +2,11 @@ class TariffUpdatesController < AuthenticatedController
   before_action :authorize_user if TradeTariffAdmin.authenticate_with_sso?
 
   def index
-    @tariff_updates = TariffUpdate.all(page: current_page).fetch
+    @tariff_updates = Update.all(page: current_page)
   end
 
   def show
-    @tariff_update = TariffUpdate.find(params[:id])
+    @tariff_update = Update.find(params[:id])
   end
 
   def download
@@ -30,7 +30,7 @@ class TariffUpdatesController < AuthenticatedController
   private
 
   def authorize_user
-    authorize TariffUpdate, :access?
+    authorize Update, :access?
   end
 
   def error_messages_for(model)

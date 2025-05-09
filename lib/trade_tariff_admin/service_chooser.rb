@@ -1,6 +1,14 @@
 module TradeTariffAdmin
   module ServiceChooser
     class << self
+      def xi_host
+        service_choices['xi']
+      end
+
+      def uk_host
+        service_choices['uk']
+      end
+
       def service_default
         ENV.fetch('SERVICE_DEFAULT', 'uk')
       end
@@ -27,6 +35,13 @@ module TradeTariffAdmin
         return service_choices[service_default] if host.blank?
 
         host
+      end
+
+      def api_client(forced_service = nil)
+        return Rails.application.config.public_send("http_client_#{forced_service}") if forced_service
+        return Rails.application.config.http_client_xi if xi?
+
+        Rails.application.config.http_client_uk
       end
 
       def uk?

@@ -1,13 +1,11 @@
 module GreenLanes
   class Exemption
-    include Her::JsonApi::Model
-    use_api Her::XI_API
-    extend HerPaginatable
+    include ApiEntity
 
-    attributes :code,
-               :description
+    attr_accessor :code,
+                  :description
 
-    collection_path '/admin/green_lanes/exemptions'
+    set_collection_path '/admin/green_lanes/exemptions'
 
     def label
       "#{code} - #{description}"

@@ -1,7 +1,7 @@
 module GreenLanes
   class MeasurePagination
-    include Her::JsonApi::Model
+    include ApiEntity
 
-    attributes :total_pages, :current_page, :limit_value
+    attr_accessor :total_pages, :current_page, :limit_value
   end
 end

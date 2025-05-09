@@ -1,10 +1,10 @@
 module QuotaOrderNumbers
   class QuotaOrderNumber
-    include Her::JsonApi::Model
+    include ApiEntity
 
-    attributes :id,
-               :quota_order_number_sid,
-               :validity_start_date,
-               :validity_end_date
+    attr_accessor :id,
+                  :quota_order_number_sid,
+                  :validity_start_date,
+                  :validity_end_date
   end
 end

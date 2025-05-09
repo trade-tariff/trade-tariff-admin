@@ -30,7 +30,6 @@ RSpec.configure do |config|
   config.expose_dsl_globally = false
 
   config.include Rails.application.routes.url_helpers
-  config.include ApiResponsesHelper
   config.include FactoryBot::Syntax::Methods
   config.include FeaturesHelper, type: :feature
 

@@ -1,10 +1,8 @@
 module GreenLanes
   class Measure
-    include Her::JsonApi::Model
-    use_api Her::XI_API
-    extend HerPaginatable
+    include ApiEntity
 
-    attributes :productline_suffix, :goods_nomenclature_item_id, :category_assessment_id
+    attr_accessor :productline_suffix, :goods_nomenclature_item_id, :category_assessment_id
 
     has_one :category_assessment
     has_one :goods_nomenclature
@@ -12,7 +10,7 @@ module GreenLanes
     validates :productline_suffix, presence: { message: 'Product Line Suffix cannot be blank' }
     validates :goods_nomenclature_item_id, presence: { message: 'Goods Nomenclature Item Id cannot be blank' }
 
-    collection_path '/admin/green_lanes/measures'
+    set_collection_path '/admin/green_lanes/measures'
 
     def initialize(attributes = {})
       super

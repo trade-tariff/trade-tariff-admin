@@ -1,10 +1,10 @@
 module QuotaOrderNumbers
   class QuotaReopeningEvent
-    include Her::JsonApi::Model
+    include ApiEntity
 
-    attributes :id,
-               :reopening_date,
-               :event_type
+    attr_accessor :id,
+                  :reopening_date,
+                  :event_type
 
     alias_attribute :event_date, :reopening_date
   end

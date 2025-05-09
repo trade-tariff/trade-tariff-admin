@@ -5,7 +5,7 @@ RSpec.describe 'Tariff Update listing' do
   let(:tariff_update) { attributes_for(:tariff_update, :cds, :failed, :with_exception) }
 
   before do
-    stub_api_for(TariffUpdate) do |stub|
+    stub_api_for(Update) do |stub|
       stub.get('/admin/updates') do |_env|
         api_success_response(
           data: [{ type: 'tariff_update', attributes: tariff_update }],

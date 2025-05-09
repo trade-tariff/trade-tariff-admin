@@ -1,11 +1,7 @@
 class Apply
-  # Post to /admin/applies
+  include ApiEntity
 
-  include Her::JsonApi::Model
-
-  attributes :user_id
-
-  collection_path '/admin/applies'
+  attr_accessor :user_id
 
   def user=(user)
     self.user_id = user.id

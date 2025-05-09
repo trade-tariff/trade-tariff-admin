@@ -1,5 +1,5 @@
 FactoryBot.define do
-  factory :tariff_update do
+  factory :update do
     update_type { 'TariffSynchronizer::TaricUpdate' }
     state { %w[A M P F].sample }
     issue_date { Time.zone.today.iso8601 }

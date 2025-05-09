@@ -3,8 +3,7 @@ module References
     before_action :authorize_user if TradeTariffAdmin.authenticate_with_sso?
 
     def index
-      @search_references = search_reference_parent.search_references.all(page:, per_page:)
-      @search_references = Kaminari.paginate_array(@search_references, total_count: @search_references.metadata[:pagination][:total]).page(page).per(per_page)
+      @search_references = search_reference_parent.search_references(page:, per_page:)
     end
 
     def new
@@ -80,15 +79,8 @@ module References
       raise NotImplementedError, 'Please override #search_reference_parent'
     end
 
-    def scope
-      raise NotImplementedError, 'Please override #scope'
-    end
-
     def build_search_reference
-      search_reference_parent.search_references.build(title: normalised_title).tap do |reference|
-        reference.referenced_id = search_reference_parent.id
-        reference.productline_suffix = search_reference_parent.producline_suffix
-      end
+      search_reference_parent.search_references.build(title: normalised_title)
     end
   end
 end

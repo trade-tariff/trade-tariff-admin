@@ -1,4 +1,4 @@
-RSpec.describe TariffUpdate do
+RSpec.describe Update do
   describe '#state' do
     shared_examples_for 'a tariff update state' do |actual_state, expected_state|
       subject(:state) { build(:tariff_update, state: actual_state).state }

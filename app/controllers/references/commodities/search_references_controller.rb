@@ -8,10 +8,6 @@ module References
       end
       alias_method :commodity, :search_reference_parent
       helper_method :commodity
-
-      def scope
-        :references
-      end
     end
   end
 end

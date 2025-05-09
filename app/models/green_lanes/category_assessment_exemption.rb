@@ -1,9 +1,8 @@
 module GreenLanes
   class CategoryAssessmentExemption
-    include Her::JsonApi::Model
-    use_api Her::XI_API
+    include ApiEntity
 
-    attributes :category_assessment_id, :exemption_id
+    attr_accessor :category_assessment_id, :exemption_id
 
     validates :exemption_id, presence: { message: 'Exemption cannot be blank' }
     validates :category_assessment_id, presence: true

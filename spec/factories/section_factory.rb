@@ -2,7 +2,7 @@ FactoryBot.define do
   sequence(:section_id) { |n| n }
 
   factory :section do
-    id              { generate(:section_id) }
+    resource_id { generate(:section_id) }
     section_note_id { nil }
     position        { id }
     numeral         { id }

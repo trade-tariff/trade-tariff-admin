@@ -1,4 +1,4 @@
-RSpec.describe TariffUpdate::Inserts do
+RSpec.describe Update::Inserts do
   describe '#total_duration_in_seconds' do
     subject(:total_duration_in_seconds) { build(:tariff_update, :with_inserts).inserts.total_duration_in_seconds }
 

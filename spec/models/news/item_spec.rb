@@ -3,7 +3,6 @@ require 'rails_helper'
 RSpec.describe News::Item do
   subject(:news_item) { build :news_item, :home_page, :updates_page, :banner }
 
-  it { is_expected.to respond_to :id }
   it { is_expected.to respond_to :title }
   it { is_expected.to respond_to :content }
   it { is_expected.to respond_to :display_style }

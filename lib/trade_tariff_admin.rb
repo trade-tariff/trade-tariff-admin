@@ -1,14 +1,11 @@
-# TODO: Remove these and autoload from lib correctly
-require 'faraday_middleware/bearer_token_authentication'
-require 'faraday_middleware/service_urls'
-require 'her/middleware/raise_error'
-require 'her/middleware/header_metadata_parse'
-require 'her/middleware/tariff_jsonapi_parser'
-
 require_relative './trade_tariff_admin'
 
 module TradeTariffAdmin
   class << self
+    def revision
+      `cat REVISION 2>/dev/null || git rev-parse --short HEAD`.strip
+    end
+
     def host
       ENV.fetch('ADMIN_HOST', 'http://localhost')
     end
