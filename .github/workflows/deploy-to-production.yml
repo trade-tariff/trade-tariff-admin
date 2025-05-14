@@ -7,11 +7,6 @@ on:
     types:
       - completed
   workflow_dispatch:
-    inputs:
-      ref:
-        description: 'The git ref to deploy'
-        required: true
-        default: 'main'
 
 permissions:
   contents: read
@@ -33,7 +28,7 @@ jobs:
       - uses: trade-tariff/trade-tariff-tools/.github/actions/build-and-push@main
         with:
           ecr-url: ${{ env.ECR_URL }}
-          ref: ${{ inputs.ref || steps.docker-tag.outputs.DOCKER_TAG }}
+          ref: ${{ steps.docker-tag.outputs.DOCKER_TAG }}
 
   deploy:
     environment: production
@@ -47,7 +42,7 @@ jobs:
       - uses: trade-tariff/trade-tariff-tools/.github/actions/terraform-apply@main
         with:
           environment: ${{ env.ENVIRONMENT }}
-          ref: ${{ inputs.ref || steps.docker-tag.outputs.DOCKER_TAG }}
+          ref: ${{ steps.docker-tag.outputs.DOCKER_TAG }}
           ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
 
   tag:
@@ -60,7 +55,7 @@ jobs:
       - uses: trade-tariff/trade-tariff-tools/.github/actions/tag-production@main
         with:
           ecr-url: ${{ env.ECR_URL }}
-          ref: ${{ inputs.ref || steps.docker-tag.outputs.DOCKER_TAG }}
+          ref: ${{ steps.docker-tag.outputs.DOCKER_TAG }}
 
   post-deploy:
     uses: trade-tariff/trade-tariff-tools/.github/workflows/e2e-tests.yml@main
