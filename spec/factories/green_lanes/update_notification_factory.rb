@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :update_notification, class: 'GreenLanes::UpdateNotification' do
-    sequence(:id) { |n| n }
+    sequence(:resource_id) { |n| n }
     measure_type_id { '464' }
     regulation_id { 'R9700880' }
     regulation_role { '3' }

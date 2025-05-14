@@ -1,35 +1,32 @@
 require 'commodity/search_reference'
 
 class Commodity
-  include Her::JsonApi::Model
+  include ApiEntity
 
-  collection_path '/admin/commodities'
+  attributes :goods_nomenclature_item_id,
+             :producline_suffix,
+             :description,
+             :declarable
 
-  attributes :id, :description, :declarable
-
-  has_many :search_references, class_name: 'Commodity::SearchReference'
-
-  def productline_suffix
-    id.split('-', 2).last
-  end
-
-  def goods_nomenclature_item_id
-    id.split('-', 2).first
+  def search_references(page: 1, per_page: 5)
+    Commodity::SearchReference.all(casted_by: self, page:, per_page:)
   end
 
   def heading_id
     goods_nomenclature_item_id.first(4)
   end
 
-  def export_filename
-    "#{self.class.name.tableize}-#{id}-references-#{Time.zone.now.iso8601}.csv"
-  end
-
   def reference_title
     "Commodity (#{goods_nomenclature_item_id})"
   end
 
-  def request_path(_opts = {})
-    self.class.build_request_path("/admin/commodities/#{to_param}", attributes.dup)
+  def to_param
+    if goods_nomenclature_item_id && producline_suffix
+      "#{goods_nomenclature_item_id}-#{producline_suffix}"
+    else
+      resource_id
+    end
   end
+
+  alias_method :declarable?, :declarable
 end

@@ -1,13 +1,11 @@
 module News
   class Item
-    include Her::JsonApi::Model
-    use_api Her::UK_API
-    extend HerPaginatable
+    include ApiEntity
+
+    uk_only
 
     DISPLAY_STYLE_REGULAR = 0
     MAX_SLUG_LENGTH = 254
-
-    collection_path '/admin/news/items'
 
     attributes :title,
                :slug,
@@ -22,14 +20,15 @@ module News
                :start_date,
                :end_date,
                :chapters,
-               :collection_ids
+               :created_at,
+               :updated_at
 
-    after_initialize { self.collection_ids = [] unless collection_ids }
-
-    before_validation :generate_or_normalise_slug!
+    def collection_ids
+      @collection_ids ||= []
+    end
 
     def collection_ids=(ids)
-      super Array.wrap(ids).map(&:presence).compact.map(&:to_i).uniq
+      @collection_ids = Array(ids).map(&:presence).compact.uniq.map(&:to_i)
     end
 
     def preview(field_name = nil)
@@ -38,8 +37,6 @@ module News
       GovspeakPreview.new(markdown).render
     end
 
-    private
-
     def generate_or_normalise_slug!
       current_slug = slug.presence || title.presence
       return unless current_slug
@@ -47,6 +44,8 @@ module News
       normalised_slug = normalise_slug(slug.presence || title)
       self.slug = normalised_slug if slug != normalised_slug
     end
+
+    private
 
     def normalise_slug(slug)
       slug.downcase.gsub(/\s+/, '-').gsub(/[^a-z0-9-]/, '').first(MAX_SLUG_LENGTH)

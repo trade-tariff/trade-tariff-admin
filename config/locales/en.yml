@@ -84,3 +84,13 @@ en:
           attributes:
             password:
               inclusion: Incorrect password
+        green_lanes/measure:
+          attributes:
+            productline_suffix:
+              blank: Product Line Suffix cannot be blank
+            goods_nomenclature_item_id:
+              blank: Goods Nomenclature Item Id cannot be blank
+        green_lanes/category_assessment_exemption:
+          attributes:
+            exemption_id:
+              blank: Exemption cannot be blank

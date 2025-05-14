@@ -8,10 +8,6 @@ module References
       end
       alias_method :chapter, :search_reference_parent
       helper_method :chapter
-
-      def scope
-        :references
-      end
     end
   end
 end

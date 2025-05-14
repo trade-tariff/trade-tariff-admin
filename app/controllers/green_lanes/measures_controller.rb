@@ -2,19 +2,17 @@ module GreenLanes
   class MeasuresController < AuthenticatedController
     include XiOnly
 
-    before_action :disable_service_switching!
-    before_action :check_service
     def index
-      @measures = GreenLanes::Measure.all(page: current_page).fetch
+      @measures = GreenLanes::Measure.all(page: current_page)
     end
 
     def destroy
-      @measure = GreenLanes::Measure.find(params[:id])
+      @measure = GreenLanes::Measure.build(resource_id: params[:id])
       category_assessment_id = params[:category_assessment_id]
       @measure.destroy
 
       if category_assessment_id.present?
-        redirect_to edit_green_lanes_category_assessment_path(id: category_assessment_id), notice: 'Goods Nomenclature removed successfully'
+        redirect_to edit_green_lanes_category_assessment_path(id: category_assessment_id), notice: 'Measure removed'
       else
         redirect_to green_lanes_measures_path, notice: 'Measure removed'
       end

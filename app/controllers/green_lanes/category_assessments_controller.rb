@@ -3,26 +3,25 @@ module GreenLanes
     include Sortable
     include XiOnly
 
-    before_action :disable_service_switching!
-    before_action :check_service
     def index
       merge_filters
-      @category_assessments = GreenLanes::CategoryAssessment.all(search_params).fetch
-      @themes = GreenLanes::Theme.all.fetch
+      @category_assessments = GreenLanes::CategoryAssessment.all(search_params)
+      @themes = GreenLanes::Theme.all
     end
 
     def new
       @category_assessment = GreenLanes::CategoryAssessment.new
-      @themes = GreenLanes::Theme.all.fetch
+      @themes = GreenLanes::Theme.all
     end
 
     def create
       @category_assessment = GreenLanes::CategoryAssessment.new(ca_params)
+      @category_assessment.save
 
-      if @category_assessment.valid? && @category_assessment.save
+      if @category_assessment.errors.none?
         redirect_to green_lanes_category_assessments_path, notice: 'Category Assessment created'
       else
-        @themes = GreenLanes::Theme.all.fetch
+        @themes = GreenLanes::Theme.all
         render :new
       end
     end
@@ -33,10 +32,10 @@ module GreenLanes
     end
 
     def update
-      @category_assessment = GreenLanes::CategoryAssessment.find(params[:id])
-      @category_assessment.attributes = ca_params
+      @category_assessment = GreenLanes::CategoryAssessment.build(ca_params.merge(resource_id: params[:id]))
+      @category_assessment.save
 
-      if @category_assessment.valid? && @category_assessment.save
+      if @category_assessment.errors.none?
         redirect_to green_lanes_category_assessments_path, notice: 'Category Assessment updated'
       else
         prepare_edit
@@ -111,9 +110,9 @@ module GreenLanes
     private
 
     def prepare_edit
-      @themes = GreenLanes::Theme.all.fetch
+      @themes = GreenLanes::Theme.all
 
-      all_exemptions = GreenLanes::Exemption.all.fetch
+      all_exemptions = GreenLanes::Exemption.all
       existing_exemptions = @category_assessment.has_exemptions? ? @category_assessment.exemptions.map(&:code) : []
       @exemptions = all_exemptions.reject { |exemption| existing_exemptions.include?(exemption.code) }
 
@@ -135,7 +134,7 @@ module GreenLanes
     end
 
     def merge_filter
-      filters = params.fetch(:filters, {}).permit(:exemption_code).to_h
+      filters = params(:filters, {}).permit(:exemption_code).to_h
 
       if params[:exemption_code].present?
         filters.merge!(exemption_code: params[:exemption_code])

@@ -6,8 +6,10 @@ RSpec.describe GreenLanes::CategoryAssessmentsController do
 
   before do
     allow(TradeTariffAdmin::ServiceChooser).to receive(:service_choice).and_return 'xi'
+
     stub_api_request('/admin/green_lanes/themes', backend: 'xi').and_return \
       jsonapi_response :themes, attributes_for_list(:green_lanes_theme, 3)
+
     stub_api_request('/admin/green_lanes/exemptions', backend: 'xi').and_return \
       jsonapi_response :exemptions, attributes_for_list(:exemption, 3)
   end
@@ -135,7 +137,7 @@ RSpec.describe GreenLanes::CategoryAssessmentsController do
       stub_api_request("/admin/green_lanes/category_assessments/#{category_assessment.id}")
         .and_return jsonapi_response(:category_assessment, category_assessment.attributes)
 
-      stub_api_request("/admin/green_lanes/category_assessments/#{category_assessment.id}/exemptions", :delete).to_return \
+      stub_api_request("/admin/green_lanes/category_assessments/#{category_assessment.id}/exemptions?exemption_id=2", :delete).to_return \
         webmock_response(:success)
     end
 

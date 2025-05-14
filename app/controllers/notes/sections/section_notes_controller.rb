@@ -8,7 +8,7 @@ module Notes
       end
 
       def create
-        @section_note = section.section_note.build(section_note_create_params.to_h)
+        @section_note = section.section_note.build(section_note_create_params.to_h.merge(section_id: section.id))
 
         if @section_note.valid? && @section_note.save
           redirect_to index_url, notice: 'Section note was successfully created.'
@@ -18,12 +18,12 @@ module Notes
       end
 
       def edit
-        @section_note = section.section_note.reload
+        @section_note = section.section_note
       end
 
       def update
-        @section_note = section.section_note.reload
-        @section_note.assign_attributes(section_note_update_params.to_h)
+        @section_note = section.section_note
+        @section_note.build(section_note_update_params.to_h)
 
         if @section_note.valid? && @section_note.save
           redirect_to index_url, notice: 'Section note was successfully updated.'
@@ -33,7 +33,7 @@ module Notes
       end
 
       def destroy
-        @section_note = section.section_note.reload
+        @section_note = section.section_note
         @section_note.destroy
 
         redirect_to index_url, notice: 'Section note was successfully removed.'

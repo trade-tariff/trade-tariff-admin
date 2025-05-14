@@ -30,7 +30,7 @@
             <%= render "exception", tariff_update: tariff_update %>
           <% end %>
 
-          <% if tariff_update.presence_errors.present? %>
+          <% if tariff_update.presence_errors.present? && tariff_update.presence_errors.any?(&:present?) %>
             <%= render "presence_errors", tariff_update: tariff_update %>
           <% end %>
         </td>
@@ -38,9 +38,7 @@
         <td><%= l(tariff_update.applied_at, format: :tariff) if tariff_update.applied_at %></td>
         <td><%= number_to_human_size(tariff_update.filesize) %></td>
         <td>
-          <a class="govuk-link" href="#">
-            <%= link_to "Review inserts", tariff_update_path(tariff_update) %>
-          </a>
+          <%= govuk_link_to "Review inserts", tariff_update_path(tariff_update) %>
         </td>
         <td><%= render "actions", tariff_update: tariff_update %></td>
       </tr>

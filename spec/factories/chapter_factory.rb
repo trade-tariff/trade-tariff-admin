@@ -9,7 +9,14 @@ FactoryBot.define do
     description { generate(:chapter_description) }
 
     trait :with_note do
-      chapter_note_id { generate(:chapter_note_id) }
+      chapter_note do
+        attributes_for(
+          :chapter_note,
+          :persisted,
+          chapter_id: goods_nomenclature_item_id.first(2),
+        )
+      end
+      chapter_note_id { chapter_note[:resource_id] }
     end
 
     trait :with_section do

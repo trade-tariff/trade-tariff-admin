@@ -10,7 +10,7 @@
     </thead>
     <tbody>
     <% @category_assessment.green_lanes_measures.each do |me| %>
-      <% if me.has_goods_nomenclature %>
+      <% if me.has_goods_nomenclature? %>
         <tr id="<%= dom_id(me) %>">
           <td>
             <%= me.goods_nomenclature.goods_nomenclature_item_id %>

@@ -1,21 +1,9 @@
 module QuotaOrderNumbers
   class QuotaDefinition
-    include Her::JsonApi::Model
+    include ApiEntity
 
-    resource_path '/admin/quota_order_numbers/:quota_order_number_id/quota_definitions/:id'
-    collection_path '/admin/quota_order_numbers/:quota_order_number_id/quota_definitions'
-
-    scope :by_quota_order_number, ->(order_number) { all(_quota_order_number_id: order_number) }
-
-    attributes :id,
-               :quota_order_number_id,
-               :validity_start_date,
-               :validity_end_date,
-               :initial_volume,
-               :formatted_measurement_unit,
-               :quota_type,
-               :critical_state,
-               :critical_threshold
+    set_singular_path '/admin/quota_order_numbers/:quota_order_number_id/quota_definitions/:id'
+    set_collection_path '/admin/quota_order_numbers/:quota_order_number_id/quota_definitions'
 
     has_one :measurement_unit
     has_one :quota_order_number

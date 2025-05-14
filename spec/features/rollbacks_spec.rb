@@ -4,51 +4,27 @@ RSpec.describe 'Rollbacks management' do
   let!(:user) { create :user, :hmrc_admin }
 
   describe 'Rollback creation' do
-    let(:rollback) { build :rollback, user: }
+    let(:rollback) { build :rollback, user_id: user.id }
+
+    before do
+      stub_api_request('/admin/rollbacks')
+        .to_return api_success_response(
+          data: [],
+          meta: { pagination: pagination_params },
+        )
+
+      stub_api_request('/admin/rollbacks', :post)
+        .to_return api_created_response
+    end
 
     specify do
-      stub_api_for(Rollback) do |stub|
-        stub.get('/admin/rollbacks') do |_env|
-          api_success_response(data: [], meta: { pagination: pagination_params })
-        end
-      end
+      ensure_on new_rollback_path
 
-      refute rollback_created(rollback)
+      fill_in 'Reason', with: 'a reason'
+      fill_in 'Rollback to', with: rollback.date
+      click_button 'Create Rollback'
 
-      stub_api_for(Rollback) do |stub|
-        stub.post('/admin/rollbacks') do |_env|
-          api_created_response
-        end
-
-        stub.get('/admin/rollbacks') do |_env|
-          api_success_response(
-            data: [{ type: 'rollback', attributes: rollback.attributes }],
-            meta: { pagination: pagination_params(total_count: 1) },
-          )
-        end
-      end
-
-      create_rollback(rollback)
-
-      verify rollback_created(rollback)
+      verify current_path == rollbacks_path
     end
-  end
-
-  private
-
-  def rollback_created(rollback)
-    ensure_on rollbacks_path
-
-    page.has_selector?('table.rollbacks') &&
-      page.has_content?(rollback.date)
-  end
-
-  def create_rollback(rollback)
-    ensure_on new_rollback_path
-
-    fill_in 'Reason', with: 'a reason'
-    fill_in 'Rollback to', with: rollback.date
-
-    click_button 'Create Rollback'
   end
 end

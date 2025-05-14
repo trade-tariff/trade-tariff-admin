@@ -3,6 +3,8 @@ require 'rails_helper'
 RSpec.describe GreenLanes::ExemptingCertificateOverride do
   subject(:exempting_certificate_override) { build :exempting_certificate_override }
 
+  it { expect(described_class).to be_xi_only }
+
   it { is_expected.to respond_to :id }
   it { is_expected.to respond_to :certificate_type_code }
   it { is_expected.to respond_to :certificate_code }

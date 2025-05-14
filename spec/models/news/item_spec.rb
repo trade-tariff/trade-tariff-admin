@@ -3,7 +3,9 @@ require 'rails_helper'
 RSpec.describe News::Item do
   subject(:news_item) { build :news_item, :home_page, :updates_page, :banner }
 
-  it { is_expected.to respond_to :id }
+  it { expect(described_class).to be_uk_only }
+
+  it { is_expected.to respond_to :resource_id }
   it { is_expected.to respond_to :title }
   it { is_expected.to respond_to :content }
   it { is_expected.to respond_to :display_style }
@@ -85,23 +87,19 @@ RSpec.describe News::Item do
     it { is_expected.to be_instance_of Array }
   end
 
-  describe 'slug generation' do
-    subject { news_item.slug }
+  describe '#generate_or_normalise_slug!' do
+    subject { news_item.generate_or_normalise_slug! }
 
-    let(:news_item) { build :news_item, slug: nil }
+    context 'when a slug is already present' do
+      let(:news_item) { build :news_item, slug: 'foo-bar' }
 
-    it { is_expected.to be_blank }
+      it { is_expected.to be_nil }
+    end
 
-    context 'when after validation called' do
-      before { news_item.valid? }
+    context 'when a name is present' do
+      let(:news_item) { build :news_item, title: 'Foo Bar', slug: nil }
 
-      it { is_expected.to be_present }
-
-      context 'with manually assigned slug' do
-        let(:news_item) { build :news_item, slug: 'some-test-slug' }
-
-        it { is_expected.to eql 'some-test-slug' }
-      end
+      it { is_expected.to eq 'foo-bar' }
     end
   end
 end

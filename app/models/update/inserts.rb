@@ -1,4 +1,4 @@
-class TariffUpdate
+class Update
   class Inserts
     def initialize(attributes)
       @attributes = attributes

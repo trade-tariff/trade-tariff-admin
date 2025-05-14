@@ -3,6 +3,8 @@ require 'rails_helper'
 RSpec.describe GreenLanes::ExemptingAdditionalCodeOverride do
   subject(:exempting_additional_code_override) { build :exempting_additional_code_override }
 
+  it { expect(described_class).to be_xi_only }
+
   it { is_expected.to respond_to :id }
   it { is_expected.to respond_to :additional_code_type_id }
   it { is_expected.to respond_to :additional_code }
