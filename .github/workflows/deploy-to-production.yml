@@ -73,3 +73,4 @@ jobs:
           with:
             result: ${{ needs.deploy.result }}
             slack_webhook: ${{ secrets.SLACK_WEBHOOK }}
+            slack_channel: production-alerts
