@@ -7,7 +7,7 @@ class NewsItemsController < AuthenticatedController
   end
 
   def new
-    @news_item = News::Item.new
+    @news_item = News::Item.new(notify_subscribers: true)
     @collections = collection_options
   end
 
