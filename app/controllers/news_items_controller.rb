@@ -30,8 +30,6 @@ class NewsItemsController < AuthenticatedController
   end
 
   def update
-    # require 'pry'
-    # binding.pry
     @news_item = News::Item.build(news_item_params.merge(resource_id: params[:id]))
     @news_item.generate_or_normalise_slug!
     @news_item.save
