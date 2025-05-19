@@ -7,7 +7,7 @@ class NewsItemsController < AuthenticatedController
   end
 
   def new
-    @news_item = News::Item.new
+    @news_item = News::Item.new(notify_subscribers: true)
     @collections = collection_options
   end
 
@@ -73,6 +73,7 @@ class NewsItemsController < AuthenticatedController
       start_date
       end_date
       chapters
+      notify_subscribers
     ], collection_ids: []).reverse_merge(default_params)
   end
 

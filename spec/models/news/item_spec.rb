@@ -18,6 +18,8 @@ RSpec.describe News::Item do
   it { is_expected.to respond_to :end_date }
   it { is_expected.to respond_to :created_at }
   it { is_expected.to respond_to :updated_at }
+  it { is_expected.to respond_to :chapters }
+  it { is_expected.to respond_to :notify_subscribers }
 
   it { is_expected.to have_attributes id: news_item.id }
   it { is_expected.to have_attributes title: news_item.title }
@@ -32,6 +34,8 @@ RSpec.describe News::Item do
   it { is_expected.to have_attributes end_date: news_item.end_date }
   it { is_expected.to have_attributes created_at: news_item.created_at }
   it { is_expected.to have_attributes updated_at: news_item.updated_at }
+  it { is_expected.to have_attributes chapters: news_item.chapters }
+  it { is_expected.to have_attributes notify_subscribers: news_item.notify_subscribers }
 
   describe '#preview' do
     subject { news_item.preview }

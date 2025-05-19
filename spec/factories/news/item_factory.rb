@@ -15,6 +15,8 @@ FactoryBot.define do
     end_date { nil }
     created_at { 2.days.ago.to_date }
     updated_at { nil }
+    chapters { [] }
+    notify_subscribers { false }
 
     trait :updates_page do
       show_on_updates_page { true }
