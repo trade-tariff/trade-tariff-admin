@@ -56,6 +56,11 @@
 
   <%= f.govuk_text_field :chapters, width: 'one-half' %>
 
+  <%= f.govuk_check_box :notify_subscribers, 1, 0,
+                          label: { text: 'Notify subscribers' },
+                          multiple: false,
+                          link_errors: true %>
+
   <%= f.govuk_check_boxes_fieldset :display do %>
 
     <%= f.govuk_check_box :show_on_uk, 1, 0,

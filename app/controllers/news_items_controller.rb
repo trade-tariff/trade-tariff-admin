@@ -30,6 +30,8 @@ class NewsItemsController < AuthenticatedController
   end
 
   def update
+    # require 'pry'
+    # binding.pry
     @news_item = News::Item.build(news_item_params.merge(resource_id: params[:id]))
     @news_item.generate_or_normalise_slug!
     @news_item.save
@@ -73,6 +75,7 @@ class NewsItemsController < AuthenticatedController
       start_date
       end_date
       chapters
+      notify_subscribers
     ], collection_ids: []).reverse_merge(default_params)
   end
 
