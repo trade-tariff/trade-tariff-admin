@@ -13,6 +13,7 @@ RSpec.describe 'news_collections/form' do
     it { is_expected.to have_css 'input[name="news_collection[priority]"]' }
     it { is_expected.to have_css 'textarea[name="news_collection[description]"]' }
     it { is_expected.to have_css 'input[name="news_collection[published]"]' }
+    it { is_expected.to have_css 'input[name="news_collection[subscribable]"]' }
     it { is_expected.to have_css 'button', text: 'Create Collection' }
   end
 

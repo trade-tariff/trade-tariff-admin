@@ -10,6 +10,7 @@ RSpec.describe News::Collection do
   it { is_expected.to respond_to :description }
   it { is_expected.to respond_to :priority }
   it { is_expected.to respond_to :published }
+  it { is_expected.to respond_to :subscribable }
 
   describe '#generate_or_normalise_slug!' do
     subject { news_collection.generate_or_normalise_slug! }

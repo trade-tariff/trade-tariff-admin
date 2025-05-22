@@ -41,6 +41,7 @@ class NewsCollectionsController < AuthenticatedController
 
   def news_collection_params
     params.require(:news_collection).permit(%i[
+      subscribable
       published
       priority
       description
