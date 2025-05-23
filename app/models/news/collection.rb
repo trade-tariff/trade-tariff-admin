@@ -10,7 +10,8 @@ module News
                :description,
                :priority,
                :published,
-               :slug
+               :slug,
+               :subscribable
 
     def generate_or_normalise_slug!
       current_slug = slug.presence || name.presence

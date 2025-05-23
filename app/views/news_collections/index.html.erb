@@ -10,6 +10,7 @@
         <th>Collection title</th>
         <th>Priority</th>
         <th>Published</th>
+        <th>Send Emails</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -20,6 +21,7 @@
           <td><%= news_collection.name %></td>
           <td><%= news_collection.priority %></td>
           <td><%= news_collection_bool news_collection.published %></td>
+          <td><%= news_collection_bool news_collection.subscribable %></td>
           <td>
             <%= link_to 'Edit',
                         edit_news_collection_path(news_collection) %>
