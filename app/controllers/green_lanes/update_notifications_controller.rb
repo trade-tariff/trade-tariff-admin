@@ -10,7 +10,7 @@ module GreenLanes
       @update = GreenLanes::UpdateNotification.find(params[:id])
     end
 
-    # TODO: This actually does nothing as far as I can make out since no changes are taking place
+    # Backend will update the notification status to inactive
     def update
       @update = GreenLanes::UpdateNotification.find(params[:id])
 

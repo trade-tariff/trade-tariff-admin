@@ -32,6 +32,15 @@
       <% end %>
     </div>
   </div>
+  <% if @update.theme.present? %>
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+        <h3 class="govuk-heading-s">Category Assessment creates for </h3>
+        <h3 class="govuk-heading-s">Theme: </h3>
+        <p><%= @update.theme %></p>
+      </div>
+    </div>
+  <% end %>
 </div>
 
 <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
