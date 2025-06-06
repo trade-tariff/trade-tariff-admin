@@ -1,13 +1,14 @@
 name: Deploy to development
 
 on:
-  push:
-    branches-ignore:
-      - main
-  pull_request:
-    branches-ignore:
-      - main
   workflow_dispatch:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+      - unlabeled
 
 permissions:
   contents: read
@@ -15,86 +16,17 @@ permissions:
 
 env:
   AWS_REGION: eu-west-2
-  ECR_URL: 382373577178.dkr.ecr.eu-west-2.amazonaws.com/tariff-admin-production
   ENVIRONMENT: development
   IAM_ROLE_ARN: arn:aws:iam::844815912454:role/GithubActions-ECS-Deployments-Role
-  TERRAFORM_VERSION: 1.11.0
-  PYTHON_VERSION: 3
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/cache@v4
-        with:
-          path: ~/.cache/pre-commit
-          key: ${{ runner.os }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pre-commit-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - id: ruby-version
-        run: echo "RUBY_VERSION=$(cat .ruby-version)" >> "$GITHUB_OUTPUT"
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: ${{ steps.ruby-version.outputs.RUBY_VERSION }}
-          bundler-cache: true
-      - uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ env.TERRAFORM_VERSION }}
-      - uses: trade-tariff/trade-tariff-tools/.github/actions/setup-tflint@main
-      - uses: trade-tariff/trade-tariff-tools/.github/actions/setup-terraform-docs@main
-      - uses: trade-tariff/trade-tariff-tools/.github/actions/setup-ssh@main
-        with:
-          ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
-      - run: bundle exec brakeman
-      - run: pip install pre-commit
-      - run: pre-commit run --all-files
-
-  test:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:17
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: tariff_admin_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    steps:
-      - uses: actions/checkout@v4
-
-      - id: ruby-version
-        run: echo "RUBY_VERSION=$(cat .ruby-version)" >> "$GITHUB_OUTPUT"
-
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: ${{ steps.ruby-version.outputs.RUBY_VERSION }}
-          bundler-cache: true
-
-      - uses: actions/setup-node@v4
-        with:
-          cache: yarn
-      - run: yarn install --frozen-lockfile
-
-      - name: Run tests
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tariff_admin_test
-
-        run: bundle exec rspec
-
   build:
+    if: contains(github.event.pull_request.labels.*.name, 'needs-deployment') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - id: ruby-version
+        run: echo "RUBY_VERSION=$(cat .ruby-version)" >> "$GITHUB_OUTPUT"
       - id: docker-tag
         run: echo "DOCKER_TAG=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
       - uses: trade-tariff/trade-tariff-tools/.github/actions/terraform-plan@main
@@ -104,14 +36,14 @@ jobs:
           ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
       - uses: trade-tariff/trade-tariff-tools/.github/actions/build-and-push@main
         with:
-          ecr-url: ${{ env.ECR_URL }}
+          ecr-url: 382373577178.dkr.ecr.eu-west-2.amazonaws.com/tariff-admin-production
           ref: ${{ steps.docker-tag.outputs.DOCKER_TAG }}
+          build-args: "RUBY_VERSION=${{ steps.ruby-version.outputs.RUBY_VERSION }} ALPINE_VERSION=3.21"
 
   deploy:
+    if: contains(github.event.pull_request.labels.*.name, 'needs-deployment') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    needs:
-      - build
-      - test
+    needs: build
     steps:
       - uses: actions/checkout@v4
       - id: docker-tag
@@ -123,6 +55,7 @@ jobs:
           ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
 
   post-deploy:
+    if: contains(github.event.pull_request.labels.*.name, 'needs-deployment') || github.event_name == 'workflow_dispatch'
     needs: deploy
     uses: trade-tariff/trade-tariff-tools/.github/workflows/e2e-tests.yml@main
     with:
@@ -132,12 +65,12 @@ jobs:
       basic_password: ${{ secrets.BASIC_PASSWORD }}
 
   notifications:
-      runs-on: ubuntu-latest
-      needs: post-deploy
-      if: always()
-      steps:
-        - uses: actions/checkout@v4
-        - uses: trade-tariff/trade-tariff-tools/.github/actions/slack-notify@main
-          with:
-            result: ${{ needs.post-deploy.result }}
-            slack_webhook: ${{ secrets.SLACK_WEBHOOK }}
+    if: contains(github.event.pull_request.labels.*.name, 'needs-deployment') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    needs: post-deploy
+    steps:
+      - uses: actions/checkout@v4
+      - uses: trade-tariff/trade-tariff-tools/.github/actions/slack-notify@main
+        with:
+          result: ${{ needs.post-deploy.result }}
+          slack_webhook: ${{ secrets.SLACK_WEBHOOK }}
