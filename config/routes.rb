@@ -62,6 +62,7 @@ Rails.application.routes.draw do
     resources :exemptions, only: %i[index new create edit update destroy]
     resources :measures, only: %i[index destroy]
     resources :update_notifications, only: %i[index edit update]
+    resources :measure_type_mappings, only: %i[index new create destroy]
   end
 
   resources :tariff_updates, only: %i[index show] do

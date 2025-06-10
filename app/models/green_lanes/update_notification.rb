@@ -12,6 +12,8 @@ module GreenLanes
         'Updated'
       when 2
         'Expired'
+      when 3
+        'Category Assessment Created'
       else
         ''
       end

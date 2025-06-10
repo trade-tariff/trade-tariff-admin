@@ -1,0 +1,37 @@
+<h2>
+  Manage Green Lanes Measure Type Mappings
+</h2>
+
+<%= link_to 'Add a Measure Type Mapping', new_green_lanes_measure_type_mapping_path, class: 'govuk-button' %>
+
+<% if @measure_type_mappings.any? %>
+  <table>
+    <thead>
+    <tr>
+      <th>Measure Type Id</th>
+      <th>Theme Id</th>
+      <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% @measure_type_mappings.each do |mtp| %>
+      <tr id="<%= dom_id(mtp) %>">
+        <td><%= mtp.measure_type_id %></td>
+        <td><%= mtp.theme_id %></td>
+        <td>
+          <%= link_to 'Remove',
+                      green_lanes_measure_type_mapping_path(mtp),
+                      method: :delete,
+                      class: 'govuk-button govuk-button--warning',
+                      data: { confirm: "Are you sure?", disable: 'Working ...' } %>
+        </td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+  <%= paginate @measure_type_mappings %>
+<% else %>
+  <div class="govuk-inset-text">
+    <p>No any Green Lanes Measure Type Mapping</p>
+  </div>
+<% end %>
