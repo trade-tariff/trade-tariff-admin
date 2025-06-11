@@ -31,7 +31,7 @@ RSpec.describe 'Heading Search Reference management' do
       stub_api_request("/admin/headings/#{heading.to_param}/search_references")
         .to_return jsonapi_success_response(
           'search_reference',
-          []
+          [],
         )
 
       stub_api_request("/admin/headings/#{heading.to_param}/search_references", :post)
@@ -54,7 +54,7 @@ RSpec.describe 'Heading Search Reference management' do
       stub_api_request("/admin/headings/#{heading.to_param}/search_references")
         .to_return jsonapi_success_response(
           'search_reference',
-          [heading_search_reference.attributes]
+          [heading_search_reference.attributes],
         )
 
       stub_api_request("/admin/headings/#{heading.to_param}/search_references/#{heading_search_reference.to_param}", :delete)
