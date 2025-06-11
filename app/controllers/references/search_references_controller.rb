@@ -3,7 +3,7 @@ module References
     before_action :authorize_user if TradeTariffAdmin.authenticate_with_sso?
 
     def index
-      @search_references = search_reference_parent.search_references(page:, per_page:)
+      @search_references = search_reference_parent.search_references
     end
 
     def new
@@ -41,7 +41,7 @@ module References
     private
 
     def search_reference
-      @search_reference ||= search_reference_parent.search_references(page:, per_page:).find(params[:id]).tap do |reference|
+      @search_reference ||= search_reference_parent.search_references.find(params[:id]).tap do |reference|
         reference.referenced_id = search_reference_parent.id
       end
     end
@@ -61,20 +61,12 @@ module References
       params.require(:search_reference).permit(:title)
     end
 
-    def page
-      params.fetch(:page, 1)
-    end
-
-    def per_page
-      params.fetch(:per_page, 200)
-    end
-
     def search_reference_parent
       raise NotImplementedError, 'Please override #search_reference_parent'
     end
 
     def build_search_reference
-      search_reference_parent.search_references(page:, per_page:).build(title: normalised_title)
+      search_reference_parent.search_references.build(title: normalised_title)
     end
   end
 end

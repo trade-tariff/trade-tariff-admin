@@ -8,8 +8,8 @@ class Heading
   has_many :commodities
   has_one :chapter
 
-  def search_references(page: 1, per_page: 5)
-    Heading::SearchReference.collection(casted_by: self, page:, per_page:)
+  def search_references
+    Heading::SearchReference.all(casted_by: self)
   end
 
   def heading_id

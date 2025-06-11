@@ -27,11 +27,10 @@ RSpec.describe 'Commodity Search Reference management' do
       stub_api_request("/admin/commodities/#{commodity.to_param}")
         .to_return jsonapi_success_response('commodity', commodity.attributes)
 
-      stub_api_request("/admin/commodities/#{commodity.to_param}/search_references?page=1&per_page=200")
+      stub_api_request("/admin/commodities/#{commodity.to_param}/search_references")
         .to_return jsonapi_success_response(
           'search_reference',
           [],
-          'x-meta' => { pagination: { total: 1 } }.to_json,
         )
 
       stub_api_request("/admin/commodities/#{commodity.to_param}/search_references", :post)
@@ -51,11 +50,10 @@ RSpec.describe 'Commodity Search Reference management' do
       stub_api_request("/admin/commodities/#{commodity.to_param}")
         .to_return jsonapi_success_response('commodity', commodity.attributes)
 
-      stub_api_request("/admin/commodities/#{commodity.to_param}/search_references?page=1&per_page=200")
+      stub_api_request("/admin/commodities/#{commodity.to_param}/search_references")
         .to_return jsonapi_success_response(
           'search_reference',
           [commodity_search_reference.attributes],
-          'x-meta' => { pagination: { total: 1 } }.to_json,
         )
 
       stub_api_request("/admin/commodities/#{commodity.to_param}/search_references/#{commodity_search_reference.to_param}", :delete)
@@ -74,11 +72,10 @@ RSpec.describe 'Commodity Search Reference management' do
       stub_api_request("/admin/commodities/#{commodity.to_param}")
         .to_return jsonapi_success_response('commodity', commodity.attributes)
 
-      stub_api_request("/admin/commodities/#{commodity.to_param}/search_references?page=1&per_page=200")
+      stub_api_request("/admin/commodities/#{commodity.to_param}/search_references")
         .to_return jsonapi_success_response(
           'search_reference',
           [commodity_search_reference.attributes],
-          'x-meta' => { pagination: { total: 1 } }.to_json,
         )
 
       stub_api_request("/admin/commodities/#{commodity.to_param}/search_references/#{commodity_search_reference.to_param}", :patch)

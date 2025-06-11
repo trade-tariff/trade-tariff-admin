@@ -7,8 +7,8 @@ class Chapter
   has_one :chapter_note
   has_many :headings
 
-  def search_references(page: 1, per_page: 5)
-    Chapter::SearchReference.all(casted_by: self, page:, per_page:)
+  def search_references
+    Chapter::SearchReference.all(casted_by: self)
   end
 
   def has_chapter_note?
