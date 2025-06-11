@@ -28,11 +28,10 @@ RSpec.describe 'Heading Search Reference management' do
       stub_api_request("/admin/headings/#{heading.to_param}")
         .to_return jsonapi_success_response('heading', heading.attributes)
 
-      stub_api_request("/admin/headings/#{heading.to_param}/search_references?page=1&per_page=200")
+      stub_api_request("/admin/headings/#{heading.to_param}/search_references")
         .to_return jsonapi_success_response(
           'search_reference',
           [],
-          'x-meta' => { pagination: { total: 1 } }.to_json,
         )
 
       stub_api_request("/admin/headings/#{heading.to_param}/search_references", :post)
@@ -52,11 +51,10 @@ RSpec.describe 'Heading Search Reference management' do
       stub_api_request("/admin/headings/#{heading.to_param}")
         .to_return jsonapi_success_response('heading', heading.attributes)
 
-      stub_api_request("/admin/headings/#{heading.to_param}/search_references?page=1&per_page=200")
+      stub_api_request("/admin/headings/#{heading.to_param}/search_references")
         .to_return jsonapi_success_response(
           'search_reference',
           [heading_search_reference.attributes],
-          'x-meta' => { pagination: { total: 1 } }.to_json,
         )
 
       stub_api_request("/admin/headings/#{heading.to_param}/search_references/#{heading_search_reference.to_param}", :delete)
@@ -77,11 +75,10 @@ RSpec.describe 'Heading Search Reference management' do
       stub_api_request("/admin/headings/#{heading.to_param}")
         .to_return jsonapi_success_response('heading', heading.attributes)
 
-      stub_api_request("/admin/headings/#{heading.to_param}/search_references?page=1&per_page=200")
+      stub_api_request("/admin/headings/#{heading.to_param}/search_references")
         .to_return jsonapi_success_response(
           'search_reference',
           [heading_search_reference.attributes],
-          'x-meta' => { pagination: { total: 1 } }.to_json,
         )
 
       stub_api_request("/admin/headings/#{heading.to_param}/search_references/#{heading_search_reference.to_param}", :patch)

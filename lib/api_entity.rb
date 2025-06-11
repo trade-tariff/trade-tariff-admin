@@ -284,9 +284,7 @@ private
         entry
       end
 
-      headers = handle_headers(resp)
       meta = handle_body(resp).fetch('meta', {})
-      meta = JSON.parse(headers.fetch('x-meta', '{}')).merge(meta)
 
       if meta['pagination'].present?
         collection = paginate_collection(collection, meta.fetch('pagination', {}))

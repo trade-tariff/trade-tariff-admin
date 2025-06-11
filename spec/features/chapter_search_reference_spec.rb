@@ -24,11 +24,10 @@ RSpec.describe 'Chapter Search Reference management' do
       stub_api_request("/admin/chapters/#{chapter.to_param}")
         .to_return jsonapi_success_response('chapter', chapter.attributes)
 
-      stub_api_request("/admin/chapters/#{chapter.to_param}/search_references?page=1&per_page=200")
+      stub_api_request("/admin/chapters/#{chapter.to_param}/search_references")
         .to_return jsonapi_success_response(
           'search_reference',
           [],
-          'x-meta' => { pagination: { total: 1 } }.to_json,
         )
 
       stub_api_request("/admin/chapters/#{chapter.to_param}/search_references", :post)
@@ -48,11 +47,10 @@ RSpec.describe 'Chapter Search Reference management' do
       stub_api_request("/admin/chapters/#{chapter.to_param}")
         .to_return jsonapi_success_response('chapter', chapter.attributes)
 
-      stub_api_request("/admin/chapters/#{chapter.to_param}/search_references?page=1&per_page=200")
+      stub_api_request("/admin/chapters/#{chapter.to_param}/search_references")
         .to_return jsonapi_success_response(
           'search_reference',
           [chapter_search_reference.attributes],
-          'x-meta' => { pagination: { total: 1 } }.to_json,
         )
 
       stub_api_request("/admin/chapters/#{chapter.to_param}/search_references/#{chapter_search_reference.to_param}", :delete)
@@ -71,11 +69,10 @@ RSpec.describe 'Chapter Search Reference management' do
       stub_api_request("/admin/chapters/#{chapter.to_param}")
         .to_return jsonapi_success_response('chapter', chapter.attributes)
 
-      stub_api_request("/admin/chapters/#{chapter.to_param}/search_references?page=1&per_page=200")
+      stub_api_request("/admin/chapters/#{chapter.to_param}/search_references")
         .to_return jsonapi_success_response(
           'search_reference',
           [chapter_search_reference.attributes],
-          'x-meta' => { pagination: { total: 1 } }.to_json,
         )
 
       stub_api_request("/admin/chapters/#{chapter.to_param}/search_references/#{chapter_search_reference.to_param}", :patch)
