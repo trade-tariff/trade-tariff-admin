@@ -1,0 +1,29 @@
+<table class="govuk-table">
+  <caption class="govuk-table__caption govuk-table__caption--m">Live Issues</caption>
+  <thead class="govuk-table__head">
+    <tr class="govuk-table__row">
+      <th scope="col" class="govuk-table__header">ID</th>
+      <th scope="col" class="govuk-table__header">Issue</th>
+      <th scope="col" class="govuk-table__header">Status</th>
+      <th scope="col" class="govuk-table__header">Dates Affected</th>
+      <th scope="col" class="govuk-table__header">Last Updated</th>
+      <th scope="col" class="govuk-table__header">Commodities</th>
+      <th scope="col" class="govuk-table__header">Actions</th>
+    </tr>
+  </thead>
+  <tbody class="govuk-table__body">
+    <% @live_issues.each do |issue| %>
+      <tr class="govuk-table__row">
+        <td class="govuk-table__cell"><%= issue.resource_id %></td>
+        <td class="govuk-table__cell"><%= issue.title %></td>
+        <td class="govuk-table__cell"><%= issue.status %></td>
+        <td class="govuk-table__cell"><%= "#{issue.date_discovered.to_date.strftime("%d/%m/%Y")} - #{issue.date_resolved&.to_date&.strftime("%d/%m/%Y")}" %></td>
+        <td class="govuk-table__cell"><%= issue.updated_at.to_datetime.strftime("%d/%m/%Y") %></td>
+        <td class="govuk-table__cell"><%= issue.commodities %></td>
+        <td class="govuk-table__cell">
+          <%= link_to 'Edit', news_collections_path %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
