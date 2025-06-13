@@ -67,7 +67,7 @@ en:
         slug: Leave blank to automatically assign
         start_date: YYYY/MM/DD
         end_date: YYYY/MM/DD or leave blank for no end date
-        chapters: Separate each 2 digit chapter with a space e.g. 01 39 44 or leave blank
+        chapters: Separate each 2 digit chapter with a comma e.g. 01, 39, 44 or leave blank
 
   activemodel:
     attributes:
