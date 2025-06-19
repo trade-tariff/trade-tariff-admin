@@ -1,0 +1,43 @@
+<%= govuk_form_for live_issue do |f| %>
+  <%= f.govuk_text_field :title, width: 'one-half' %>
+
+  <%= f.govuk_text_area :description,
+          hint: { text: 'Provide a description of the issue in 256 characters or less' },
+          max_chars: 256,
+          threshold: 50,
+          rows: 6
+  %>
+
+  <%= f.govuk_text_area :suggested_action,
+          label: { text: 'Suggested action' },
+          hint: { text: 'Provide next steps for the users in 256 characters or less' },
+          max_chars: 256,
+          threshold: 50,
+          rows: 6
+  %>
+
+  <%= f.govuk_text_field :commodities,
+          label: { text: 'Commodities affected' },
+          hint: { text: 'Separate each 10 digit commodity code with a space e.g. 0101210000 0101300000' },
+          width: 'one-half'
+  %>
+
+  <%= f.govuk_check_box :status, 'Resolved', 'Active',
+                        label: { text: 'Resolved?' },
+                        hint: { text: 'Tick this box if the issue has been resolved' }
+  %>
+
+  <%= f.govuk_text_field :date_discovered,
+          label: { text: 'Date discovered' },
+          hint: { text: 'YYYY/MM/DD' },
+          width: 'one-third'
+  %>
+
+  # %= f.govuk_datext_field :date_resolved,
+  #         label: { text: 'Date resolved' },
+  #         hint: { text: 'YYYY/MM/DD or leave blank if unresolved' },
+  #         width: 'one-third'
+  # %>
+
+  <%= submit_and_back_buttons f, live_issues_path %>
+<% end %>
