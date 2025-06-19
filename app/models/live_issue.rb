@@ -5,6 +5,7 @@ class LiveIssue
   attributes  :id,
               :title,
               :description,
+              :suggested_action,
               :commodities,
               :status,
               :date_discovered,
