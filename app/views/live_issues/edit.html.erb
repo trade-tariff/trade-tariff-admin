@@ -1,0 +1,18 @@
+<%= govuk_breadcrumbs 'Live Issues': live_issues_path %>
+
+<h2>Update Live Issue</h2>
+
+<%= render 'form', live_issue: @live_issue %>
+
+<hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+<h3>
+  Remove this Live Issue
+</h3>
+
+<%= link_to 'Remove',
+                live_issue_path(@live_issue),
+                method: :delete,
+                class: 'govuk-button govuk-button--warning',
+                data: { confirm: "Are you sure?", disable: 'Working ...' }
+%>

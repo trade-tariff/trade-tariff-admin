@@ -24,7 +24,8 @@
 
   <%= f.govuk_check_box :status, 'Resolved', 'Active',
                         label: { text: 'Resolved?' },
-                        hint: { text: 'Tick this box if the issue has been resolved' }
+                        hint: { text: 'Tick this box if the issue has been resolved' },
+                        multiple: false
   %>
 
   <%= f.govuk_text_field :date_discovered,
@@ -33,11 +34,11 @@
           width: 'one-third'
   %>
 
-  # %= f.govuk_datext_field :date_resolved,
-  #         label: { text: 'Date resolved' },
-  #         hint: { text: 'YYYY/MM/DD or leave blank if unresolved' },
-  #         width: 'one-third'
-  # %>
+  <%= f.govuk_text_field :date_resolved,
+          label: { text: 'Date resolved' },
+          hint: { text: 'YYYY/MM/DD or leave blank if unresolved' },
+          width: 'one-third'
+  %>
 
   <%= submit_and_back_buttons f, live_issues_path %>
 <% end %>
