@@ -78,7 +78,7 @@ Rails.application.routes.draw do
   resources :news_collections, only: %i[index edit update create new]
   resources :reports, only: %i[index show]
   resources :balance_events, only: %i[show]
-  resources :live_issues, only: %i[index create new]
+  resources :live_issues, only: %i[index create new update edit destroy]
 
   resources :quotas, only: %i[new show] do
     collection do

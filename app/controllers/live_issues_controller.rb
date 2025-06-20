@@ -4,23 +4,40 @@ class LiveIssuesController < AuthenticatedController
 
   def index
     @live_issues = LiveIssue.all(page: current_page)
-    render 'index'
   end
 
   def new
     @live_issue = LiveIssue.new
-    render 'new'
   end
 
   def create
     @live_issue = LiveIssue.new(live_issue_params)
-    @live_issue.save
 
-    if @live_issue.errors.none?
+    if @live_issue.save && @live_issue.errors.none?
       redirect_to live_issues_path, notice: 'Live issue created'
     else
-      render 'new'
+      render 'new', alert: "Live issue could not be created: #{@live_issue.errors.full_messages.join(', ')}"
     end
+  end
+
+  def edit
+    @live_issue = LiveIssue.find(params[:id])
+  end
+
+  def update
+    @live_issue = LiveIssue.find(params[:id])
+    if @live_issue.update(live_issue_params) && @live_issue.errors.none?
+      redirect_to live_issues_path, notice: 'Live issue updated'
+    else
+      redirect_to live_issues_path, alert: "Live issue could not be updated: #{@live_issue.errors.full_messages.join(', ')}"
+    end
+  end
+
+  def destroy
+    @live_issue = LiveIssue.find(params[:id])
+    @live_issue.destroy
+
+    redirect_to live_issues_path, notice: 'Live issue deleted'
   end
 
 private
@@ -30,10 +47,10 @@ private
       :title,
       :description,
       :suggested_action,
+      :status,
       :date_discovered,
       :date_resolved,
       :commodities,
-      status: []
     )
   end
 end
