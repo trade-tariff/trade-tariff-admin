@@ -50,7 +50,6 @@ gem 'sentry-rails'
 group :development, :test do
   gem 'brakeman'
   gem 'dotenv-rails'
-  gem 'pry-byebug'
   gem 'pry-rails'
 end
 
@@ -58,7 +57,6 @@ group :development do
   gem 'amazing_print'
   gem 'rubocop-govuk'
   gem 'ruby-lsp-rails'
-  gem 'ruby-lsp-rspec'
 end
 
 group :test do
