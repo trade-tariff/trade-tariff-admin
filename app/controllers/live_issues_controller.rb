@@ -53,4 +53,8 @@ private
       :commodities,
     )
   end
+
+  def authorize_user
+    authorize LiveIssue, :edit?
+  end
 end

@@ -1,4 +1,4 @@
-RSpec.describe LiveIssuesController do
+RSpec.describe LiveIssuesController, type: :request do
   subject(:rendered_page) { create_user && make_request && response }
 
   let(:live_issue) { build :live_issue }
@@ -6,13 +6,18 @@ RSpec.describe LiveIssuesController do
 
   describe 'GET #index' do
     before do
-      stub_api_request('/live_issues').and_return \
-        jsonapi_response :live_issue, attributes_for_list(:live_issue, 3)
+      stub_api_request('/live_issues?page=1').and_return \
+        jsonapi_response(:live_issue, attributes_for_list(:live_issue, 3))
     end
 
     let(:make_request) { get live_issues_path }
 
-    it { is_expected.to have_http_status :success }
+    it 'returns http success' do
+      expect(rendered_page).to have_http_status :success
+      expect(rendered_page.body).to include('Manage live issues')
+      expect(rendered_page.body).to include(live_issue.title)
+
+    end
   end
 
   describe 'GET #new' do
@@ -32,14 +37,15 @@ RSpec.describe LiveIssuesController do
     end
 
     context 'with valid params' do
-      let(:live_issues_params) { live_issue.attributes.without(:id) }
+
+      let(:live_issues_params) { live_issue.attributes }
       let(:create_response) { webmock_response(:created, live_issue.attributes) }
 
       it { is_expected.to redirect_to live_issues_path }
     end
 
     context 'with invalid params' do
-      let(:live_issues_params) { live_issue.attributes.without(:id, :title) }
+      let(:live_issues_params) { live_issue.attributes.without(:title) }
       let(:create_response) { webmock_response(:error, title: "can't be blank'") }
 
       it { is_expected.to have_http_status :ok }

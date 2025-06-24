@@ -2,8 +2,7 @@ class LiveIssue
   include ApiEntity
   uk_only
 
-  attributes  :id,
-              :title,
+  attributes  :title,
               :description,
               :suggested_action,
               :commodities,
