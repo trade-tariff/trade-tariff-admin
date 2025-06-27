@@ -12,7 +12,7 @@ env:
   AWS_REGION: eu-west-2
   IAM_ROLE_ARN: arn:aws:iam::844815912454:role/GithubActions-Preview-App-Role
   PREEVY_PROFILE_URL: s3://preevy-profile-store?region=eu-west-2
-  ENVIRONMENT: staging
+  # ENVIRONMENT: staging
   SECRET_NAME: admin-configuration
 
 # allow a single job to run per PR
