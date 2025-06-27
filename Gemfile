@@ -10,6 +10,7 @@ gem 'routing-filter', github: 'trade-tariff/routing-filter'
 
 # DB
 gem 'pg'
+gem 'sqlite3'
 
 # Assets
 gem 'webpacker'

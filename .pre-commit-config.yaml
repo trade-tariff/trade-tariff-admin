@@ -18,6 +18,7 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
+        exclude: config/database.yml
 
   - repo: https://github.com/trufflesecurity/trufflehog
     rev: v3.88.29

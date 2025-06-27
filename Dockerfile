@@ -7,10 +7,14 @@ FROM ruby:${RUBY_VERSION}-alpine${ALPINE_VERSION} AS builder
 # The application runs from /app
 WORKDIR /app
 
-# build-base: compilation tools for bundle
-# git: used to pull gems from git
-# yarn: node package manager
-RUN apk add --update --no-cache build-base git yarn postgresql-dev tzdata yaml-dev && \
+RUN apk add --update --no-cache \
+  build-base \
+  git \
+  postgresql-dev \
+  sqlite \
+  tzdata \
+  yaml-dev \
+  yarn && \
   cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
   echo "Europe/London" > /etc/timezone
 
@@ -48,7 +52,7 @@ RUN rm -rf node_modules log tmp && \
 # Build runtime image
 FROM ruby:${RUBY_VERSION}-alpine${ALPINE_VERSION} AS production
 
-RUN apk add --update --no-cache tzdata postgresql-dev nodejs && \
+RUN apk add --update --no-cache tzdata postgresql-dev nodejs sqlite && \
   cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
   echo "Europe/London" > /etc/timezone
 

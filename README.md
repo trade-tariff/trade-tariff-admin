@@ -12,9 +12,9 @@ environment files, see the backend's [README](https://github.com/trade-tariff/tr
 
 > Make sure you install and enable all pre-commit hooks https://pre-commit.com/
 
-* Ruby 3.2.2
+* Ruby (see .ruby-version for current version)
 * NodeJS
-* PostgreSQL
+* SQLite3 (`brew install sqlite`)
 
 ## Setup
 

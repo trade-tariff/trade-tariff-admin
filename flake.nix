@@ -26,30 +26,6 @@
           exec $binary "$@"
         '';
 
-        postgresql = pkgs.postgresql_16;
-
-        pg-start = pkgs.writeScriptBin "pg-start" ''
-          ${pg-environment-variables}
-
-          if [ ! -d $PGDATA ]; then
-            mkdir -p $PGDATA
-
-            ${postgresql}/bin/initdb $PGDATA --auth=trust
-          fi
-
-          ${postgresql}/bin/postgres -k $PGHOST -c listen_addresses=''' -c unix_socket_directories=$PGHOST
-        '';
-
-        pg-environment-variables = ''
-          export PGDATA=$PWD/.nix/postgres/data
-          export PGHOST=$PWD/.nix/postgres
-          export DB_USER=""
-        '';
-
-        postgresqlBuildFlags = with pkgs; [
-          "--with-pg-config=${lib.getDev postgresql.pg_config}/bin/pg_config"
-        ];
-
         psychBuildFlags = with pkgs; [
           "--with-libyaml-include=${libyaml.dev}/include"
           "--with-libyaml-lib=${libyaml.out}/lib"
@@ -79,23 +55,16 @@
             export BUNDLE_BUILD__PSYCH="${
               builtins.concatStringsSep " " psychBuildFlags
             }"
-
-            export BUNDLE_BUILD__PG="${
-              builtins.concatStringsSep " " postgresqlBuildFlags
-            }"
-
-            ${pg-environment-variables}
           '';
 
           buildInputs = [
             chrome
             lint
             lint-all
-            pg-start
             pkgs.circleci-cli
             pkgs.rufo
+            pkgs.sqlite
             pkgs.yarn
-            postgresql
             ruby
             update-providers
           ];

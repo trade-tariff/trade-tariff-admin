@@ -10,18 +10,8 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2019_10_28_061635) do
-  # These are extensions that must be enabled in order to support this database
-  enable_extension "plpgsql"
-
-  create_table "import_tasks", force: :cascade do |t|
-    t.integer "status", default: 0
-    t.text "file_data"
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
-  end
-
-  create_table "users", id: :serial, force: :cascade do |t|
+ActiveRecord::Schema[7.1].define(version: 2016_02_12_220555) do
+  create_table "users", force: :cascade do |t|
     t.string "uid"
     t.string "name"
     t.string "email"
