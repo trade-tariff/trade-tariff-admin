@@ -5,7 +5,7 @@ class ChapterNote
 
   attr_accessor :content
 
-  set_singular_path '/admin/chapters/:chapter_id/chapter_note'
+  set_singular_path 'admin/chapters/:chapter_id/chapter_note'
 
   has_one :chapter
 

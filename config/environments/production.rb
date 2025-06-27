@@ -84,8 +84,8 @@ Rails.application.configure do
   end
 
   config.lograge.ignore_actions = [
-    'HealthcheckController#index',
-    'HealthcheckController#checkz',
+    'HealthcheckController#check',
+    'rails/health#show',
   ]
 
   # Do not dump schema after migrations.
