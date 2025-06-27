@@ -20,8 +20,8 @@ services:
 #     image: postgres:13.10
 #     environment:
 #       - PGDATA=/var/lib/postgresql/data/pgdata
-#       - POSTGRES_USER=Aigul.Djon
-#       - POSTGRES_PASSWORD=
+#       - POSTGRES_USER=tariff
+#       - POSTGRES_PASSWORD=t9WfQvE1jOdR_Xi1
 #       - LANG=C.UTF-8
 #       - POSTGRES_HOST_AUTH_METHOD=trust
 #       - POSTGRES_WORK_MEM=32MB
@@ -30,9 +30,9 @@ services:
 #     volumes:
 #       - hmrc-postgres-13:/var/lib/postgresql/data
 
-# volumes:
-#   hmrc-postgres-13:
-#     driver: local
+volumes:
+  hmrc-postgres-13:
+    driver: local
 
 x-preevy:
   driver: lightsail

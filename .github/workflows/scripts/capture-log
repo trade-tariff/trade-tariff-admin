@@ -21,7 +21,8 @@ echo "🔄 Attempting to capture logs for service: $SERVICE_NAME"
 if npx preevy logs "$SERVICE_NAME" \
   --driver="$DRIVER" \
   --profile="${PREEVY_PROFILE_URL}" \
-  --timestamps 2> "$ERROR_LOG_FILE" | tee "$LOG_FILE"; then
+  --timestamps \
+  --tail=300 2> "$ERROR_LOG_FILE" | tee "$LOG_FILE"; then
 
   if [ -s "$LOG_FILE" ]; then
     echo "✅ Logs captured and saved to: $LOG_FILE"
