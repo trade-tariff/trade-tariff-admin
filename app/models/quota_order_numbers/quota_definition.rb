@@ -2,8 +2,8 @@ module QuotaOrderNumbers
   class QuotaDefinition
     include ApiEntity
 
-    set_singular_path '/admin/quota_order_numbers/:quota_order_number_id/quota_definitions/:id'
-    set_collection_path '/admin/quota_order_numbers/:quota_order_number_id/quota_definitions'
+    set_singular_path 'admin/quota_order_numbers/:quota_order_number_id/quota_definitions/:id'
+    set_collection_path 'admin/quota_order_numbers/:quota_order_number_id/quota_definitions'
 
     has_one :measurement_unit
     has_one :quota_order_number

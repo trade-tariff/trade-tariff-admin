@@ -198,7 +198,7 @@ private
   end
 
   def handle_calculated_path
-    return "/admin/#{[self.class.name.underscore.pluralize, to_param].compact.join('/')}" if casted_by.blank?
+    return "admin/#{[self.class.name.underscore.pluralize, to_param].compact.join('/')}" if casted_by.blank?
 
     path_resources = []
 
@@ -215,7 +215,7 @@ private
       acc << resource.to_param if resource.to_param
     end
 
-    "/admin/#{path.join('/')}"
+    "admin/#{path.join('/')}"
   end
 
   def attributes_for_inspect
@@ -349,7 +349,7 @@ private
     end
 
     def singular_path
-      @singular_path ||= "/admin/#{name.pluralize.underscore}/:id"
+      @singular_path ||= "admin/#{name.pluralize.underscore}/:id"
     end
 
     def set_singular_path(path)
@@ -362,7 +362,7 @@ private
     end
 
     def collection_path
-      @collection_path ||= "/admin/#{name.pluralize.underscore}"
+      @collection_path ||= "admin/#{name.pluralize.underscore}"
     end
 
     def set_collection_path(path)
