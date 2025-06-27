@@ -11,28 +11,10 @@ services:
     env_file:
       - .env
     environment:
-      - ENVIRONMENT=review
+      - ENVIRONMENT=development
+      - API_SERVICE_BACKEND_URL_OPTIONS={"uk":"https://staging.trade-tariff.service.gov.uk/uk", "xi":"https://staging.trade-tariff.service.gov.uk/xi"}
     extra_hosts:
       - "telemetry.preevy.dev:127.0.0.1" # Disables telemetry
-
-# hmrc-postgres:
-#     container_name: postgres
-#     image: postgres:13.10
-#     environment:
-#       - PGDATA=/var/lib/postgresql/data/pgdata
-#       - POSTGRES_USER=tariff
-#       - POSTGRES_PASSWORD=t9WfQvE1jOdR_Xi1
-#       - LANG=C.UTF-8
-#       - POSTGRES_HOST_AUTH_METHOD=trust
-#       - POSTGRES_WORK_MEM=32MB
-#     ports:
-#       - 5432:5432
-#     volumes:
-#       - hmrc-postgres-13:/var/lib/postgresql/data
-
-volumes:
-  hmrc-postgres-13:
-    driver: local
 
 x-preevy:
   driver: lightsail
