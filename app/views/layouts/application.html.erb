@@ -32,6 +32,9 @@
       <%= header.with_navigation_item text: "News",
                                       href: news_items_path,
                                       active: active_nav_link?(/\/news_items/) %>
+      <%= header.with_navigation_item text: "Live Issues",
+                                      href: live_issues_path,
+                                      active: active_nav_link?(/\/live_issues/) if TradeTariffAdmin::ServiceChooser.uk? %>
       <%= header.with_navigation_item text: "Quotas",
                                       href: new_quota_path,
                                       active: active_nav_link?(/\/quotas/) if TradeTariffAdmin::ServiceChooser.uk? %>
