@@ -18,6 +18,6 @@ class QuotaSearch
   private
 
   def import_date_valid
-    errors.add(:quota_search, :invalid_date) unless attributes.empty? || import_date.is_a?(Date)
+    errors.add(:import_date, :invalid_date) unless attributes.empty? || import_date.is_a?(Date)
   end
 end
