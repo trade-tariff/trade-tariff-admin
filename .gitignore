@@ -26,3 +26,5 @@ yarn-error.log
 .direnv
 .envrc
 .tool-versions
+db/*.sqlite3-shm
+db/*.sqlite3-wal

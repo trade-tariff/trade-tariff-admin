@@ -5,7 +5,7 @@ class SectionNote
 
   attr_accessor :content
 
-  set_singular_path '/admin/sections/:section_id/section_note'
+  set_singular_path 'admin/sections/:section_id/section_note'
 
   has_one :section
 
