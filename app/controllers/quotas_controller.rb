@@ -6,7 +6,12 @@ class QuotasController < AuthenticatedController
   def new
     return render 'errors/not_found' if TradeTariffAdmin::ServiceChooser.xi?
 
-    @quota_search = QuotaSearch.new
+    today = Time.zone.today
+    @quota_search = QuotaSearch.new(
+      'import_date(3i)': today.day.to_s,
+      'import_date(2i)': today.month.to_s,
+      'import_date(1i)': today.year.to_s,
+    )
   end
 
   def search
@@ -37,10 +42,18 @@ class QuotasController < AuthenticatedController
   end
 
   def quota_definitions
-    @quota_definitions ||= QuotaOrderNumbers::QuotaDefinition.all(quota_order_number_id: @quota_search.order_number)
+    @quota_definitions ||= QuotaOrderNumbers::QuotaDefinition.all(
+      quota_order_number_id: @quota_search.order_number,
+      as_of: @quota_search.import_date.iso8601,
+    )
   end
 
   def quota_params
-    params.require(:quota_search).permit(:order_number)
+    params.require(:quota_search).permit(
+      :order_number,
+      :'import_date(3i)',
+      :'import_date(2i)',
+      :'import_date(1i)',
+    )
   end
 end

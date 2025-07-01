@@ -25,7 +25,15 @@ RSpec.describe QuotasController do
     subject(:do_request) do
       create(:user, :hmrc_editor)
 
-      get perform_search_quotas_path(quota_search: { order_number: quota_definition.quota_order_number_id })
+      today = Time.zone.today
+      get perform_search_quotas_path(
+        quota_search: {
+          order_number: quota_definition.quota_order_number_id,
+          'import_date(3i)': today.day.to_s,
+          'import_date(2i)': today.month.to_s,
+          'import_date(1i)': today.year.to_s,
+        },
+      )
 
       response
     end
@@ -57,7 +65,7 @@ RSpec.describe QuotasController do
       it 'fetches the quota definition' do
         do_request
 
-        expect(QuotaOrderNumbers::QuotaDefinition).to have_received(:all).with(quota_order_number_id: quota_definition.quota_order_number_id)
+        expect(QuotaOrderNumbers::QuotaDefinition).to have_received(:all).with(quota_order_number_id: quota_definition.quota_order_number_id, as_of: Time.zone.today.iso8601)
       end
 
       it { is_expected.to render_template(:search) }

@@ -6,6 +6,10 @@
       <%= f.govuk_text_field :order_number, label: { text: "Enter the 6-digit quota order number ID to return the details of the quota's definitions,
       balance updates and other events." }, width: 'one-third' %>
 
+      <%= f.govuk_date_field :import_date,
+        legend: { text: "When is the quota active?" },
+        hint: { text: "Enter a date within the start and end of the active quota. This will return the quota's definitions, balance updates and other events for that date." } %>
+
       <%= f.govuk_submit 'Search' %>
     <% end %>
   </div>

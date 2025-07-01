@@ -80,6 +80,8 @@ en:
             order_number:
               not_a_number: Enter a valid quota order number
               wrong_length: Enter a valid quota order number
+            import_date:
+              invalid_date: Enter a valid date
         basic_session:
           attributes:
             password:
