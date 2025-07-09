@@ -20,6 +20,7 @@ gem 'govuk_design_system_formbuilder'
 
 # Markdown
 gem 'addressable'
+gem 'govuk-components'
 gem 'govspeak'
 gem 'govuk_publishing_components'
 
