@@ -12,7 +12,6 @@ env:
   AWS_REGION: eu-west-2
   IAM_ROLE_ARN: arn:aws:iam::844815912454:role/GithubActions-Preview-App-Role
   PREEVY_PROFILE_URL: s3://preevy-profile-store?region=eu-west-2
-  # ENVIRONMENT: staging
   SECRET_NAME: admin-configuration
 
 # allow a single job to run per PR
@@ -41,9 +40,6 @@ jobs:
 
           echo "$SECRET_JSON" | jq -r 'to_entries[] | "::add-mask::\(.value)"'
           echo "$SECRET_JSON" | jq -r 'to_entries[] | "\(.key)=\(.value)"' >> .env
-
-      - name: Lock Docker Compose to v2.36.0
-        uses: trade-tariff/trade-tariff-tools/.github/actions/lock-docker-compose@main
 
       - uses: livecycle/preevy-up-action@v2.4.0
         id: preevy_up
