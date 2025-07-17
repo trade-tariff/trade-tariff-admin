@@ -1,19 +1,15 @@
 <%= govuk_form_for live_issue do |f| %>
   <%= f.govuk_text_field :title, width: 'one-half' %>
 
-  <%= f.govuk_text_area :description,
-          hint: { text: 'Provide a description of the issue in 256 characters or less' },
-          max_chars: 256,
-          threshold: 50,
-          rows: 6
+  <%= govuk_markdown_area f, :description,
+          hint: { text: 'Provide a description of the issue. Aim for 256 characters or less' },
+          rows: 8
   %>
 
-  <%= f.govuk_text_area :suggested_action,
+  <%= govuk_markdown_area f, :suggested_action,
           label: { text: 'Suggested action' },
-          hint: { text: 'Provide next steps for the users in 256 characters or less' },
-          max_chars: 256,
-          threshold: 50,
-          rows: 6
+          hint: { text: 'Provide next steps for the users. Aim for 256 characters or less' },
+          rows: 8
   %>
 
   <%= f.govuk_text_field :commodities,
