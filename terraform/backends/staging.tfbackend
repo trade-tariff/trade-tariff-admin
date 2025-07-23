@@ -2,4 +2,4 @@ bucket         = "terraform-state-staging-451934005581"
 key            = "tariff-admin.tfstate"
 region         = "eu-west-2"
 encrypt        = true
-dynamodb_table = "admin-lock-451934005581"
+use_lockfile   = true
