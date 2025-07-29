@@ -25,3 +25,5 @@ jobs:
       basic-password: ${{ secrets.BASIC_PASSWORD }}
       slack-webhook: ${{ secrets.SLACK_WEBHOOK }}
       ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
+
+      # Testing workflow run on a production after a successful staging deployment on the feature branch
