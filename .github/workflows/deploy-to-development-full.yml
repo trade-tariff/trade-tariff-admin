@@ -38,6 +38,11 @@ jobs:
             "repo": "trade-tariff/trade-tariff-frontend",
             "service-names": ["frontend"]
           },
+          {
+            "name": "identity",
+            "repo": "trade-tariff/identity",
+            "service-names": ["identity"]
+          }
         ]
       test-flavour: tariff
     secrets:
