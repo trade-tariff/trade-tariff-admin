@@ -39,7 +39,7 @@ jobs:
             "service-names": ["frontend"]
           },
           {
-            "name": "identity",
+            "name": "tariff-identity",
             "repo": "trade-tariff/identity",
             "service-names": ["identity"]
           }
