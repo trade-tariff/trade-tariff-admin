@@ -16,13 +16,12 @@
     <tbody>
     <% @updates.each do |update| %>
       <tr id="<%= dom_id(update) %>">
-        <td><%= update.measure_type_id %></td>
-        <td><%= update.regulation_id %></td>
+        <td><%= sanitize update.presented_measure_type_id %></td>
+        <td><%= sanitize update.presented_regulation_id %></td>
         <td><%= update.regulation_role %></td>
         <td><%= update.status_label %></td>
         <td>
-          <%= link_to 'Edit',
-                      edit_green_lanes_update_notification_path(update) %>
+          <%= link_to 'Edit', edit_green_lanes_update_notification_path(update) %>
         </td>
       </tr>
     <% end %>
