@@ -146,7 +146,7 @@ GEM
       net-http-persistent (>= 4.0.4, < 5)
     faraday-retry (2.3.2)
       faraday (~> 2.0)
-    gds-sso (21.0.0)
+    gds-sso (22.0.0)
       oauth2 (~> 2.0)
       omniauth (~> 2.1)
       omniauth-oauth2 (~> 1.8)
