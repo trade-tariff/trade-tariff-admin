@@ -10,8 +10,8 @@ module GreenLanes
                :theme_id
 
     has_one :theme
-    has_one :measure_pagination, class_name: 'GreenLanes::MeasurePagination'
-    has_many :green_lanes_measures, class_name: 'GreenLanes::Measure'
+    has_one :measure_pagination, class_name: "GreenLanes::MeasurePagination"
+    has_many :green_lanes_measures, class_name: "GreenLanes::Measure"
     has_many :exemptions
 
     def has_measures?

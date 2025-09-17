@@ -5,7 +5,7 @@ module References
         @commodities = heading.commodities
       end
 
-      private
+    private
 
       def heading
         @heading ||= Heading.find(params[:heading_id])

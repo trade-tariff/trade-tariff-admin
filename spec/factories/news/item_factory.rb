@@ -1,10 +1,10 @@
 FactoryBot.define do
-  factory :news_item, class: 'News::Item' do
+  factory :news_item, class: "News::Item" do
     sequence(:resource_id) { |n| n }
     title { "News item #{resource_id}" }
     slug { "news-item-#{resource_id}" }
-    precis { 'precis content' }
-    content { 'Lorem **ipsum**' }
+    precis { "precis content" }
+    content { "Lorem **ipsum**" }
     display_style { News::Item::DISPLAY_STYLE_REGULAR }
     show_on_uk { true }
     show_on_xi { true }

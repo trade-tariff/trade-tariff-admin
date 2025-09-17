@@ -10,7 +10,7 @@ module References
       @sections = Section.all
     end
 
-    private
+  private
 
     def section
       @section ||= Section.find(params[:id])

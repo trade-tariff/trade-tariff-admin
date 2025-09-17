@@ -1,7 +1,7 @@
 module References
   module Headings
     class SearchReferencesController < References::SearchReferencesController
-      private
+    private
 
       def search_reference_parent
         @search_reference_parent ||= Heading.find(params[:heading_id])

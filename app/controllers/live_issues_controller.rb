@@ -14,9 +14,9 @@ class LiveIssuesController < AuthenticatedController
     @live_issue = LiveIssue.new(live_issue_params)
 
     if @live_issue.save && @live_issue.errors.none?
-      redirect_to live_issues_path, notice: 'Live issue created'
+      redirect_to live_issues_path, notice: "Live issue created"
     else
-      render 'new', alert: "Live issue could not be created: #{@live_issue.errors.full_messages.join(', ')}"
+      render "new", alert: "Live issue could not be created: #{@live_issue.errors.full_messages.join(', ')}"
     end
   end
 
@@ -27,7 +27,7 @@ class LiveIssuesController < AuthenticatedController
   def update
     @live_issue = LiveIssue.find(params[:id])
     if @live_issue.update(live_issue_params) && @live_issue.errors.none?
-      redirect_to live_issues_path, notice: 'Live issue updated'
+      redirect_to live_issues_path, notice: "Live issue updated"
     else
       redirect_to live_issues_path, alert: "Live issue could not be updated: #{@live_issue.errors.full_messages.join(', ')}"
     end
@@ -37,7 +37,7 @@ class LiveIssuesController < AuthenticatedController
     @live_issue = LiveIssue.find(params[:id])
     @live_issue.destroy
 
-    redirect_to live_issues_path, notice: 'Live issue deleted'
+    redirect_to live_issues_path, notice: "Live issue deleted"
   end
 
 private

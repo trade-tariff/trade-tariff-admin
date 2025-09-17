@@ -22,7 +22,7 @@ FactoryBot.define do
     trait :with_section do
       association :section, strategy: :build
 
-      section_id { section.id }
+      section_id { section.try(:id) || section.try(:[], "id") }
     end
   end
 end

@@ -16,8 +16,8 @@ module BasicSessionAuth
     def current_user
       @current_user ||= begin
         user = User.new
-        user.name = 'tariff'
-        user.id = 'tariff'
+        user.name = "tariff"
+        user.id = "tariff"
         user
       end
     end

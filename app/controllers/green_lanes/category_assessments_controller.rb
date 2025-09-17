@@ -19,7 +19,7 @@ module GreenLanes
       @category_assessment.save
 
       if @category_assessment.errors.none?
-        redirect_to green_lanes_category_assessments_path, notice: 'Category Assessment created'
+        redirect_to green_lanes_category_assessments_path, notice: "Category Assessment created"
       else
         @themes = GreenLanes::Theme.all
         render :new
@@ -36,7 +36,7 @@ module GreenLanes
       @category_assessment.save
 
       if @category_assessment.errors.none?
-        redirect_to green_lanes_category_assessments_path, notice: 'Category Assessment updated'
+        redirect_to green_lanes_category_assessments_path, notice: "Category Assessment updated"
       else
         prepare_edit
         render :edit
@@ -50,7 +50,7 @@ module GreenLanes
       category_assessment_exemption = GreenLanes::CategoryAssessmentExemption.new(category_assessment_id: @category_assessment.id, exemption_id:)
 
       if category_assessment_exemption.valid? && category_assessment_exemption.add_exemption
-        redirect_to edit_green_lanes_category_assessment_path(id: params[:id]), notice: 'Exemption assigned successfully'
+        redirect_to edit_green_lanes_category_assessment_path(id: params[:id]), notice: "Exemption assigned successfully"
       else
         prepare_edit
         @category_assessment_exemption = category_assessment_exemption
@@ -65,7 +65,7 @@ module GreenLanes
       category_assessment_exemption = GreenLanes::CategoryAssessmentExemption.new(category_assessment_id: @category_assessment.id, exemption_id:)
 
       if category_assessment_exemption.valid? && category_assessment_exemption.remove_exemption
-        redirect_to edit_green_lanes_category_assessment_path(id: params[:id]), notice: 'Exemption removed successfully'
+        redirect_to edit_green_lanes_category_assessment_path(id: params[:id]), notice: "Exemption removed successfully"
       else
         prepare_edit
         @category_assessment_exemption = category_assessment_exemption
@@ -81,7 +81,7 @@ module GreenLanes
       if measure.valid?
         begin
           if measure.save
-            redirect_to edit_green_lanes_category_assessment_path(id: category_assessment_id), notice: 'Goods Nomenclature assigned successfully'
+            redirect_to edit_green_lanes_category_assessment_path(id: category_assessment_id), notice: "Goods Nomenclature assigned successfully"
           else
             prepare_edit
             @measure = measure
@@ -90,7 +90,7 @@ module GreenLanes
         rescue Faraday::ResourceNotFound
           prepare_edit
           @measure = measure
-          @measure.errors.add(:goods_nomenclature_item_id, 'Goods Nomenclature is not valid')
+          @measure.errors.add(:goods_nomenclature_item_id, "Goods Nomenclature is not valid")
           render :edit
         end
       else
@@ -104,10 +104,10 @@ module GreenLanes
       @category_assessment = GreenLanes::CategoryAssessment.find(params[:id])
       @category_assessment.destroy
 
-      redirect_to green_lanes_category_assessments_path, notice: 'Category Assessment removed'
+      redirect_to green_lanes_category_assessments_path, notice: "Category Assessment removed"
     end
 
-    private
+  private
 
     def prepare_edit
       @themes = GreenLanes::Theme.all

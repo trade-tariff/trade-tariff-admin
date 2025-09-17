@@ -23,20 +23,20 @@ module GovukHelper
     form.object.persisted? ? "Update #{name}" : "Create #{name}"
   end
 
-  def submit_and_back_buttons(form, back_link, submit: nil, back_text: 'Back')
+  def submit_and_back_buttons(form, back_link, submit: nil, back_text: "Back")
     submit ||= submit_button_label(form)
 
     submit_btn = form.govuk_submit(submit)
     back_btn = link_to(back_text, back_link,
-                       class: 'govuk-button govuk-button--secondary')
+                       class: "govuk-button govuk-button--secondary")
 
-    tag.div class: 'govuk-button-group' do
+    tag.div class: "govuk-button-group" do
       safe_join [submit_btn, back_btn], "\n"
     end
   end
 
   def govuk_markdown_area(form, field_name, **options)
-    render 'application/markdown_field',
+    render "application/markdown_field",
            form:,
            field_name:,
            field_options: options

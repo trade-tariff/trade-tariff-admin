@@ -2,8 +2,8 @@ module QuotaOrderNumbers
   class QuotaDefinition
     include ApiEntity
 
-    set_singular_path 'admin/quota_order_numbers/:quota_order_number_id/quota_definitions/:id'
-    set_collection_path 'admin/quota_order_numbers/:quota_order_number_id/quota_definitions'
+    set_singular_path "admin/quota_order_numbers/:quota_order_number_id/quota_definitions/:id"
+    set_collection_path "admin/quota_order_numbers/:quota_order_number_id/quota_definitions"
 
     has_one :measurement_unit
     has_one :quota_order_number
@@ -55,7 +55,7 @@ module QuotaOrderNumbers
       quota_exhaustion_events + quota_unsuspension_events + quota_reopening_events + quota_unblocking_events + quota_critical_events
     end
 
-    private
+  private
 
     def chart_data
       @chart_data ||= quota_balance_events.reverse.each_with_object(occurrence_timestamps: [], imported_amounts: [], new_balances: []) do |event, acc|

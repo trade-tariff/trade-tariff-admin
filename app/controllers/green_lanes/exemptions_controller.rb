@@ -15,7 +15,7 @@ module GreenLanes
       @exemption.save
 
       if @exemption.errors.none?
-        redirect_to green_lanes_exemptions_path, notice: 'Exemption created'
+        redirect_to green_lanes_exemptions_path, notice: "Exemption created"
       else
         render :new
       end
@@ -30,7 +30,7 @@ module GreenLanes
       @exemption.save
 
       if @exemption.errors.none?
-        redirect_to green_lanes_exemptions_path, notice: 'Exemption updated'
+        redirect_to green_lanes_exemptions_path, notice: "Exemption updated"
       else
         render :edit
       end
@@ -40,10 +40,10 @@ module GreenLanes
       @exemption = GreenLanes::Exemption.find(params[:id])
       @exemption.destroy
 
-      redirect_to green_lanes_exemptions_path, notice: 'Exemption removed'
+      redirect_to green_lanes_exemptions_path, notice: "Exemption removed"
     end
 
-    private
+  private
 
     def ex_params
       params.require(:exemption).permit(

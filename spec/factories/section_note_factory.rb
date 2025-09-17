@@ -3,7 +3,7 @@ FactoryBot.define do
 
   factory :section_note do
     section_id { generate(:section_id) }
-    content    { 'Content of note' }
+    content    { "Content of note" }
 
     trait :persisted do
       resource_id { generate(:section_note_id) }

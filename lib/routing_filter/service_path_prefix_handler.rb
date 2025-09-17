@@ -1,4 +1,4 @@
-require 'trade_tariff_admin'
+require "trade_tariff_admin"
 
 module RoutingFilter
   class ServicePathPrefixHandler < Filter
@@ -6,7 +6,7 @@ module RoutingFilter
       ::TradeTariffAdmin::ServiceChooser.service_choices
                                            .keys
                                            .map { |prefix| Regexp.escape(prefix) }
-                                           .join('|')
+                                           .join("|")
                                            .freeze
 
     SERVICE_CHOICE_PREFIXES_REGEX = %r{^/(#{SERVICE_CHOICE_PREFIXES})(?=/|$)}
@@ -29,11 +29,12 @@ module RoutingFilter
           prepended_url = prepend_segment(result.url, service_choice)
 
           result.update(prepended_url)
+          # rubocop:enable Rails/SaveBang
         end
       end
     end
 
-    private
+  private
 
     def service_choice_default
       ::TradeTariffAdmin::ServiceChooser.service_default

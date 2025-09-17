@@ -4,10 +4,10 @@ class User < ApplicationRecord
   serialize :permissions
 
   module Permissions
-    SIGNIN = 'signin'.freeze
-    HMRC_EDITOR = 'HMRC Editor'.freeze
-    GDS_EDITOR = 'GDS Editor'.freeze
-    HMRC_ADMIN = 'HMRC Admin'.freeze
+    SIGNIN = "signin".freeze
+    HMRC_EDITOR = "HMRC Editor".freeze
+    GDS_EDITOR = "GDS Editor".freeze
+    HMRC_ADMIN = "HMRC Admin".freeze
   end
 
   def gds_editor?

@@ -14,13 +14,13 @@ class RollbacksController < AuthenticatedController
     @rollback.save
 
     if @rollback.errors.none?
-      redirect_to rollbacks_path, notice: 'Rollback was scheduled'
+      redirect_to rollbacks_path, notice: "Rollback was scheduled"
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
-  private
+private
 
   def rollback_params
     if params[:rollback].blank?

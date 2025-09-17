@@ -16,7 +16,7 @@ module GreenLanes
       @measure_type_mapping.save
 
       if @measure_type_mapping.errors.none?
-        redirect_to green_lanes_measure_type_mappings_path, notice: 'MeasureTypeMapping created'
+        redirect_to green_lanes_measure_type_mappings_path, notice: "MeasureTypeMapping created"
       else
         @themes = GreenLanes::Theme.all
         render :new
@@ -27,10 +27,10 @@ module GreenLanes
       @measure_type_mapping = GreenLanes::MeasureTypeMapping.find(params[:id])
       @measure_type_mapping.destroy
 
-      redirect_to green_lanes_measure_type_mappings_path, notice: 'MeasureTypeMapping removed'
+      redirect_to green_lanes_measure_type_mappings_path, notice: "MeasureTypeMapping removed"
     end
 
-    private
+  private
 
     def mtm_params
       params.require(:measure_type_mapping).permit(

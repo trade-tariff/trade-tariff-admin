@@ -14,7 +14,7 @@ class TariffJsonapiSerializer < SimpleDelegator
     serialized
   end
 
-  private
+private
 
   attr_reader :entity
 

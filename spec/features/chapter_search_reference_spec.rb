@@ -1,13 +1,16 @@
-require 'rails_helper'
-require 'search_reference'
+require "rails_helper"
+require "search_reference"
 
-RSpec.describe 'Chapter Search Reference management' do
+# rubocop:disable RSpec/NoExpectationExample
+RSpec.describe "Chapter Search Reference management" do
+  # rubocop:disable RSpec/LetSetup
   let!(:user) { create :user, :gds_editor }
+  # rubocop:enable RSpec/LetSetup
   let(:section) { build :section }
   let(:chapter_search_reference) do
     build(
       :chapter_search_reference,
-      title: 'new title',
+      title: "new title",
       referenced: chapter,
     )
   end
@@ -19,14 +22,14 @@ RSpec.describe 'Chapter Search Reference management' do
     )
   end
 
-  describe 'Search Reference creation' do
+  describe "Search Reference creation" do
     before do
       stub_api_request("/admin/chapters/#{chapter.to_param}")
-        .to_return jsonapi_success_response('chapter', chapter.attributes)
+        .to_return jsonapi_success_response("chapter", chapter.attributes)
 
       stub_api_request("/admin/chapters/#{chapter.to_param}/search_references")
         .to_return jsonapi_success_response(
-          'search_reference',
+          "search_reference",
           [],
         )
 
@@ -36,20 +39,20 @@ RSpec.describe 'Chapter Search Reference management' do
 
     specify do
       ensure_on new_references_chapter_search_reference_path(chapter)
-      fill_in 'Search reference', with: 'new title'
-      click_button 'Create Search reference'
+      fill_in "Search reference", with: "new title"
+      click_button "Create Search reference"
       verify current_path == references_chapter_search_references_path(chapter)
     end
   end
 
-  describe 'Search Reference deletion' do
+  describe "Search Reference deletion" do
     before do
       stub_api_request("/admin/chapters/#{chapter.to_param}")
-        .to_return jsonapi_success_response('chapter', chapter.attributes)
+        .to_return jsonapi_success_response("chapter", chapter.attributes)
 
       stub_api_request("/admin/chapters/#{chapter.to_param}/search_references")
         .to_return jsonapi_success_response(
-          'search_reference',
+          "search_reference",
           [chapter_search_reference.attributes],
         )
 
@@ -59,19 +62,19 @@ RSpec.describe 'Chapter Search Reference management' do
 
     specify do
       ensure_on references_chapter_search_references_path(chapter)
-      within(dom_id_selector(chapter_search_reference)) { click_link 'Remove' }
+      within(dom_id_selector(chapter_search_reference)) { click_link "Remove" }
       verify current_path == references_chapter_search_references_path(chapter)
     end
   end
 
-  describe 'Search reference editing' do
+  describe "Search reference editing" do
     before do
       stub_api_request("/admin/chapters/#{chapter.to_param}")
-        .to_return jsonapi_success_response('chapter', chapter.attributes)
+        .to_return jsonapi_success_response("chapter", chapter.attributes)
 
       stub_api_request("/admin/chapters/#{chapter.to_param}/search_references")
         .to_return jsonapi_success_response(
-          'search_reference',
+          "search_reference",
           [chapter_search_reference.attributes],
         )
 
@@ -81,9 +84,10 @@ RSpec.describe 'Chapter Search Reference management' do
 
     specify do
       ensure_on edit_references_chapter_search_reference_path(chapter, chapter_search_reference)
-      fill_in 'Search reference', with: 'new title'
-      click_button 'Update Search reference'
+      fill_in "Search reference", with: "new title"
+      click_button "Update Search reference"
       verify current_path == references_chapter_search_references_path(chapter)
     end
   end
 end
+# rubocop:enable RSpec/NoExpectationExample

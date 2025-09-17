@@ -12,7 +12,7 @@ module GreenLanes
       formatted_label.truncate(MAX_LENGTH).to_s
     end
 
-    private
+  private
 
     def formatted_label
       "#{section}.#{subsection}. #{description}"

@@ -2,19 +2,19 @@ module TradeTariffAdmin
   module ServiceChooser
     class << self
       def xi_host
-        service_choices['xi']
+        service_choices["xi"]
       end
 
       def uk_host
-        service_choices['uk']
+        service_choices["uk"]
       end
 
       def service_default
-        ENV.fetch('SERVICE_DEFAULT', 'uk')
+        ENV.fetch("SERVICE_DEFAULT", "uk")
       end
 
       def service_choices
-        @service_choices ||= JSON.parse(ENV.fetch('API_SERVICE_BACKEND_URL_OPTIONS', '{}'))
+        @service_choices ||= JSON.parse(ENV.fetch("API_SERVICE_BACKEND_URL_OPTIONS", "{}"))
       end
 
       def service_choice=(service_choice)
@@ -45,11 +45,11 @@ module TradeTariffAdmin
       end
 
       def uk?
-        (service_choice || service_default) == 'uk'
+        (service_choice || service_default) == "uk"
       end
 
       def xi?
-        service_choice == 'xi'
+        service_choice == "xi"
       end
     end
   end
