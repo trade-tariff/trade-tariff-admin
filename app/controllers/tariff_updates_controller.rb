@@ -13,7 +13,7 @@ class TariffUpdatesController < AuthenticatedController
     @download = Download.build(user_id: current_user.id)
     @download.save
 
-    redirect_to tariff_updates_path, notice: 'Download was scheduled'
+    redirect_to tariff_updates_path, notice: "Download was scheduled"
   rescue Faraday::Error => e
     redirect_to tariff_updates_path, alert: "Unexpected error: #{e}"
   end
@@ -22,18 +22,18 @@ class TariffUpdatesController < AuthenticatedController
     @apply = Apply.build(user_id: current_user.id)
     @apply.save
 
-    redirect_to tariff_updates_path, notice: 'Apply & ClearCache was scheduled'
+    redirect_to tariff_updates_path, notice: "Apply & ClearCache was scheduled"
   rescue Faraday::Error => e
     redirect_to tariff_updates_path, alert: "Unexpected error: #{e}"
   end
 
-  private
+private
 
   def authorize_user
     authorize Update, :access?
   end
 
   def error_messages_for(model)
-    model.errors.full_messages.join(', ')
+    model.errors.full_messages.join(", ")
   end
 end

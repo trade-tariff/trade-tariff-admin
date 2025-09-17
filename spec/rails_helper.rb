@@ -1,16 +1,16 @@
-ENV['RAILS_ENV'] ||= 'test'
+ENV["RAILS_ENV"] ||= "test"
 
-require 'simplecov'
+require "simplecov"
 # require 'rspec/rebound'
 
-SimpleCov.start 'rails'
+SimpleCov.start "rails"
 SimpleCov.formatters = SimpleCov::Formatter::HTMLFormatter
 
-require File.expand_path('../config/environment', __dir__)
+require File.expand_path("../config/environment", __dir__)
 
-require 'rspec/rails'
-require 'pundit/rspec'
-require 'webmock/rspec'
+require "rspec/rails"
+require "pundit/rspec"
+require "webmock/rspec"
 
 begin
   ActiveRecord::Migration.maintain_test_schema!
@@ -18,7 +18,7 @@ rescue ActiveRecord::PendingMigrationError => e
   abort e.to_s.strip
 end
 
-Dir[Rails.root.join('spec/support/**/*.rb')].sort.each { |f| require f }
+Dir[Rails.root.join("spec/support/**/*.rb")].sort.each { |f| require f }
 
 RSpec.configure do |config|
   config.raise_errors_for_deprecations!

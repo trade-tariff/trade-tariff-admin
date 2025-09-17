@@ -1,7 +1,7 @@
 module References
   module Sections
     class SearchReferencesController < References::SearchReferencesController
-      private
+    private
 
       def search_reference_parent
         @search_reference_parent ||= Section.find(params[:section_id])

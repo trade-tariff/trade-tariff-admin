@@ -11,7 +11,7 @@ module GreenLanes
       @exempting_additional_code_override.save
 
       if @exempting_additional_code_override.errors.none?
-        redirect_to green_lanes_exempting_overrides_path, notice: 'Exempting Additional Code Override created'
+        redirect_to green_lanes_exempting_overrides_path, notice: "Exempting Additional Code Override created"
       else
         render :new
       end
@@ -21,10 +21,10 @@ module GreenLanes
       @exempting_additional_code_override = GreenLanes::ExemptingAdditionalCodeOverride.build(resource_id: params[:id])
       @exempting_additional_code_override.destroy
 
-      redirect_to green_lanes_exempting_overrides_path, notice: 'Exempting Additional Code Override removed'
+      redirect_to green_lanes_exempting_overrides_path, notice: "Exempting Additional Code Override removed"
     end
 
-    private
+  private
 
     def eaco_params
       params.require(:exempting_additional_code_override).permit(

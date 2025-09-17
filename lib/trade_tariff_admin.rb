@@ -1,4 +1,4 @@
-require_relative './trade_tariff_admin'
+require_relative "./trade_tariff_admin"
 
 module TradeTariffAdmin
   class << self
@@ -7,15 +7,15 @@ module TradeTariffAdmin
     end
 
     def host
-      ENV.fetch('ADMIN_HOST', 'http://localhost')
+      ENV.fetch("ADMIN_HOST", "http://localhost")
     end
 
     def production?
-      ENV['GOVUK_APP_DOMAIN'] == 'tariff-admin-production.cloudapps.digital'
+      ENV["GOVUK_APP_DOMAIN"] == "tariff-admin-production.cloudapps.digital"
     end
 
     def authenticate_with_sso?
-      @authenticate_with_sso ||= ENV.fetch('AUTHENTICATE_WITH_SSO', 'true') == 'true'
+      @authenticate_with_sso ||= ENV.fetch("AUTHENTICATE_WITH_SSO", "true") == "true"
     end
 
     def basic_session_authentication?
@@ -23,7 +23,7 @@ module TradeTariffAdmin
     end
 
     def basic_session_password
-      @basic_session_password ||= ENV['BASIC_PASSWORD']
+      @basic_session_password ||= ENV["BASIC_PASSWORD"]
     end
   end
 end

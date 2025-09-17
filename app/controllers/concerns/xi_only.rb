@@ -6,7 +6,7 @@ module XiOnly
 
     def check_service
       if TradeTariffAdmin::ServiceChooser.uk?
-        raise ActionController::RoutingError, 'Invalid service'
+        raise ActionController::RoutingError, "Invalid service"
       end
     end
   end

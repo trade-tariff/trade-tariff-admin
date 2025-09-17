@@ -1,14 +1,17 @@
-require 'rails_helper'
+require "rails_helper"
 
-RSpec.describe 'Commodity Search Reference management' do
+# rubocop:disable RSpec/NoExpectationExample
+RSpec.describe "Commodity Search Reference management" do
+  # rubocop:disable RSpec/LetSetup
   let!(:user) { create :user, :gds_editor }
+  # rubocop:enable RSpec/LetSetup
   let(:heading) { build :heading }
 
   let(:commodity) do
     build(
       :commodity,
       heading: {
-        type: 'heading',
+        type: "heading",
         id: heading.id,
         attributes: heading.attributes,
       },
@@ -17,19 +20,19 @@ RSpec.describe 'Commodity Search Reference management' do
   let(:commodity_search_reference) do
     build(
       :commodity_search_reference,
-      title: 'new title',
+      title: "new title",
       referenced: commodity.attributes,
     )
   end
 
-  describe 'Search Reference creation' do
+  describe "Search Reference creation" do
     before do
       stub_api_request("/admin/commodities/#{commodity.to_param}")
-        .to_return jsonapi_success_response('commodity', commodity.attributes)
+        .to_return jsonapi_success_response("commodity", commodity.attributes)
 
       stub_api_request("/admin/commodities/#{commodity.to_param}/search_references")
         .to_return jsonapi_success_response(
-          'search_reference',
+          "search_reference",
           [],
         )
 
@@ -39,20 +42,20 @@ RSpec.describe 'Commodity Search Reference management' do
 
     specify do
       ensure_on new_references_commodity_search_reference_path(commodity)
-      fill_in 'Search reference', with: title
-      click_button 'Create Search reference'
+      fill_in "Search reference", with: title
+      click_button "Create Search reference"
       verify current_path == references_commodity_search_references_path(commodity)
     end
   end
 
-  describe 'Search Reference deletion' do
+  describe "Search Reference deletion" do
     before do
       stub_api_request("/admin/commodities/#{commodity.to_param}")
-        .to_return jsonapi_success_response('commodity', commodity.attributes)
+        .to_return jsonapi_success_response("commodity", commodity.attributes)
 
       stub_api_request("/admin/commodities/#{commodity.to_param}/search_references")
         .to_return jsonapi_success_response(
-          'search_reference',
+          "search_reference",
           [commodity_search_reference.attributes],
         )
 
@@ -62,19 +65,19 @@ RSpec.describe 'Commodity Search Reference management' do
 
     specify do
       ensure_on references_commodity_search_references_path(commodity)
-      within(dom_id_selector(commodity_search_reference)) { click_link 'Remove' }
+      within(dom_id_selector(commodity_search_reference)) { click_link "Remove" }
       verify current_path == references_commodity_search_references_path(commodity)
     end
   end
 
-  describe 'Search reference editing' do
+  describe "Search reference editing" do
     before do
       stub_api_request("/admin/commodities/#{commodity.to_param}")
-        .to_return jsonapi_success_response('commodity', commodity.attributes)
+        .to_return jsonapi_success_response("commodity", commodity.attributes)
 
       stub_api_request("/admin/commodities/#{commodity.to_param}/search_references")
         .to_return jsonapi_success_response(
-          'search_reference',
+          "search_reference",
           [commodity_search_reference.attributes],
         )
 
@@ -84,9 +87,10 @@ RSpec.describe 'Commodity Search Reference management' do
 
     specify do
       ensure_on edit_references_commodity_search_reference_path(commodity, commodity_search_reference)
-      fill_in 'Search reference', with: 'new title'
-      click_button 'Update Search reference'
+      fill_in "Search reference", with: "new title"
+      click_button "Update Search reference"
       verify current_path == references_commodity_search_references_path(commodity)
     end
   end
 end
+# rubocop:enable RSpec/NoExpectationExample

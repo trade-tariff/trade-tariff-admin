@@ -12,9 +12,9 @@ module GreenLanes
       @measure.destroy
 
       if category_assessment_id.present?
-        redirect_to edit_green_lanes_category_assessment_path(id: category_assessment_id), notice: 'Measure removed'
+        redirect_to edit_green_lanes_category_assessment_path(id: category_assessment_id), notice: "Measure removed"
       else
-        redirect_to green_lanes_measures_path, notice: 'Measure removed'
+        redirect_to green_lanes_measures_path, notice: "Measure removed"
       end
     end
   end

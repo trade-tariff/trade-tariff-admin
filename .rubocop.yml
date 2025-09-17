@@ -3,53 +3,21 @@ inherit_gem:
     - config/default.yml
     - config/rails.yml
 
-require: rubocop-rspec
+plugins: rubocop-rspec
+
+inherit_mode:
+  merge:
+    - Exclude
 
 AllCops:
   Exclude:
-    - 'db/schema.rb'
-    - 'vendor/**/*'
+    - 'db/**/*'
+    - 'config/**/*'
     - 'bin/**'
     - 'db/**/*'
     - 'tmp/**/*'
     - 'config/**/*'
     - 'node_modules/**/*'
-Layout/LineLength:
-  Max: 120
-Layout/AccessModifierIndentation:
-  Enabled: false
-Metrics/AbcSize:
-  Max: 20
-Metrics/BlockLength:
-  Enabled: false
-Metrics/ModuleLength:
-  Enabled: false
-Rails/FilePath:
-  Enabled: false
-RSpec/DescribeClass:
-  Enabled: false
-RSpec/ExampleLength:
-  Enabled: false
-RSpec/LetSetup:
-  Enabled: false
-RSpec/MultipleExpectations:
-  Enabled: false
-RSpec/NestedGroups:
-  Enabled: false
-RSpec/NoExpectationExample:
-  Enabled: false
+
 Rails/SaveBang:
   Enabled: false
-RSpec/VerifiedDoubles:
-  Enabled: false
-Style/Documentation:
-  Enabled: false
-Style/FrozenStringLiteralComment:
-  Enabled: true
-  EnforcedStyle: never
-Style/GuardClause:
-  MinBodyLength: 2
-Style/InverseMethods:
-  Enabled: false
-Style/StringLiterals:
-  EnforcedStyle: single_quotes

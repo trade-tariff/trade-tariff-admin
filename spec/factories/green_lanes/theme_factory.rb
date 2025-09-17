@@ -1,10 +1,10 @@
 FactoryBot.define do
-  factory :green_lanes_theme, class: 'GreenLanes::Theme' do
+  factory :green_lanes_theme, class: "GreenLanes::Theme" do
     sequence(:resource_id) { |n| n }
     section               { 1 }
     sequence(:subsection) { |n| n }
     sequence(:theme)      { |n| "Theme #{n}" }
-    description           { 'Some description' }
+    description           { "Some description" }
     category              { 2 }
 
     trait :category1 do

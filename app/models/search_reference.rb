@@ -10,6 +10,6 @@ class SearchReference
   end
 
   def referenced_class
-    attributes['referenced_class'].constantize
+    attributes["referenced_class"].constantize
   end
 end

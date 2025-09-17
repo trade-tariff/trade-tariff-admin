@@ -15,7 +15,7 @@ class NewsCollectionsController < AuthenticatedController
     @news_collection.save
 
     if @news_collection.errors.none?
-      redirect_to news_collections_path, notice: 'News collection created'
+      redirect_to news_collections_path, notice: "News collection created"
     else
       render :new
     end
@@ -31,13 +31,13 @@ class NewsCollectionsController < AuthenticatedController
     @news_collection.save
 
     if @news_collection.errors.none?
-      redirect_to news_collections_path, notice: 'News collection updated'
+      redirect_to news_collections_path, notice: "News collection updated"
     else
       render :edit
     end
   end
 
-  private
+private
 
   def news_collection_params
     params.require(:news_collection).permit(%i[

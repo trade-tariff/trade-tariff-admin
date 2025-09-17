@@ -21,10 +21,10 @@ module News
       self.slug = normalised_slug if slug != normalised_slug
     end
 
-    private
+  private
 
     def normalise_slug(slug)
-      slug.downcase.gsub(/\s+/, '-').gsub(/[^a-z0-9-]/, '').first(MAX_SLUG_LENGTH)
+      slug.downcase.gsub(/\s+/, "-").gsub(/[^a-z0-9-]/, "").first(MAX_SLUG_LENGTH)
     end
   end
 end

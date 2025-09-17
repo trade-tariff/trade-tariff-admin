@@ -28,7 +28,7 @@ module ApiResponsesHelper
   def api_updated_response(resource_url)
     {
       status: 200,
-      headers: { 'location' => resource_url },
+      headers: { "location" => resource_url },
       body: {}.to_json,
     }
   end
@@ -44,7 +44,7 @@ module ApiResponsesHelper
   def api_error_response(errors, headers = {})
     {
       status: 422,
-      headers: headers.reverse_merge('content-type' => 'application/json'),
+      headers: headers.reverse_merge("content-type" => "application/json"),
       body: format_jsonapi_errors(errors).to_json,
     }
   end
@@ -108,8 +108,8 @@ module ApiResponsesHelper
                     TradeTariffAdmin::ServiceChooser.api_host
                   end
 
-    endpoint = "/#{endpoint}" unless endpoint.starts_with?('/')
-    endpoint = "/admin#{endpoint}" unless endpoint.starts_with?('/admin/')
+    endpoint = "/#{endpoint}" unless endpoint.starts_with?("/")
+    endpoint = "/admin#{endpoint}" unless endpoint.starts_with?("/admin/")
     url = "#{backend_url}#{endpoint}"
 
     stub_request(method, url)
@@ -119,7 +119,7 @@ module ApiResponsesHelper
   def jsonapi_response(type, response_data, status: 200, headers: nil)
     {
       status:,
-      headers: headers || { 'content-type' => 'application/json; charset=utf-8' },
+      headers: headers || { "content-type" => "application/json; charset=utf-8" },
       body: format_jsonapi_response(type, response_data).to_json,
     }
   end

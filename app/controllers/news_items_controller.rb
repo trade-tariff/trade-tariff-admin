@@ -17,7 +17,7 @@ class NewsItemsController < AuthenticatedController
     @news_item.save
 
     if @news_item.errors.none?
-      redirect_to news_items_path, notice: 'News item created'
+      redirect_to news_items_path, notice: "News item created"
     else
       @collections = collection_options
       render :new
@@ -35,7 +35,7 @@ class NewsItemsController < AuthenticatedController
     @news_item.save
 
     if @news_item.errors.none?
-      redirect_to news_items_path, notice: 'News item updated'
+      redirect_to news_items_path, notice: "News item updated"
     else
       @collections = collection_options
       render :edit
@@ -46,10 +46,10 @@ class NewsItemsController < AuthenticatedController
     @news_item = News::Item.find(params[:id])
     @news_item.destroy
 
-    redirect_to news_items_path, notice: 'News item removed'
+    redirect_to news_items_path, notice: "News item removed"
   end
 
-  private
+private
 
   def collection_options
     News::Collection.all.map do |collection|

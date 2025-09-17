@@ -1,6 +1,6 @@
-require 'rails_helper'
+require "rails_helper"
 
-RSpec.describe 'quotas/search' do
+RSpec.describe "quotas/search" do
   subject { render && rendered }
 
   before do
@@ -8,7 +8,7 @@ RSpec.describe 'quotas/search' do
     assign :quota_definitions, []
   end
 
-  context 'with quota order number origins' do
+  context "with quota order number origins" do
     let(:quota_definition) do
       build(
         :quota_definition,
@@ -18,10 +18,10 @@ RSpec.describe 'quotas/search' do
       )
     end
 
-    it { is_expected.to have_css 'h1', text: /Quota 051822 - definitions/ }
+    it { is_expected.to have_css "h1", text: /Quota 051822 - definitions/ }
 
-    it { is_expected.to have_css 'h2', text: 'Core quota data' }
+    it { is_expected.to have_css "h2", text: "Core quota data" }
 
-    it { is_expected.to have_css 'div.govuk-accordion' }
+    it { is_expected.to have_css "div.govuk-accordion" }
   end
 end

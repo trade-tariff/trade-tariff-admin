@@ -7,15 +7,15 @@ module GreenLanes
     def status_label
       case status
       when 0
-        'Created'
+        "Created"
       when 1
-        'Updated'
+        "Updated"
       when 2
-        'Expired'
+        "Expired"
       when 3
-        'Category Assessment Created'
+        "Category Assessment Created"
       else
-        ''
+        ""
       end
     end
 

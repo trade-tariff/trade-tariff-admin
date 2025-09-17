@@ -4,7 +4,7 @@ class TariffJsonapiParser
   end
 
   def parse
-    return @attributes unless @attributes.is_a?(Hash) && @attributes.key?('data')
+    return @attributes unless @attributes.is_a?(Hash) && @attributes.key?("data")
 
     case data
     when Hash
@@ -17,15 +17,15 @@ class TariffJsonapiParser
   end
 
   def errors
-    @attributes['error'] || @attributes['errors']&.map { |error| error['detail'] }&.join(', ')
+    @attributes["error"] || @attributes["errors"]&.map { |error| error["detail"] }&.join(", ")
   end
 
   class ParsingError < StandardError; end
 
-  private
+private
 
   def data
-    @attributes['data']
+    @attributes["data"]
   end
 
   def parse_resource(resource)
@@ -33,9 +33,9 @@ class TariffJsonapiParser
 
     parse_type!(resource, result)
     parse_id!(resource, result)
-    parse_attributes!(resource, result) if resource.key?('attributes')
-    parse_relationships!(resource['relationships'], result) if resource.key?('relationships')
-    parse_meta!(resource, result) if resource.key?('meta')
+    parse_attributes!(resource, result) if resource.key?("attributes")
+    parse_relationships!(resource["relationships"], result) if resource.key?("relationships")
+    parse_meta!(resource, result) if resource.key?("meta")
 
     result
   end
@@ -47,26 +47,26 @@ class TariffJsonapiParser
   end
 
   def parse_type!(resource, parent)
-    parent.merge!('resource_type' => resource['type'])
+    parent.merge!("resource_type" => resource["type"])
   end
 
   def parse_id!(resource, parent)
-    parent.merge!('resource_id' => resource['id'])
+    parent.merge!("resource_id" => resource["id"])
   end
 
   def parse_attributes!(resource, parent)
-    parent.merge!(resource['attributes'])
+    parent.merge!(resource["attributes"])
   end
 
   def parse_relationships!(relationships, parent)
     relationships.each do |name, values|
-      parent[name] = case values['data']
+      parent[name] = case values["data"]
                      when Array
-                       find_and_parse_multiple_included(name, values['data'])
+                       find_and_parse_multiple_included(name, values["data"])
                      when Hash
-                       find_and_parse_included(name, values.dig('data', 'id'), values.dig('data', 'type'))
+                       find_and_parse_included(name, values.dig("data", "id"), values.dig("data", "type"))
                      else
-                       values['data']
+                       values["data"]
                      end
     rescue NoMethodError
       raise ParsingError, "Error parsing relationship: #{name}"
@@ -75,7 +75,7 @@ class TariffJsonapiParser
 
   def find_and_parse_multiple_included(name, records)
     records.map do |record|
-      find_and_parse_included(name, record['id'], record['type'])
+      find_and_parse_included(name, record["id"], record["type"])
     rescue NoMethodError
       raise ParsingError,
             "Error finding relationship '#{name}': #{record.inspect}"
@@ -96,10 +96,10 @@ class TariffJsonapiParser
   end
 
   def parse_meta!(resource, parent)
-    parent['meta'] = resource['meta']
+    parent["meta"] = resource["meta"]
   end
 
   def find_included(id, type)
-    @attributes['included']&.find { |r| r['id'].to_s == id.to_s && r['type'].to_s == type.to_s } || {}
+    @attributes["included"]&.find { |r| r["id"].to_s == id.to_s && r["type"].to_s == type.to_s } || {}
   end
 end

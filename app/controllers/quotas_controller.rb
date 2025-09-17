@@ -4,7 +4,7 @@ class QuotasController < AuthenticatedController
   end
 
   def new
-    return render 'errors/not_found' if TradeTariffAdmin::ServiceChooser.xi?
+    return render "errors/not_found" if TradeTariffAdmin::ServiceChooser.xi?
 
     today = Time.zone.today
     @quota_search = QuotaSearch.new(
@@ -15,7 +15,7 @@ class QuotasController < AuthenticatedController
   end
 
   def search
-    return render 'errors/not_found' if TradeTariffAdmin::ServiceChooser.xi?
+    return render "errors/not_found" if TradeTariffAdmin::ServiceChooser.xi?
 
     @quota_search = QuotaSearch.new(quota_params)
 

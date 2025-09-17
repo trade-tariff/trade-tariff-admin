@@ -15,7 +15,7 @@ module ApiEntity
 
       return result if result.present?
 
-      raise Faraday::ResourceNotFound, 'Resource not found'
+      raise Faraday::ResourceNotFound, "Resource not found"
     end
 
     def build(attributes = {})
@@ -40,7 +40,7 @@ module ApiEntity
                 instance_variables_for_inspect
               end
 
-      inspection = attrs.any? ? attrs.join(', ') : 'not initialised'
+      inspection = attrs.any? ? attrs.join(", ") : "not initialised"
 
       "#<#{self.class.name.presence || self.class} #{inspection}>"
     end
@@ -56,7 +56,7 @@ module ApiEntity
     alias_method :id, :to_param
 
     def resource_type
-      @attributes['resource_type'] || self.class.model_name.element
+      @attributes["resource_type"] || self.class.model_name.element
     end
   end
 
@@ -156,7 +156,7 @@ module ApiEntity
   end
 
   def cleaned_path_attributes
-    path_attributes.map { |path_attribute| path_attribute.sub(':', '') }
+    path_attributes.map { |path_attribute| path_attribute.sub(":", "") }
   end
 
 private
@@ -164,8 +164,8 @@ private
   def initialize_errors
     self[:errors].each do |error|
       errors.add(
-        error.dig('source', 'pointer').to_s.sub('/data/attributes/', ''),
-        error['detail'],
+        error.dig("source", "pointer").to_s.sub("/data/attributes/", ""),
+        error["detail"],
       )
     end
   end
@@ -176,7 +176,7 @@ private
 
     if path_attributes.any?
       path_attributes.map do |path_attribute|
-        cleaned_path_attribute = path_attribute.sub(':', '')
+        cleaned_path_attribute = path_attribute.sub(":", "")
         path_value = public_send(:[], cleaned_path_attribute).to_s
         path_value = path_value.presence || public_send(cleaned_path_attribute).to_s
 
@@ -184,7 +184,7 @@ private
                        if ":#{casted_by.model_name.element}_id" == path_attribute
                          casted_by.public_send(:id).to_s
                        else
-                         casted_by.public_send(:[], path_attribute.sub(':', '')).to_s
+                         casted_by.public_send(:[], path_attribute.sub(":", "")).to_s
                        end
                      else
                        path_value
@@ -225,7 +225,7 @@ private
 
   def instance_variables_for_inspect
     instance_variables.without(%i[@attributes @casted_by])
-                      .map { |k| k.to_s.sub('@', '') }
+                      .map { |k| k.to_s.sub("@", "") }
                       .select(&method(:respond_to?))
                       .map { |k| "#{k}: #{public_send(k).inspect}" }
   end
@@ -284,10 +284,10 @@ private
         entry
       end
 
-      meta = handle_body(resp).fetch('meta', {})
+      meta = handle_body(resp).fetch("meta", {})
 
-      if meta['pagination'].present?
-        collection = paginate_collection(collection, meta.fetch('pagination', {}))
+      if meta["pagination"].present?
+        collection = paginate_collection(collection, meta.fetch("pagination", {}))
       end
 
       CollectionProxy.new(collection, opts[:casted_by], name)
@@ -344,8 +344,8 @@ private
     def paginate_collection(collection, pagination)
       Kaminari.paginate_array(
         collection,
-        total_count: pagination['total_count'],
-      ).page(pagination['page']).per(pagination['per_page'])
+        total_count: pagination["total_count"],
+      ).page(pagination["page"]).per(pagination["per_page"])
     end
 
     def singular_path
@@ -387,17 +387,17 @@ private
     end
 
     def namespace
-      @namespace ||= name.split('::')[0...-1].join('::').constantize
+      @namespace ||= name.split("::")[0...-1].join("::").constantize
     rescue NameError
       nil
     end
 
     def xi_only
-      service('xi')
+      service("xi")
     end
 
     def uk_only
-      service('uk')
+      service("uk")
     end
 
     def service(service)
@@ -405,19 +405,19 @@ private
     end
 
     def uk_only?
-      @service == 'uk'
+      @service == "uk"
     end
 
     def xi_only?
-      @service == 'xi'
+      @service == "xi"
     end
 
-    private
+  private
 
     def handle_body(resp)
       body = resp.try(:body) || resp.try(:[], :body)
 
-      return '' if body.blank?
+      return "" if body.blank?
       return JSON.parse(body) if body.is_a?(String)
 
       body

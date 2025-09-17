@@ -1,5 +1,5 @@
 module NewsCollectionsHelper
   def news_collection_bool(value)
-    value ? 'Yes' : 'No'
+    value ? "Yes" : "No"
   end
 end

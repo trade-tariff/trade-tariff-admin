@@ -31,13 +31,13 @@ class ClientBuilder
         conn.response :raise_error
         conn.adapter :net_http_persistent
         conn.response :json, content_type: /\bjson$/
-        conn.headers['Authorization'] = "Bearer #{ENV['BEARER_TOKEN']}" || 'Bearer tariff-api-test-token'
-        conn.headers['User-Agent'] = user_agent
+        conn.headers["Authorization"] = "Bearer #{ENV['BEARER_TOKEN']}" || "Bearer tariff-api-test-token"
+        conn.headers["User-Agent"] = user_agent
       end
     end
   end
 
-  private
+private
 
   def host
     TradeTariffAdmin::ServiceChooser.public_send("#{@service}_host")

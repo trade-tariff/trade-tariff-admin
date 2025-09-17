@@ -15,7 +15,7 @@ module GreenLanes
       @update = GreenLanes::UpdateNotification.find(params[:id])
 
       if @update.save
-        redirect_to green_lanes_update_notifications_path, notice: 'Notification updated'
+        redirect_to green_lanes_update_notifications_path, notice: "Notification updated"
       else
         render :edit
       end

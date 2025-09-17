@@ -1,4 +1,4 @@
-require 'heading/search_reference'
+require "heading/search_reference"
 
 class Heading
   include ApiEntity

@@ -1,141 +1,142 @@
-require 'rails_helper'
+require "rails_helper"
 
+# rubocop:disable RSpec/NestedGroups
 RSpec.describe ServiceHelper, type: :helper do
-  describe '.service_update_type' do
+  describe ".service_update_type" do
     subject { service_update_type }
 
-    context 'with UK service' do
-      include_context 'with UK service'
+    context "with UK service" do
+      include_context "with UK service"
 
-      it { is_expected.to eq('CDS') }
+      it { is_expected.to eq("CDS") }
     end
 
-    context 'with XI service' do
-      include_context 'with XI service'
+    context "with XI service" do
+      include_context "with XI service"
 
-      it { is_expected.to eq('Taric') }
+      it { is_expected.to eq("Taric") }
     end
   end
 
-  describe '.service_name' do
+  describe ".service_name" do
     subject { service_name }
 
-    context 'with UK service' do
-      include_context 'with UK service'
+    context "with UK service" do
+      include_context "with UK service"
 
-      it { is_expected.to eql 'UK Integrated Online Tariff' }
+      it { is_expected.to eql "UK Integrated Online Tariff" }
     end
 
-    context 'with XI service' do
-      include_context 'with XI service'
+    context "with XI service" do
+      include_context "with XI service"
 
-      it { is_expected.to eql 'Northern Ireland Online Tariff' }
+      it { is_expected.to eql "Northern Ireland Online Tariff" }
     end
   end
 
-  describe '.service_region' do
+  describe ".service_region" do
     subject { service_region }
 
-    context 'with UK service' do
-      include_context 'with UK service'
+    context "with UK service" do
+      include_context "with UK service"
 
-      it { is_expected.to eql 'the UK' }
+      it { is_expected.to eql "the UK" }
     end
 
-    context 'with XI service' do
-      include_context 'with XI service'
+    context "with XI service" do
+      include_context "with XI service"
 
-      it { is_expected.to eql 'Northern Ireland' }
+      it { is_expected.to eql "Northern Ireland" }
     end
   end
 
-  describe '.switch_service_link' do
-    let(:request) { double('request', filtered_path: path) }
+  describe ".switch_service_link" do
+    let(:request) { instance_double(ActionDispatch::Request, filtered_path: path) }
 
     before do
       allow(helper).to receive(:request).and_return(request)
     end
 
-    context 'when the selected service choice is nil' do
-      include_context 'with default service'
+    context "when the selected service choice is nil" do
+      include_context "with default service"
 
-      let(:path) { '/rollbacks/new' }
+      let(:path) { "/rollbacks/new" }
 
-      it 'returns the link to the XI service' do
-        expect(switch_service_link).to eq(link_to('Switch to XI service', '/xi/rollbacks/new'))
+      it "returns the link to the XI service" do
+        expect(switch_service_link).to eq(link_to("Switch to XI service", "/xi/rollbacks/new"))
       end
     end
 
-    context 'when the selected service choice is uk' do
-      include_context 'with UK service'
+    context "when the selected service choice is uk" do
+      include_context "with UK service"
 
-      let(:path) { '/uk/rollbacks/new' }
+      let(:path) { "/uk/rollbacks/new" }
 
-      it 'returns the link to the XI service' do
-        expect(switch_service_link).to eq(link_to('Switch to XI service', '/xi/rollbacks/new'))
+      it "returns the link to the XI service" do
+        expect(switch_service_link).to eq(link_to("Switch to XI service", "/xi/rollbacks/new"))
       end
     end
 
-    context 'when the selected service choice is xi' do
-      include_context 'with XI service'
+    context "when the selected service choice is xi" do
+      include_context "with XI service"
 
-      let(:path) { '/xi/rollbacks/new' }
+      let(:path) { "/xi/rollbacks/new" }
 
-      it 'returns the link to the current UK service' do
-        expect(switch_service_link).to eq(link_to('Switch to UK service', '/rollbacks/new'))
+      it "returns the link to the current UK service" do
+        expect(switch_service_link).to eq(link_to("Switch to UK service", "/rollbacks/new"))
       end
 
-      context 'when using the root path' do
-        let(:path) { '/xi' }
+      context "when using the root path" do
+        let(:path) { "/xi" }
 
-        it 'returns the link to the current UK service' do
-          expect(switch_service_link).to eq(link_to('Switch to UK service', '/'))
+        it "returns the link to the current UK service" do
+          expect(switch_service_link).to eq(link_to("Switch to UK service", "/"))
         end
       end
     end
 
-    context 'with a css class' do
-      subject { switch_service_link class: 'test-class' }
+    context "with a css class" do
+      subject { switch_service_link class: "test-class" }
 
-      include_context 'with default service'
+      include_context "with default service"
 
-      let(:path) { '/rollbacks/new' }
+      let(:path) { "/rollbacks/new" }
 
-      it { is_expected.to have_css 'a.test-class' }
+      it { is_expected.to have_css "a.test-class" }
     end
   end
 
-  describe '.replace_service_tags' do
+  describe ".replace_service_tags" do
     subject { replace_service_tags content }
 
-    context 'with UK service' do
-      include_context 'with UK service'
+    context "with UK service" do
+      include_context "with UK service"
 
-      context 'without tags' do
-        let(:content) { 'this is some sample content' }
+      context "without tags" do
+        let(:content) { "this is some sample content" }
 
-        it { is_expected.to eql 'this is some sample content' }
+        it { is_expected.to eql "this is some sample content" }
       end
 
-      context 'with SERVICE_NAME tag' do
-        let(:content) { 'You are on the [[SERVICE_NAME]]' }
+      context "with SERVICE_NAME tag" do
+        let(:content) { "You are on the [[SERVICE_NAME]]" }
 
-        it { is_expected.to eql 'You are on the UK Integrated Online Tariff' }
+        it { is_expected.to eql "You are on the UK Integrated Online Tariff" }
       end
 
-      context 'with SERVICE_PATH tag' do
+      context "with SERVICE_PATH tag" do
         let(:content) { '<a href="[[SERVICE_PATH]]/browse">Browse</a>' }
 
         it { is_expected.to eql '<a href="/browse">Browse</a>' }
       end
 
-      context 'with SERVICE_REGION' do
-        let(:content) { 'within [[SERVICE_REGION]]' }
+      context "with SERVICE_REGION" do
+        let(:content) { "within [[SERVICE_REGION]]" }
 
-        it { is_expected.to eql 'within the UK' }
+        it { is_expected.to eql "within the UK" }
       end
 
-      context 'with multiple tags' do
+      context "with multiple tags" do
         let :content do
           <<~END_OF_CONTENT
             [[SERVICE_NAME]]
@@ -156,34 +157,34 @@ RSpec.describe ServiceHelper, type: :helper do
       end
     end
 
-    context 'with XI service' do
-      include_context 'with XI service'
+    context "with XI service" do
+      include_context "with XI service"
 
-      context 'without tags' do
-        let(:content) { 'this is some sample content' }
+      context "without tags" do
+        let(:content) { "this is some sample content" }
 
-        it { is_expected.to eql 'this is some sample content' }
+        it { is_expected.to eql "this is some sample content" }
       end
 
-      context 'with SERVICE_NAME tag' do
-        let(:content) { 'You are on the [[SERVICE_NAME]]' }
+      context "with SERVICE_NAME tag" do
+        let(:content) { "You are on the [[SERVICE_NAME]]" }
 
-        it { is_expected.to eql 'You are on the Northern Ireland Online Tariff' }
+        it { is_expected.to eql "You are on the Northern Ireland Online Tariff" }
       end
 
-      context 'with SERVICE_PATH tag' do
+      context "with SERVICE_PATH tag" do
         let(:content) { '<a href="[[SERVICE_PATH]]/browse">Browse</a>' }
 
         it { is_expected.to eql '<a href="/xi/browse">Browse</a>' }
       end
 
-      context 'with SERVICE_REGION' do
-        let(:content) { 'within [[SERVICE_REGION]]' }
+      context "with SERVICE_REGION" do
+        let(:content) { "within [[SERVICE_REGION]]" }
 
-        it { is_expected.to eql 'within Northern Ireland' }
+        it { is_expected.to eql "within Northern Ireland" }
       end
 
-      context 'with multiple tags' do
+      context "with multiple tags" do
         let :content do
           <<~END_OF_CONTENT
             [[SERVICE_NAME]]
@@ -205,3 +206,4 @@ RSpec.describe ServiceHelper, type: :helper do
     end
   end
 end
+# rubocop:enable RSpec/NestedGroups

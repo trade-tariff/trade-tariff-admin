@@ -1,7 +1,7 @@
 module References
   module Chapters
     class SearchReferencesController < References::SearchReferencesController
-      private
+    private
 
       def search_reference_parent
         @search_reference_parent ||= Chapter.find(params[:chapter_id])

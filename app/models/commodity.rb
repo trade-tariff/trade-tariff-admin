@@ -1,4 +1,4 @@
-require 'commodity/search_reference'
+require "commodity/search_reference"
 
 class Commodity
   include ApiEntity

@@ -1,15 +1,18 @@
-require 'rails_helper'
-require 'search_reference'
+require "rails_helper"
+require "search_reference"
 
-RSpec.describe 'Heading Search Reference management' do
+# rubocop:disable RSpec/NoExpectationExample
+RSpec.describe "Heading Search Reference management" do
+  # rubocop:disable RSpec/LetSetup
   let!(:user)   { create :user, :gds_editor }
+  # rubocop:enable RSpec/LetSetup
   let(:chapter) { build :chapter }
 
   let(:heading) do
     build(
       :heading,
       chapter: {
-        type: 'chapter',
+        type: "chapter",
         id: chapter.id,
         attributes: chapter.attributes,
       },
@@ -18,19 +21,19 @@ RSpec.describe 'Heading Search Reference management' do
   let(:heading_search_reference) do
     build(
       :heading_search_reference,
-      title: 'new title',
+      title: "new title",
       referenced: heading.attributes,
     )
   end
 
-  describe 'Search Reference creation' do
+  describe "Search Reference creation" do
     before do
       stub_api_request("/admin/headings/#{heading.to_param}")
-        .to_return jsonapi_success_response('heading', heading.attributes)
+        .to_return jsonapi_success_response("heading", heading.attributes)
 
       stub_api_request("/admin/headings/#{heading.to_param}/search_references")
         .to_return jsonapi_success_response(
-          'search_reference',
+          "search_reference",
           [],
         )
 
@@ -40,20 +43,20 @@ RSpec.describe 'Heading Search Reference management' do
 
     specify do
       ensure_on new_references_heading_search_reference_path(heading)
-      fill_in 'Search reference', with: 'new title'
-      click_button 'Create Search reference'
+      fill_in "Search reference", with: "new title"
+      click_button "Create Search reference"
       verify current_path == references_heading_search_references_path(heading)
     end
   end
 
-  describe 'Search Reference deletion' do
+  describe "Search Reference deletion" do
     before do
       stub_api_request("/admin/headings/#{heading.to_param}")
-        .to_return jsonapi_success_response('heading', heading.attributes)
+        .to_return jsonapi_success_response("heading", heading.attributes)
 
       stub_api_request("/admin/headings/#{heading.to_param}/search_references")
         .to_return jsonapi_success_response(
-          'search_reference',
+          "search_reference",
           [heading_search_reference.attributes],
         )
 
@@ -64,20 +67,20 @@ RSpec.describe 'Heading Search Reference management' do
     specify do
       ensure_on references_heading_search_references_path(heading)
       within(dom_id_selector(heading_search_reference)) do
-        click_link 'Remove'
+        click_link "Remove"
       end
       verify current_path == references_heading_search_references_path(heading)
     end
   end
 
-  describe 'Search reference editing' do
+  describe "Search reference editing" do
     before do
       stub_api_request("/admin/headings/#{heading.to_param}")
-        .to_return jsonapi_success_response('heading', heading.attributes)
+        .to_return jsonapi_success_response("heading", heading.attributes)
 
       stub_api_request("/admin/headings/#{heading.to_param}/search_references")
         .to_return jsonapi_success_response(
-          'search_reference',
+          "search_reference",
           [heading_search_reference.attributes],
         )
 
@@ -87,9 +90,10 @@ RSpec.describe 'Heading Search Reference management' do
 
     specify do
       ensure_on edit_references_heading_search_reference_path(heading, heading_search_reference)
-      fill_in 'Search reference', with: 'flim flam'
-      click_button 'Update Search reference'
+      fill_in "Search reference", with: "flim flam"
+      click_button "Update Search reference"
       verify current_path == references_heading_search_references_path(heading)
     end
   end
 end
+# rubocop:enable RSpec/NoExpectationExample

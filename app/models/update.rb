@@ -2,9 +2,9 @@ class Update
   include ApiEntity
 
   STATES = {
-    'A' => 'Applied',
-    'P' => 'Pending',
-    'F' => 'Failed',
+    "A" => "Applied",
+    "P" => "Pending",
+    "F" => "Failed",
   }.freeze
 
   ROLLBACK_APPLICABLE_STATES = %w[A].freeze
@@ -27,7 +27,7 @@ class Update
 
   def id
     if self[:filename].present?
-      self[:filename].sub(/\.(xml|gzip)\Z/, '')
+      self[:filename].sub(/\.(xml|gzip)\Z/, "")
     else
       resource_id
     end
@@ -36,7 +36,7 @@ class Update
   alias_method :to_param, :id
 
   def formatted_update_type
-    self[:update_type]&.sub(/\ATariffSynchronizer::/, '')&.titleize
+    self[:update_type]&.sub(/\ATariffSynchronizer::/, "")&.titleize
   end
 
   def inserts

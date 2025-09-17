@@ -33,7 +33,7 @@ module News
     end
 
     def preview(field_name = nil)
-      markdown = field_name.to_s == 'precis' ? precis : content
+      markdown = field_name.to_s == "precis" ? precis : content
 
       GovspeakPreview.new(markdown).render
     end
@@ -46,10 +46,10 @@ module News
       self.slug = normalised_slug if slug != normalised_slug
     end
 
-    private
+  private
 
     def normalise_slug(slug)
-      slug.downcase.gsub(/\s+/, '-').gsub(/[^a-z0-9-]/, '').first(MAX_SLUG_LENGTH)
+      slug.downcase.gsub(/\s+/, "-").gsub(/[^a-z0-9-]/, "").first(MAX_SLUG_LENGTH)
     end
   end
 end

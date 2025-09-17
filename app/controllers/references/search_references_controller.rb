@@ -14,7 +14,7 @@ module References
       @search_reference = build_search_reference
 
       if @search_reference.valid? && @search_reference.save
-        redirect_to [:references, search_reference_parent, :search_references], notice: 'Search reference was successfully created.'
+        redirect_to [:references, search_reference_parent, :search_references], notice: "Search reference was successfully created."
       else
         render :new
       end
@@ -26,7 +26,7 @@ module References
       search_reference.build(title: normalised_title)
 
       if search_reference.valid? && search_reference.save
-        redirect_to [:references, search_reference_parent, :search_references], notice: 'Search reference was successfully updated.'
+        redirect_to [:references, search_reference_parent, :search_references], notice: "Search reference was successfully updated."
       else
         render :edit
       end
@@ -35,10 +35,10 @@ module References
     def destroy
       search_reference.destroy
 
-      redirect_to [:references, search_reference_parent, :search_references], notice: 'Search reference was successfully removed.'
+      redirect_to [:references, search_reference_parent, :search_references], notice: "Search reference was successfully removed."
     end
 
-    private
+  private
 
     def search_reference
       @search_reference ||= search_reference_parent.search_references.find(params[:id]).tap do |reference|
@@ -52,7 +52,7 @@ module References
     end
 
     def normalised_title
-      title = search_reference_params[:title] || ''
+      title = search_reference_params[:title] || ""
 
       SearchReferences::TitleNormaliser.normalise_title(title)
     end
@@ -62,7 +62,7 @@ module References
     end
 
     def search_reference_parent
-      raise NotImplementedError, 'Please override #search_reference_parent'
+      raise NotImplementedError, "Please override #search_reference_parent"
     end
 
     def build_search_reference

@@ -1,4 +1,4 @@
-require 'rails_helper'
+require "rails_helper"
 
 RSpec.describe GreenLanes::CategoryAssessment do
   subject(:category_assessment) { build :category_assessment }
@@ -26,25 +26,25 @@ RSpec.describe GreenLanes::CategoryAssessment do
   it { is_expected.to have_attributes created_at: category_assessment.created_at }
   it { is_expected.to have_attributes updated_at: category_assessment.updated_at }
 
-  describe '#all' do
+  describe "#all" do
     subject { described_class.all }
 
     before do
       allow(TradeTariffAdmin::ServiceChooser).to \
         receive(:service_choice).and_return service_choice
 
-      stub_api_request('/admin/green_lanes/category_assessments', backend: 'xi').to_return \
+      stub_api_request("/admin/green_lanes/category_assessments", backend: "xi").to_return \
         jsonapi_response(:category_assessment, attributes_for_list(:category_assessment, 2))
     end
 
-    context 'with UK service' do
-      let(:service_choice) { 'uk' }
+    context "with UK service" do
+      let(:service_choice) { "uk" }
 
       it { is_expected.to have_attributes length: 2 }
     end
 
-    context 'with XI service' do
-      let(:service_choice) { 'xi' }
+    context "with XI service" do
+      let(:service_choice) { "xi" }
 
       it { is_expected.to have_attributes length: 2 }
     end

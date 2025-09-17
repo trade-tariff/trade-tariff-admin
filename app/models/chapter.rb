@@ -1,4 +1,4 @@
-require 'chapter/search_reference'
+require "chapter/search_reference"
 
 class Chapter
   include ApiEntity
