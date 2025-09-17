@@ -28,10 +28,6 @@ module "service" {
   execution_role_policy_arns = [aws_iam_policy.exec.arn]
   enable_ecs_exec            = true
 
-  init_container            = true
-  init_container_entrypoint = [""]
-  init_container_command    = ["/bin/sh", "-c", "bundle exec rails db:migrate"]
-
   service_environment_config = local.secret_env_vars
 }
 locals {
