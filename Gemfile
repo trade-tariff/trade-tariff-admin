@@ -22,7 +22,6 @@ gem "govuk_design_system_formbuilder"
 gem "addressable"
 gem "govspeak"
 gem "govuk-components"
-gem "govuk_publishing_components"
 
 # API
 gem "faraday"
@@ -45,7 +44,7 @@ gem "logstash-event"
 
 # Misc
 gem "bootsnap", require: false
-gem "nokogiri", ">= 1.10.10"
+gem "nokogiri"
 gem "sentry-rails"
 
 group :development, :test do
