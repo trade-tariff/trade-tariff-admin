@@ -10,6 +10,7 @@ WORKDIR /app
 RUN apk add --update --no-cache \
   build-base \
   git \
+  linux-headers \
   postgresql-dev \
   sqlite \
   tzdata \

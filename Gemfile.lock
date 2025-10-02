@@ -129,7 +129,7 @@ GEM
     factory_bot_rails (6.5.1)
       factory_bot (~> 6.5)
       railties (>= 6.1.0)
-    faraday (2.13.4)
+    faraday (2.14.0)
       faraday-net_http (>= 2.0, < 3.5)
       json
       logger
@@ -178,7 +178,7 @@ GEM
     govuk_personalisation (1.1.0)
       plek (>= 1.9.0)
       rails (>= 6, < 9)
-    govuk_publishing_components (61.0.3)
+    govuk_publishing_components (61.1.0)
       govuk_app_config
       govuk_personalisation (>= 0.7.0)
       kramdown
@@ -250,7 +250,7 @@ GEM
       uri
     net-http-persistent (4.0.6)
       connection_pool (~> 2.2, >= 2.2.4)
-    net-imap (0.5.10)
+    net-imap (0.5.11)
       date
       net-protocol
     net-pop (0.1.2)
@@ -318,9 +318,9 @@ GEM
       date
       stringio
     public_suffix (6.0.2)
-    puma (7.0.3)
+    puma (7.0.4)
       nio4r (~> 2.0)
-    pundit (2.5.1)
+    pundit (2.5.2)
       activesupport (>= 3.0.0)
     racc (1.8.1)
     rack (3.2.1)
@@ -558,12 +558,11 @@ DEPENDENCIES
   govspeak
   govuk-components
   govuk_design_system_formbuilder
-  govuk_publishing_components
   kaminari
   lograge
   logstash-event
   net-http-persistent
-  nokogiri (>= 1.10.10)
+  nokogiri
   pg
   plek
   pry-rails
