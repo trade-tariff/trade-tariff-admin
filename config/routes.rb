@@ -69,6 +69,7 @@ Rails.application.routes.draw do
     collection do
       post '/download', to: 'tariff_updates#download'
       post '/apply_and_clear_cache', to: 'tariff_updates#apply_and_clear_cache'
+      post '/resend_cds_update_notification', to: 'tariff_updates#resend_cds_update_notification'
     end
   end
   resources :rollbacks, only: %i[index new create]

@@ -9,3 +9,9 @@
 <% if tariff_update.filename.present? %>
   <%= link_to "Download #{tariff_update.filename}", tariff_update.file_presigned_url, target: "_blank", title: tariff_update.filename %>
 <% end %>
+
+<% if tariff_update.filename.present? %>
+  <%= link_to "Resend CDS Update email",
+              resend_cds_update_notification_tariff_updates_path(cds_update_notification: {filename: tariff_update.filename}),
+              method: :post %>
+<% end %>

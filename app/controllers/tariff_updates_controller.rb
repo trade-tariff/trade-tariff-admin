@@ -18,6 +18,15 @@ class TariffUpdatesController < AuthenticatedController
     redirect_to tariff_updates_path, alert: "Unexpected error: #{e}"
   end
 
+  def resend_cds_update_notification
+    @cds_update = CdsUpdateNotification.new(cds_update_params)
+    @cds_update.save
+
+    redirect_to tariff_updates_path, notice: "CDS Updates notification was scheduled"
+  rescue Faraday::Error => e
+    redirect_to tariff_updates_path, alert: "Unexpected error: #{e}"
+  end
+
   def apply_and_clear_cache
     @apply = Apply.build(user_id: current_user.id)
     @apply.save
@@ -28,6 +37,14 @@ class TariffUpdatesController < AuthenticatedController
   end
 
 private
+
+  def cds_update_params
+    params
+      .require(:cds_update_notification)
+      .permit(:filename)
+      .to_h
+      .merge(user_id: current_user.id)
+  end
 
   def authorize_user
     authorize Update, :access?
