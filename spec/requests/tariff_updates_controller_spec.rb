@@ -67,10 +67,12 @@ RSpec.describe TariffUpdatesController do
       stub_api_request("/admin/cds_update_notifications", :post).to_return(status: 200, body: "", headers: {})
     end
 
-    it "displays success message" do
-      post "/tariff_updates/resend_cds_update_notification", params: {cds_update_notification: {filename: "filename"}}
+    let(:make_request) { post "/tariff_updates/resend_cds_update_notification", params: { cds_update_notification: { filename: "filename" } } }
 
-      expect(response).to redirect_to(tariff_updates_path) # it stays on the same page
+    it { is_expected.to redirect_to(tariff_updates_path) }
+
+    it "displays success message" do
+      rendered_page
       expect(flash[:notice]).to eq("CDS Updates notification was scheduled")
     end
   end
