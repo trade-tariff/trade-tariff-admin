@@ -60,4 +60,20 @@ RSpec.describe TariffUpdatesController do
       expect(flash[:notice]).to eq("Apply & ClearCache was scheduled")
     end
   end
+
+  describe "POST #resend_cds_update_notification" do
+    before do
+      create_user
+      stub_api_request("/admin/cds_update_notifications", :post).to_return(status: 200, body: "", headers: {})
+    end
+
+    let(:make_request) { post "/tariff_updates/resend_cds_update_notification", params: { cds_update_notification: { filename: "filename" } } }
+
+    it { is_expected.to redirect_to(tariff_updates_path) }
+
+    it "displays success message" do
+      rendered_page
+      expect(flash[:notice]).to eq("CDS Updates notification was scheduled")
+    end
+  end
 end
