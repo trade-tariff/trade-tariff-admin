@@ -1,5 +1,5 @@
 class TariffUpdatesController < AuthenticatedController
-  before_action :authorize_user if TradeTariffAdmin.authenticate_with_sso?
+  before_action :authorize_user if TradeTariffAdmin.authorization_enabled?
 
   def index
     @tariff_updates = Update.all(page: current_page)

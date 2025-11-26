@@ -34,6 +34,11 @@ $ bundle exec rails s
 $ bundle exec rspec
 ```
 
+## Authentication configuration
+
+* `AUTH_STRATEGY` controls auth mode: `sso` (default), `passwordless`, or `basic` (requires `BASIC_PASSWORD`).
+* Passwordless auth also uses `IDENTITY_BASE_URL` (default `http://localhost:3005`), `IDENTITY_CONSUMER` (default `admin`), optional `IDENTITY_COGNITO_JWKS_URL`, and `IDENTITY_ENCRYPTION_SECRET`.
+
 ## Deployment to GOV PaaS
 
 Deployments are handled via CI
