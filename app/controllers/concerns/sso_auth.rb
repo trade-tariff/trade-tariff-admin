@@ -2,13 +2,14 @@ module SsoAuth
   extend ActiveSupport::Concern
 
   included do
-    include Pundit::Authorization
+    include PunditAuthorization
     include GDS::SSO::ControllerMethods
-    prepend_before_action :authenticate_user!
+    prepend_before_action :authenticate_user!, if: :sso_authentication?
+  end
 
-    rescue_from Pundit::NotAuthorizedError do |e|
-      # Layout and view comes from GDS::SSO::ControllerMethods
-      render "authorisations/unauthorised", layout: "unauthorised", status: :forbidden, locals: { message: e.message }
-    end
+private
+
+  def sso_authentication?
+    TradeTariffAdmin.authenticate_with_sso?
   end
 end

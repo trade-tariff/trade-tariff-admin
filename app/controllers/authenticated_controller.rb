@@ -1,9 +1,7 @@
 class AuthenticatedController < ApplicationController
-  if TradeTariffAdmin.authenticate_with_sso?
-    include SsoAuth
-  else
-    include BasicSessionAuth
-  end
+  include PasswordlessAuth
+  include BasicSessionAuth
+  include SsoAuth
 
   protect_from_forgery with: :exception
 end
