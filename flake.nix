@@ -9,13 +9,20 @@
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, nixpkgs-ruby }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      nixpkgs-ruby,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = import nixpkgs {
           system = system;
           config.allowUnfree = true;
-          overlays = [nixpkgs-ruby.overlays.default];
+          overlays = [ nixpkgs-ruby.overlays.default ];
         };
 
         rubyVersion = builtins.head (builtins.split "\n" (builtins.readFile ./.ruby-version));
@@ -43,7 +50,13 @@
           cd terraform
           terraform init -backend=false -reconfigure -upgrade
         '';
-      in {
+
+        init = pkgs.writeScriptBin "init" ''
+          cd terraform && terraform init -input=false -no-color -backend=false
+        '';
+
+      in
+      {
         devShells.default = pkgs.mkShell {
           shellHook = ''
             export GEM_HOME=$PWD/.nix/ruby/$(${ruby}/bin/ruby -e "puts RUBY_VERSION")
@@ -52,9 +65,7 @@
             export GEM_PATH=$GEM_HOME
             export PATH=$GEM_HOME/bin:$PATH
 
-            export BUNDLE_BUILD__PSYCH="${
-              builtins.concatStringsSep " " psychBuildFlags
-            }"
+            export BUNDLE_BUILD__PSYCH="${builtins.concatStringsSep " " psychBuildFlags}"
           '';
 
           buildInputs = [
@@ -69,5 +80,6 @@
             update-providers
           ];
         };
-      });
+      }
+    );
 }
