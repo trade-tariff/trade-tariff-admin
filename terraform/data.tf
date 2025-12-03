@@ -21,10 +21,6 @@ data "aws_security_group" "this" {
   name = "trade-tariff-ecs-security-group-${var.environment}"
 }
 
-data "aws_kms_key" "secretsmanager_key" {
-  key_id = "alias/secretsmanager-key"
-}
-
 data "aws_secretsmanager_secret" "this" {
   name = "admin-configuration"
 }

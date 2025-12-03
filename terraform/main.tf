@@ -24,9 +24,8 @@ module "service" {
   cpu    = var.cpu
   memory = var.memory
 
-  task_role_policy_arns      = [aws_iam_policy.task.arn]
-  execution_role_policy_arns = [aws_iam_policy.exec.arn]
-  enable_ecs_exec            = true
+  task_role_policy_arns = [aws_iam_policy.task.arn]
+  enable_ecs_exec       = true
 
   service_environment_config = local.secret_env_vars
 
