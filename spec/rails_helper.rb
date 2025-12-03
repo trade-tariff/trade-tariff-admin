@@ -45,7 +45,8 @@ RSpec.configure do |config|
     end
   end
 
-  config.verbose_retry = true
-  config.display_try_failure_messages = true
-  config.around { |ex| ex.run_with_retry retry: 3 }
+  # NOTE: Ensure the service choice is reset after each test to prevent state leakage
+  config.after do
+    TradeTariffAdmin::ServiceChooser.service_choice = nil
+  end
 end
