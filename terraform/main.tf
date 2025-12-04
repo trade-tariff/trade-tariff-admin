@@ -12,8 +12,9 @@ module "service" {
   target_group_arn          = data.aws_lb_target_group.this.arn
   cloudwatch_log_group_name = "platform-logs-${var.environment}"
 
-  min_capacity = var.min_capacity
-  max_capacity = var.max_capacity
+  min_capacity        = var.min_capacity
+  max_capacity        = var.max_capacity
+  autoscaling_metrics = var.autoscaling_metrics
 
   docker_image = "382373577178.dkr.ecr.eu-west-2.amazonaws.com/tariff-admin-production"
   docker_tag   = var.docker_tag
