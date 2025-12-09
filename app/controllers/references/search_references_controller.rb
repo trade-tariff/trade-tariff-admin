@@ -1,6 +1,6 @@
 module References
   class SearchReferencesController < AuthenticatedController
-    before_action :authorize_user if TradeTariffAdmin.authenticate_with_sso?
+    before_action :authorize_user if TradeTariffAdmin.authorization_enabled?
 
     def index
       @search_references = search_reference_parent.search_references

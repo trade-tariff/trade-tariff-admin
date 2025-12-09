@@ -87,6 +87,10 @@ Rails.application.routes.draw do
     end
   end
 
+  get "/auth/redirect", to: "sessions#handle_redirect"
+  get "/auth/invalid", to: "sessions#invalid"
+  get "/auth/logout", to: "sessions#destroy", as: :logout
+
   post "govspeak" => "govspeak#govspeak", as: :govspeak
   get  "healthcheck" => "healthcheck#check", as: :healthcheck
   get "healthcheckz" => "rails/health#show", as: :rails_health_check

@@ -561,6 +561,7 @@ DEPENDENCIES
   govspeak
   govuk-components
   govuk_design_system_formbuilder
+  jwt
   kaminari
   lograge
   logstash-event

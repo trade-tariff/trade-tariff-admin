@@ -1,7 +1,7 @@
 RSpec.describe RollbacksController do
-  subject(:rendered_page) { create_user && make_request && response }
+  subject(:rendered_page) { make_request && response }
 
-  let(:create_user) { create :user, permissions: ["signin", "HMRC Admin"] }
+  include_context "with authenticated user"
 
   describe "GET #index" do
     before do
@@ -15,18 +15,17 @@ RSpec.describe RollbacksController do
   end
 
   context "when unauthenticated" do
-    before do
-      allow(ENV).to receive(:[]).and_call_original
-      allow(ENV).to receive(:[]).with("GDS_SSO_MOCK_INVALID").and_return "true"
+    let(:authenticate_user) { false }
+    let(:extra_session) { {} }
+
+    it "redirects to the configured authentication provider" do
+      expect_unauthenticated_redirect(-> { get rollbacks_path })
     end
-
-    let(:make_request) { get rollbacks_path }
-
-    it { is_expected.to redirect_to "/auth/gds" }
   end
 
   context "when unauthorised" do
-    let(:create_user) { create :user, permissions: %w[] }
+    let(:current_user) { create(:user, permissions: %w[]) }
+
     let(:make_request) { get rollbacks_path }
 
     it { is_expected.to have_http_status :forbidden }
