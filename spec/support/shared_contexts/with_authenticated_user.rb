@@ -1,5 +1,5 @@
 RSpec.shared_context "with authenticated user" do # rubocop:disable RSpec/MultipleMemoizedHelpers
-  let(:current_user) { create(:user, permissions: ["signin", "HMRC Admin"]) }
+  let(:current_user) { create(:user, permissions: ["HMRC Admin"]) }
   let(:session_token) { SecureRandom.uuid }
   let(:authenticate_user) { true }
   let(:user_session) { authenticate_user ? create(:session, user: current_user, token: session_token) : nil }

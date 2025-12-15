@@ -30,8 +30,7 @@ gem "faraday-retry"
 gem "jwt"
 gem "net-http-persistent"
 
-# Authorization / SSO
-gem "gds-sso"
+# Authorization
 gem "plek"
 gem "pundit"
 

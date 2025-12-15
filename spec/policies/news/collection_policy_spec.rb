@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe News::CollectionPolicy do
   subject(:news_collection_policy) { described_class }
 
@@ -17,7 +15,7 @@ RSpec.describe News::CollectionPolicy do
     end
 
     it "denies access to regular user with sign in permission" do
-      expect(news_collection_policy).not_to permit(User.new(permissions: [User::Permissions::SIGNIN]), News::Collection.new)
+      expect(news_collection_policy).not_to permit(User.new(permissions: []), News::Collection.new)
     end
   end
 end

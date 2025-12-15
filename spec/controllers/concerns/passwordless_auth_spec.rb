@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe PasswordlessAuth, type: :controller do
   controller(ApplicationController) do
     include PasswordlessAuth # rubocop:disable RSpec/DescribedClass

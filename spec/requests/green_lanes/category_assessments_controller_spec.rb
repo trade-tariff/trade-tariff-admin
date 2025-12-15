@@ -2,7 +2,7 @@ RSpec.describe GreenLanes::CategoryAssessmentsController do
   subject(:rendered_page) { create_user && make_request && response }
 
   let(:category_assessment) { build :category_assessment, :with_theme, :with_measure_pagination }
-  let(:create_user) { create :user, permissions: ["signin", "HMRC Editor"] }
+  let(:create_user) { create :user, permissions: ["HMRC Editor"] }
 
   before do
     allow(TradeTariffAdmin::ServiceChooser).to receive(:service_choice).and_return "xi"

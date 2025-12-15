@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe "news_collections/form" do
   subject(:form) { render_partial && rendered }
 

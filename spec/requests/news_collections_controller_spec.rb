@@ -1,11 +1,9 @@
-require "rails_helper"
-
 RSpec.describe NewsCollectionsController do
   subject(:rendered_page) { make_request && response }
 
   include_context "with authenticated user"
 
-  let(:current_user) { create(:user, permissions: ["signin", "HMRC Editor"]) }
+  let(:current_user) { create(:user, permissions: ["HMRC Editor"]) }
   let(:news_collection) { build :news_collection }
 
   describe "GET #index" do

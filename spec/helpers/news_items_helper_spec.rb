@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe NewsItemsHelper do
   describe "#news_item_date" do
     subject { news_item_date date }

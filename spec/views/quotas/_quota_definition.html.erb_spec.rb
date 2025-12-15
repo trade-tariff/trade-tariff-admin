@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe "quotas/_quota_definitions" do
   subject(:rendered_page) { render_page && rendered }
 

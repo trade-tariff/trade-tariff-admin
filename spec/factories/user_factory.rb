@@ -9,11 +9,11 @@ FactoryBot.define do
     end
 
     trait :hmrc_editor do
-      permissions { [User::Permissions::SIGNIN, User::Permissions::HMRC_EDITOR] }
+      permissions { [User::Permissions::HMRC_EDITOR] }
     end
 
     trait :hmrc_admin do
-      permissions { [User::Permissions::SIGNIN, User::Permissions::HMRC_ADMIN] }
+      permissions { [User::Permissions::HMRC_ADMIN] }
     end
   end
 end

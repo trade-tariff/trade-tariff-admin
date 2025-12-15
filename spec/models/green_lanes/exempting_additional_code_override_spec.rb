@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe GreenLanes::ExemptingAdditionalCodeOverride do
   subject(:exempting_additional_code_override) { build :exempting_additional_code_override }
 

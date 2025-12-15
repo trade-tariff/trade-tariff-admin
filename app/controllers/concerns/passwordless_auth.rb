@@ -3,6 +3,7 @@ module PasswordlessAuth
 
   included do
     include PunditAuthorization
+
     before_action :require_authentication, if: :passwordless_authentication?
     helper_method :current_user, :user_session
   end

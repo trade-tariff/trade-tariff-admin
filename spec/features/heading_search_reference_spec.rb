@@ -1,4 +1,3 @@
-require "rails_helper"
 require "search_reference"
 
 # rubocop:disable RSpec/NoExpectationExample

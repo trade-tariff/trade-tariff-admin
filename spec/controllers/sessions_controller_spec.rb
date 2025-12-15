@@ -1,11 +1,20 @@
-# rubocop:disable RSpec/MultipleDescribes, RSpec/MultipleExpectations, RSpec/ExampleLength
-require "rails_helper"
+# rubocop:disable RSpec/MultipleExpectations, RSpec/ExampleLength
 
-RSpec.describe "SessionsController", type: :request do
-  describe "GET /auth/redirect" do
-    let(:authenticate_user) { false }
-    let(:extra_session) { {} }
+RSpec.describe SessionsController, type: :controller do
+  describe "GET #destroy" do
+    it "clears the stored session" do
+      user_session = create(:session)
+      session[:token] = user_session.token
 
+      get :destroy
+
+      expect(response).to redirect_to(root_path)
+      expect(Session.exists?(id: user_session.id)).to be(false)
+      expect(session[:token]).to be_nil
+    end
+  end
+
+  describe "GET #handle_redirect" do
     let(:token_payload) do
       {
         "sub" => "user-123",
@@ -23,7 +32,7 @@ RSpec.describe "SessionsController", type: :request do
       cookies[:id_token] = "encoded-token"
 
       expect {
-        get "/auth/redirect"
+        get :handle_redirect
       }.to change(Session, :count).by(1)
 
       expect(response).to redirect_to(root_path)
@@ -39,26 +48,11 @@ RSpec.describe "SessionsController", type: :request do
       allow(VerifyToken).to receive(:new).and_return(instance_double(VerifyToken, call: nil))
       allow(TradeTariffAdmin).to receive(:identity_consumer_url).and_return("http://identity.example.com/admin")
 
-      get "/auth/redirect"
+      get :handle_redirect
 
       expect(response).to redirect_to("http://identity.example.com/admin")
       expect(Session.count).to be_zero
     end
   end
 end
-
-RSpec.describe SessionsController, type: :controller do
-  describe "GET #destroy" do
-    it "clears the stored session" do
-      user_session = create(:session)
-      session[:token] = user_session.token
-
-      get :destroy
-
-      expect(response).to redirect_to(root_path)
-      expect(Session.exists?(id: user_session.id)).to be(false)
-      expect(session[:token]).to be_nil
-    end
-  end
-end
-# rubocop:enable RSpec/MultipleDescribes, RSpec/MultipleExpectations, RSpec/ExampleLength
+# rubocop:enable RSpec/MultipleExpectations, RSpec/ExampleLength

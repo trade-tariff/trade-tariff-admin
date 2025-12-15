@@ -42,7 +42,7 @@ RSpec.configure do |config|
     ENV["AUTH_STRATEGY"] = "passwordless"
     TradeTariffAdmin.instance_variable_set(:@auth_strategy, :passwordless)
     DatabaseCleaner.strategy = :transaction
-    DatabaseCleaner.clean_with(:truncation)
+    DatabaseCleaner.clean_with(:deletion)
   end
 
   config.around do |example|

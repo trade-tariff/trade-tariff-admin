@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe QuotaOrderNumbers::QuotaExhaustionEvent do
   subject(:quota_exhaustion_event) { build(:quota_exhaustion_event) }
 

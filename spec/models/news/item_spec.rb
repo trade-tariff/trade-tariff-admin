@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe News::Item do
   subject(:news_item) { build :news_item, :home_page, :updates_page, :banner }
 

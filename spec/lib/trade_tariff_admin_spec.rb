@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe TradeTariffAdmin do
   def reset_auth_caches!
     described_class.instance_variable_set(:@auth_strategy, nil)
@@ -21,12 +19,12 @@ RSpec.describe TradeTariffAdmin do
   end
 
   describe ".auth_strategy" do
-    it "defaults to sso when no env var is set", :aggregate_failures do
+    it "defaults to passwordless when no env var is set", :aggregate_failures do
       ENV.delete("AUTH_STRATEGY")
       reset_auth_caches!
 
-      expect(described_class.auth_strategy).to eq(:sso)
-      expect(described_class.authenticate_with_sso?).to be(true)
+      expect(described_class.auth_strategy).to eq(:passwordless)
+      expect(described_class.authenticate_with_passwordless?).to be(true)
     end
 
     it "returns passwordless when configured", :aggregate_failures do
@@ -46,28 +44,22 @@ RSpec.describe TradeTariffAdmin do
       expect(described_class.basic_session_authentication?).to be(true)
     end
 
-    it "falls back to sso when basic is configured without a password", :aggregate_failures do
+    it "falls back to passwordless when basic is configured without a password", :aggregate_failures do
       ENV["AUTH_STRATEGY"] = "basic"
       ENV["BASIC_PASSWORD"] = nil
       reset_auth_caches!
 
-      expect(described_class.auth_strategy).to eq(:sso)
-      expect(described_class.authenticate_with_sso?).to be(true)
+      expect(described_class.auth_strategy).to eq(:passwordless)
+      expect(described_class.authenticate_with_passwordless?).to be(true)
     end
   end
 
   describe ".authorization_enabled?" do
-    # rubocop:disable RSpec/ExampleLength
-    it "is true for sso or passwordless strategies", :aggregate_failures do
-      ENV["AUTH_STRATEGY"] = "sso"
-      reset_auth_caches!
-      expect(described_class.authorization_enabled?).to be(true)
-
+    it "is true for passwordless strategy" do
       ENV["AUTH_STRATEGY"] = "passwordless"
       reset_auth_caches!
       expect(described_class.authorization_enabled?).to be(true)
     end
-    # rubocop:enable RSpec/ExampleLength
 
     it "is false for basic strategy" do
       ENV["AUTH_STRATEGY"] = "basic"

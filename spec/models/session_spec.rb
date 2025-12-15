@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe Session do
   describe "#renew?" do
     it "returns true when the token cannot be verified" do

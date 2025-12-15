@@ -1,11 +1,4 @@
-require "rails_helper"
-require "gds-sso/lint/user_spec"
-
 RSpec.describe User do
-  describe "gds-sso" do
-    it_behaves_like "a gds-sso user class"
-  end
-
   describe "#hmrc_admin" do
     context "when user has hmrc admin access" do
       let!(:user) { create :user, :hmrc_admin }
@@ -72,7 +65,6 @@ RSpec.describe User do
         "sub" => "user-123",
         "email" => "newuser@example.com",
         "name" => "New User",
-        "permissions" => %w[perm-1],
       }
     end
 
@@ -87,16 +79,15 @@ RSpec.describe User do
       expect(user.uid).to eq("user-123")
       expect(user.email).to eq("newuser@example.com")
       expect(user.name).to eq("New User")
-      expect(user.permissions).to include(User::Permissions::SIGNIN, "perm-1")
     end
 
-    it "updates an existing user without dropping permissions", :aggregate_failures do
+    it "preserves existing permissions when updating", :aggregate_failures do
       existing_user = create(:user, email: token_payload["email"], permissions: %w[existing])
 
-      user = described_class.from_passwordless_payload!(token_payload.except("permissions"))
+      user = described_class.from_passwordless_payload!(token_payload)
 
       expect(user.id).to eq(existing_user.id)
-      expect(user.permissions).to include("existing")
+      expect(user.permissions).to eq(%w[existing])
     end
 
     it "updates the uid when it changes" do
@@ -109,11 +100,11 @@ RSpec.describe User do
   end
 
   describe ".dummy_user!" do
-    it "creates or updates a stub user with signin permission", :aggregate_failures do
+    it "creates or updates a stub user", :aggregate_failures do
       dummy_user = described_class.dummy_user!
 
       expect(dummy_user.uid).to eq("dummy_user")
-      expect(dummy_user.permissions).to include(User::Permissions::SIGNIN)
+      expect(dummy_user.email).to eq("dummy@user.com")
     end
   end
 

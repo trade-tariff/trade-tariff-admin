@@ -3,7 +3,7 @@ RSpec.describe LiveIssuesController, type: :request do
 
   include_context "with authenticated user"
 
-  let(:current_user) { create(:user, permissions: ["signin", "HMRC Editor"]) }
+  let(:current_user) { create(:user, permissions: ["HMRC Editor"]) }
   let(:live_issue) { build :live_issue }
 
   before do

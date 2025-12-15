@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe QuotaOrderNumbers::QuotaCriticalEvent do
   subject(:quota_critical_event) { build(:quota_critical_event) }
 

@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe GreenLanes::ExemptingCertificateOverride do
   subject(:exempting_certificate_override) { build :exempting_certificate_override }
 

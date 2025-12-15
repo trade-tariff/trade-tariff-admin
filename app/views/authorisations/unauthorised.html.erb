@@ -1,0 +1,20 @@
+<header class="page-header group">
+  <div>
+    <h1>Access denied</h1>
+  </div>
+</header>
+<div class="article-container">
+  <article role="article" class="group">
+    <div class="inner">
+      <p>You don't have permission to access this page.</p>
+      <p>If you need access, please contact your Delivery Manager.</p>
+      <p>You can also:</p>
+
+      <ul class="govuk-list govuk-list--bullet">
+        <li><%= link_to 'Review Section and Chapter notes', notes_sections_path %></li>
+        <li><%= link_to 'Review Search references', references_sections_path %></li>
+        <li><%= link_to 'Manage news articles', news_items_path %></li>
+      </ul>
+    </div>
+  </article>
+</div>

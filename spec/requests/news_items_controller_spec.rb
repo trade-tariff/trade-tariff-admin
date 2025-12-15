@@ -3,7 +3,7 @@ RSpec.describe NewsItemsController do
 
   include_context "with authenticated user"
 
-  let(:current_user) { create(:user, permissions: ["signin", "HMRC Editor"]) }
+  let(:current_user) { create(:user, permissions: ["HMRC Editor"]) }
   let(:news_item) { build :news_item }
 
   before do

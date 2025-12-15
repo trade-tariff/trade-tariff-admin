@@ -2,7 +2,7 @@ require_relative "./trade_tariff_admin"
 
 module TradeTariffAdmin
   class << self
-    AUTH_STRATEGIES = %w[basic sso passwordless].freeze
+    AUTH_STRATEGIES = %w[basic passwordless].freeze
 
     def revision
       `cat REVISION 2>/dev/null || git rev-parse --short HEAD`.strip
@@ -18,20 +18,16 @@ module TradeTariffAdmin
 
     def auth_strategy
       @auth_strategy ||= begin
-        strategy = ENV.fetch("AUTH_STRATEGY", "sso").to_s.downcase
-        strategy = "sso" unless AUTH_STRATEGIES.include?(strategy)
+        strategy = ENV.fetch("AUTH_STRATEGY", "passwordless").to_s.downcase
+        strategy = "passwordless" unless AUTH_STRATEGIES.include?(strategy)
 
         if strategy == "basic" && basic_session_password.blank?
-          Rails.logger.warn("AUTH_STRATEGY=basic but BASIC_PASSWORD is missing - falling back to sso")
-          strategy = "sso"
+          Rails.logger.warn("AUTH_STRATEGY=basic but BASIC_PASSWORD is missing - falling back to passwordless")
+          strategy = "passwordless"
         end
 
         strategy.to_sym
       end
-    end
-
-    def authenticate_with_sso?
-      auth_strategy == :sso
     end
 
     def authenticate_with_passwordless?
@@ -47,7 +43,7 @@ module TradeTariffAdmin
     end
 
     def authorization_enabled?
-      authenticate_with_sso? || authenticate_with_passwordless?
+      authenticate_with_passwordless?
     end
 
     def identity_consumer_url

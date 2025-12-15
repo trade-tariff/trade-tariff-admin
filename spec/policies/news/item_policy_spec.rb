@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe News::ItemPolicy do
   subject(:news_item_policy) { described_class }
 
@@ -17,7 +15,7 @@ RSpec.describe News::ItemPolicy do
     end
 
     it "denies access to regular user with sign in permission" do
-      expect(news_item_policy).not_to permit(User.new(permissions: [User::Permissions::SIGNIN]), News::Item.new)
+      expect(news_item_policy).not_to permit(User.new(permissions: []), News::Item.new)
     end
   end
 end

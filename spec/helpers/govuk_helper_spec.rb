@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe GovukHelper do
   let :model do
     Class.new do

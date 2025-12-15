@@ -63,5 +63,4 @@ jobs:
       - name: Run tests
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tariff_admin_test
-          AUTH_STRATEGY: passwordless
         run: bundle exec rspec

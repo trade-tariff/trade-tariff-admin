@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe "quotas/_additional_events" do
   subject(:rendered_page) { render_page && rendered }
 

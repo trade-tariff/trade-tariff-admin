@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe QuotasHelper do
   describe "#formatted_initial_volume" do
     subject(:formatted_initial_volume) { helper.formatted_initial_volume(quota_definition) }

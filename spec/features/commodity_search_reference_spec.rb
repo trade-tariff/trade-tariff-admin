@@ -1,5 +1,3 @@
-require "rails_helper"
-
 # rubocop:disable RSpec/NoExpectationExample
 RSpec.describe "Commodity Search Reference management" do
   # rubocop:disable RSpec/LetSetup

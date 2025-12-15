@@ -8,8 +8,4 @@ module PunditAuthorization
       render "authorisations/unauthorised", layout: "unauthorised", status: :forbidden, locals: { message: e.message }
     end
   end
-
-  def pundit_user
-    current_user
-  end
 end

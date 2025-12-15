@@ -1,9 +1,7 @@
-require "rails_helper"
-
 RSpec.describe GovspeakController do
   subject(:rendered_page) { response }
 
-  before { create :user, permissions: ["signin", "HMRC Editor"] }
+  before { create :user, permissions: ["HMRC Editor"] }
 
   describe "POST #govspeak" do
     before do

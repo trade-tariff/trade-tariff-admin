@@ -1,5 +1,3 @@
-require "rails_helper"
-
 # rubocop:disable RSpec/NoExpectationExample
 RSpec.describe "Section Note management" do
   # rubocop:disable RSpec/LetSetup
