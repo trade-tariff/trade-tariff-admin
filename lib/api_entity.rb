@@ -422,13 +422,5 @@ private
 
       body
     end
-
-    def handle_headers(resp)
-      headers = resp.try(:headers) || resp.try(:[], :headers)
-
-      return {} if headers.blank?
-
-      headers
-    end
   end
 end
