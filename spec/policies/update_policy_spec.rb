@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe UpdatePolicy do
   subject(:tariff_update_policy) { described_class }
 
@@ -17,7 +15,7 @@ RSpec.describe UpdatePolicy do
     end
 
     it "denies access to regular user with sign in permission" do
-      expect(tariff_update_policy).not_to permit(User.new(permissions: [User::Permissions::SIGNIN]), Update.new)
+      expect(tariff_update_policy).not_to permit(User.new(permissions: []), Update.new)
     end
   end
 end

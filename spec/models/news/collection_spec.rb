@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe News::Collection do
   subject(:news_collection) { build :news_collection }
 

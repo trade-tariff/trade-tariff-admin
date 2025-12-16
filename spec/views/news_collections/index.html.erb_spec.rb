@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe "news_collections/index" do
   subject { render && rendered }
 

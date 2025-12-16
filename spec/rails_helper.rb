@@ -6,6 +6,8 @@ require "simplecov"
 SimpleCov.start "rails"
 SimpleCov.formatters = SimpleCov::Formatter::HTMLFormatter
 
+ENV["AUTH_STRATEGY"] ||= "passwordless"
+
 require File.expand_path("../config/environment", __dir__)
 
 require "rspec/rails"
@@ -33,10 +35,14 @@ RSpec.configure do |config|
   config.include FactoryBot::Syntax::Methods
   config.include ApiResponsesHelper
   config.include FeaturesHelper, type: :feature
+  config.include_context "with authenticated user", type: :request
+  config.include_context "with authenticated user", type: :feature
 
   config.before(:suite) do
+    ENV["AUTH_STRATEGY"] = "passwordless"
+    TradeTariffAdmin.instance_variable_set(:@auth_strategy, :passwordless)
     DatabaseCleaner.strategy = :transaction
-    DatabaseCleaner.clean_with(:truncation)
+    DatabaseCleaner.clean_with(:deletion)
   end
 
   config.around do |example|

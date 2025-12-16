@@ -1,7 +1,7 @@
 RSpec.describe TariffUpdatesController do
-  subject(:rendered_page) { create_user && make_request && response }
+  subject(:rendered_page) { make_request && response }
 
-  let(:create_user) { create :user, permissions: ["signin", "HMRC Admin"] }
+  include_context "with authenticated user"
 
   describe "GET #index" do
     before do
@@ -15,18 +15,17 @@ RSpec.describe TariffUpdatesController do
   end
 
   context "when unauthenticated" do
-    before do
-      allow(ENV).to receive(:[]).and_call_original
-      allow(ENV).to receive(:[]).with("GDS_SSO_MOCK_INVALID").and_return "true"
+    let(:authenticate_user) { false }
+    let(:extra_session) { {} }
+
+    it "redirects to the configured authentication provider" do
+      expect_unauthenticated_redirect(-> { get tariff_updates_path })
     end
-
-    let(:make_request) { get tariff_updates_path }
-
-    it { is_expected.to redirect_to "/auth/gds" }
   end
 
   context "when unauthorised" do
-    let(:create_user) { create :user, permissions: %w[] }
+    let(:current_user) { create(:user, permissions: %w[]) }
+
     let(:make_request) { get tariff_updates_path }
 
     it { is_expected.to have_http_status :forbidden }
@@ -35,7 +34,7 @@ RSpec.describe TariffUpdatesController do
 
   describe "POST #download" do
     before do
-      create_user
+      TradeTariffAdmin::ServiceChooser.service_choice = "uk"
       stub_api_request("/admin/downloads", :post).to_return(status: 200, body: "", headers: {})
     end
 
@@ -49,7 +48,7 @@ RSpec.describe TariffUpdatesController do
 
   describe "POST #apply_and_clear_cache" do
     before do
-      create_user
+      TradeTariffAdmin::ServiceChooser.service_choice = "uk"
       stub_api_request("/admin/applies", :post).to_return(status: 200, body: "", headers: {})
     end
 
@@ -63,7 +62,6 @@ RSpec.describe TariffUpdatesController do
 
   describe "POST #resend_cds_update_notification" do
     before do
-      create_user
       stub_api_request("/admin/cds_update_notifications", :post).to_return(status: 200, body: "", headers: {})
     end
 

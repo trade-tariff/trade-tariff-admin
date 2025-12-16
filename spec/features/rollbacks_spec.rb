@@ -1,5 +1,3 @@
-require "rails_helper"
-
 # rubocop:disable RSpec/NoExpectationExample
 RSpec.describe "Rollbacks management" do
   let!(:user) { create :user, :hmrc_admin }

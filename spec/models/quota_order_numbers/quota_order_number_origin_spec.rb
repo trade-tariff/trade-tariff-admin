@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe QuotaOrderNumbers::QuotaOrderNumberOrigin do
   subject(:quota_order_number_origin) { build(:quota_order_number_origin) }
 

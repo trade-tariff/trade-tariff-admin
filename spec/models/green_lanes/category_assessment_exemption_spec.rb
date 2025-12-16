@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe GreenLanes::CategoryAssessmentExemption do
   subject(:category_assessment_exemption) { build :category_assessment_exemption }
 

@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe QuotaOrderNumbers::QuotaBalanceEvent do
   subject(:quota_balance_event) { build(:quota_balance_event) }
 

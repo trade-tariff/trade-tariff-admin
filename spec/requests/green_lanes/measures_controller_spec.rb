@@ -2,7 +2,7 @@ RSpec.describe GreenLanes::MeasuresController do
   subject(:rendered_page) { create_user && make_request && response }
 
   let(:measure) { build :green_lanes_measure, :with_category_assessment }
-  let(:create_user) { create :user, permissions: ["signin", "HMRC Editor"] }
+  let(:create_user) { create :user, permissions: ["HMRC Editor"] }
 
   before do
     allow(TradeTariffAdmin::ServiceChooser).to receive(:service_choice).and_return "xi"

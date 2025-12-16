@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe QuotaOrderNumbers::QuotaUnblockingEvent do
   subject(:quota_unblocking_event) { build(:quota_unblocking_event) }
 

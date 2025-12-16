@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe QuotaOrderNumbers::QuotaReopeningEvent do
   subject(:quota_reopening_event) { build(:quota_reopening_event) }
 

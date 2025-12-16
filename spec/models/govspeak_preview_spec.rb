@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe GovspeakPreview do
   subject(:preview) { described_class.new content }
 

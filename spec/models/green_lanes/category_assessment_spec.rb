@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe GreenLanes::CategoryAssessment do
   subject(:category_assessment) { build :category_assessment }
 

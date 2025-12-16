@@ -1,5 +1,3 @@
-require "rails_helper"
-
 # rubocop:disable RSpec/NestedGroups
 RSpec.describe ServiceHelper, type: :helper do
   describe ".service_update_type" do

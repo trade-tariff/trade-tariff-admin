@@ -27,10 +27,10 @@ gem "govuk-components"
 gem "faraday"
 gem "faraday-net_http_persistent"
 gem "faraday-retry"
+gem "jwt"
 gem "net-http-persistent"
 
-# Authorization / SSO
-gem "gds-sso"
+# Authorization
 gem "plek"
 gem "pundit"
 

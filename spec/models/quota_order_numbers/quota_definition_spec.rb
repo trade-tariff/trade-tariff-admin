@@ -1,5 +1,3 @@
-require "rails_helper"
-
 # rubocop:disable RSpec/NestedGroups
 RSpec.describe QuotaOrderNumbers::QuotaDefinition do
   subject(:quota_definition) { build(:quota_definition) }

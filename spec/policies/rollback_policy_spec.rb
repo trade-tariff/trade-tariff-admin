@@ -1,5 +1,3 @@
-require "rails_helper"
-
 RSpec.describe RollbackPolicy do
   subject(:rollback_policy) { described_class }
 
@@ -17,7 +15,7 @@ RSpec.describe RollbackPolicy do
     end
 
     it "denies access to regular user with sign in permission" do
-      expect(rollback_policy).not_to permit(User.new(permissions: [User::Permissions::SIGNIN]), Rollback.new)
+      expect(rollback_policy).not_to permit(User.new(permissions: []), Rollback.new)
     end
   end
 end
