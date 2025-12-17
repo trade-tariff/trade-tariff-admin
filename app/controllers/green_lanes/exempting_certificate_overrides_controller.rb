@@ -3,10 +3,12 @@ module GreenLanes
     include XiOnly
 
     def new
+      authorize GreenLanes::ExemptingOverride, :create?
       @exempting_certificate_override = GreenLanes::ExemptingCertificateOverride.new
     end
 
     def create
+      authorize GreenLanes::ExemptingOverride, :create?
       @exempting_certificate_override = GreenLanes::ExemptingCertificateOverride.new(eco_params)
       @exempting_certificate_override.save
 
@@ -18,6 +20,7 @@ module GreenLanes
     end
 
     def destroy
+      authorize GreenLanes::ExemptingOverride, :destroy?
       @exempting_certificate_override = GreenLanes::ExemptingCertificateOverride.build(resource_id: params[:id])
       @exempting_certificate_override.destroy
 

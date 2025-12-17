@@ -17,13 +17,9 @@ RSpec.describe UsersController do
 
     it { is_expected.to have_http_status :success }
 
-    it "displays radio buttons for role selection" do
+    it "displays radio buttons for role selection", :aggregate_failures do
       rendered_page
-      expect(response.body).to include("radio")
-      expect(response.body).to include(User::GUEST)
-      expect(response.body).to include(User::TECHNICAL_OPERATOR)
-      expect(response.body).to include(User::HMRC_ADMIN)
-      expect(response.body).to include(User::AUDITOR)
+      expect(response.body).to include("radio", User::GUEST, User::TECHNICAL_OPERATOR, User::HMRC_ADMIN, User::AUDITOR)
     end
 
     it "preselects the current role" do
@@ -69,12 +65,8 @@ RSpec.describe UsersController do
       it "ensures only one role exists", :aggregate_failures do
         target_user.set_role(User::TECHNICAL_OPERATOR)
         target_user.save!
-
         patch user_path(target_user), params: { user: { role: User::AUDITOR } }
-        target_user.reload
-
-        expect(target_user.current_role).to eq(User::AUDITOR)
-        expect(target_user.roles.count).to eq(1)
+        expect(target_user.reload).to have_attributes(current_role: User::AUDITOR, roles: have_attributes(size: 1))
       end
     end
   end
@@ -96,7 +88,7 @@ RSpec.describe UsersController do
   end
 
   context "when non-technical operator tries to edit" do
-    let(:current_user) { create(:user, :hmrc_admin_role) }
+    let(:current_user) { create(:user, :hmrc_admin) }
     let(:make_request) { get edit_user_path(target_user) }
 
     it { is_expected.to have_http_status :forbidden }
@@ -105,7 +97,6 @@ RSpec.describe UsersController do
   context "when using basic auth" do
     before do
       allow(TradeTariffAdmin).to receive(:basic_session_authentication?).and_return(true)
-      allow(TradeTariffAdmin).to receive(:authorization_enabled?).and_return(false)
     end
 
     let(:current_user) { create(:user, :guest) }
@@ -138,4 +129,3 @@ RSpec.describe UsersController do
     end
   end
 end
-

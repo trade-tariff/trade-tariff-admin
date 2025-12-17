@@ -2,9 +2,12 @@ module Notes
   class ChaptersController < AuthenticatedController
     respond_to :json
 
-    def index; end
+    def index
+      authorize ChapterNote, :index?
+    end
 
     def show
+      authorize ChapterNote, :show?
       respond_with chapter
     end
 

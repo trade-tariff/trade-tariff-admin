@@ -10,12 +10,14 @@
   <%= submit_and_back_buttons f, notes_section_chapters_path(@chapter) %>
 <% end %>
 
-<h3>
-  Remove Chapter note
-</h3>
+<% if policy(@chapter_note).destroy? %>
+  <h3>
+    Remove Chapter note
+  </h3>
 
-<p>
-  Remove this chapter note
-</p>
+  <p>
+    Remove this chapter note
+  </p>
 
-<%= link_to "Remove", notes_chapter_chapter_note_path(@chapter), method: :delete, data: { confirm: 'Are you sure?', disable: 'Working'}, class: 'govuk-button govuk-button--warning' %>
+  <%= link_to "Remove", notes_chapter_chapter_note_path(@chapter), method: :delete, data: { confirm: 'Are you sure?', disable: 'Working'}, class: 'govuk-button govuk-button--warning' %>
+<% end %>

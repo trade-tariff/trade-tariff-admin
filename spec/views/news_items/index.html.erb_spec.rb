@@ -1,7 +1,14 @@
 RSpec.describe "news_items/index" do
   subject { render && rendered }
 
-  before { assign :news_items, news_items }
+  before do
+    assign :news_items, news_items
+    # Set up Pundit for view specs
+    view.extend Pundit::Authorization
+    allow(view).to receive(:current_user).and_return(current_user)
+  end
+
+  let(:current_user) { create(:user, :technical_operator) }
 
   context "without news stories" do
     let(:news_items) { [] }

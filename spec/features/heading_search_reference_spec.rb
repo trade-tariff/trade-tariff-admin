@@ -2,24 +2,18 @@ require "search_reference"
 
 # rubocop:disable RSpec/NoExpectationExample
 RSpec.describe "Heading Search Reference management" do
-  # rubocop:disable RSpec/LetSetup
-  let!(:user)   { create :user, :gds_editor }
-  # rubocop:enable RSpec/LetSetup
-  let(:chapter) { build :chapter }
+  let(:chapter) { build :chapter, resource_id: "01" }
 
   let(:heading) do
     build(
       :heading,
-      chapter: {
-        type: "chapter",
-        id: chapter.id,
-        attributes: chapter.attributes,
-      },
+      chapter: chapter.attributes.merge(resource_id: chapter.resource_id),
     )
   end
   let(:heading_search_reference) do
     build(
       :heading_search_reference,
+      id: 2,
       title: "new title",
       referenced: heading.attributes,
     )
@@ -27,8 +21,11 @@ RSpec.describe "Heading Search Reference management" do
 
   describe "Search Reference creation" do
     before do
+      # Ensure chapter is in heading attributes for API response
+      heading_attrs = heading.attributes.dup
+      heading_attrs["chapter"] = chapter.attributes.merge("resource_id" => chapter.resource_id)
       stub_api_request("/admin/headings/#{heading.to_param}")
-        .to_return jsonapi_success_response("heading", heading.attributes)
+        .to_return jsonapi_success_response("heading", heading_attrs)
 
       stub_api_request("/admin/headings/#{heading.to_param}/search_references")
         .to_return jsonapi_success_response(
@@ -50,8 +47,11 @@ RSpec.describe "Heading Search Reference management" do
 
   describe "Search Reference deletion" do
     before do
+      # Ensure chapter is in heading attributes for API response
+      heading_attrs = heading.attributes.dup
+      heading_attrs["chapter"] = chapter.attributes.merge("resource_id" => chapter.resource_id)
       stub_api_request("/admin/headings/#{heading.to_param}")
-        .to_return jsonapi_success_response("heading", heading.attributes)
+        .to_return jsonapi_success_response("heading", heading_attrs)
 
       stub_api_request("/admin/headings/#{heading.to_param}/search_references")
         .to_return jsonapi_success_response(
@@ -74,8 +74,11 @@ RSpec.describe "Heading Search Reference management" do
 
   describe "Search reference editing" do
     before do
+      # Ensure chapter is in heading attributes for API response
+      heading_attrs = heading.attributes.dup
+      heading_attrs["chapter"] = chapter.attributes.merge("resource_id" => chapter.resource_id)
       stub_api_request("/admin/headings/#{heading.to_param}")
-        .to_return jsonapi_success_response("heading", heading.attributes)
+        .to_return jsonapi_success_response("heading", heading_attrs)
 
       stub_api_request("/admin/headings/#{heading.to_param}/search_references")
         .to_return jsonapi_success_response(

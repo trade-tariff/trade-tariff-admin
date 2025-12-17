@@ -1,15 +1,16 @@
 class NewsCollectionsController < AuthenticatedController
-  before_action :authorize_user if TradeTariffAdmin.authorization_enabled?
-
   def index
+    authorize News::Collection, :index?
     @news_collections = News::Collection.all.sort_by(&:id)
   end
 
   def new
+    authorize News::Collection, :create?
     @news_collection = News::Collection.new
   end
 
   def create
+    authorize News::Collection, :create?
     @news_collection = News::Collection.new(news_collection_params)
     @news_collection.generate_or_normalise_slug!
     @news_collection.save
@@ -23,10 +24,12 @@ class NewsCollectionsController < AuthenticatedController
 
   def edit
     @news_collection = News::Collection.find(params[:id])
+    authorize @news_collection, :update?
   end
 
   def update
     @news_collection = News::Collection.build(news_collection_params.merge(resource_id: params[:id]))
+    authorize @news_collection, :update?
     @news_collection.generate_or_normalise_slug!
     @news_collection.save
 
@@ -47,9 +50,5 @@ private
       description
       name
     ])
-  end
-
-  def authorize_user
-    authorize News::Collection, :edit?
   end
 end

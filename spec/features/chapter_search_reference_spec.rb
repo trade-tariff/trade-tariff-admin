@@ -2,29 +2,30 @@ require "search_reference"
 
 # rubocop:disable RSpec/NoExpectationExample
 RSpec.describe "Chapter Search Reference management" do
-  # rubocop:disable RSpec/LetSetup
-  let!(:user) { create :user, :gds_editor }
-  # rubocop:enable RSpec/LetSetup
-  let(:section) { build :section }
-  let(:chapter_search_reference) do
-    build(
-      :chapter_search_reference,
-      title: "new title",
-      referenced: chapter,
-    )
-  end
+  let(:section) { build :section, resource_id: 1 }
   let(:chapter) do
     build(
       :chapter,
       :with_section,
-      section: { id: section.id, attributes: section.attributes },
+      section: section.attributes.merge(resource_id: section.resource_id),
+    )
+  end
+  let(:chapter_search_reference) do
+    build(
+      :chapter_search_reference,
+      id: 1,
+      title: "new title",
+      referenced: chapter,
     )
   end
 
   describe "Search Reference creation" do
     before do
+      # Ensure section is in chapter attributes for API response
+      chapter_attrs = chapter.attributes.dup
+      chapter_attrs["section"] = section.attributes.merge("resource_id" => section.resource_id)
       stub_api_request("/admin/chapters/#{chapter.to_param}")
-        .to_return jsonapi_success_response("chapter", chapter.attributes)
+        .to_return jsonapi_success_response("chapter", chapter_attrs)
 
       stub_api_request("/admin/chapters/#{chapter.to_param}/search_references")
         .to_return jsonapi_success_response(
@@ -46,8 +47,11 @@ RSpec.describe "Chapter Search Reference management" do
 
   describe "Search Reference deletion" do
     before do
+      # Ensure section is in chapter attributes for API response
+      chapter_attrs = chapter.attributes.dup
+      chapter_attrs["section"] = section.attributes.merge("resource_id" => section.resource_id)
       stub_api_request("/admin/chapters/#{chapter.to_param}")
-        .to_return jsonapi_success_response("chapter", chapter.attributes)
+        .to_return jsonapi_success_response("chapter", chapter_attrs)
 
       stub_api_request("/admin/chapters/#{chapter.to_param}/search_references")
         .to_return jsonapi_success_response(
@@ -61,6 +65,7 @@ RSpec.describe "Chapter Search Reference management" do
 
     specify do
       ensure_on references_chapter_search_references_path(chapter)
+      expect(page).to have_content("Search references")
       within(dom_id_selector(chapter_search_reference)) { click_link "Remove" }
       verify current_path == references_chapter_search_references_path(chapter)
     end
@@ -68,8 +73,11 @@ RSpec.describe "Chapter Search Reference management" do
 
   describe "Search reference editing" do
     before do
+      # Ensure section is in chapter attributes for API response
+      chapter_attrs = chapter.attributes.dup
+      chapter_attrs["section"] = section.attributes.merge("resource_id" => section.resource_id)
       stub_api_request("/admin/chapters/#{chapter.to_param}")
-        .to_return jsonapi_success_response("chapter", chapter.attributes)
+        .to_return jsonapi_success_response("chapter", chapter_attrs)
 
       stub_api_request("/admin/chapters/#{chapter.to_param}/search_references")
         .to_return jsonapi_success_response(

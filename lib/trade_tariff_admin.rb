@@ -42,10 +42,6 @@ module TradeTariffAdmin
       @basic_session_password ||= ENV["BASIC_PASSWORD"]
     end
 
-    def authorization_enabled?
-      authenticate_with_passwordless?
-    end
-
     def identity_consumer_url
       @identity_consumer_url ||= URI.join(identity_base_url, identity_consumer).to_s
     end

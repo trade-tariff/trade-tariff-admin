@@ -2,7 +2,7 @@
 
 <p>
   Use this page to manage user roles.
-  <% unless TradeTariffAdmin.basic_session_authentication? %>
+  <% unless policy(User.new).update? %>
     Only technical operators can change user roles.
   <% end %>
 </p>
@@ -24,16 +24,7 @@
           <td class="govuk-table__cell"><%= user.name %></td>
           <td class="govuk-table__cell"><%= user.current_role || 'No role' %></td>
           <td class="govuk-table__cell">
-            <% 
-              can_edit = if TradeTariffAdmin.basic_session_authentication?
-                true
-              elsif respond_to?(:policy) && TradeTariffAdmin.authorization_enabled?
-                policy(user).edit?
-              else
-                current_user&.technical_operator?
-              end
-            %>
-            <% if can_edit %>
+            <% if policy(user).update? %>
               <%= link_to 'Edit',
                           edit_user_path(user),
                           class: 'govuk-link' %>
@@ -50,4 +41,3 @@
     <p>No users found</p>
   </div>
 <% end %>
-
