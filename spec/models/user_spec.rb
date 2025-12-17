@@ -1,59 +1,65 @@
 RSpec.describe User do
-  describe "role helper methods" do
-    describe "#technical_operator?" do
-      context "when user has technical operator role" do
-        let!(:user) { create :user, :technical_operator }
+  describe "#technical_operator?" do
+    subject(:user) { create(:user, *traits) }
 
-        it { expect(user.technical_operator?).to be(true) }
-      end
+    context "when user has technical operator role" do
+      let(:traits) { [:technical_operator] }
 
-      context "when user does not have technical operator role" do
-        let!(:user) { create :user }
-
-        it { expect(user.technical_operator?).to be(false) }
-      end
+      it { is_expected.to be_technical_operator }
     end
 
-    describe "#hmrc_admin?" do
-      context "when user has hmrc admin role" do
-        let!(:user) { create :user, :hmrc_admin_role }
+    context "when user does not have technical operator role" do
+      let(:traits) { [] }
 
-        it { expect(user.hmrc_admin?).to be(true) }
-      end
+      it { is_expected.not_to be_technical_operator }
+    end
+  end
 
-      context "when user does not have hmrc admin role" do
-        let!(:user) { create :user }
+  describe "#hmrc_admin?" do
+    subject(:user) { create(:user, *traits) }
 
-        it { expect(user.hmrc_admin?).to be(false) }
-      end
+    context "when user has hmrc admin role" do
+      let(:traits) { [:hmrc_admin] }
+
+      it { is_expected.to be_hmrc_admin }
     end
 
-    describe "#auditor?" do
-      context "when user has auditor role" do
-        let!(:user) { create :user, :auditor }
+    context "when user does not have hmrc admin role" do
+      let(:traits) { [] }
 
-        it { expect(user.auditor?).to be(true) }
-      end
+      it { is_expected.not_to be_hmrc_admin }
+    end
+  end
 
-      context "when user does not have auditor role" do
-        let!(:user) { create :user }
+  describe "#auditor?" do
+    subject(:user) { create(:user, *traits) }
 
-        it { expect(user.auditor?).to be(false) }
-      end
+    context "when user has auditor role" do
+      let(:traits) { [:auditor] }
+
+      it { is_expected.to be_auditor }
     end
 
-    describe "#guest?" do
-      context "when user has guest role" do
-        let!(:user) { create :user, :guest }
+    context "when user does not have auditor role" do
+      let(:traits) { [] }
 
-        it { expect(user.guest?).to be(true) }
-      end
+      it { is_expected.not_to be_auditor }
+    end
+  end
 
-      context "when user does not have guest role" do
-        let!(:user) { create :user, :technical_operator }
+  describe "#guest?" do
+    subject(:user) { create(:user, *traits) }
 
-        it { expect(user.guest?).to be(false) }
-      end
+    context "when user has guest role" do
+      let(:traits) { [:guest] }
+
+      it { is_expected.to be_guest }
+    end
+
+    context "when user does not have guest role" do
+      let(:traits) { [:technical_operator] }
+
+      it { is_expected.not_to be_guest }
     end
   end
 
@@ -71,9 +77,35 @@ RSpec.describe User do
         expect(user).not_to be_valid
         expect(user.errors[:roles]).to include("can only have one role at a time")
       end
+
+      it "prevents saving with multiple roles", :aggregate_failures do
+        user = create(:user, :technical_operator)
+        user.add_role(User::AUDITOR)
+        expect { user.save! }.to raise_error(ActiveRecord::RecordInvalid, /can only have one role at a time/)
+      end
     end
 
     describe "default role assignment" do
+      it "assigns GUEST role by default when creating a new user", :aggregate_failures do
+        user = create(:user)
+        expect(user.current_role).to eq(User::GUEST)
+        expect(user.guest?).to be(true)
+      end
+
+      it "ensures user always has exactly one role after creation", :aggregate_failures do
+        user = create(:user)
+        expect(user.roles.count).to eq(1)
+        expect(user.current_role).to eq(User::GUEST)
+      end
+
+      it "does not assign role if user already has a role", :aggregate_failures do
+        user = build(:user)
+        user.add_role(User::TECHNICAL_OPERATOR)
+        user.save!
+        expect(user.current_role).to eq(User::TECHNICAL_OPERATOR)
+        expect(user.roles.count).to eq(1)
+      end
+
       it "assigns GUEST role by default for new users", :aggregate_failures do
         user = build(:user)
         expect(user.roles).to be_empty
@@ -98,12 +130,7 @@ RSpec.describe User do
       end
 
       it "includes all roles in VALID_ROLES" do
-        expect(User::VALID_ROLES).to contain_exactly(
-          User::TECHNICAL_OPERATOR,
-          User::HMRC_ADMIN,
-          User::AUDITOR,
-          User::GUEST,
-        )
+        expect(User::VALID_ROLES).to contain_exactly(User::TECHNICAL_OPERATOR, User::HMRC_ADMIN, User::AUDITOR, User::GUEST)
       end
     end
 
@@ -122,24 +149,16 @@ RSpec.describe User do
     describe "#set_role" do
       it "removes existing role and assigns new role", :aggregate_failures do
         user = create(:user, :technical_operator)
-        expect(user.current_role).to eq(User::TECHNICAL_OPERATOR)
-
         user.set_role(User::HMRC_ADMIN)
         user.save!
-
-        expect(user.current_role).to eq(User::HMRC_ADMIN)
-        expect(user.roles.count).to eq(1)
+        expect(user).to have_attributes(current_role: User::HMRC_ADMIN, roles: have_attributes(size: 1))
       end
 
       it "replaces role when changing from one role to another", :aggregate_failures do
-        user = create(:user, :hmrc_admin_role)
-        expect(user.current_role).to eq(User::HMRC_ADMIN)
-
+        user = create(:user, :hmrc_admin)
         user.set_role(User::AUDITOR)
         user.save!
-
-        expect(user.current_role).to eq(User::AUDITOR)
-        expect(user.roles.count).to eq(1)
+        expect(user).to have_attributes(current_role: User::AUDITOR, roles: have_attributes(size: 1))
       end
 
       it "returns false for invalid role name" do
@@ -152,23 +171,17 @@ RSpec.describe User do
         user = create(:user, :technical_operator)
         user.set_role(User::GUEST)
         user.save!
-
-        expect(user.roles.count).to eq(1)
-        expect(user.current_role).to eq(User::GUEST)
+        expect(user).to have_attributes(current_role: User::GUEST, roles: have_attributes(size: 1))
       end
     end
 
     describe "ensure_single_role callback" do
       it "removes extra roles if somehow multiple exist", :aggregate_failures do
         user = create(:user, :technical_operator)
-        # Manually add another role (bypassing validation)
         user.roles << Role.find_or_create_by(name: User::HMRC_ADMIN)
         expect(user.roles.count).to eq(2)
-
-        user.save!
-
-        expect(user.roles.count).to eq(1)
-        expect(user.current_role).to eq(User::TECHNICAL_OPERATOR)
+        user.tap { |u| u.save(validate: false) }.reload
+        expect(user).to have_attributes(current_role: User::TECHNICAL_OPERATOR, roles: have_attributes(size: 1))
       end
     end
   end
@@ -233,23 +246,17 @@ RSpec.describe User do
       expect(described_class.from_passwordless_payload!({})).to be_nil
     end
 
-    it "creates a user with provided attributes", :aggregate_failures do
+    it "updates an existing user with provided attributes", :aggregate_failures do
+      existing_user = create(:user, email: token_payload["email"])
       user = described_class.from_passwordless_payload!(token_payload)
-
-      expect(user.uid).to eq("user-123")
-      expect(user.email).to eq("newuser@example.com")
-      expect(user.name).to eq("New User")
+      expect(user).to eq(existing_user)
+      expect(user).to have_attributes(uid: "user-123", email: "newuser@example.com", name: "New User")
     end
 
     it "preserves existing role when updating", :aggregate_failures do
-      existing_user = create(:user, email: token_payload["email"])
-      existing_user.remove_role(existing_user.current_role) if existing_user.current_role
-      existing_user.add_role(User::TECHNICAL_OPERATOR)
-
+      existing_user = create(:user, :technical_operator, email: token_payload["email"])
       user = described_class.from_passwordless_payload!(token_payload)
-
-      expect(user.id).to eq(existing_user.id)
-      expect(user.current_role).to eq(User::TECHNICAL_OPERATOR)
+      expect(user).to have_attributes(id: existing_user.id, current_role: User::TECHNICAL_OPERATOR)
     end
 
     it "updates the uid when it changes" do
@@ -265,15 +272,6 @@ RSpec.describe User do
         expect { described_class.from_passwordless_payload!(token_payload) }
           .not_to change(described_class, :count)
       end
-    end
-  end
-
-  describe ".dummy_user!" do
-    it "creates or updates a stub user", :aggregate_failures do
-      dummy_user = described_class.dummy_user!
-
-      expect(dummy_user.uid).to eq("dummy_user")
-      expect(dummy_user.email).to eq("dummy@user.com")
     end
   end
 

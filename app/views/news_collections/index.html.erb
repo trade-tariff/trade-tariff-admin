@@ -36,6 +36,8 @@
   </div>
 <% end %>
 
-<%= link_to 'Add a news story collection', new_news_collection_path, class: 'govuk-button' %>
+<% if policy(News::Collection).create? %>
+  <%= link_to 'Add a news story collection', new_news_collection_path, class: 'govuk-button' %>
+<% end %>
 
 <%= govuk_breadcrumbs 'Back to News stories': news_items_path %>

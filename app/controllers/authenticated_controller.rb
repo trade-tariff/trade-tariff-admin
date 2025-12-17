@@ -10,5 +10,7 @@ class AuthenticatedController < ApplicationController
     include PasswordlessAuth
   end
 
+  include PunditAuthorization
+
   protect_from_forgery with: :exception
 end

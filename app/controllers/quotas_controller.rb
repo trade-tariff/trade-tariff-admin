@@ -1,9 +1,12 @@
 class QuotasController < AuthenticatedController
   def show
     quota_definition
+    # Authorize using Quota class since quota_definition is an API entity
+    authorize Quota, :show?
   end
 
   def new
+    authorize Quota, :create?
     return render "errors/not_found" if TradeTariffAdmin::ServiceChooser.xi?
 
     today = Time.zone.today
@@ -15,6 +18,7 @@ class QuotasController < AuthenticatedController
   end
 
   def search
+    authorize Quota, :search?
     return render "errors/not_found" if TradeTariffAdmin::ServiceChooser.xi?
 
     @quota_search = QuotaSearch.new(quota_params)

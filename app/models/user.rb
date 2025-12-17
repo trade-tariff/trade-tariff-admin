@@ -2,17 +2,15 @@ class User < ApplicationRecord
   rolify
   has_many :sessions, dependent: :destroy
 
-  # Role constants
   TECHNICAL_OPERATOR = "TECHNICAL_OPERATOR".freeze
   HMRC_ADMIN = "HMRC_ADMIN".freeze
   AUDITOR = "AUDITOR".freeze
   GUEST = "GUEST".freeze
 
-  # Valid roles
   VALID_ROLES = [TECHNICAL_OPERATOR, HMRC_ADMIN, AUDITOR, GUEST].freeze
 
   validate :single_role_only
-  before_create :assign_default_role
+  before_create :ensure_default_role
   before_save :ensure_single_role
 
   class << self
@@ -23,37 +21,33 @@ class User < ApplicationRecord
       user_id = token["sub"].to_s.presence
       return if email.blank? || user_id.blank?
 
-      user = User.find_or_initialize_by(email: email)
+      user = find_by(email: email)
+      return unless user
 
-      return unless user.persisted?
-
-      user.uid = user_id
-      user.name = token["name"].presence || user.name || email
-      user.disabled = false
-      user.remotely_signed_out = false
-      # Ensure default role is assigned if user has no roles
-      user.send(:assign_default_role) if user.roles.empty?
+      user.assign_attributes(
+        uid: user_id,
+        name: token["name"].presence || user.name || email,
+        disabled: false,
+        remotely_signed_out: false,
+      )
+      user.ensure_default_role
       user.save!
 
       user
     end
 
-    def dummy_user!
-      User.find_or_initialize_by(uid: "dummy_user", email: "dummy@user.com").tap do |user|
-        user.name = "Dummy User"
-        user.disabled = false
-        user.remotely_signed_out = false
-        user.send(:assign_default_role) if user.roles.empty?
-        user.save!
-      end
+    def basic_auth_user!
+      system_user!(uid: "basic_auth_user", email: "basic_auth@trade-tariff-admin.local", name: "basic_auth_user")
     end
 
-    def basic_auth_user!
-      User.find_or_initialize_by(uid: "basic_auth_user", email: "basic_auth@trade-tariff-admin.local").tap do |user|
-        user.name = "basic_auth_user"
+  private
+
+    def system_user!(uid:, email:, name:)
+      find_or_initialize_by(uid:, email:).tap do |user|
+        user.name = name
         user.disabled = false
         user.remotely_signed_out = false
-        user.send(:assign_default_role) if user.roles.empty?
+        user.ensure_default_role
         user.save!
       end
     end
@@ -76,15 +70,6 @@ class User < ApplicationRecord
     current_role == GUEST
   end
 
-  # Legacy permission methods
-  def gds_editor?
-    technical_operator?
-  end
-
-  def hmrc_editor?
-    technical_operator?
-  end
-
   def current_role
     roles.first&.name
   end
@@ -95,7 +80,7 @@ class User < ApplicationRecord
   end
 
   def role=(role_name)
-    return unless role_name.present?
+    return if role_name.blank?
 
     unless VALID_ROLES.include?(role_name)
       errors.add(:role, "is not a valid role")
@@ -103,6 +88,12 @@ class User < ApplicationRecord
     end
 
     set_role(role_name)
+  end
+
+  def ensure_default_role
+    return if roles.any?
+
+    add_role(GUEST)
   end
 
   # Safely assign a role by removing existing roles first
@@ -135,14 +126,7 @@ private
     return if roles.size <= 1
 
     # Keep the first role, remove the rest
-    first_role = roles.first
     roles_to_remove = roles[1..]
     roles_to_remove.each { |role| remove_role(role.name) }
-  end
-
-  def assign_default_role
-    return if roles.any?
-
-    add_role(GUEST)
   end
 end

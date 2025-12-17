@@ -1,17 +1,19 @@
 class NewsItemsController < AuthenticatedController
   before_action :disable_service_switching!
-  before_action :authorize_user if TradeTariffAdmin.authorization_enabled?
 
   def index
+    authorize News::Item, :index?
     @news_items = News::Item.all(page: current_page)
   end
 
   def new
+    authorize News::Item, :create?
     @news_item = News::Item.new(notify_subscribers: true)
     @collections = collection_options
   end
 
   def create
+    authorize News::Item, :create?
     @news_item = News::Item.new(news_item_params)
     @news_item.generate_or_normalise_slug!
     @news_item.save
@@ -26,11 +28,13 @@ class NewsItemsController < AuthenticatedController
 
   def edit
     @news_item = News::Item.find(params[:id])
+    authorize @news_item, :update?
     @collections = collection_options
   end
 
   def update
     @news_item = News::Item.build(news_item_params.merge(resource_id: params[:id]))
+    authorize @news_item, :update?
     @news_item.generate_or_normalise_slug!
     @news_item.save
 
@@ -44,6 +48,7 @@ class NewsItemsController < AuthenticatedController
 
   def destroy
     @news_item = News::Item.find(params[:id])
+    authorize @news_item, :destroy?
     @news_item.destroy
 
     redirect_to news_items_path, notice: "News item removed"
@@ -79,9 +84,5 @@ private
 
   def default_params
     { display_style: News::Item::DISPLAY_STYLE_REGULAR }
-  end
-
-  def authorize_user
-    authorize News::Item, :edit?
   end
 end
