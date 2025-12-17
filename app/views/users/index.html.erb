@@ -1,0 +1,53 @@
+<h2>Manage Users</h2>
+
+<p>
+  Use this page to manage user roles.
+  <% unless TradeTariffAdmin.basic_session_authentication? %>
+    Only technical operators can change user roles.
+  <% end %>
+</p>
+
+<% if @users.any? %>
+  <table class="govuk-table">
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th class="govuk-table__header">Email</th>
+        <th class="govuk-table__header">Name</th>
+        <th class="govuk-table__header">Current Role</th>
+        <th class="govuk-table__header">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+      <% @users.each do |user| %>
+        <tr class="govuk-table__row" id="<%= dom_id(user) %>">
+          <td class="govuk-table__cell"><%= user.email %></td>
+          <td class="govuk-table__cell"><%= user.name %></td>
+          <td class="govuk-table__cell"><%= user.current_role || 'No role' %></td>
+          <td class="govuk-table__cell">
+            <% 
+              can_edit = if TradeTariffAdmin.basic_session_authentication?
+                true
+              elsif respond_to?(:policy) && TradeTariffAdmin.authorization_enabled?
+                policy(user).edit?
+              else
+                current_user&.technical_operator?
+              end
+            %>
+            <% if can_edit %>
+              <%= link_to 'Edit',
+                          edit_user_path(user),
+                          class: 'govuk-link' %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <%= paginate @users %>
+<% else %>
+  <div class="govuk-inset-text">
+    <p>No users found</p>
+  </div>
+<% end %>
+

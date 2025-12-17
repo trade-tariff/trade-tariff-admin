@@ -71,6 +71,21 @@
                                       href: green_lanes_measure_type_mappings_path,
                                       active: active_nav_link?(/\/measure_type_mappings/) %>
       <% end %>
+
+      <% 
+        show_users_link = if TradeTariffAdmin.basic_session_authentication?
+          true
+        elsif respond_to?(:policy) && TradeTariffAdmin.authorization_enabled?
+          policy(User).edit?
+        else
+          true
+        end
+      %>
+      <% if show_users_link %>
+        <%= header.with_navigation_item text: "Manage Users",
+                                        href: users_path,
+                                        active: active_nav_link?(/\/users/) %>
+      <% end %>
     <% end %>
 
     <div class="govuk-width-container">

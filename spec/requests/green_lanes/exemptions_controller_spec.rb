@@ -2,7 +2,7 @@ RSpec.describe GreenLanes::ExemptionsController do
   subject(:rendered_page) { create_user && make_request && response }
 
   let(:exemption) { build :exemption }
-  let(:create_user) { create :user, permissions: ["HMRC Editor"] }
+  let(:create_user) { create :user, :technical_operator }
 
   before do
     allow(TradeTariffAdmin::ServiceChooser).to receive(:service_choice).and_return "xi"
