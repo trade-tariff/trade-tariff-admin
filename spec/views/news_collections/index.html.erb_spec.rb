@@ -1,8 +1,14 @@
 RSpec.describe "news_collections/index" do
   subject { render && rendered }
 
-  before { assign :news_collections, news_collections }
+  before do
+    assign :news_collections, news_collections
+    # Set up Pundit for view specs
+    view.extend Pundit::Authorization
+    allow(view).to receive(:current_user).and_return(current_user)
+  end
 
+  let(:current_user) { create(:user, :technical_operator) }
   let(:news_collections) { [] }
 
   it { is_expected.to have_css "a", text: "Add a news story collection" }

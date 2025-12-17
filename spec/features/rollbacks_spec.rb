@@ -1,6 +1,6 @@
 # rubocop:disable RSpec/NoExpectationExample
 RSpec.describe "Rollbacks management" do
-  let!(:user) { create :user, :hmrc_admin }
+  let!(:user) { create :user, :technical_operator }
 
   describe "Rollback creation" do
     let(:rollback) { build :rollback, user_id: user.id }

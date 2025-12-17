@@ -3,14 +3,17 @@ module GreenLanes
     include XiOnly
 
     def index
+      authorize GreenLanes::Exemption, :index?
       @exemptions = GreenLanes::Exemption.all(page: current_page)
     end
 
     def new
+      authorize GreenLanes::Exemption, :create?
       @exemption = GreenLanes::Exemption.new
     end
 
     def create
+      authorize GreenLanes::Exemption, :create?
       @exemption = GreenLanes::Exemption.new(ex_params)
       @exemption.save
 
@@ -23,10 +26,12 @@ module GreenLanes
 
     def edit
       @exemption = GreenLanes::Exemption.find(params[:id])
+      authorize @exemption, :update?
     end
 
     def update
       @exemption = GreenLanes::Exemption.build(ex_params.merge(resource_id: params[:id]))
+      authorize @exemption, :update?
       @exemption.save
 
       if @exemption.errors.none?
@@ -38,6 +43,7 @@ module GreenLanes
 
     def destroy
       @exemption = GreenLanes::Exemption.find(params[:id])
+      authorize @exemption, :destroy?
       @exemption.destroy
 
       redirect_to green_lanes_exemptions_path, notice: "Exemption removed"

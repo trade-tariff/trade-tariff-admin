@@ -3,7 +3,9 @@
 
 <h2>Search references for <%= chapter.reference_title %></h2>
 
-<%= link_to 'Create new search reference', new_references_chapter_search_reference_path(chapter), class: 'govuk-button' %>
+<% if policy(SearchReference).create? %>
+  <%= link_to 'Create new search reference', new_references_chapter_search_reference_path(chapter), class: 'govuk-button' %>
+<% end %>
 
 <% if @search_references.none? %>
   <p class="govuk-body">No search references are applied to this category.</p>
@@ -22,8 +24,12 @@
         <tr id="<%= dom_id(search_reference) %>">
           <td><%= search_reference.title %></td>
           <td class="hott-link-group">
-            <%= link_to "Edit", edit_references_chapter_search_reference_path(chapter, search_reference), class: 'btn btn-small btn-warning' %>
-            <%= link_to "Remove", references_chapter_search_reference_path(chapter, search_reference), method: :delete, data: { confirm: 'Are you sure?', disable: 'Working'}, class: 'btn btn-small btn-danger' %>
+            <% if policy(search_reference).update? %>
+              <%= link_to "Edit", edit_references_chapter_search_reference_path(chapter, search_reference), class: 'btn btn-small btn-warning' %>
+            <% end %>
+            <% if policy(search_reference).destroy? %>
+              <%= link_to "Remove", references_chapter_search_reference_path(chapter, search_reference), method: :delete, data: { confirm: 'Are you sure?', disable: 'Working'}, class: 'btn btn-small btn-danger' %>
+            <% end %>
           </td>
         </tr>
       <% end %>

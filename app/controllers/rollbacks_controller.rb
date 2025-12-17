@@ -1,15 +1,16 @@
 class RollbacksController < AuthenticatedController
-  before_action :authorize_user if TradeTariffAdmin.authorization_enabled?
-
   def index
+    authorize Rollback, :index?
     @rollbacks = Rollback.all(page: current_page)
   end
 
   def new
+    authorize Rollback, :create?
     @rollback = Rollback.new(rollback_params)
   end
 
   def create
+    authorize Rollback, :create?
     @rollback = Rollback.new(rollback_params)
     @rollback.save
 
@@ -32,9 +33,5 @@ private
         .to_h
         .merge(user_id: current_user.id)
     end
-  end
-
-  def authorize_user
-    authorize Rollback, :access?
   end
 end

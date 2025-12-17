@@ -4,57 +4,32 @@ FactoryBot.define do
     email          { "user#{uid}@example.com" }
     name           { "User#{uid}" }
 
-    after(:create) do |user|
-      # Remove default GUEST role if a specific role trait is being used
-      if user.roles.any? && user.roles.first.name == User::GUEST
-        user.remove_role(User::GUEST)
-      end
-    end
+    # Default user has GUEST role (assigned by User model before_create callback)
+    # No need to remove it - GUEST is the valid default
 
-    trait :gds_editor do
+    trait :technical_operator do
       after(:create) do |user|
-        user.remove_role(user.current_role) if user.current_role
-        user.add_role(User::TECHNICAL_OPERATOR)
-      end
-    end
-
-    trait :hmrc_editor do
-      after(:create) do |user|
-        user.remove_role(user.current_role) if user.current_role
-        user.add_role(User::TECHNICAL_OPERATOR)
+        user.set_role(User::TECHNICAL_OPERATOR)
       end
     end
 
     trait :hmrc_admin do
       after(:create) do |user|
-        user.remove_role(user.current_role) if user.current_role
-        user.add_role(User::TECHNICAL_OPERATOR)
-      end
-    end
-
-    trait :technical_operator do
-      after(:create) do |user|
-        user.remove_role(user.current_role) if user.current_role
-        user.add_role(User::TECHNICAL_OPERATOR)
-      end
-    end
-
-    trait :hmrc_admin_role do
-      after(:create) do |user|
-        user.remove_role(user.current_role) if user.current_role
-        user.add_role(User::HMRC_ADMIN)
+        user.set_role(User::HMRC_ADMIN)
       end
     end
 
     trait :auditor do
       after(:create) do |user|
-        user.remove_role(user.current_role) if user.current_role
-        user.add_role(User::AUDITOR)
+        user.set_role(User::AUDITOR)
       end
     end
 
     trait :guest do
-      # Guest is the default, so no action needed
+      after(:create) do |user|
+        # Ensure user has GUEST role (explicitly set it to guarantee it exists)
+        user.set_role(User::GUEST) unless user.guest?
+      end
     end
   end
 end

@@ -1,23 +1,26 @@
 class UsersController < AuthenticatedController
-  before_action :authorize_user, if: -> { TradeTariffAdmin.authorization_enabled? && !TradeTariffAdmin.basic_session_authentication? }
   before_action :set_user, only: %i[edit update]
 
   def index
+    authorize User, :index?
     @users = User.order(:email).page(params[:page] || 1)
   end
 
   def edit
+    authorize @user, :update?
     # Ensure the role attribute is set for the form
     @user.role = @user.current_role
   end
 
   def update
+    authorize @user, :update?
     @user.role = user_params[:role]
-    
-    if @user.save
-      redirect_to users_path, notice: "User role updated successfully"
-    else
+
+    # Check if role assignment added any errors
+    if @user.errors[:role].any? || !@user.save
       render :edit, status: :unprocessable_content
+    else
+      redirect_to users_path, notice: "User role updated successfully"
     end
   end
 
@@ -30,9 +33,4 @@ private
   def user_params
     params.require(:user).permit(:role)
   end
-
-  def authorize_user
-    authorize @user || User, :edit?
-  end
 end
-

@@ -2,6 +2,7 @@ module References
   module Headings
     class CommoditiesController < AuthenticatedController
       def index
+        authorize SearchReference, :index?
         @commodities = heading.commodities
       end
 
