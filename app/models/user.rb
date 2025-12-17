@@ -17,6 +17,9 @@ class User < ApplicationRecord
       return if email.blank? || user_id.blank?
 
       user = User.find_or_initialize_by(email: email)
+
+      return unless user.persisted?
+
       user.uid = user_id
       user.name = token["name"].presence || user.name || email
       user.disabled = false

@@ -1,11 +1,12 @@
-# rubocop:disable RSpec/MultipleExpectations, RSpec/ExampleLength
-
-RSpec.describe SessionsController, type: :controller do
+RSpec.describe SessionsController do
   describe "GET #destroy" do
-    it "clears the stored session" do
-      user_session = create(:session)
-      session[:token] = user_session.token
+    let!(:user_session) { create(:session) }
 
+    before do
+      session[:token] = user_session.token
+    end
+
+    it "clears the stored session", :aggregate_failures do
       get :destroy
 
       expect(response).to redirect_to(root_path)
@@ -28,31 +29,43 @@ RSpec.describe SessionsController, type: :controller do
       allow(VerifyToken).to receive(:new).and_return(instance_double(VerifyToken, call: token_payload))
     end
 
-    it "creates a session and signs the user in" do
-      cookies[:id_token] = "encoded-token"
+    context "when the user exists already" do
+      before do
+        create(:user, email: "user@example.com")
 
-      expect {
+        cookies[:id_token] = "encoded-token"
+      end
+
+      it "creates a session and signs the user in", :aggregate_failures do
+        expect { get :handle_redirect }.to change(Session, :count)
+        expect(response).to redirect_to(root_path)
+        expect(Session.last.user.email).to eq("user@example.com")
+        expect(Session.last.raw_info).to eq(token_payload)
+        expect(Session.last.expires_at.to_i).to eq(Time.zone.at(token_payload["exp"]).to_i)
+      end
+
+      it "redirects to the identity service when the token is invalid", :aggregate_failures do
+        allow(VerifyToken).to receive(:new).and_return(instance_double(VerifyToken, call: nil))
+        allow(TradeTariffAdmin).to receive(:identity_consumer_url).and_return("http://identity.example.com/admin")
+
         get :handle_redirect
-      }.to change(Session, :count).by(1)
 
-      expect(response).to redirect_to(root_path)
-      expect(session[:token]).to be_present
-
-      created_session = Session.last
-      expect(created_session.user.email).to eq("user@example.com")
-      expect(created_session.raw_info).to eq(token_payload)
-      expect(created_session.expires_at.to_i).to eq(Time.zone.at(token_payload["exp"]).to_i)
+        expect(response).to redirect_to("http://identity.example.com/admin")
+        expect(Session.count).to be_zero
+      end
     end
 
-    it "redirects to the identity service when the token is invalid" do
-      allow(VerifyToken).to receive(:new).and_return(instance_double(VerifyToken, call: nil))
-      allow(TradeTariffAdmin).to receive(:identity_consumer_url).and_return("http://identity.example.com/admin")
+    context "when the user does not exist" do
+      it "redirects to the identity service for sign up", :aggregate_failures do
+        allow(TradeTariffAdmin).to receive(:identity_consumer_url).and_return("http://identity.example.com/admin")
 
-      get :handle_redirect
+        cookies[:id_token] = "encoded-token"
 
-      expect(response).to redirect_to("http://identity.example.com/admin")
-      expect(Session.count).to be_zero
+        expect { get :handle_redirect }.not_to change(User, :count)
+        expect(Session.count).to be_zero
+
+        expect(response).to redirect_to("http://identity.example.com/admin")
+      end
     end
   end
 end
-# rubocop:enable RSpec/MultipleExpectations, RSpec/ExampleLength
