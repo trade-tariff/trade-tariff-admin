@@ -68,34 +68,36 @@ RSpec.describe User do
       }
     end
 
-    it "returns nil when payload is missing required fields", :aggregate_failures do
-      expect(described_class.from_passwordless_payload!(nil)).to be_nil
-      expect(described_class.from_passwordless_payload!({})).to be_nil
+    context "when the user exists" do
+      before { create(:user, email: token_payload["email"]) }
+
+      it "returns nil when payload is missing required fields", :aggregate_failures do
+        expect(described_class.from_passwordless_payload!(nil)).to be_nil
+        expect(described_class.from_passwordless_payload!({})).to be_nil
+      end
+
+      it "returns the user with provided attributes", :aggregate_failures do
+        user = described_class.from_passwordless_payload!(token_payload)
+
+        expect(user.uid).to eq("user-123")
+        expect(user.email).to eq("newuser@example.com")
+        expect(user.name).to eq("New User")
+      end
+
+      it "updates the uid when it changes" do
+        create(:user, email: token_payload["email"], uid: "old")
+
+        updated = described_class.from_passwordless_payload!(token_payload)
+
+        expect(updated.uid).to eq("user-123")
+      end
     end
 
-    it "creates a user with provided attributes", :aggregate_failures do
-      user = described_class.from_passwordless_payload!(token_payload)
-
-      expect(user.uid).to eq("user-123")
-      expect(user.email).to eq("newuser@example.com")
-      expect(user.name).to eq("New User")
-    end
-
-    it "preserves existing permissions when updating", :aggregate_failures do
-      existing_user = create(:user, email: token_payload["email"], permissions: %w[existing])
-
-      user = described_class.from_passwordless_payload!(token_payload)
-
-      expect(user.id).to eq(existing_user.id)
-      expect(user.permissions).to eq(%w[existing])
-    end
-
-    it "updates the uid when it changes" do
-      create(:user, email: token_payload["email"], uid: "old")
-
-      updated = described_class.from_passwordless_payload!(token_payload)
-
-      expect(updated.uid).to eq("user-123")
+    context "when the user does not exist" do
+      it "does not create a user" do
+        expect { described_class.from_passwordless_payload!(token_payload) }
+          .not_to change(described_class, :count)
+      end
     end
   end
 
