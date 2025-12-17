@@ -2,20 +2,24 @@ RSpec.describe RollbackPolicy do
   subject(:rollback_policy) { described_class }
 
   permissions :access? do
-    it "grants access to hmrc admin" do
-      expect(rollback_policy).to permit(User.new(permissions: [User::Permissions::HMRC_ADMIN]), Rollback.new)
+    it "grants access to technical operator" do
+      user = create(:user, :technical_operator)
+      expect(rollback_policy).to permit(user, Rollback.new)
     end
 
-    it "denies access access to gds editor" do
-      expect(rollback_policy).not_to permit(User.new(permissions: [User::Permissions::GDS_EDITOR]), Rollback.new)
+    it "denies access to hmrc admin role" do
+      user = create(:user, :hmrc_admin_role)
+      expect(rollback_policy).not_to permit(user, Rollback.new)
     end
 
-    it "denies access access to hmrc editor" do
-      expect(rollback_policy).not_to permit(User.new(permissions: [User::Permissions::HMRC_EDITOR]), Rollback.new)
+    it "denies access to auditor" do
+      user = create(:user, :auditor)
+      expect(rollback_policy).not_to permit(user, Rollback.new)
     end
 
-    it "denies access to regular user with sign in permission" do
-      expect(rollback_policy).not_to permit(User.new(permissions: []), Rollback.new)
+    it "denies access to guest user" do
+      user = create(:user, :guest)
+      expect(rollback_policy).not_to permit(user, Rollback.new)
     end
   end
 end

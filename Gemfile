@@ -33,6 +33,7 @@ gem "net-http-persistent"
 # Authorization
 gem "plek"
 gem "pundit"
+gem "rolify"
 
 # Helpers
 gem "kaminari"

@@ -24,7 +24,7 @@ RSpec.describe TariffUpdatesController do
   end
 
   context "when unauthorised" do
-    let(:current_user) { create(:user, permissions: %w[]) }
+    let(:current_user) { create(:user, :guest) }
 
     let(:make_request) { get tariff_updates_path }
 

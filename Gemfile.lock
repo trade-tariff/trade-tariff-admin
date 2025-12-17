@@ -361,6 +361,7 @@ GEM
       railties (>= 7.0)
     rexml (3.4.4)
     rinku (2.0.6)
+    rolify (6.0.1)
     rouge (4.7.0)
     rspec-core (3.13.5)
       rspec-support (~> 3.13.0)
@@ -536,6 +537,7 @@ DEPENDENCIES
   rails (~> 8)
   rails-controller-testing
   responders
+  rolify
   routing-filter!
   rspec-rails
   rspec_junit_formatter

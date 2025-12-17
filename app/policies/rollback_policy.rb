@@ -1,5 +1,5 @@
 RollbackPolicy = Struct.new(:user, :rollback) do
   def access?
-    user.hmrc_admin?
+    user.technical_operator?
   end
 end

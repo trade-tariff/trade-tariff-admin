@@ -1,5 +1,5 @@
 UpdatePolicy = Struct.new(:user, :tariff_update) do
   def access?
-    user.hmrc_admin?
+    user.technical_operator?
   end
 end
