@@ -1,7 +1,7 @@
 RSpec.describe GovspeakController do
   subject(:rendered_page) { response }
 
-  before { create :user, permissions: ["HMRC Editor"] }
+  before { create :user, :technical_operator }
 
   describe "POST #govspeak" do
     before do

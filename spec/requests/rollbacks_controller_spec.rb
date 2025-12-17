@@ -24,7 +24,7 @@ RSpec.describe RollbacksController do
   end
 
   context "when unauthorised" do
-    let(:current_user) { create(:user, permissions: %w[]) }
+    let(:current_user) { create(:user, :guest) }
 
     let(:make_request) { get rollbacks_path }
 

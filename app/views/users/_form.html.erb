@@ -1,0 +1,12 @@
+<%= govuk_form_for user, url: user_path(user), method: :patch do |f| %>
+  <% role_options = User::VALID_ROLES.map { |role| [role, role.humanize] }.to_h %>
+  <%= f.govuk_collection_radio_buttons :role, 
+                                       role_options, 
+                                       :first, 
+                                       :last, 
+                                       legend: { text: "Role" },
+                                       hint: { text: "Select a role for this user. Only one role can be assigned at a time." } %>
+
+  <%= submit_and_back_buttons f, users_path, submit: "Update Role" %>
+<% end %>
+
