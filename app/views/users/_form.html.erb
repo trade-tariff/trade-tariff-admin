@@ -1,5 +1,5 @@
 <%= govuk_form_for user, url: user_path(user), method: :patch do |f| %>
-  <% role_options = User::VALID_ROLES.map { |role| [role, role.humanize] }.to_h %>
+  <% role_options = User::VALID_ROLES.map { |role| [role, format_role_name(role)] }.to_h %>
   <%= f.govuk_collection_radio_buttons :role,
                                        role_options,
                                        :first,
