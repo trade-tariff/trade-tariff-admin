@@ -2,7 +2,9 @@
   Manage exempting additional code overrides
 </h2>
 
-<%= link_to 'Add a Exempting Additional Code Override', new_green_lanes_exempting_additional_code_override_path, class: 'govuk-button' %>
+<% if policy(GreenLanes::ExemptingOverride).create? %>
+  <%= link_to 'Add a Exempting Additional Code Override', new_green_lanes_exempting_additional_code_override_path, class: 'govuk-button' %>
+<% end %>
 
 <% if @exempting_additional_code_overrides.any? %>
   <table>
@@ -21,11 +23,13 @@
         <td><%= adco.additional_code_type_id %></td>
         <td><%= adco.additional_code %></td>
         <td>
-          <%= link_to 'Remove',
-                      green_lanes_exempting_additional_code_override_path(adco),
-                      method: :delete,
-                      class: 'govuk-button govuk-button--warning',
-                      data: { confirm: "Are you sure?", disable: 'Working ...' } %>
+          <% if policy(GreenLanes::ExemptingOverride).destroy? %>
+            <%= link_to 'Remove',
+                        green_lanes_exempting_additional_code_override_path(adco),
+                        method: :delete,
+                        class: 'govuk-button govuk-button--warning',
+                        data: { confirm: "Are you sure?", disable: 'Working ...' } %>
+          <% end %>
         </td>
       </tr>
     <% end %>

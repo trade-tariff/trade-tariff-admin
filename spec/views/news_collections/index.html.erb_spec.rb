@@ -31,4 +31,11 @@ RSpec.describe "news_collections/index" do
 
     it { is_expected.to have_css "table tbody tr", count: 3 }
   end
+
+  context "when user is an auditor" do
+    let(:current_user) { create(:user, :auditor) }
+    let(:news_collections) { build_list(:news_collection, 1) }
+
+    it { is_expected.not_to have_link "Edit" }
+  end
 end
