@@ -1,15 +1,16 @@
 class TariffUpdatesController < AuthenticatedController
-  before_action :authorize_user if TradeTariffAdmin.authorization_enabled?
-
   def index
+    authorize Update, :index?
     @tariff_updates = Update.all(page: current_page)
   end
 
   def show
     @tariff_update = Update.find(params[:id])
+    authorize @tariff_update, :show?
   end
 
   def download
+    authorize Update, :download?
     @download = Download.build(user_id: current_user.id)
     @download.save
 
@@ -19,6 +20,7 @@ class TariffUpdatesController < AuthenticatedController
   end
 
   def resend_cds_update_notification
+    authorize Update, :resend_cds_update_notification?
     @cds_update = CdsUpdateNotification.new(cds_update_params)
     @cds_update.save
 
@@ -28,6 +30,7 @@ class TariffUpdatesController < AuthenticatedController
   end
 
   def apply_and_clear_cache
+    authorize Update, :apply_and_clear_cache?
     @apply = Apply.build(user_id: current_user.id)
     @apply.save
 
@@ -44,10 +47,6 @@ private
       .permit(:filename)
       .to_h
       .merge(user_id: current_user.id)
-  end
-
-  def authorize_user
-    authorize Update, :access?
   end
 
   def error_messages_for(model)

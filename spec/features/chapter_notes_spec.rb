@@ -1,21 +1,17 @@
 # rubocop:disable RSpec/NoExpectationExample
 RSpec.describe "Chapter Note management" do
   # rubocop:disable RSpec/LetSetup
-  let!(:user) { create :user, :gds_editor }
+  let!(:user) { create :user, :technical_operator }
   # rubocop:enable RSpec/LetSetup
 
   describe "Chapter Note creation" do
-    let(:section) { build :section }
+    let(:section) { build :section, resource_id: 1 }
     let(:chapter) do
       build(
         :chapter,
         :with_section,
         title: "new chapter",
-        section: {
-          type: "section",
-          id: section.id,
-          attributes: section.attributes,
-        },
+        section: section.attributes.merge(resource_id: section.resource_id),
       )
     end
 
@@ -39,8 +35,8 @@ RSpec.describe "Chapter Note management" do
   end
 
   describe "chapter Note editing" do
-    let(:section)      { build :section }
-    let(:chapter)      { build :chapter, :with_note, :with_section, section: { type: "section", resource_id: section.id, attributes: section.attributes } }
+    let(:section)      { build :section, resource_id: 1 }
+    let(:chapter)      { build :chapter, :with_note, :with_section, section: section.attributes.merge(resource_id: section.resource_id) }
 
     before do
       stub_api_request("/admin/chapters/#{chapter.id}")
@@ -62,8 +58,8 @@ RSpec.describe "Chapter Note management" do
   end
 
   describe "Chapter Note deletion" do
-    let(:section)      { build :section }
-    let(:chapter)      { build :chapter, :with_note, :with_section, section: { type: "section", id: section.id, attributes: section.attributes } }
+    let(:section)      { build :section, resource_id: 1 }
+    let(:chapter)      { build :chapter, :with_note, :with_section, section: section.attributes.merge(resource_id: section.resource_id) }
 
     before do
       stub_api_request("/admin/chapters/#{chapter.id}")

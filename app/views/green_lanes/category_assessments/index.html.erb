@@ -2,7 +2,9 @@
   Manage category assessments
 </h2>
 
-<%= link_to 'Add a Category Assessment', new_green_lanes_category_assessment_path, class: 'govuk-button' %>
+<% if policy(GreenLanes::CategoryAssessment).create? %>
+  <%= link_to 'Add a Category Assessment', new_green_lanes_category_assessment_path, class: 'govuk-button' %>
+<% end %>
 
 <div id="ca-search-container">
   <div id="search-section">
@@ -53,8 +55,10 @@
             <td><%= category.regulation_role %></td>
             <td><%= category.theme.code %></td>
             <td>
-              <%= link_to 'Edit',
-                          edit_green_lanes_category_assessment_path(category) %>
+              <% if policy(category).update? %>
+                <%= link_to 'Edit',
+                            edit_green_lanes_category_assessment_path(category) %>
+              <% end %>
             </td>
           </tr>
         <% end %>

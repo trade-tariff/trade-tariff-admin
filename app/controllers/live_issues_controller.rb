@@ -1,16 +1,18 @@
 class LiveIssuesController < AuthenticatedController
   before_action :disable_service_switching!
-  before_action :authorize_user if TradeTariffAdmin.authorization_enabled?
 
   def index
+    authorize LiveIssue, :index?
     @live_issues = LiveIssue.all(page: current_page)
   end
 
   def new
+    authorize LiveIssue, :create?
     @live_issue = LiveIssue.new
   end
 
   def create
+    authorize LiveIssue, :create?
     @live_issue = LiveIssue.new(live_issue_params)
 
     if @live_issue.save && @live_issue.errors.none?
@@ -22,10 +24,12 @@ class LiveIssuesController < AuthenticatedController
 
   def edit
     @live_issue = LiveIssue.find(params[:id])
+    authorize @live_issue, :update?
   end
 
   def update
     @live_issue = LiveIssue.find(params[:id])
+    authorize @live_issue, :update?
     if @live_issue.update(live_issue_params) && @live_issue.errors.none?
       redirect_to live_issues_path, notice: "Live issue updated"
     else
@@ -35,6 +39,7 @@ class LiveIssuesController < AuthenticatedController
 
   def destroy
     @live_issue = LiveIssue.find(params[:id])
+    authorize @live_issue, :destroy?
     @live_issue.destroy
 
     redirect_to live_issues_path, notice: "Live issue deleted"
@@ -52,9 +57,5 @@ private
       :date_resolved,
       :commodities,
     )
-  end
-
-  def authorize_user
-    authorize LiveIssue, :edit?
   end
 end

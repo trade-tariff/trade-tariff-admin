@@ -21,11 +21,6 @@ protected
   def current_user
     return nil unless session[:authenticated]
 
-    @current_user ||= begin
-      user = User.new
-      user.name = "tariff"
-      user.id = "tariff"
-      user
-    end
+    @current_user ||= User.basic_auth_user!
   end
 end

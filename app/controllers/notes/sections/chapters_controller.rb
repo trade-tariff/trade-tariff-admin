@@ -2,6 +2,7 @@ module Notes
   module Sections
     class ChaptersController < AuthenticatedController
       def index
+        authorize SectionNote, :index?
         @chapters = section.chapters
       end
 
