@@ -2,8 +2,6 @@ module BasicSessionAuth
   extend ActiveSupport::Concern
 
   included do
-    include PunditAuthorization
-
     before_action :require_authentication, if: :basic_session_authentication?
     helper_method :current_user
   end

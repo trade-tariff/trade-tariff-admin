@@ -2,7 +2,9 @@
   Manage Green Lanes Measure Type Mappings
 </h2>
 
-<%= link_to 'Add a Measure Type Mapping', new_green_lanes_measure_type_mapping_path, class: 'govuk-button' %>
+<% if policy(GreenLanes::MeasureTypeMapping).create? %>
+  <%= link_to 'Add a Measure Type Mapping', new_green_lanes_measure_type_mapping_path, class: 'govuk-button' %>
+<% end %>
 
 <% if @measure_type_mappings.any? %>
   <table>
@@ -19,11 +21,13 @@
         <td><%= mtp.measure_type_id %></td>
         <td><%= mtp.theme_id %></td>
         <td>
-          <%= link_to 'Remove',
-                      green_lanes_measure_type_mapping_path(mtp),
-                      method: :delete,
-                      class: 'govuk-button govuk-button--warning',
-                      data: { confirm: "Are you sure?", disable: 'Working ...' } %>
+          <% if policy(mtp).destroy? %>
+            <%= link_to 'Remove',
+                        green_lanes_measure_type_mapping_path(mtp),
+                        method: :delete,
+                        class: 'govuk-button govuk-button--warning',
+                        data: { confirm: "Are you sure?", disable: 'Working ...' } %>
+          <% end %>
         </td>
       </tr>
     <% end %>

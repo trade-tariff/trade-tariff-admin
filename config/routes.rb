@@ -73,12 +73,8 @@ Rails.application.routes.draw do
     end
   end
   resources :rollbacks, only: %i[index new create]
-  resources :footnotes, only: %i[index edit update]
-  resources :measure_types, only: %i[index edit update]
   resources :news_items, except: %i[show]
   resources :news_collections, only: %i[index edit update create new]
-  resources :reports, only: %i[index show]
-  resources :balance_events, only: %i[show]
   resources :live_issues, only: %i[index create new update edit destroy]
   resources :users, only: %i[index edit update]
 
