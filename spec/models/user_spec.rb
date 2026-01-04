@@ -64,24 +64,17 @@ RSpec.describe User do
   end
 
   describe "role validation" do
-    describe "single role constraint" do
-      it "allows a user to have one role", :aggregate_failures do
+    describe "role assignment" do
+      it "allows a user to have a valid role", :aggregate_failures do
         user = create(:user, :technical_operator)
         expect(user).to be_valid
         expect(user.current_role).to eq(User::TECHNICAL_OPERATOR)
       end
 
-      it "prevents a user from having multiple roles", :aggregate_failures do
-        user = create(:user, :technical_operator)
-        user.add_role(User::HMRC_ADMIN)
+      it "validates role inclusion", :aggregate_failures do
+        user = build(:user, role: "INVALID_ROLE")
         expect(user).not_to be_valid
-        expect(user.errors[:roles]).to include("can only have one role at a time")
-      end
-
-      it "prevents saving with multiple roles", :aggregate_failures do
-        user = create(:user, :technical_operator)
-        user.add_role(User::AUDITOR)
-        expect { user.save! }.to raise_error(ActiveRecord::RecordInvalid, /can only have one role at a time/)
+        expect(user.errors[:role]).to be_present
       end
     end
 
@@ -92,23 +85,8 @@ RSpec.describe User do
         expect(user.guest?).to be(true)
       end
 
-      it "ensures user always has exactly one role after creation", :aggregate_failures do
-        user = create(:user)
-        expect(user.roles.count).to eq(1)
-        expect(user.current_role).to eq(User::GUEST)
-      end
-
-      it "does not assign role if user already has a role", :aggregate_failures do
-        user = build(:user)
-        user.add_role(User::TECHNICAL_OPERATOR)
-        user.save!
-        expect(user.current_role).to eq(User::TECHNICAL_OPERATOR)
-        expect(user.roles.count).to eq(1)
-      end
-
-      it "assigns GUEST role by default for new users", :aggregate_failures do
-        user = build(:user)
-        expect(user.roles).to be_empty
+      it "assigns GUEST role by default for new users without a role", :aggregate_failures do
+        user = build(:user, role: nil)
         user.save!
         expect(user.current_role).to eq(User::GUEST)
       end
@@ -140,48 +118,25 @@ RSpec.describe User do
         expect(user.current_role).to eq(User::TECHNICAL_OPERATOR)
       end
 
-      it "returns nil if user has no roles" do
-        user = described_class.new
-        expect(user.current_role).to be_nil
+      it "returns the role value" do
+        user = described_class.new(role: User::GUEST)
+        expect(user.current_role).to eq(User::GUEST)
       end
     end
 
-    describe "#set_role" do
-      it "removes existing role and assigns new role", :aggregate_failures do
+    describe "role updates" do
+      it "allows changing role", :aggregate_failures do
         user = create(:user, :technical_operator)
-        user.set_role(User::HMRC_ADMIN)
+        user.role = User::HMRC_ADMIN
         user.save!
-        expect(user).to have_attributes(current_role: User::HMRC_ADMIN, roles: have_attributes(size: 1))
+        expect(user.current_role).to eq(User::HMRC_ADMIN)
       end
 
       it "replaces role when changing from one role to another", :aggregate_failures do
         user = create(:user, :hmrc_admin)
-        user.set_role(User::AUDITOR)
+        user.role = User::AUDITOR
         user.save!
-        expect(user).to have_attributes(current_role: User::AUDITOR, roles: have_attributes(size: 1))
-      end
-
-      it "returns false for invalid role name" do
-        user = create(:user)
-        result = user.set_role("INVALID_ROLE")
-        expect(result).to be(false)
-      end
-
-      it "ensures user cannot have multiple roles after set_role", :aggregate_failures do
-        user = create(:user, :technical_operator)
-        user.set_role(User::GUEST)
-        user.save!
-        expect(user).to have_attributes(current_role: User::GUEST, roles: have_attributes(size: 1))
-      end
-    end
-
-    describe "ensure_single_role callback" do
-      it "removes extra roles if somehow multiple exist", :aggregate_failures do
-        user = create(:user, :technical_operator)
-        user.roles << Role.find_or_create_by(name: User::HMRC_ADMIN)
-        expect(user.roles.count).to eq(2)
-        user.tap { |u| u.save(validate: false) }.reload
-        expect(user).to have_attributes(current_role: User::TECHNICAL_OPERATOR, roles: have_attributes(size: 1))
+        expect(user.current_role).to eq(User::AUDITOR)
       end
     end
   end

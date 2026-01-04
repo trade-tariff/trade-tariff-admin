@@ -8,28 +8,19 @@ FactoryBot.define do
     # No need to remove it - GUEST is the valid default
 
     trait :technical_operator do
-      after(:create) do |user|
-        user.set_role(User::TECHNICAL_OPERATOR)
-      end
+      role { User::TECHNICAL_OPERATOR }
     end
 
     trait :hmrc_admin do
-      after(:create) do |user|
-        user.set_role(User::HMRC_ADMIN)
-      end
+      role { User::HMRC_ADMIN }
     end
 
     trait :auditor do
-      after(:create) do |user|
-        user.set_role(User::AUDITOR)
-      end
+      role { User::AUDITOR }
     end
 
     trait :guest do
-      after(:create) do |user|
-        # Ensure user has GUEST role (explicitly set it to guarantee it exists)
-        user.set_role(User::GUEST) unless user.guest?
-      end
+      role { User::GUEST }
     end
   end
 end
