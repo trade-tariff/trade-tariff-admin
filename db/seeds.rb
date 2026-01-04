@@ -1,18 +1,14 @@
 # Basic Auth User - persisted static user for basic authentication
-# This user can have roles switched as needed
+# This user has technical_operator role for admin access
 User.basic_auth_user!.tap do |user|
-  # Start with GUEST role by default, can be changed later
-  user.remove_role(user.current_role) if user.current_role && user.current_role != User::GUEST
-  user.add_role(User::GUEST) unless user.has_role?(User::GUEST)
+  user.role = User::TECHNICAL_OPERATOR
+  user.save!
 end
 
 # Winston user (legacy)
-User.new { |u|
-  u.name = 'Winston'
-  u.uid = 'winston'
-  u.version = 1
-  u.email = 'winston@alphagov.co.uk'
-}.save.tap do |user|
-  user.remove_role(user.current_role) if user.current_role
-  user.add_role(User::HMRC_ADMIN)
+User.find_or_initialize_by(uid: 'winston', email: 'winston@alphagov.co.uk').tap do |user|
+  user.name = 'Winston'
+  user.version = 1
+  user.role = User::HMRC_ADMIN
+  user.save!
 end
