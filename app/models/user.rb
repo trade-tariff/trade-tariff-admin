@@ -35,19 +35,13 @@ class User < ApplicationRecord
     end
 
     def basic_auth_user!
-      system_user!(uid: "basic_auth_user", email: "basic_auth@trade-tariff-admin.local", name: "basic_auth_user")
-    end
-
-  private
-
-    def system_user!(uid:, email:, name:)
-      find_or_initialize_by(uid:, email:).tap do |user|
-        user.name = name
-        user.disabled = false
-        user.remotely_signed_out = false
-        user.role ||= GUEST
-        user.save!
-      end
+      user = find_or_initialize_by(uid: "basic_auth_user", email: "basic_auth@trade-tariff-admin.local")
+      user.name = "basic_auth_user"
+      user.disabled = false
+      user.remotely_signed_out = false
+      user.role = TECHNICAL_OPERATOR # Always ensure technical_operator role
+      user.save!
+      user
     end
   end
 
