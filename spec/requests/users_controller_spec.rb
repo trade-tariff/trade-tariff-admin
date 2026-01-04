@@ -97,9 +97,10 @@ RSpec.describe UsersController do
   context "when using basic auth" do
     before do
       allow(TradeTariffAdmin).to receive(:basic_session_authentication?).and_return(true)
+      allow(Rails.env).to receive(:production?).and_return(false)
     end
 
-    let(:current_user) { create(:user, :guest) }
+    let(:current_user) { create(:user, :hmrc_admin) }
 
     describe "GET #index" do
       let(:make_request) { get users_path }
