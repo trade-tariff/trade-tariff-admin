@@ -43,7 +43,7 @@ RSpec.describe UsersController do
         make_request
         target_user.reload
         expect(target_user.current_role).to eq(User::HMRC_ADMIN)
-        expect(target_user.roles.count).to eq(1)
+        expect(target_user.role).to eq(User::HMRC_ADMIN)
       end
 
       it "removes the previous role", :aggregate_failures do
@@ -62,11 +62,11 @@ RSpec.describe UsersController do
     end
 
     context "when changing role multiple times" do
-      it "ensures only one role exists", :aggregate_failures do
-        target_user.set_role(User::TECHNICAL_OPERATOR)
+      it "updates the role correctly", :aggregate_failures do
+        target_user.role = User::TECHNICAL_OPERATOR
         target_user.save!
         patch user_path(target_user), params: { user: { role: User::AUDITOR } }
-        expect(target_user.reload).to have_attributes(current_role: User::AUDITOR, roles: have_attributes(size: 1))
+        expect(target_user.reload).to have_attributes(current_role: User::AUDITOR, role: User::AUDITOR)
       end
     end
   end

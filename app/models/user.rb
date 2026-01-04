@@ -1,5 +1,4 @@
 class User < ApplicationRecord
-  rolify
   has_many :sessions, dependent: :destroy
 
   TECHNICAL_OPERATOR = "TECHNICAL_OPERATOR".freeze
@@ -9,9 +8,8 @@ class User < ApplicationRecord
 
   VALID_ROLES = [TECHNICAL_OPERATOR, HMRC_ADMIN, AUDITOR, GUEST].freeze
 
-  validate :single_role_only
-  before_create :ensure_default_role
-  before_save :ensure_single_role
+  validates :role, inclusion: { in: VALID_ROLES }
+  before_validation :ensure_default_role
 
   class << self
     def from_passwordless_payload!(token)
@@ -30,7 +28,7 @@ class User < ApplicationRecord
         disabled: false,
         remotely_signed_out: false,
       )
-      user.ensure_default_role
+      user.role ||= GUEST
       user.save!
 
       user
@@ -47,7 +45,7 @@ class User < ApplicationRecord
         user.name = name
         user.disabled = false
         user.remotely_signed_out = false
-        user.ensure_default_role
+        user.role ||= GUEST
         user.save!
       end
     end
@@ -71,42 +69,7 @@ class User < ApplicationRecord
   end
 
   def current_role
-    roles.first&.name
-  end
-
-  # Virtual attribute for form handling
-  def role
-    current_role
-  end
-
-  def role=(role_name)
-    return if role_name.blank?
-
-    unless VALID_ROLES.include?(role_name)
-      errors.add(:role, "is not a valid role")
-      return
-    end
-
-    set_role(role_name)
-  end
-
-  def ensure_default_role
-    return if roles.any?
-
-    add_role(GUEST)
-  end
-
-  # Safely assign a role by removing existing roles first
-  # This ensures single role constraint is maintained
-  def set_role(role_name)
-    return false unless VALID_ROLES.include?(role_name)
-
-    # Remove all existing roles
-    roles.each { |role| remove_role(role.name) }
-
-    # Assign the new role
-    add_role(role_name)
-    true
+    role
   end
 
   def to_s
@@ -115,18 +78,7 @@ class User < ApplicationRecord
 
 private
 
-  def single_role_only
-    return if roles.size <= 1
-
-    errors.add(:roles, "can only have one role at a time")
-  end
-
-  def ensure_single_role
-    # If somehow multiple roles exist, keep only the first one
-    return if roles.size <= 1
-
-    # Keep the first role, remove the rest
-    roles_to_remove = roles[1..]
-    roles_to_remove.each { |role| remove_role(role.name) }
+  def ensure_default_role
+    self.role = GUEST if role.blank?
   end
 end
