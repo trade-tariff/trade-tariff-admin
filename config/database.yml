@@ -14,10 +14,10 @@ test:
 
 production:
   <<: *default
-  <% if ENV['DATABASE_URL'].present? %>
   url: <%= ENV['DATABASE_URL'] %>
   pool: <%= ENV['DB_POOL'] || ENV['MAX_THREADS'] || 5 %>
-  <% else %>
+
+nonprod:
+  <<: *default
   adapter: sqlite3
-  database: db/production.sqlite3
-  <% end %>
+  database: db/nonprod.sqlite3
