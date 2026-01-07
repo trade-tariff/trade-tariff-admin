@@ -223,7 +223,6 @@ RSpec.describe "RBAC Comprehensive Rules" do
   describe "Basic Auth Override" do
     before do
       allow(TradeTariffAdmin).to receive(:basic_session_authentication?).and_return(true)
-      allow(Rails.env).to receive(:production?).and_return(false)
     end
 
     it "allows user management for non-guest users", :aggregate_failures do
@@ -238,8 +237,8 @@ RSpec.describe "RBAC Comprehensive Rules" do
       expect(UserPolicy.new(guest, User.new).update?).to be(false)
     end
 
-    it "denies user management in production environment", :aggregate_failures do
-      allow(Rails.env).to receive(:production?).and_return(true)
+    it "denies user management when basic auth is not enabled", :aggregate_failures do
+      allow(TradeTariffAdmin).to receive(:basic_session_authentication?).and_return(false)
       hmrc_admin = create(:user, :hmrc_admin)
       expect(UserPolicy.new(hmrc_admin, User.new).index?).to be(false)
       expect(UserPolicy.new(hmrc_admin, User.new).update?).to be(false)
