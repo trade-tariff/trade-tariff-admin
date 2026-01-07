@@ -230,6 +230,71 @@ RSpec.describe User do
     end
   end
 
+  describe ".basic_auth_user!" do
+    context "when user does not exist" do
+      it "creates a new user" do
+        expect {
+          described_class.basic_auth_user!
+        }.to change(described_class, :count).by(1)
+      end
+
+      it "sets TECHNICAL_OPERATOR role" do
+        user = described_class.basic_auth_user!
+        expect(user.role).to eq(User::TECHNICAL_OPERATOR)
+      end
+
+      it "sets correct uid, email and name", :aggregate_failures do
+        user = described_class.basic_auth_user!
+        expect(user.uid).to eq("basic_auth_user")
+        expect(user.email).to eq("basic_auth@trade-tariff-admin.local")
+        expect(user.name).to eq("basic_auth_user")
+      end
+
+      it "sets disabled and remotely_signed_out to false", :aggregate_failures do
+        user = described_class.basic_auth_user!
+        expect(user.disabled).to be(false)
+        expect(user.remotely_signed_out).to be(false)
+      end
+    end
+
+    context "when user already exists" do
+      let!(:existing_user) do
+        create(:user,
+               uid: "basic_auth_user",
+               email: "basic_auth@trade-tariff-admin.local",
+               name: "Existing Name",
+               disabled: true,
+               remotely_signed_out: true,
+               role: User::GUEST)
+      end
+
+      it "does not create a new user" do
+        expect {
+          described_class.basic_auth_user!
+        }.not_to change(described_class, :count)
+      end
+
+      it "preserves existing name and role", :aggregate_failures do
+        described_class.basic_auth_user!
+        existing_user.reload
+        expect(existing_user.name).to eq("Existing Name")
+        expect(existing_user.role).to eq(User::GUEST)
+      end
+
+      it "preserves existing disabled and remotely_signed_out flags", :aggregate_failures do
+        described_class.basic_auth_user!
+        existing_user.reload
+        expect(existing_user.disabled).to be(true)
+        expect(existing_user.remotely_signed_out).to be(true)
+      end
+
+      it "returns the existing user" do
+        result = described_class.basic_auth_user!
+        expect(result).to eq(existing_user)
+      end
+    end
+  end
+
   describe "associations" do
     it "has many sessions", :aggregate_failures do
       association = described_class.reflect_on_association(:sessions)
