@@ -13,13 +13,17 @@ RSpec.shared_context "with authenticated user" do # rubocop:disable RSpec/Multip
     }
   end
 
+  let(:verify_result) do
+    VerifyToken::Result.new(valid: true, payload: decoded_id_token, reason: nil)
+  end
+
   let(:extra_session) { user_session.present? ? { token: user_session.token } : {} }
 
   before do |example|
     # Ensure user_session is created before stubbing
     session_instance = user_session
 
-    allow(VerifyToken).to receive(:new).and_return(instance_double(VerifyToken, call: decoded_id_token))
+    allow(VerifyToken).to receive(:new).and_return(instance_double(VerifyToken, call: verify_result))
     allow(TradeTariffAdmin).to receive(:identity_consumer_url).and_return("http://identity.example.com/admin")
 
     if example.metadata[:type] == :request

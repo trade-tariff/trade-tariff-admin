@@ -24,15 +24,15 @@ RSpec.describe SessionsController do
         "exp" => 1.hour.from_now.to_i,
       }
     end
+    let(:valid_result) { VerifyToken::Result.new(valid: true, payload: token_payload, reason: nil) }
 
     before do
-      allow(VerifyToken).to receive(:new).and_return(instance_double(VerifyToken, call: token_payload))
+      allow(VerifyToken).to receive(:new).and_return(instance_double(VerifyToken, call: valid_result))
     end
 
     context "when the user exists already" do
       before do
         create(:user, email: "user@example.com")
-
         cookies[:id_token] = "encoded-token"
       end
 
@@ -44,28 +44,43 @@ RSpec.describe SessionsController do
         expect(Session.last.expires_at.to_i).to eq(Time.zone.at(token_payload["exp"]).to_i)
       end
 
-      it "redirects to the identity service when the token is invalid", :aggregate_failures do
-        allow(VerifyToken).to receive(:new).and_return(instance_double(VerifyToken, call: nil))
-        allow(TradeTariffAdmin).to receive(:identity_consumer_url).and_return("http://identity.example.com/admin")
-
+      # rubocop:disable RSpec/ExampleLength
+      it "redirects and clears cookies when token is invalid", :aggregate_failures do
+        invalid_result = VerifyToken::Result.new(valid: false, payload: nil, reason: :invalid)
+        allow(VerifyToken).to receive(:new).and_return(instance_double(VerifyToken, call: invalid_result))
+        allow(TradeTariffAdmin).to receive_messages(identity_consumer_url: "http://identity.example.com/admin",
+                                                    identity_cookie_domain: ".example.com")
+        cookies[:refresh_token] = "refresh-token"
         get :handle_redirect
-
         expect(response).to redirect_to("http://identity.example.com/admin")
-        expect(Session.count).to be_zero
+        expect(response.cookies).to include("id_token" => nil, "refresh_token" => nil)
       end
+
+      it "redirects without clearing cookies when token is expired", :aggregate_failures do
+        expired_result = VerifyToken::Result.new(valid: false, payload: nil, reason: :expired)
+        allow(VerifyToken).to receive(:new).and_return(instance_double(VerifyToken, call: expired_result))
+        allow(TradeTariffAdmin).to receive(:identity_consumer_url).and_return("http://identity.example.com/admin")
+        cookies[:refresh_token] = "refresh-token"
+        get :handle_redirect
+        expect(response).to redirect_to("http://identity.example.com/admin")
+        expect(cookies["id_token"]).to eq("encoded-token")
+        expect(cookies["refresh_token"]).to eq("refresh-token")
+      end
+      # rubocop:enable RSpec/ExampleLength
     end
 
     context "when the user does not exist" do
-      it "redirects to the identity service for sign up", :aggregate_failures do
-        allow(TradeTariffAdmin).to receive(:identity_consumer_url).and_return("http://identity.example.com/admin")
-
+      # rubocop:disable RSpec/ExampleLength
+      it "redirects to identity service and clears cookies", :aggregate_failures do
+        allow(TradeTariffAdmin).to receive_messages(identity_consumer_url: "http://identity.example.com/admin",
+                                                    identity_cookie_domain: ".example.com")
         cookies[:id_token] = "encoded-token"
-
+        cookies[:refresh_token] = "refresh-token"
         expect { get :handle_redirect }.not_to change(User, :count)
-        expect(Session.count).to be_zero
-
         expect(response).to redirect_to("http://identity.example.com/admin")
+        expect(response.cookies).to include("id_token" => nil, "refresh_token" => nil)
       end
+      # rubocop:enable RSpec/ExampleLength
     end
   end
 end
