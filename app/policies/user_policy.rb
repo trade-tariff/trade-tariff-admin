@@ -1,6 +1,6 @@
 # User Management: ONLY TECHNICAL_OPERATOR may manage users
 # Exception: Basic auth allows user management regardless of role (testing mode)
-# Basic auth override only works in non-production environments and for non-guest users
+# Basic auth override only works when basic auth is enabled and for non-guest users
 class UserPolicy < ApplicationPolicy
   def index?
     basic_auth_override? || technical_operator?
@@ -18,7 +18,6 @@ private
 
   def basic_auth_override?
     return false unless TradeTariffAdmin.basic_session_authentication?
-    return false if Rails.env.production?
     return false if user&.guest?
 
     true
