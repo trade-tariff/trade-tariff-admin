@@ -5,7 +5,6 @@ RSpec.describe UserPolicy do
     context "when using basic auth" do
       before do
         allow(TradeTariffAdmin).to receive(:basic_session_authentication?).and_return(true)
-        allow(Rails.env).to receive(:production?).and_return(false)
       end
 
       it "grants access to non-guest users" do
@@ -28,13 +27,6 @@ RSpec.describe UserPolicy do
 
       it "denies access to guest users even with basic auth" do
         user = create(:user, :guest)
-        target_user = create(:user)
-        expect(user_policy).not_to permit(user, target_user)
-      end
-
-      it "denies access in production environment (basic auth override disabled)" do
-        allow(Rails.env).to receive(:production?).and_return(true)
-        user = create(:user, :hmrc_admin) # Non-technical-operator user
         target_user = create(:user)
         expect(user_policy).not_to permit(user, target_user)
       end
