@@ -36,10 +36,12 @@ class User < ApplicationRecord
 
     def basic_auth_user!
       user = find_or_initialize_by(uid: "basic_auth_user", email: "basic_auth@trade-tariff-admin.local")
-      user.name = "basic_auth_user"
-      user.disabled = false
-      user.remotely_signed_out = false
-      user.role = TECHNICAL_OPERATOR # Always ensure technical_operator role
+      if user.new_record?
+        user.name = "basic_auth_user"
+        user.disabled = false
+        user.remotely_signed_out = false
+        user.role = TECHNICAL_OPERATOR
+      end
       user.save!
       user
     end
