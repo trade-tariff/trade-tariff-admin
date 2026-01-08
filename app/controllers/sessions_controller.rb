@@ -4,14 +4,25 @@ class SessionsController < ApplicationController
   def handle_redirect
     return redirect_to root_path if already_authenticated?
 
-    if decoded_id_token.nil?
+    result = verify_id_token
+
+    if result.expired?
+      # Redirect to identity service with cookies intact so it can refresh the token
       return redirect_to TradeTariffAdmin.identity_consumer_url, allow_other_host: true
     end
 
-    user = User.from_passwordless_payload!(decoded_id_token)
-    return redirect_to TradeTariffAdmin.identity_consumer_url, allow_other_host: true unless user
+    unless result.valid?
+      clear_authentication_cookies
+      return redirect_to TradeTariffAdmin.identity_consumer_url, allow_other_host: true
+    end
 
-    create_user_session!(user)
+    user = User.from_passwordless_payload!(result.payload)
+    unless user
+      clear_authentication_cookies
+      return redirect_to TradeTariffAdmin.identity_consumer_url, allow_other_host: true
+    end
+
+    create_user_session!(user, result.payload)
     session[:token] = session_token
 
     redirect_to root_path
@@ -29,21 +40,20 @@ class SessionsController < ApplicationController
 
     session[:token] = nil
     session[:authenticated] = nil
-    cookies.delete(:id_token, domain: TradeTariffAdmin.identity_cookie_domain)
-    cookies.delete(:refresh_token, domain: TradeTariffAdmin.identity_cookie_domain)
+    clear_authentication_cookies
 
     redirect_to root_path, notice: "You have been logged out."
   end
 
 private
 
-  def create_user_session!(user)
+  def create_user_session!(user, payload)
     Session.create!(
       user: user,
       token: session_token,
       id_token: id_token,
-      raw_info: decoded_id_token,
-      expires_at: token_expiry,
+      raw_info: payload,
+      expires_at: token_expiry(payload),
     )
   end
 
@@ -51,8 +61,8 @@ private
     @session_token ||= SecureRandom.uuid
   end
 
-  def decoded_id_token
-    @decoded_id_token ||= VerifyToken.new(id_token).call
+  def verify_id_token
+    @verify_id_token ||= VerifyToken.new(id_token).call
   end
 
   def id_token
@@ -67,10 +77,15 @@ private
     user_session.present? && !user_session.renew?
   end
 
-  def token_expiry
-    exp = decoded_id_token&.fetch("exp", nil)
+  def token_expiry(payload)
+    exp = payload&.fetch("exp", nil)
     Time.zone.at(exp.to_i) if exp
   rescue StandardError
     nil
+  end
+
+  def clear_authentication_cookies
+    cookies.delete(:id_token, domain: TradeTariffAdmin.identity_cookie_domain)
+    cookies.delete(:refresh_token, domain: TradeTariffAdmin.identity_cookie_domain)
   end
 end

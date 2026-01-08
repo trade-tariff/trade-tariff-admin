@@ -1,9 +1,19 @@
 class VerifyToken
+  Result = Struct.new(:valid, :payload, :reason, keyword_init: true) do
+    def valid?
+      valid
+    end
+
+    def expired?
+      reason == :expired
+    end
+  end
+
   def initialize(token)
     @token = token
   end
 
-  # Verify the token and return the decoded payload if valid.
+  # Verify the token and return a Result object.
   def call
     return log_reason(:no_token) if token.blank?
     return log_reason(:no_keys) unless keys_available?
@@ -12,7 +22,11 @@ class VerifyToken
     decoded = DecodeJwt.new(decrypted).call
     groups = decoded&.fetch("cognito:groups", []) || []
 
-    TradeTariffAdmin.identity_consumer.in?(groups) ? decoded : log_reason(:not_in_group)
+    if TradeTariffAdmin.identity_consumer.in?(groups)
+      Result.new(valid: true, payload: decoded, reason: nil)
+    else
+      log_reason(:not_in_group)
+    end
   rescue JWT::ExpiredSignature
     log_reason(:expired)
   rescue JWT::DecodeError
@@ -44,7 +58,7 @@ private
       Rails.logger.error(error.backtrace.join("\n")) if error&.backtrace
     end
 
-    nil
+    Result.new(valid: false, payload: nil, reason: reason)
   end
 
   def keys_available?
