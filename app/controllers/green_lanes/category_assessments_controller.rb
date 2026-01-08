@@ -4,17 +4,20 @@ module GreenLanes
     include XiOnly
 
     def index
+      authorize GreenLanes::CategoryAssessment, :index?
       merge_filters
       @category_assessments = GreenLanes::CategoryAssessment.all(search_params)
       @themes = GreenLanes::Theme.all
     end
 
     def new
+      authorize GreenLanes::CategoryAssessment, :create?
       @category_assessment = GreenLanes::CategoryAssessment.new
       @themes = GreenLanes::Theme.all
     end
 
     def create
+      authorize GreenLanes::CategoryAssessment, :create?
       @category_assessment = GreenLanes::CategoryAssessment.new(ca_params)
       @category_assessment.save
 
@@ -28,11 +31,13 @@ module GreenLanes
 
     def edit
       @category_assessment = GreenLanes::CategoryAssessment.find(params[:id], page: current_page)
+      authorize @category_assessment, :update?
       prepare_edit
     end
 
     def update
       @category_assessment = GreenLanes::CategoryAssessment.build(ca_params.merge(resource_id: params[:id]))
+      authorize @category_assessment, :update?
       @category_assessment.save
 
       if @category_assessment.errors.none?
@@ -45,6 +50,7 @@ module GreenLanes
 
     def add_exemption
       @category_assessment = GreenLanes::CategoryAssessment.find(params[:id])
+      authorize @category_assessment, :update?
 
       exemption_id = exemptions_params[:exemption_id]
       category_assessment_exemption = GreenLanes::CategoryAssessmentExemption.new(category_assessment_id: @category_assessment.id, exemption_id:)
@@ -60,6 +66,7 @@ module GreenLanes
 
     def remove_exemption
       @category_assessment = GreenLanes::CategoryAssessment.find(params[:id])
+      authorize @category_assessment, :update?
 
       exemption_id = params[:exemption_id]
       category_assessment_exemption = GreenLanes::CategoryAssessmentExemption.new(category_assessment_id: @category_assessment.id, exemption_id:)
@@ -77,6 +84,7 @@ module GreenLanes
       measure = GreenLanes::Measure.new(measure_params)
       category_assessment_id = measure_params[:category_assessment_id]
       @category_assessment = GreenLanes::CategoryAssessment.find(category_assessment_id)
+      authorize @category_assessment, :update?
 
       if measure.valid?
         begin
@@ -102,6 +110,7 @@ module GreenLanes
 
     def destroy
       @category_assessment = GreenLanes::CategoryAssessment.find(params[:id])
+      authorize @category_assessment, :destroy?
       @category_assessment.destroy
 
       redirect_to green_lanes_category_assessments_path, notice: "Category Assessment removed"

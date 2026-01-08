@@ -1,16 +1,16 @@
-<% if tariff_update.rollback? %>
+<% if tariff_update.rollback? && policy(Rollback).create? %>
   <%= link_to "Rollback to #{tariff_update.issue_date}", new_rollback_path(rollback: {date: tariff_update.issue_date}) %>
 <% end %>
 
-<% if tariff_update.rollback? && tariff_update.filename.present? %>
+<% if tariff_update.rollback? && tariff_update.filename.present? && policy(Rollback).create? %>
   <br>
 <% end %>
 
-<% if tariff_update.filename.present? %>
+<% if tariff_update.filename.present? && policy(Update).download? %>
   <%= link_to "Download #{tariff_update.filename}", tariff_update.file_presigned_url, target: "_blank", title: tariff_update.filename %>
 <% end %>
 
-<% if tariff_update.filename.present? %>
+<% if tariff_update.filename.present? && policy(Update).resend_cds_update_notification? %>
   <%= link_to "Resend CDS Update email",
               resend_cds_update_notification_tariff_updates_path(cds_update_notification: {filename: tariff_update.filename}),
               method: :post %>

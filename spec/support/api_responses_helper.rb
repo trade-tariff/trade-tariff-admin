@@ -80,10 +80,15 @@ module ApiResponsesHelper
   end
 
   def format_jsonapi_item(type, attributes)
-    {
+    result = {
       type:,
       attributes:,
     }
+    # Include id field derived from resource_id to match real API responses
+    if attributes.is_a?(Hash) && attributes["resource_id"].present?
+      result[:id] = attributes["resource_id"].to_s
+    end
+    result
   end
 
   def format_jsonapi_errors(errors)

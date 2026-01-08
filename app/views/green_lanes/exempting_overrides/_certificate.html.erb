@@ -2,7 +2,9 @@
   Manage exempting certificate overrides
 </h2>
 
-<%= link_to 'Add a Exempting Certificate Override', new_green_lanes_exempting_certificate_override_path, class: 'govuk-button' %>
+<% if policy(GreenLanes::ExemptingOverride).create? %>
+  <%= link_to 'Add a Exempting Certificate Override', new_green_lanes_exempting_certificate_override_path, class: 'govuk-button' %>
+<% end %>
 
 <% if @exempting_certificate_overrides.any? %>
   <table>
@@ -21,11 +23,13 @@
         <td><%= eco.certificate_type_code %></td>
         <td><%= eco.certificate_code %></td>
         <td>
-          <%= link_to 'Remove',
-                      green_lanes_exempting_certificate_override_path(eco),
-                      method: :delete,
-                      class: 'govuk-button govuk-button--warning',
-                      data: { confirm: "Are you sure?", disable: 'Working ...' } %>
+          <% if policy(GreenLanes::ExemptingOverride).destroy? %>
+            <%= link_to 'Remove',
+                        green_lanes_exempting_certificate_override_path(eco),
+                        method: :delete,
+                        class: 'govuk-button govuk-button--warning',
+                        data: { confirm: "Are you sure?", disable: 'Working ...' } %>
+          <% end %>
         </td>
       </tr>
     <% end %>

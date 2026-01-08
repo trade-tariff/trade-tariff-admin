@@ -2,6 +2,7 @@ module References
   module Sections
     class ChaptersController < AuthenticatedController
       def index
+        authorize SearchReference, :index?
         @chapters = section.chapters
       end
 

@@ -1,8 +1,5 @@
 # rubocop:disable RSpec/NoExpectationExample
 RSpec.describe "Commodity Search Reference management" do
-  # rubocop:disable RSpec/LetSetup
-  let!(:user) { create :user, :gds_editor }
-  # rubocop:enable RSpec/LetSetup
   let(:heading) { build :heading }
 
   let(:commodity) do
@@ -18,6 +15,7 @@ RSpec.describe "Commodity Search Reference management" do
   let(:commodity_search_reference) do
     build(
       :commodity_search_reference,
+      id: 3,
       title: "new title",
       referenced: commodity.attributes,
     )

@@ -3,10 +3,12 @@ module References
     respond_to :json
 
     def show
+      authorize SearchReference, :show?
       respond_with section
     end
 
     def index
+      authorize SearchReference, :index?
       @sections = Section.all
     end
 

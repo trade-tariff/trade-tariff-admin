@@ -8,12 +8,14 @@
   <%= render 'fields', f: f %>
 <% end %>
 
-<h3>
-  Remove section note
-</h3>
+<% if policy(@section_note).destroy? %>
+  <h3>
+    Remove section note
+  </h3>
 
-<p>
-  Remove this section note
-</p>
+  <p>
+    Remove this section note
+  </p>
 
-<%= link_to "Remove", notes_section_section_note_path(@section),  method: :delete, data: { confirm: 'Are you sure?', disable: 'Working'}, class: 'govuk-button govuk-button--warning' %>
+  <%= link_to "Remove", notes_section_section_note_path(@section),  method: :delete, data: { confirm: 'Are you sure?', disable: 'Working'}, class: 'govuk-button govuk-button--warning' %>
+<% end %>
