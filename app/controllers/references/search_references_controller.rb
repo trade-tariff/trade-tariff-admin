@@ -1,16 +1,17 @@
 module References
   class SearchReferencesController < AuthenticatedController
-    before_action :authorize_user if TradeTariffAdmin.authorization_enabled?
-
     def index
+      authorize SearchReference, :index?
       @search_references = search_reference_parent.search_references
     end
 
     def new
+      authorize SearchReference, :create?
       @search_reference = SearchReference.new
     end
 
     def create
+      authorize SearchReference, :create?
       @search_reference = build_search_reference
 
       if @search_reference.valid? && @search_reference.save
@@ -20,9 +21,12 @@ module References
       end
     end
 
-    def edit; end
+    def edit
+      authorize search_reference, :update?
+    end
 
     def update
+      authorize search_reference, :update?
       search_reference.build(title: normalised_title)
 
       if search_reference.valid? && search_reference.save
@@ -33,6 +37,7 @@ module References
     end
 
     def destroy
+      authorize search_reference, :destroy?
       search_reference.destroy
 
       redirect_to [:references, search_reference_parent, :search_references], notice: "Search reference was successfully removed."
@@ -46,10 +51,6 @@ module References
       end
     end
     helper_method :search_reference
-
-    def authorize_user
-      authorize SearchReference, :edit?
-    end
 
     def normalised_title
       title = search_reference_params[:title] || ""

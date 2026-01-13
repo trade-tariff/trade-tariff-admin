@@ -1,5 +1,7 @@
 class GovspeakController < AuthenticatedController
   def govspeak
+    authorize News::Item, :update?
+
     # Keeps either the entire current flash or a specific flash entry
     # available for the next action
     flash.keep

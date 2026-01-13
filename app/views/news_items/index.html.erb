@@ -8,7 +8,9 @@
   <%= link_to 'manage news story collections', news_collections_path %>.
 </p>
 
-<%= link_to 'Add a News story', new_news_item_path, class: 'govuk-button' %>
+<% if policy(News::Item).create? %>
+  <%= link_to 'Add a News story', new_news_item_path, class: 'govuk-button' %>
+<% end %>
 
 <% if @news_items.any? %>
   <table>
@@ -35,8 +37,10 @@
           <td><%= news_item_bool news_item.show_on_xi %></td>
           <td><%= format_news_item_pages news_item %></td>
           <td>
-            <%= link_to 'Edit',
-                        edit_news_item_path(news_item) %>
+            <% if policy(news_item).update? %>
+              <%= link_to 'Edit',
+                          edit_news_item_path(news_item) %>
+            <% end %>
           </td>
         </tr>
       <% end %>

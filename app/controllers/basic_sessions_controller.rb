@@ -1,5 +1,6 @@
 class BasicSessionsController < AuthenticatedController
   skip_before_action :require_authentication, only: %i[new create] if TradeTariffAdmin.basic_session_authentication?
+  skip_after_action :verify_authorized, only: %i[new create]
 
   def new
     @basic_session = BasicSession.new

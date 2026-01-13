@@ -1,12 +1,15 @@
 class User < ApplicationRecord
-  serialize :permissions
   has_many :sessions, dependent: :destroy
 
-  module Permissions
-    HMRC_EDITOR = "HMRC Editor".freeze
-    GDS_EDITOR = "GDS Editor".freeze
-    HMRC_ADMIN = "HMRC Admin".freeze
-  end
+  TECHNICAL_OPERATOR = "TECHNICAL_OPERATOR".freeze
+  HMRC_ADMIN = "HMRC_ADMIN".freeze
+  AUDITOR = "AUDITOR".freeze
+  GUEST = "GUEST".freeze
+
+  VALID_ROLES = [TECHNICAL_OPERATOR, HMRC_ADMIN, AUDITOR, GUEST].freeze
+
+  validates :role, inclusion: { in: VALID_ROLES }
+  before_validation :ensure_default_role
 
   class << self
     def from_passwordless_payload!(token)
@@ -16,46 +19,62 @@ class User < ApplicationRecord
       user_id = token["sub"].to_s.presence
       return if email.blank? || user_id.blank?
 
-      user = User.find_or_initialize_by(email: email)
+      user = find_by(email: email)
+      return unless user
 
-      return unless user.persisted?
-
-      user.uid = user_id
-      user.name = token["name"].presence || user.name || email
-      user.disabled = false
-      user.remotely_signed_out = false
+      user.assign_attributes(
+        uid: user_id,
+        name: token["name"].presence || user.name || email,
+        disabled: false,
+        remotely_signed_out: false,
+      )
+      user.role ||= GUEST
       user.save!
 
       user
     end
 
-    def dummy_user!
-      User.find_or_initialize_by(uid: "dummy_user", email: "dummy@user.com").tap do |user|
-        user.name = "Dummy User"
+    def basic_auth_user!
+      user = find_or_initialize_by(uid: "basic_auth_user", email: "basic_auth@trade-tariff-admin.local")
+      if user.new_record?
+        user.name = "basic_auth_user"
         user.disabled = false
         user.remotely_signed_out = false
-        user.save!
+        user.role = TECHNICAL_OPERATOR
       end
+      user.save!
+      user
     end
   end
 
-  def has_permission?(permission)
-    Array(permissions).include?(permission)
-  end
-
-  def gds_editor?
-    has_permission?(Permissions::GDS_EDITOR)
-  end
-
-  def hmrc_editor?
-    has_permission?(Permissions::HMRC_EDITOR)
+  # Role helper methods - assume single role exclusivity
+  def technical_operator?
+    current_role == TECHNICAL_OPERATOR
   end
 
   def hmrc_admin?
-    has_permission?(Permissions::HMRC_ADMIN)
+    current_role == HMRC_ADMIN
+  end
+
+  def auditor?
+    current_role == AUDITOR
+  end
+
+  def guest?
+    current_role == GUEST
+  end
+
+  def current_role
+    role
   end
 
   def to_s
     name
+  end
+
+private
+
+  def ensure_default_role
+    self.role = GUEST if role.blank?
   end
 end

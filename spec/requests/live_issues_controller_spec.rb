@@ -3,7 +3,7 @@ RSpec.describe LiveIssuesController, type: :request do
 
   include_context "with authenticated user"
 
-  let(:current_user) { create(:user, permissions: ["HMRC Editor"]) }
+  let(:current_user) { create(:user, :technical_operator) }
   let(:live_issue) { build :live_issue }
 
   before do
@@ -148,7 +148,7 @@ RSpec.describe LiveIssuesController, type: :request do
   end
 
   context "when unauthorised" do
-    let(:current_user) { create(:user, permissions: %w[]) }
+    let(:current_user) { create(:user, :guest) }
     let(:make_request) { get live_issues_path }
 
     it { is_expected.to have_http_status :forbidden }

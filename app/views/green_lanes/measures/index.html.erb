@@ -41,11 +41,13 @@
           <%= me.category_assessment.regulation_id if me.category_assessment.present?%>
         </td>
         <td>
-          <%= link_to 'Remove',
-                      green_lanes_measure_path(me),
-                      method: :delete,
-                      class: 'govuk-button govuk-button--warning',
-                      data: { confirm: "Are you sure?", disable: 'Working ...' } %>
+          <% if policy(me).destroy? %>
+            <%= link_to 'Remove',
+                        green_lanes_measure_path(me),
+                        method: :delete,
+                        class: 'govuk-button govuk-button--warning',
+                        data: { confirm: "Are you sure?", disable: 'Working ...' } %>
+          <% end %>
         </td>
       </tr>
     <% end %>

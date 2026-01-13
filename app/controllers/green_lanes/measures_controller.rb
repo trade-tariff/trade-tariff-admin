@@ -3,11 +3,13 @@ module GreenLanes
     include XiOnly
 
     def index
+      authorize GreenLanes::Measure, :index?
       @measures = GreenLanes::Measure.all(page: current_page)
     end
 
     def destroy
       @measure = GreenLanes::Measure.build(resource_id: params[:id])
+      authorize @measure, :destroy?
       category_assessment_id = params[:category_assessment_id]
       @measure.destroy
 
