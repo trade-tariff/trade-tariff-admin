@@ -1,7 +1,14 @@
 module "service" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.18.2"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.19.2"
 
   region = var.region
+
+  container_definition_kind = "db-backed"
+  init_container_command = [
+    "/bin/sh",
+    "-c",
+    "bundle exec rails db:migrate",
+  ]
 
   service_name  = "admin"
   service_count = var.service_count
@@ -31,14 +38,4 @@ module "service" {
   service_environment_config = local.secret_env_vars
 
   sns_topic_arns = [data.aws_sns_topic.slack_topic.arn]
-}
-locals {
-  secret_value = try(data.aws_secretsmanager_secret_version.this.secret_string, "{}")
-  secret_map   = jsondecode(local.secret_value)
-  secret_env_vars = [
-    for key, value in local.secret_map : {
-      name  = key
-      value = value
-    }
-  ]
 }

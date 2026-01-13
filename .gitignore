@@ -28,3 +28,5 @@ yarn-error.log
 .tool-versions
 db/*.sqlite3-shm
 db/*.sqlite3-wal
+
+.claude/
