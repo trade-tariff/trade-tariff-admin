@@ -22,7 +22,7 @@
 
     <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
 
-    <%= govuk_header(service_name: "Trade Tariff Admin") do |header| %>
+    <%= govuk_header(service_name: "Trade Tariff Admin", service_url: default_landing_path) do |header| %>
       <% if policy(SectionNote).index? %>
         <%= header.with_navigation_item text: "Section & chapter notes",
                                         href: root_path,

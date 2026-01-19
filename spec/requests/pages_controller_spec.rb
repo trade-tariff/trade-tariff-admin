@@ -29,10 +29,10 @@ RSpec.describe PagesController do
     context "when user is hmrc_admin" do
       let(:current_user) { create(:user, :hmrc_admin) }
 
-      it "is forbidden" do
+      it "redirects to search references (their default landing page)" do
         get root_path
 
-        expect(response).to have_http_status :forbidden
+        expect(response).to redirect_to(references_sections_path)
       end
     end
 
