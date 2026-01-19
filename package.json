@@ -12,7 +12,7 @@
     "@webpack-cli/serve": "^3.0.1",
     "eslint": "^9.39.2",
     "eslint-config-google": "^0.14.0",
-    "webpack-dev-server": "^5.2.2"
+    "webpack-dev-server": "^5.2.3"
   },
   "license": "MIT"
 }
