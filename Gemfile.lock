@@ -283,7 +283,7 @@ GEM
     pp (0.6.3)
       prettyprint
     prettyprint (0.2.0)
-    prism (1.5.1)
+    prism (1.8.0)
     pry (0.15.2)
       coderay (~> 1.1)
       method_source (~> 1.0)
@@ -347,7 +347,7 @@ GEM
     rake (13.3.1)
     rbs (3.9.5)
       logger
-    rdoc (7.0.3)
+    rdoc (7.1.0)
       erb
       psych (>= 4.0.0)
       tsort
@@ -429,12 +429,12 @@ GEM
       nokogiri (>= 1.16.8)
     securerandom (0.4.1)
     semantic_range (3.1.0)
-    sentry-rails (6.1.1)
+    sentry-rails (6.3.0)
       railties (>= 5.2.0)
-      sentry-ruby (~> 6.1.1)
+      sentry-ruby (~> 6.3.0)
     sentry-raven (3.1.2)
       faraday (>= 1.0)
-    sentry-ruby (6.1.1)
+    sentry-ruby (6.3.0)
       bigdecimal
       concurrent-ruby (~> 1.0, >= 1.0.2)
     shoulda-matchers (7.0.1)
