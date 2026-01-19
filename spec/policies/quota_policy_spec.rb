@@ -4,7 +4,7 @@ RSpec.describe QuotaPolicy do
 
   let(:quota) { Quota.new }
 
-  permissions :index?, :show?, :search? do
+  permissions :index?, :show?, :search?, :create? do
     it "grants access to technical operator" do
       user = create(:user, :technical_operator)
       expect(quota_policy).to permit(user, quota)
@@ -26,7 +26,7 @@ RSpec.describe QuotaPolicy do
     end
   end
 
-  permissions :create?, :update?, :destroy? do
+  permissions :update?, :destroy? do
     it "grants access to technical operator" do
       user = create(:user, :technical_operator)
       expect(quota_policy).to permit(user, quota)

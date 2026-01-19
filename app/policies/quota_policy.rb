@@ -1,4 +1,4 @@
-# Quotas: TECHNICAL_OPERATOR full control, HMRC_ADMIN hidden, AUDITOR read-only, GUEST hidden
+# Quotas: TECHNICAL_OPERATOR full control, HMRC_ADMIN hidden, AUDITOR search access (create is non-destructive), GUEST hidden
 class QuotaPolicy < ApplicationPolicy
   def index?
     technical_operator? || auditor?
@@ -9,7 +9,7 @@ class QuotaPolicy < ApplicationPolicy
   end
 
   def create?
-    technical_operator?
+    technical_operator? || auditor?
   end
 
   def update?

@@ -124,10 +124,10 @@ RSpec.describe "RBAC Comprehensive Rules" do
       expect(LiveIssuePolicy.new(auditor, LiveIssue.new).create?).to be(false)
     end
 
-    it "allows read-only access to quotas", :aggregate_failures do
+    it "allows search access to quotas (create is non-destructive search)", :aggregate_failures do
       expect(QuotaPolicy.new(auditor, Quota.new).index?).to be(true)
       expect(QuotaPolicy.new(auditor, Quota.new).show?).to be(true)
-      expect(QuotaPolicy.new(auditor, Quota.new).create?).to be(false)
+      expect(QuotaPolicy.new(auditor, Quota.new).create?).to be(true)
     end
 
     it "allows read-only access to updates", :aggregate_failures do
