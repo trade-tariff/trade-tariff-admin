@@ -66,7 +66,7 @@ private
   end
 
   def id_token
-    @id_token ||= cookies[:id_token]
+    @id_token ||= cookies[id_token_cookie_name]
   end
 
   def user_session
@@ -85,7 +85,15 @@ private
   end
 
   def clear_authentication_cookies
-    cookies.delete(:id_token, domain: TradeTariffAdmin.identity_cookie_domain)
-    cookies.delete(:refresh_token, domain: TradeTariffAdmin.identity_cookie_domain)
+    cookies.delete(id_token_cookie_name, domain: TradeTariffAdmin.identity_cookie_domain)
+    cookies.delete(refresh_token_cookie_name, domain: TradeTariffAdmin.identity_cookie_domain)
+  end
+
+  def id_token_cookie_name
+    TradeTariffAdmin.id_token_cookie_name
+  end
+
+  def refresh_token_cookie_name
+    TradeTariffAdmin.refresh_token_cookie_name
   end
 end
