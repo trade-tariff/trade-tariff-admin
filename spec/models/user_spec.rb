@@ -1,15 +1,143 @@
 RSpec.describe User do
-  describe "#hmrc_admin" do
-    context "when user has hmrc admin access" do
-      let!(:user) { create :user, :hmrc_admin }
+  describe "#technical_operator?" do
+    subject(:user) { create(:user, *traits) }
 
-      it { expect(user.hmrc_admin?).to be(true) }
+    context "when user has technical operator role" do
+      let(:traits) { [:technical_operator] }
+
+      it { is_expected.to be_technical_operator }
     end
 
-    context "when user does not have hmrc admin access" do
-      let!(:user) { create :user }
+    context "when user does not have technical operator role" do
+      let(:traits) { [] }
 
-      it { expect(user.hmrc_admin?).not_to be(true) }
+      it { is_expected.not_to be_technical_operator }
+    end
+  end
+
+  describe "#hmrc_admin?" do
+    subject(:user) { create(:user, *traits) }
+
+    context "when user has hmrc admin role" do
+      let(:traits) { [:hmrc_admin] }
+
+      it { is_expected.to be_hmrc_admin }
+    end
+
+    context "when user does not have hmrc admin role" do
+      let(:traits) { [] }
+
+      it { is_expected.not_to be_hmrc_admin }
+    end
+  end
+
+  describe "#auditor?" do
+    subject(:user) { create(:user, *traits) }
+
+    context "when user has auditor role" do
+      let(:traits) { [:auditor] }
+
+      it { is_expected.to be_auditor }
+    end
+
+    context "when user does not have auditor role" do
+      let(:traits) { [] }
+
+      it { is_expected.not_to be_auditor }
+    end
+  end
+
+  describe "#guest?" do
+    subject(:user) { create(:user, *traits) }
+
+    context "when user has guest role" do
+      let(:traits) { [:guest] }
+
+      it { is_expected.to be_guest }
+    end
+
+    context "when user does not have guest role" do
+      let(:traits) { [:technical_operator] }
+
+      it { is_expected.not_to be_guest }
+    end
+  end
+
+  describe "role validation" do
+    describe "role assignment" do
+      it "allows a user to have a valid role", :aggregate_failures do
+        user = create(:user, :technical_operator)
+        expect(user).to be_valid
+        expect(user.current_role).to eq(User::TECHNICAL_OPERATOR)
+      end
+
+      it "validates role inclusion", :aggregate_failures do
+        user = build(:user, role: "INVALID_ROLE")
+        expect(user).not_to be_valid
+        expect(user.errors[:role]).to be_present
+      end
+    end
+
+    describe "default role assignment" do
+      it "assigns GUEST role by default when creating a new user", :aggregate_failures do
+        user = create(:user)
+        expect(user.current_role).to eq(User::GUEST)
+        expect(user.guest?).to be(true)
+      end
+
+      it "assigns GUEST role by default for new users without a role", :aggregate_failures do
+        user = build(:user, role: nil)
+        user.save!
+        expect(user.current_role).to eq(User::GUEST)
+      end
+
+      it "does not override existing roles", :aggregate_failures do
+        user = create(:user, :technical_operator)
+        expect(user.current_role).to eq(User::TECHNICAL_OPERATOR)
+        user.reload
+        expect(user.current_role).to eq(User::TECHNICAL_OPERATOR)
+      end
+    end
+
+    describe "role constants" do
+      it "defines all required role constants", :aggregate_failures do
+        expect(User::TECHNICAL_OPERATOR).to eq("TECHNICAL_OPERATOR")
+        expect(User::HMRC_ADMIN).to eq("HMRC_ADMIN")
+        expect(User::AUDITOR).to eq("AUDITOR")
+        expect(User::GUEST).to eq("GUEST")
+      end
+
+      it "includes all roles in VALID_ROLES" do
+        expect(User::VALID_ROLES).to contain_exactly(User::TECHNICAL_OPERATOR, User::HMRC_ADMIN, User::AUDITOR, User::GUEST)
+      end
+    end
+
+    describe "#current_role" do
+      it "returns the user's current role name" do
+        user = create(:user, :technical_operator)
+        expect(user.current_role).to eq(User::TECHNICAL_OPERATOR)
+      end
+
+      it "returns the role value" do
+        user = described_class.new(role: User::GUEST)
+        expect(user.current_role).to eq(User::GUEST)
+      end
+    end
+
+    describe "role updates" do
+      it "allows changing role", :aggregate_failures do
+        user = create(:user, :technical_operator)
+        user.role = User::HMRC_ADMIN
+        user.save!
+        expect(user.current_role).to eq(User::HMRC_ADMIN)
+      end
+
+      it "replaces role when changing from one role to another", :aggregate_failures do
+        user = create(:user, :hmrc_admin)
+        user.role = User::AUDITOR
+        user.save!
+        expect(user.current_role).to eq(User::AUDITOR)
+      end
     end
   end
 
@@ -68,29 +196,30 @@ RSpec.describe User do
       }
     end
 
-    context "when the user exists" do
-      before { create(:user, email: token_payload["email"]) }
+    it "returns nil when payload is missing required fields", :aggregate_failures do
+      expect(described_class.from_passwordless_payload!(nil)).to be_nil
+      expect(described_class.from_passwordless_payload!({})).to be_nil
+    end
 
-      it "returns nil when payload is missing required fields", :aggregate_failures do
-        expect(described_class.from_passwordless_payload!(nil)).to be_nil
-        expect(described_class.from_passwordless_payload!({})).to be_nil
-      end
+    it "updates an existing user with provided attributes", :aggregate_failures do
+      existing_user = create(:user, email: token_payload["email"])
+      user = described_class.from_passwordless_payload!(token_payload)
+      expect(user).to eq(existing_user)
+      expect(user).to have_attributes(uid: "user-123", email: "newuser@example.com", name: "New User")
+    end
 
-      it "returns the user with provided attributes", :aggregate_failures do
-        user = described_class.from_passwordless_payload!(token_payload)
+    it "preserves existing role when updating", :aggregate_failures do
+      existing_user = create(:user, :technical_operator, email: token_payload["email"])
+      user = described_class.from_passwordless_payload!(token_payload)
+      expect(user).to have_attributes(id: existing_user.id, current_role: User::TECHNICAL_OPERATOR)
+    end
 
-        expect(user.uid).to eq("user-123")
-        expect(user.email).to eq("newuser@example.com")
-        expect(user.name).to eq("New User")
-      end
+    it "updates the uid when it changes" do
+      create(:user, email: token_payload["email"], uid: "old")
 
-      it "updates the uid when it changes" do
-        create(:user, email: token_payload["email"], uid: "old")
+      updated = described_class.from_passwordless_payload!(token_payload)
 
-        updated = described_class.from_passwordless_payload!(token_payload)
-
-        expect(updated.uid).to eq("user-123")
-      end
+      expect(updated.uid).to eq("user-123")
     end
 
     context "when the user does not exist" do
@@ -101,12 +230,68 @@ RSpec.describe User do
     end
   end
 
-  describe ".dummy_user!" do
-    it "creates or updates a stub user", :aggregate_failures do
-      dummy_user = described_class.dummy_user!
+  describe ".basic_auth_user!" do
+    context "when user does not exist" do
+      it "creates a new user" do
+        expect {
+          described_class.basic_auth_user!
+        }.to change(described_class, :count).by(1)
+      end
 
-      expect(dummy_user.uid).to eq("dummy_user")
-      expect(dummy_user.email).to eq("dummy@user.com")
+      it "sets TECHNICAL_OPERATOR role" do
+        user = described_class.basic_auth_user!
+        expect(user.role).to eq(User::TECHNICAL_OPERATOR)
+      end
+
+      it "sets correct uid, email and name", :aggregate_failures do
+        user = described_class.basic_auth_user!
+        expect(user.uid).to eq("basic_auth_user")
+        expect(user.email).to eq("basic_auth@trade-tariff-admin.local")
+        expect(user.name).to eq("basic_auth_user")
+      end
+
+      it "sets disabled and remotely_signed_out to false", :aggregate_failures do
+        user = described_class.basic_auth_user!
+        expect(user.disabled).to be(false)
+        expect(user.remotely_signed_out).to be(false)
+      end
+    end
+
+    context "when user already exists" do
+      let!(:existing_user) do
+        create(:user,
+               uid: "basic_auth_user",
+               email: "basic_auth@trade-tariff-admin.local",
+               name: "Existing Name",
+               disabled: true,
+               remotely_signed_out: true,
+               role: User::GUEST)
+      end
+
+      it "does not create a new user" do
+        expect {
+          described_class.basic_auth_user!
+        }.not_to change(described_class, :count)
+      end
+
+      it "preserves existing name and role", :aggregate_failures do
+        described_class.basic_auth_user!
+        existing_user.reload
+        expect(existing_user.name).to eq("Existing Name")
+        expect(existing_user.role).to eq(User::GUEST)
+      end
+
+      it "preserves existing disabled and remotely_signed_out flags", :aggregate_failures do
+        described_class.basic_auth_user!
+        existing_user.reload
+        expect(existing_user.disabled).to be(true)
+        expect(existing_user.remotely_signed_out).to be(true)
+      end
+
+      it "returns the existing user" do
+        result = described_class.basic_auth_user!
+        expect(result).to eq(existing_user)
+      end
     end
   end
 

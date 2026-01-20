@@ -1,7 +1,7 @@
 RSpec.describe QuotasController do
   describe "GET #new" do
     subject(:do_request) do
-      create(:user, :hmrc_editor)
+      create(:user, :technical_operator)
 
       get new_quota_path
 
@@ -23,7 +23,7 @@ RSpec.describe QuotasController do
 
   describe "GET #search" do
     subject(:do_request) do
-      create(:user, :hmrc_editor)
+      create(:user, :technical_operator)
 
       today = Time.zone.today
       get perform_search_quotas_path(
@@ -54,7 +54,7 @@ RSpec.describe QuotasController do
     end
 
     before do
-      create(:user, :hmrc_editor)
+      create(:user, :technical_operator)
 
       allow(QuotaOrderNumbers::QuotaDefinition).to receive(:all).and_return(quota_definitions)
     end
@@ -89,7 +89,7 @@ RSpec.describe QuotasController do
     end
 
     before do
-      create(:user, :hmrc_editor)
+      create(:user, :technical_operator)
 
       allow(QuotaOrderNumbers::QuotaDefinition).to receive(:find).with("22619", quota_order_number_id: "051822").and_return(quota_definition)
     end

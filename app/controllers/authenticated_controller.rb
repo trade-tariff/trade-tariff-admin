@@ -11,4 +11,12 @@ class AuthenticatedController < ApplicationController
   end
 
   protect_from_forgery with: :exception
+
+  after_action :verify_authorized, unless: :skip_pundit_verification?
+
+private
+
+  def skip_pundit_verification?
+    false
+  end
 end

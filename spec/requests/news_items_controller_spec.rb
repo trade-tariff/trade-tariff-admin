@@ -3,7 +3,7 @@ RSpec.describe NewsItemsController do
 
   include_context "with authenticated user"
 
-  let(:current_user) { create(:user, permissions: ["HMRC Editor"]) }
+  let(:current_user) { create(:user, :technical_operator) }
   let(:news_item) { build :news_item }
 
   before do
@@ -132,7 +132,7 @@ RSpec.describe NewsItemsController do
   end
 
   context "when unauthorised" do
-    let(:current_user) { create(:user, permissions: %w[]) }
+    let(:current_user) { create(:user, :guest) }
     let(:make_request) { get news_items_path }
 
     it { is_expected.to have_http_status :forbidden }

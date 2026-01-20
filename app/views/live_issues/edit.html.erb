@@ -4,15 +4,17 @@
 
 <%= render 'form', live_issue: @live_issue %>
 
-<hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+<% if policy(@live_issue).destroy? %>
+  <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
-<h3>
-  Remove this Live Issue
-</h3>
+  <h3>
+    Remove this Live Issue
+  </h3>
 
-<%= link_to 'Remove',
-                live_issue_path(@live_issue),
-                method: :delete,
-                class: 'govuk-button govuk-button--warning',
-                data: { confirm: "Are you sure?", disable: 'Working ...' }
-%>
+  <%= link_to 'Remove',
+                  live_issue_path(@live_issue),
+                  method: :delete,
+                  class: 'govuk-button govuk-button--warning',
+                  data: { confirm: "Are you sure?", disable: 'Working ...' }
+  %>
+<% end %>

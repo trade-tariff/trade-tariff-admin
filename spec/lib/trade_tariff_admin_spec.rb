@@ -54,22 +54,6 @@ RSpec.describe TradeTariffAdmin do
     end
   end
 
-  describe ".authorization_enabled?" do
-    it "is true for passwordless strategy" do
-      ENV["AUTH_STRATEGY"] = "passwordless"
-      reset_auth_caches!
-      expect(described_class.authorization_enabled?).to be(true)
-    end
-
-    it "is false for basic strategy" do
-      ENV["AUTH_STRATEGY"] = "basic"
-      ENV["BASIC_PASSWORD"] = "secret"
-      reset_auth_caches!
-
-      expect(described_class.authorization_enabled?).to be(false)
-    end
-  end
-
   describe ".identity_consumer_url" do
     it "builds from base url and consumer" do
       allow(described_class).to receive_messages(identity_base_url: "http://identity.local",

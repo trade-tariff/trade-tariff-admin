@@ -18,16 +18,18 @@
       <% @news_collections.each do |news_collection| %>
         <tr>
           <td><%= news_collection.id %></td>
-          <td><%= news_collection.name %></td>
-          <td><%= news_collection.priority %></td>
-          <td><%= news_collection_bool news_collection.published %></td>
-          <td><%= news_collection_bool news_collection.subscribable %></td>
-          <td>
+        <td><%= news_collection.name %></td>
+        <td><%= news_collection.priority %></td>
+        <td><%= news_collection_bool news_collection.published %></td>
+        <td><%= news_collection_bool news_collection.subscribable %></td>
+        <td>
+          <% if policy(news_collection).update? %>
             <%= link_to 'Edit',
                         edit_news_collection_path(news_collection) %>
-          </td>
-        </tr>
-      <% end %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
     </tbody>
   </table>
 <% else %>
@@ -36,6 +38,8 @@
   </div>
 <% end %>
 
-<%= link_to 'Add a news story collection', new_news_collection_path, class: 'govuk-button' %>
+<% if policy(News::Collection).create? %>
+  <%= link_to 'Add a news story collection', new_news_collection_path, class: 'govuk-button' %>
+<% end %>
 
 <%= govuk_breadcrumbs 'Back to News stories': news_items_path %>

@@ -3,10 +3,12 @@ module Notes
     respond_to :json
 
     def show
+      authorize SectionNote, :show?
       respond_with section
     end
 
     def index
+      authorize SectionNote, :index?
       @sections = Section.all
     end
 

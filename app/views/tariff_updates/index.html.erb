@@ -2,12 +2,18 @@
   <h2>Tariff Updates - <%= service_update_type %></h2>
 </div>
 
-<div class="govuk-grid-row">
-  <div class="govuk-button-group">
-    <%= button_to 'Download', download_tariff_updates_path, method: :post, class: 'govuk-button' %>
-    <%= button_to 'Apply & Clear Caches', apply_and_clear_cache_tariff_updates_path, method: :post, class: 'govuk-button govuk-button' %>
+<% if policy(Update).download? || policy(Update).apply_and_clear_cache? %>
+  <div class="govuk-grid-row">
+    <div class="govuk-button-group">
+      <% if policy(Update).download? %>
+        <%= button_to 'Download', download_tariff_updates_path, method: :post, class: 'govuk-button' %>
+      <% end %>
+      <% if policy(Update).apply_and_clear_cache? %>
+        <%= button_to 'Apply & Clear Caches', apply_and_clear_cache_tariff_updates_path, method: :post, class: 'govuk-button govuk-button' %>
+      <% end %>
+    </div>
   </div>
-</div>
+<% end %>
 
 <table class='table table-bordered table-striped table-condensed table-tariff-updates'>
   <thead>

@@ -4,16 +4,23 @@ FactoryBot.define do
     email          { "user#{uid}@example.com" }
     name           { "User#{uid}" }
 
-    trait :gds_editor do
-      permissions { [User::Permissions::GDS_EDITOR] }
-    end
+    # Default user has GUEST role (assigned by User model before_create callback)
+    # No need to remove it - GUEST is the valid default
 
-    trait :hmrc_editor do
-      permissions { [User::Permissions::HMRC_EDITOR] }
+    trait :technical_operator do
+      role { User::TECHNICAL_OPERATOR }
     end
 
     trait :hmrc_admin do
-      permissions { [User::Permissions::HMRC_ADMIN] }
+      role { User::HMRC_ADMIN }
+    end
+
+    trait :auditor do
+      role { User::AUDITOR }
+    end
+
+    trait :guest do
+      role { User::GUEST }
     end
   end
 end

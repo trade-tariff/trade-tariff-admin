@@ -2,7 +2,9 @@
   Manage Green Lanes Exemptions
 </h2>
 
-<%= link_to 'Add a Exemption', new_green_lanes_exemption_path, class: 'govuk-button' %>
+<% if policy(GreenLanes::Exemption).create? %>
+  <%= link_to 'Add a Exemption', new_green_lanes_exemption_path, class: 'govuk-button' %>
+<% end %>
 
 <% if @exemptions.any? %>
   <table>
@@ -19,8 +21,10 @@
         <td><%= ex.code %></td>
         <td><%= ex.description %></td>
         <td>
-          <%= link_to 'Edit',
-                      edit_green_lanes_exemption_path(ex) %>
+          <% if policy(ex).update? %>
+            <%= link_to 'Edit',
+                        edit_green_lanes_exemption_path(ex) %>
+          <% end %>
         </td>
       </tr>
     <% end %>

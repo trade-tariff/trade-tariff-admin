@@ -4,18 +4,20 @@
 
 <%= render 'form', news_item: @news_item, collections: @collections %>
 
-<hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+<% if policy(@news_item).destroy? %>
+  <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
-<h3>
-  Remove News item
-</h3>
+  <h3>
+    Remove News item
+  </h3>
 
-<p>
-  Remove this News item
-</p>
+  <p>
+    Remove this News item
+  </p>
 
-<%= link_to 'Remove',
-                news_item_path(@news_item),
-                method: :delete,
-                class: 'govuk-button govuk-button--warning',
-                data: { confirm: "Are you sure?", disable: 'Working ...' } %>
+  <%= link_to 'Remove',
+                  news_item_path(@news_item),
+                  method: :delete,
+                  class: 'govuk-button govuk-button--warning',
+                  data: { confirm: "Are you sure?", disable: 'Working ...' } %>
+<% end %>

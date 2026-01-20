@@ -1,0 +1,43 @@
+<h2>Manage Users</h2>
+
+<p>
+  Use this page to manage user roles.
+  <% unless policy(User.new).update? %>
+    Only technical operators can change user roles.
+  <% end %>
+</p>
+
+<% if @users.any? %>
+  <table class="govuk-table">
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th class="govuk-table__header">Email</th>
+        <th class="govuk-table__header">Name</th>
+        <th class="govuk-table__header">Current Role</th>
+        <th class="govuk-table__header">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+      <% @users.each do |user| %>
+        <tr class="govuk-table__row" id="<%= dom_id(user) %>">
+          <td class="govuk-table__cell"><%= user.email %></td>
+          <td class="govuk-table__cell"><%= user.name %></td>
+          <td class="govuk-table__cell"><%= format_role_name(user.current_role) %></td>
+          <td class="govuk-table__cell">
+            <% if policy(user).update? %>
+              <%= link_to 'Edit',
+                          edit_user_path(user),
+                          class: 'govuk-link' %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <%= paginate @users %>
+<% else %>
+  <div class="govuk-inset-text">
+    <p>No users found</p>
+  </div>
+<% end %>

@@ -1,7 +1,7 @@
 # rubocop:disable RSpec/NoExpectationExample
 RSpec.describe "Section Note management" do
   # rubocop:disable RSpec/LetSetup
-  let!(:user) { create :user, :gds_editor }
+  let!(:user) { create :user, :technical_operator }
   # rubocop:enable RSpec/LetSetup
   let(:section_note) { build :section_note }
   let(:section)      { build :section, title: "new section" }
