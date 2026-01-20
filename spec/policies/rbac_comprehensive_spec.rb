@@ -54,10 +54,10 @@ RSpec.describe "RBAC Comprehensive Rules" do
       expect(ChapterNotePolicy.new(hmrc_admin, ChapterNote.new).index?).to be(false)
     end
 
-    it "allows read and write (no delete) to search references", :aggregate_failures do
+    it "allows full access to search references", :aggregate_failures do
       expect(SearchReferencePolicy.new(hmrc_admin, SearchReference.new).index?).to be(true)
       expect(SearchReferencePolicy.new(hmrc_admin, SearchReference.new).create?).to be(true)
-      expect(SearchReferencePolicy.new(hmrc_admin, SearchReference.new).destroy?).to be(false)
+      expect(SearchReferencePolicy.new(hmrc_admin, SearchReference.new).destroy?).to be(true)
     end
 
     it "allows read and write (no delete) to news", :aggregate_failures do

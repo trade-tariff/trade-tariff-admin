@@ -54,9 +54,9 @@ RSpec.describe SearchReferencePolicy do
       expect(search_reference_policy).to permit(user, search_reference)
     end
 
-    it "denies access to hmrc admin" do
+    it "grants access to hmrc admin" do
       user = create(:user, :hmrc_admin)
-      expect(search_reference_policy).not_to permit(user, search_reference)
+      expect(search_reference_policy).to permit(user, search_reference)
     end
 
     it "denies access to auditor" do

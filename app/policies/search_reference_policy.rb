@@ -1,4 +1,4 @@
-# Search References: TECHNICAL_OPERATOR full control, HMRC_ADMIN create/update (no delete), AUDITOR read-only, GUEST hidden
+# Search References: TECHNICAL_OPERATOR + HMRC_ADMIN full control, AUDITOR read-only, GUEST hidden
 class SearchReferencePolicy < ApplicationPolicy
   def index?
     technical_operator? || hmrc_admin? || auditor?
@@ -17,6 +17,6 @@ class SearchReferencePolicy < ApplicationPolicy
   end
 
   def destroy?
-    technical_operator?
+    technical_operator? || hmrc_admin?
   end
 end
