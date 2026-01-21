@@ -28,4 +28,29 @@ class ApplicationController < ActionController::Base
     root_path
   end
   helper_method :default_landing_path
+
+  # NOTE: Cleanup of all authentication state:
+  # 1. Database Session record
+  # 2. Rails session variables
+  # 3. Authentication cookies
+  def clear_authentication!(full: false)
+    Rails.logger.info("[Auth] Clearing session (PasswordlessAuth)")
+
+    # Destroy database session record
+    if user_session.present?
+      Rails.logger.info("[Auth] Destroying database session for user: #{user_session.user&.email}")
+      user_session.destroy!
+    end
+
+    # Clear Rails session variables
+    session[:token] = nil
+    session[:authenticated] = nil
+
+    # Delete authentication cookies
+    cookies.delete(TradeTariffAdmin.id_token_cookie_name, domain: TradeTariffAdmin.identity_cookie_domain)
+    # Delete refresh token only on full logout
+    cookies.delete(TradeTariffAdmin.refresh_token_cookie_name, domain: TradeTariffAdmin.identity_cookie_domain) if full
+
+    Rails.logger.info("[Auth] Session cleared")
+  end
 end

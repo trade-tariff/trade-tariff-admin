@@ -53,7 +53,8 @@ RSpec.describe SessionsController do
         cookies[:refresh_token] = "refresh-token"
         get :handle_redirect
         expect(response).to redirect_to("http://identity.example.com/admin")
-        expect(response.cookies).to include("id_token" => nil, "refresh_token" => nil)
+        # NOTE: These are positive instructions to delete the cookies and not the current cookie values. Refresh token is not deleted here since we'll reuse it for reauthentication.
+        expect(response.cookies).to eq("id_token" => nil)
       end
 
       it "redirects without clearing cookies when token is expired", :aggregate_failures do
@@ -78,7 +79,9 @@ RSpec.describe SessionsController do
         cookies[:refresh_token] = "refresh-token"
         expect { get :handle_redirect }.not_to change(User, :count)
         expect(response).to redirect_to("http://identity.example.com/admin")
-        expect(response.cookies).to include("id_token" => nil, "refresh_token" => nil)
+
+        # NOTE: These are positive instructions to delete the cookies and not the current cookie values. Refresh token is not deleted here since we'll reuse it for reauthentication.
+        expect(response.cookies).to eq("id_token" => nil)
       end
       # rubocop:enable RSpec/ExampleLength
     end
