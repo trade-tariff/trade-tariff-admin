@@ -1,4 +1,26 @@
 RSpec.describe Session do
+  describe "#cookie_token_match_for?" do
+    subject(:session) { build(:session, id_token: "session_token") }
+
+    context "when the cookie token matches the session's id_token" do
+      let(:cookie_token) { "session_token" }
+
+      it { is_expected.to be_cookie_token_match_for(cookie_token) }
+    end
+
+    context "when the cookie token does not match the session's id_token" do
+      let(:cookie_token) { "different_token" }
+
+      it { is_expected.not_to be_cookie_token_match_for(cookie_token) }
+    end
+
+    context "when the cookie token is nil" do
+      let(:cookie_token) { nil }
+
+      it { is_expected.not_to be_cookie_token_match_for(cookie_token) }
+    end
+  end
+
   describe "#renew?" do
     it "returns true when the token cannot be verified" do
       session = build(:session)

@@ -13,9 +13,9 @@ protected
   end
 
   def require_authentication
-    return if user_session.present? && !user_session.renew?
+    return if authenticated?
 
-    clear_session!
+    clear_authentication!
     redirect_to TradeTariffAdmin.identity_consumer_url, allow_other_host: true
   end
 
@@ -27,8 +27,9 @@ protected
     @current_user ||= user_session&.user
   end
 
-  def clear_session!
-    user_session&.destroy!
-    session[:token] = nil
+  def authenticated?
+    user_session.present? &&
+      user_session.cookie_token_match_for?(cookies[TradeTariffAdmin.id_token_cookie_name]) &&
+      user_session.current?
   end
 end

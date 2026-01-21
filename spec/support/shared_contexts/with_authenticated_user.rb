@@ -2,7 +2,7 @@ RSpec.shared_context "with authenticated user" do # rubocop:disable RSpec/Multip
   let(:current_user) { create(:user, :technical_operator) }
   let(:session_token) { SecureRandom.uuid }
   let(:authenticate_user) { true }
-  let(:user_session) { authenticate_user ? create(:session, user: current_user, token: session_token) : nil }
+  let(:user_session) { authenticate_user ? create(:session, user: current_user, token: session_token, id_token: id_token) : nil }
 
   let(:decoded_id_token) do
     {
@@ -12,6 +12,8 @@ RSpec.shared_context "with authenticated user" do # rubocop:disable RSpec/Multip
       "exp" => 1.hour.from_now.to_i,
     }
   end
+
+  let(:id_token) { "mock-id-token" }
 
   let(:verify_result) do
     VerifyToken::Result.new(valid: true, payload: decoded_id_token, reason: nil)
@@ -37,7 +39,7 @@ RSpec.shared_context "with authenticated user" do # rubocop:disable RSpec/Multip
 
         ActionDispatch::Session::CookieStore.new(setter, key: "_trade-tariff-admin_app_session").call(env)
         cookies_key_value = env["action_dispatch.cookies"].as_json.first
-        cookies[:id_token] = "mock-id-token"
+        cookies[:id_token] = id_token
         cookies[cookies_key_value.first] = cookies_key_value.last if cookies_key_value
       end
     elsif example.metadata[:type] == :feature && session_instance
