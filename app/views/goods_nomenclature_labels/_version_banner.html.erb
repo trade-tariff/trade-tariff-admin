@@ -1,0 +1,19 @@
+<% unless label.current? %>
+  <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+    <div class="govuk-notification-banner__header">
+      <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+        Historical version
+      </h2>
+    </div>
+    <div class="govuk-notification-banner__content">
+      <p class="govuk-notification-banner__heading">
+        You are viewing a historical version of this label (version ID: <%= label.version_oid %>).
+      </p>
+      <p class="govuk-body">
+        <%= link_to "View current version",
+                    goods_nomenclature_label_path(label.goods_nomenclature_item_id),
+                    class: "govuk-notification-banner__link" %>
+      </p>
+    </div>
+  </div>
+<% end %>

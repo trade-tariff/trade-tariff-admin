@@ -53,6 +53,12 @@
                                         active: active_nav_link?(/\/quotas/) %>
       <% end %>
 
+      <% if policy(GoodsNomenclatureLabel).index? && TradeTariffAdmin::ServiceChooser.uk? %>
+        <%= header.with_navigation_item text: "Nomenclature Labels",
+                                        href: goods_nomenclature_labels_path,
+                                        active: active_nav_link?(/\/goods_nomenclature_labels/) %>
+      <% end %>
+
       <% if policy(Update).index? %>
         <%= header.with_navigation_item text: "Updates",
                                         href: tariff_updates_path,

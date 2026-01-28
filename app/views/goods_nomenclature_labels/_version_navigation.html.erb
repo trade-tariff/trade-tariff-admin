@@ -1,0 +1,20 @@
+<nav class="govuk-!-margin-top-6" aria-label="Version navigation">
+  <ul class="govuk-list govuk-!-margin-bottom-0" style="display: flex; justify-content: space-between;">
+    <li>
+      <% if label.has_previous_version? %>
+        <%= link_to goods_nomenclature_label_path(label.goods_nomenclature_item_id, oid: label.version_oid),
+                    class: "govuk-link" do %>
+          &larr; Previous version
+        <% end %>
+      <% end %>
+    </li>
+    <li>
+      <% unless label.current? %>
+        <%= link_to goods_nomenclature_label_path(label.goods_nomenclature_item_id),
+                    class: "govuk-link" do %>
+          Current version &rarr;
+        <% end %>
+      <% end %>
+    </li>
+  </ul>
+</nav>

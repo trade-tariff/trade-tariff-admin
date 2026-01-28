@@ -48,6 +48,21 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :goods_nomenclature_labels, only: %i[index] do
+    collection do
+      get :search
+    end
+  end
+
+  get "goods_nomenclature_labels/:goods_nomenclature_id",
+      to: "goods_nomenclature_labels#show",
+      as: :goods_nomenclature_label,
+      constraints: { goods_nomenclature_id: /\d{10}/ }
+
+  patch "goods_nomenclature_labels/:goods_nomenclature_id",
+        to: "goods_nomenclature_labels#update",
+        constraints: { goods_nomenclature_id: /\d{10}/ }
+
   namespace :green_lanes, path: "green_lanes" do
     resources :category_assessments, only: %i[index new create edit update destroy] do
       member do
