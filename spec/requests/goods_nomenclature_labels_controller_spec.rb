@@ -68,9 +68,32 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
   end
   let(:commodity_code) { "0101210000" }
   let(:goods_nomenclature_sid) { 12_345 }
+  let(:stats_response) do
+    {
+      status: 200,
+      headers: { "content-type" => "application/json; charset=utf-8" },
+      body: {
+        data: {
+          type: "goods_nomenclature_label_stats",
+          id: "stats",
+          attributes: {
+            total_labels: 10_000,
+            with_description: 9_500,
+            with_known_brands: 2_000,
+            with_colloquial_terms: 1_500,
+            with_synonyms: 3_000,
+            ai_created_only: 8_000,
+            human_edited: 2_000,
+          },
+        },
+      }.to_json,
+    }
+  end
 
   before do
     TradeTariffAdmin::ServiceChooser.service_choice = "uk"
+    stub_api_request("/goods_nomenclature_labels/stats", backend: "uk")
+      .and_return(stats_response)
   end
 
   describe "GET #index" do
@@ -81,6 +104,39 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
 
     it "displays the search form" do
       expect(rendered_page.body).to include("Search for Nomenclature Label")
+    end
+
+    # rubocop:disable RSpec/MultipleExpectations
+    it "displays label statistics" do
+      expect(rendered_page.body).to include("Label Statistics")
+      expect(rendered_page.body).to include("10,000")
+      expect(rendered_page.body).to include("9,500")
+    end
+
+    it "displays origin statistics" do
+      expect(rendered_page.body).to include("By Origin")
+      expect(rendered_page.body).to include("AI-created only")
+      expect(rendered_page.body).to include("8,000")
+      expect(rendered_page.body).to include("Human-edited")
+      expect(rendered_page.body).to include("2,000")
+    end
+    # rubocop:enable RSpec/MultipleExpectations
+
+    context "when stats API fails" do
+      before do
+        stub_api_request("/goods_nomenclature_labels/stats", backend: "uk")
+          .and_return(status: 500, body: { error: "Internal Server Error" }.to_json)
+      end
+
+      it { is_expected.to have_http_status :success }
+
+      it "does not display statistics" do
+        expect(rendered_page.body).not_to include("Label Statistics")
+      end
+
+      it "still displays the search form" do
+        expect(rendered_page.body).to include("Search for Nomenclature Label")
+      end
     end
 
     context "when on XI service" do

@@ -19,3 +19,45 @@
     <% end %>
   </div>
 </div>
+
+<% if @stats.present? %>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h2 class="govuk-heading-m">Label Statistics</h2>
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Total labels</dt>
+          <dd class="govuk-summary-list__value"><%= number_with_delimiter(@stats.total_labels) %></dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">With description</dt>
+          <dd class="govuk-summary-list__value"><%= number_with_delimiter(@stats.with_description) %></dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">With known brands</dt>
+          <dd class="govuk-summary-list__value"><%= number_with_delimiter(@stats.with_known_brands) %></dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">With colloquial terms</dt>
+          <dd class="govuk-summary-list__value"><%= number_with_delimiter(@stats.with_colloquial_terms) %></dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">With synonyms</dt>
+          <dd class="govuk-summary-list__value"><%= number_with_delimiter(@stats.with_synonyms) %></dd>
+        </div>
+      </dl>
+
+      <h2 class="govuk-heading-m">By Origin</h2>
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">AI-created only</dt>
+          <dd class="govuk-summary-list__value"><%= number_with_delimiter(@stats.ai_created_only) %></dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Human-edited</dt>
+          <dd class="govuk-summary-list__value"><%= number_with_delimiter(@stats.human_edited) %></dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+<% end %>

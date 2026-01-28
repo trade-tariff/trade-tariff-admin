@@ -3,6 +3,10 @@ class GoodsNomenclatureLabelsController < AuthenticatedController
 
   def index
     authorize GoodsNomenclatureLabel, :index?
+    @stats = GoodsNomenclatureLabelStats.fetch
+  rescue Faraday::Error => e
+    Rails.logger.error("Failed to fetch label stats: #{e.message}")
+    @stats = nil
   end
 
   def search
