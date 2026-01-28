@@ -1,0 +1,21 @@
+<h1 class="govuk-heading-l">Search for Nomenclature Label</h1>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <%= form_with url: search_goods_nomenclature_labels_path, method: :get, local: true do |f| %>
+      <div class="govuk-form-group">
+        <%= f.label :commodity_code, "Commodity code", class: "govuk-label govuk-label--m" %>
+        <div class="govuk-hint">
+          Enter the 10-digit commodity code to view or edit its label.
+        </div>
+        <%= f.text_field :commodity_code,
+                         class: "govuk-input govuk-input--width-10",
+                         inputmode: "numeric",
+                         pattern: "[0-9]*",
+                         maxlength: 10 %>
+      </div>
+
+      <%= f.submit "Search", class: "govuk-button", data: { module: "govuk-button" } %>
+    <% end %>
+  </div>
+</div>
