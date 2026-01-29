@@ -11,7 +11,8 @@ class GoodsNomenclatureLabelStats
              :colloquial_terms_count,
              :synonyms_count,
              :ai_created_only,
-             :human_edited
+             :human_edited,
+             :coverage_by_chapter
 
   def self.fetch
     response = api.get("admin/goods_nomenclature_labels/stats")

@@ -84,6 +84,10 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
             synonyms_count: 3_000,
             ai_created_only: 8_000,
             human_edited: 2_000,
+            coverage_by_chapter: [
+              { chapter: "01", count: 100 },
+              { chapter: "02", count: 50 },
+            ],
           },
         },
       }.to_json,
@@ -121,6 +125,11 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
       expect(rendered_page.body).to include("8,000")
       expect(rendered_page.body).to include("Human-edited")
       expect(rendered_page.body).to include("2,000")
+    end
+
+    it "displays the coverage chart" do
+      expect(rendered_page.body).to include("Coverage by Chapter")
+      expect(rendered_page.body).to include("label-coverage-chart")
     end
     # rubocop:enable RSpec/MultipleExpectations
 
