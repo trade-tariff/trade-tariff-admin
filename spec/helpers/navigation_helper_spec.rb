@@ -195,6 +195,22 @@ RSpec.describe NavigationHelper, type: :helper do
         expect(helper.current_navigation_section.key).to eq(:spimm)
       end
     end
+
+    context "when on XI root path" do
+      let(:request_path) { "/xi" }
+
+      it "returns OTT Admin section" do
+        expect(helper.current_navigation_section.key).to eq(:ott_admin)
+      end
+    end
+
+    context "when on XI root path with trailing slash" do
+      let(:request_path) { "/xi/" }
+
+      it "returns OTT Admin section" do
+        expect(helper.current_navigation_section.key).to eq(:ott_admin)
+      end
+    end
   end
 
   describe "#section_active?" do

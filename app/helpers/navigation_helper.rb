@@ -14,7 +14,7 @@ module NavigationHelper
             text: "Section & chapter notes",
             href: root_path,
             policy_class: SectionNote,
-            active_when: /\/notes|trade-tariff-admin$|^\/?$/,
+            active_when: /\/notes|trade-tariff-admin$|^\/(?:xi\/?)?$/,
             service: nil,
           ),
           NavigationItem.new(
