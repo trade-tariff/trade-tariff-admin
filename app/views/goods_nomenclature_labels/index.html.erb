@@ -20,6 +20,26 @@
   </div>
 </div>
 
+<details class="govuk-details">
+  <summary class="govuk-details__summary">
+    <span class="govuk-details__summary-text">About labels</span>
+  </summary>
+  <div class="govuk-details__text">
+    <p class="govuk-body">Labels are AI-generated metadata attached to commodity codes to improve search. They enrich the tariff with additional terms that traders might use when searching. Labels can be reviewed and edited by administrators.</p>
+
+    <h3 class="govuk-heading-s">Label fields</h3>
+    <ul class="govuk-list govuk-list--bullet">
+      <li><strong>Description</strong> &ndash; A rewritten version of the commodity description, simplified for search</li>
+      <li><strong>Known brands</strong> &ndash; Brand names commonly associated with the commodity</li>
+      <li><strong>Colloquial terms</strong> &ndash; Informal or everyday names traders use for the commodity</li>
+      <li><strong>Synonyms</strong> &ndash; Alternative terms with the same meaning as the commodity description</li>
+    </ul>
+
+    <h3 class="govuk-heading-s">How labels affect search</h3>
+    <p class="govuk-body">Labels feed into the Online Trade Tariff search, helping traders find the correct commodity code. Edits are reflected in search results after reindexing.</p>
+  </div>
+</details>
+
 <% if @stats.present? %>
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">

@@ -110,6 +110,10 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
       expect(rendered_page.body).to include("Search for Label")
     end
 
+    it "displays the about labels guidance" do
+      expect(rendered_page.body).to include("About labels")
+    end
+
     # rubocop:disable RSpec/MultipleExpectations
     it "displays label statistics by kind" do
       expect(rendered_page.body).to include("Label Statistics")
