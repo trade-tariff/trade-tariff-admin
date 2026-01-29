@@ -1,6 +1,15 @@
 # frozen_string_literal: true
 
 class SessionsController < ApplicationController
+  def login
+    # Redirect to the appropriate login based on auth strategy
+    if TradeTariffAdmin.basic_session_authentication?
+      redirect_to "/basic_sessions/new"
+    else
+      redirect_to TradeTariffAdmin.identity_consumer_url, allow_other_host: true
+    end
+  end
+
   def handle_redirect
     log_authentication_context
 
@@ -23,7 +32,7 @@ class SessionsController < ApplicationController
     unless user
       Rails.logger.warn("[Auth] User not found for payload sub: #{result.payload&.dig('sub')}")
       clear_authentication!
-      return redirect_to TradeTariffAdmin.identity_consumer_url, allow_other_host: true
+      return redirect_to root_path, alert: "You do not have access to the Admin Portal. Please contact your administrator if you believe you should have access."
     end
 
     Rails.logger.info("[Auth] Successfully authenticated user: #{user.email}")

@@ -11,7 +11,7 @@ module Notes
         @section_note = section.section_note.build(section_note_create_params.to_h.merge(section_id: section.id))
 
         if @section_note.valid? && @section_note.save
-          redirect_to index_url, notice: "Section note was successfully created."
+          redirect_to dashboard_url, notice: "Section note was successfully created."
         else
           render :new
         end
@@ -28,7 +28,7 @@ module Notes
         @section_note.build(section_note_update_params.to_h)
 
         if @section_note.valid? && @section_note.save
-          redirect_to index_url, notice: "Section note was successfully updated."
+          redirect_to dashboard_url, notice: "Section note was successfully updated."
         else
           render :edit
         end
@@ -39,7 +39,7 @@ module Notes
         authorize @section_note, :destroy?
         @section_note.destroy
 
-        redirect_to index_url, notice: "Section note was successfully removed."
+        redirect_to dashboard_url, notice: "Section note was successfully removed."
       end
 
     private

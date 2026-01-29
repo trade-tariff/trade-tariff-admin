@@ -102,12 +102,13 @@ Rails.application.routes.draw do
   get "/auth/redirect", to: "sessions#handle_redirect"
   get "/auth/invalid", to: "sessions#invalid"
   get "/auth/logout", to: "sessions#destroy", as: :logout
+  get "/auth/login", to: "sessions#login", as: :identity_login
 
   post "govspeak" => "govspeak#govspeak", as: :govspeak
   get  "healthcheck" => "healthcheck#check", as: :healthcheck
   get "healthcheckz" => "rails/health#show", as: :rails_health_check
-  get  "/" => "pages#index", as: :index
-  root to: "pages#index"
+  get "/dashboard", to: "pages#index", as: :dashboard
+  root to: "homepage#index"
 
   match "/400", to: "errors#bad_request", via: :all
   match "/404", to: "errors#not_found", via: :all
