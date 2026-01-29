@@ -3,11 +3,13 @@ class BasicSessionsController < AuthenticatedController
   skip_after_action :verify_authorized, only: %i[new create]
 
   def new
+    @hide_auth_banner = true
     @basic_session = BasicSession.new
-    @basic_session.return_url = params[:return_url] || root_path
+    @basic_session.return_url = params[:return_url] || default_landing_path
   end
 
   def create
+    @hide_auth_banner = true
     @basic_session = BasicSession.new(basic_session_params)
 
     if @basic_session.valid?
