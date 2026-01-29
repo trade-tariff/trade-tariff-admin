@@ -77,11 +77,11 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
           type: "goods_nomenclature_label_stats",
           id: "stats",
           attributes: {
-            total_labels: 10_000,
-            with_description: 9_500,
-            with_known_brands: 2_000,
-            with_colloquial_terms: 1_500,
-            with_synonyms: 3_000,
+            total_goods_nomenclatures: 10_000,
+            descriptions_count: 9_500,
+            known_brands_count: 2_000,
+            colloquial_terms_count: 1_500,
+            synonyms_count: 3_000,
             ai_created_only: 8_000,
             human_edited: 2_000,
           },
@@ -103,14 +103,16 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
     it { is_expected.to render_template(:index) }
 
     it "displays the search form" do
-      expect(rendered_page.body).to include("Search for Nomenclature Label")
+      expect(rendered_page.body).to include("Search for Label")
     end
 
     # rubocop:disable RSpec/MultipleExpectations
-    it "displays label statistics" do
+    it "displays label statistics by kind" do
       expect(rendered_page.body).to include("Label Statistics")
-      expect(rendered_page.body).to include("10,000")
-      expect(rendered_page.body).to include("9,500")
+      expect(rendered_page.body).to include("Goods nomenclatures with labels")
+      expect(rendered_page.body).to include("By Kind")
+      expect(rendered_page.body).to include("Known brands")
+      expect(rendered_page.body).to include("Synonyms")
     end
 
     it "displays origin statistics" do
@@ -135,7 +137,7 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
       end
 
       it "still displays the search form" do
-        expect(rendered_page.body).to include("Search for Nomenclature Label")
+        expect(rendered_page.body).to include("Search for Label")
       end
     end
 

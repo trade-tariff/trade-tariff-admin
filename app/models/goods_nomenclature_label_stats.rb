@@ -5,11 +5,11 @@ class GoodsNomenclatureLabelStats
 
   set_singular_path "admin/goods_nomenclature_labels/stats"
 
-  attributes :total_labels,
-             :with_description,
-             :with_known_brands,
-             :with_colloquial_terms,
-             :with_synonyms,
+  attributes :total_goods_nomenclatures,
+             :descriptions_count,
+             :known_brands_count,
+             :colloquial_terms_count,
+             :synonyms_count,
              :ai_created_only,
              :human_edited
 

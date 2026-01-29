@@ -1,4 +1,4 @@
-<h1 class="govuk-heading-l">Search for Nomenclature Label</h1>
+<h1 class="govuk-heading-l">Search for Label</h1>
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
@@ -26,28 +26,32 @@
       <h2 class="govuk-heading-m">Label Statistics</h2>
       <dl class="govuk-summary-list">
         <div class="govuk-summary-list__row">
-          <dt class="govuk-summary-list__key">Total labels</dt>
-          <dd class="govuk-summary-list__value"><%= number_with_delimiter(@stats.total_labels) %></dd>
-        </div>
-        <div class="govuk-summary-list__row">
-          <dt class="govuk-summary-list__key">With description</dt>
-          <dd class="govuk-summary-list__value"><%= number_with_delimiter(@stats.with_description) %></dd>
-        </div>
-        <div class="govuk-summary-list__row">
-          <dt class="govuk-summary-list__key">With known brands</dt>
-          <dd class="govuk-summary-list__value"><%= number_with_delimiter(@stats.with_known_brands) %></dd>
-        </div>
-        <div class="govuk-summary-list__row">
-          <dt class="govuk-summary-list__key">With colloquial terms</dt>
-          <dd class="govuk-summary-list__value"><%= number_with_delimiter(@stats.with_colloquial_terms) %></dd>
-        </div>
-        <div class="govuk-summary-list__row">
-          <dt class="govuk-summary-list__key">With synonyms</dt>
-          <dd class="govuk-summary-list__value"><%= number_with_delimiter(@stats.with_synonyms) %></dd>
+          <dt class="govuk-summary-list__key">Goods nomenclatures with labels</dt>
+          <dd class="govuk-summary-list__value"><%= number_with_delimiter(@stats.total_goods_nomenclatures) %></dd>
         </div>
       </dl>
 
-      <h2 class="govuk-heading-m">By Origin</h2>
+      <h3 class="govuk-heading-s">By Kind</h3>
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Descriptions</dt>
+          <dd class="govuk-summary-list__value"><%= number_with_delimiter(@stats.descriptions_count) %></dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Known brands</dt>
+          <dd class="govuk-summary-list__value"><%= number_with_delimiter(@stats.known_brands_count) %></dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Colloquial terms</dt>
+          <dd class="govuk-summary-list__value"><%= number_with_delimiter(@stats.colloquial_terms_count) %></dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Synonyms</dt>
+          <dd class="govuk-summary-list__value"><%= number_with_delimiter(@stats.synonyms_count) %></dd>
+        </div>
+      </dl>
+
+      <h3 class="govuk-heading-s">By Origin</h3>
       <dl class="govuk-summary-list">
         <div class="govuk-summary-list__row">
           <dt class="govuk-summary-list__key">AI-created only</dt>
