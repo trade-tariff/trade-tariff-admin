@@ -1,0 +1,11 @@
+<nav class="app-sub-navigation" aria-label="<%= section.label %>">
+  <ul class="app-sub-navigation__list">
+    <% section.items.each do |item| %>
+      <li class="app-sub-navigation__item<%= " app-sub-navigation__item--current" if active_nav_link?(item.active_when) %>">
+        <%= link_to item.text, item.href,
+              class: "app-sub-navigation__link",
+              **({ "aria-current": "page" } if active_nav_link?(item.active_when)).to_h %>
+      </li>
+    <% end %>
+  </ul>
+</nav>
