@@ -1,0 +1,103 @@
+<h1 class="govuk-heading-l">Search for Label</h1>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <%= form_with url: search_goods_nomenclature_labels_path, method: :get, local: true do |f| %>
+      <div class="govuk-form-group">
+        <%= f.label :commodity_code, "Commodity code", class: "govuk-label govuk-label--m" %>
+        <div class="govuk-hint">
+          Enter the 10-digit commodity code to view or edit its label.
+        </div>
+        <%= f.text_field :commodity_code,
+                         class: "govuk-input govuk-input--width-10",
+                         inputmode: "numeric",
+                         pattern: "[0-9]*",
+                         maxlength: 10 %>
+      </div>
+
+      <%= f.submit "Search", class: "govuk-button", data: { module: "govuk-button" } %>
+    <% end %>
+  </div>
+</div>
+
+<details class="govuk-details">
+  <summary class="govuk-details__summary">
+    <span class="govuk-details__summary-text">About labels</span>
+  </summary>
+  <div class="govuk-details__text">
+    <p class="govuk-body">Labels are AI-generated metadata attached to commodity codes to improve search. They enrich the tariff with additional terms that traders might use when searching. Labels can be reviewed and edited by administrators.</p>
+
+    <h3 class="govuk-heading-s">Label fields</h3>
+    <ul class="govuk-list govuk-list--bullet">
+      <li><strong>Description</strong> &ndash; A rewritten version of the commodity description, simplified for search</li>
+      <li><strong>Known brands</strong> &ndash; Brand names commonly associated with the commodity</li>
+      <li><strong>Colloquial terms</strong> &ndash; Informal or everyday names traders use for the commodity</li>
+      <li><strong>Synonyms</strong> &ndash; Alternative terms with the same meaning as the commodity description</li>
+    </ul>
+
+    <h3 class="govuk-heading-s">How labels affect search</h3>
+    <p class="govuk-body">Labels feed into the Online Trade Tariff search, helping traders find the correct commodity code. Edits are reflected in search results after reindexing.</p>
+  </div>
+</details>
+
+<% if @stats.present? %>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h2 class="govuk-heading-m">Label Statistics</h2>
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Goods nomenclatures with labels</dt>
+          <dd class="govuk-summary-list__value"><%= number_with_delimiter(@stats.total_goods_nomenclatures) %></dd>
+        </div>
+      </dl>
+
+      <h3 class="govuk-heading-s">By Kind</h3>
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Descriptions</dt>
+          <dd class="govuk-summary-list__value"><%= number_with_delimiter(@stats.descriptions_count) %></dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Known brands</dt>
+          <dd class="govuk-summary-list__value"><%= number_with_delimiter(@stats.known_brands_count) %></dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Colloquial terms</dt>
+          <dd class="govuk-summary-list__value"><%= number_with_delimiter(@stats.colloquial_terms_count) %></dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Synonyms</dt>
+          <dd class="govuk-summary-list__value"><%= number_with_delimiter(@stats.synonyms_count) %></dd>
+        </div>
+      </dl>
+
+      <h3 class="govuk-heading-s">By Origin</h3>
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">AI-created only</dt>
+          <dd class="govuk-summary-list__value"><%= number_with_delimiter(@stats.ai_created_only) %></dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Human-edited</dt>
+          <dd class="govuk-summary-list__value"><%= number_with_delimiter(@stats.human_edited) %></dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+
+  <% if @stats.coverage_by_chapter.present? %>
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+        <h2 class="govuk-heading-m">Coverage by Chapter</h2>
+        <div>
+          <canvas id="label-coverage-chart"
+                  width="900"
+                  height="300"
+                  data-coverage="<%= @stats.coverage_by_chapter.to_json %>">
+          </canvas>
+        </div>
+        <%= javascript_pack_tag 'label-coverage-chart' %>
+      </div>
+    </div>
+  <% end %>
+<% end %>
