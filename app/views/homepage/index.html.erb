@@ -1,0 +1,39 @@
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <h1 class="govuk-heading-l">UK Trade Tariff Admin Portal</h1>
+
+    <p class="govuk-body">
+      Welcome to the official GOV.UK Admin Portal for HMRC Online Trade Tariff.
+    </p>
+
+    <h2 class="govuk-heading-m">What you can do</h2>
+
+    <p class="govuk-body">
+      The Admin Portal is an internal tool that supports the safe, consistent running of the HMRC Trade Tariff service.
+    </p>
+
+    <p class="govuk-body">
+      It enables you to:
+    </p>
+
+    <%= govuk_list [
+      "manage user access using role-based access control",
+      "maintain and govern public-facing tariff content",
+      "work efficiently through a reduced, task-focused interface",
+      "support audit and assurance with full read-only access",
+    ], type: :bullet %>
+
+    <h2 class="govuk-heading-m">How to sign in</h2>
+
+    <p class="govuk-body">
+      This service uses passwordless authentication. When you click "Start now", you will be asked to enter your email address.
+      You will then receive a magic link to complete your sign-in — no password required.
+    </p>
+
+    <p class="govuk-body govuk-!-font-weight-bold">
+      This is an internal tool for authorised users only.
+    </p>
+
+    <%= govuk_start_button(text: "Start now", href: identity_login_path) %>
+  </div>
+</div>

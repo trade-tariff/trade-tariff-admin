@@ -1,4 +1,28 @@
 RSpec.describe SessionsController do
+  describe "GET #login" do
+    context "when using passwordless authentication" do
+      before do
+        allow(TradeTariffAdmin).to receive_messages(basic_session_authentication?: false, identity_consumer_url: "http://identity.example.com/admin")
+      end
+
+      it "redirects to the identity service" do
+        get :login
+        expect(response).to redirect_to("http://identity.example.com/admin")
+      end
+    end
+
+    context "when using basic session authentication" do
+      before do
+        allow(TradeTariffAdmin).to receive(:basic_session_authentication?).and_return(true)
+      end
+
+      it "redirects to the basic session login page" do
+        get :login
+        expect(response).to redirect_to("/basic_sessions/new")
+      end
+    end
+  end
+
   describe "GET #destroy" do
     let!(:user_session) { create(:session) }
 
@@ -38,7 +62,7 @@ RSpec.describe SessionsController do
 
       it "creates a session and signs the user in", :aggregate_failures do
         expect { get :handle_redirect }.to change(Session, :count)
-        expect(response).to redirect_to(root_path)
+        expect(response).to redirect_to(dashboard_path)
         expect(Session.last.user.email).to eq("user@example.com")
         expect(Session.last.raw_info).to eq(token_payload)
         expect(Session.last.expires_at.to_i).to eq(Time.zone.at(token_payload["exp"]).to_i)
@@ -72,13 +96,14 @@ RSpec.describe SessionsController do
 
     context "when the user does not exist" do
       # rubocop:disable RSpec/ExampleLength
-      it "redirects to identity service and clears cookies", :aggregate_failures do
+      it "redirects to landing page with access denied message and clears cookies", :aggregate_failures do
         allow(TradeTariffAdmin).to receive_messages(identity_consumer_url: "http://identity.example.com/admin",
                                                     identity_cookie_domain: ".example.com")
         cookies[:id_token] = "encoded-token"
         cookies[:refresh_token] = "refresh-token"
         expect { get :handle_redirect }.not_to change(User, :count)
-        expect(response).to redirect_to("http://identity.example.com/admin")
+        expect(response).to redirect_to(root_path)
+        expect(flash[:alert]).to include("You do not have access to the Admin Portal")
 
         # NOTE: These are positive instructions to delete the cookies and not the current cookie values. Refresh token is not deleted here since we'll reuse it for reauthentication.
         expect(response.cookies).to eq("id_token" => nil)

@@ -10,7 +10,7 @@ RSpec.describe PagesController do
   describe "GET #index" do
     context "when authorised" do
       it "returns success" do
-        get root_path
+        get dashboard_path
 
         expect(response).to have_http_status :ok
       end
@@ -20,7 +20,7 @@ RSpec.describe PagesController do
       let(:current_user) { create(:user, :auditor) }
 
       it "returns success" do
-        get root_path
+        get dashboard_path
 
         expect(response).to have_http_status :ok
       end
@@ -30,7 +30,7 @@ RSpec.describe PagesController do
       let(:current_user) { create(:user, :hmrc_admin) }
 
       it "redirects to search references (their default landing page)" do
-        get root_path
+        get dashboard_path
 
         expect(response).to redirect_to(references_sections_path)
       end
@@ -40,7 +40,7 @@ RSpec.describe PagesController do
       let(:current_user) { create(:user, :guest) }
 
       it "is forbidden" do
-        get root_path
+        get dashboard_path
 
         expect(response).to have_http_status :forbidden
       end
