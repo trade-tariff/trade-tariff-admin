@@ -22,93 +22,23 @@
 
     <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
 
-    <%= govuk_header(service_name: "Trade Tariff Admin", service_url: default_landing_path) do |header| %>
-      <% if policy(SectionNote).index? %>
-        <%= header.with_navigation_item text: "Section & chapter notes",
-                                        href: root_path,
-                                        active: active_nav_link?(/\/notes|trade-tariff-admin$/) %>
-      <% end %>
+    <%= govuk_header(homepage_url: "/") %>
 
-      <% if policy(SearchReference).index? %>
-        <%= header.with_navigation_item text: "Search references",
-                                        href: references_sections_path,
-                                        active: active_nav_link?(/\/search_references/) %>
+    <%= govuk_service_navigation(
+          service_name: "Trade Tariff Admin",
+          service_url: default_landing_path,
+        ) do |nav| %>
+      <% visible_navigation_sections.each do |section| %>
+        <%= nav.with_navigation_item(
+              text: section.label,
+              href: section_href(section),
+              active: section_active?(section),
+            ) %>
       <% end %>
+    <% end %>
 
-      <% if policy(News::Item).index? %>
-        <%= header.with_navigation_item text: "News",
-                                        href: news_items_path,
-                                        active: active_nav_link?(/\/news_items/) %>
-      <% end %>
-
-      <% if policy(LiveIssue).index? && TradeTariffAdmin::ServiceChooser.uk? %>
-        <%= header.with_navigation_item text: "Live Issues",
-                                        href: live_issues_path,
-                                        active: active_nav_link?(/\/live_issues/) %>
-      <% end %>
-
-      <% if policy(Quota).index? && TradeTariffAdmin::ServiceChooser.uk? %>
-        <%= header.with_navigation_item text: "Quotas",
-                                        href: new_quota_path,
-                                        active: active_nav_link?(/\/quotas/) %>
-      <% end %>
-
-      <% if policy(GoodsNomenclatureLabel).index? && TradeTariffAdmin::ServiceChooser.uk? %>
-        <%= header.with_navigation_item text: "Labels",
-                                        href: goods_nomenclature_labels_path,
-                                        active: active_nav_link?(/\/goods_nomenclature_labels/) %>
-      <% end %>
-
-      <% if policy(Update).index? %>
-        <%= header.with_navigation_item text: "Updates",
-                                        href: tariff_updates_path,
-                                        active: active_nav_link?(/\/tariff_updates/) %>
-      <% end %>
-
-      <% if policy(Rollback).index? %>
-        <%= header.with_navigation_item text: "Rollbacks",
-                                        href: rollbacks_path,
-                                        active: active_nav_link?(/\/rollbacks/) %>
-      <% end %>
-
-      <% if TradeTariffAdmin::ServiceChooser.xi? %>
-        <% if policy(GreenLanes::CategoryAssessment).index? %>
-          <%= header.with_navigation_item text: 'Category assessments',
-                                          href: green_lanes_category_assessments_path,
-                                          active: active_nav_link?(/\/category_assessments/) %>
-        <% end %>
-        <% if policy(GreenLanes::Exemption).index? %>
-          <%= header.with_navigation_item text: 'Exemptions',
-                                          href: green_lanes_exemptions_path,
-                                          active: active_nav_link?(/\/exemptions/) %>
-        <% end %>
-        <% if policy(GreenLanes::Measure).index? %>
-          <%= header.with_navigation_item text: 'Measures',
-                                          href: green_lanes_measures_path,
-                                          active: active_nav_link?(/\/measures/) %>
-        <% end %>
-        <% if policy(GreenLanes::ExemptingOverride).index? %>
-          <%= header.with_navigation_item text: 'Exempting Overrides',
-                                          href: green_lanes_exempting_overrides_path,
-                                          active: active_nav_link?(/\/exempting_overrides/) %>
-        <% end %>
-        <% if policy(GreenLanes::UpdateNotification).index? %>
-          <%= header.with_navigation_item text: 'Update Notifications',
-                                          href: green_lanes_update_notifications_path,
-                                          active: active_nav_link?(/\/update_notifications/) %>
-        <% end %>
-        <% if policy(GreenLanes::MeasureTypeMapping).index? %>
-          <%= header.with_navigation_item text: 'Measure Type Mappings',
-                                        href: green_lanes_measure_type_mappings_path,
-                                        active: active_nav_link?(/\/measure_type_mappings/) %>
-        <% end %>
-      <% end %>
-
-      <% if policy(User).index? %>
-        <%= header.with_navigation_item text: "Manage Users",
-                                        href: users_path,
-                                        active: active_nav_link?(/\/users/) %>
-      <% end %>
+    <% if current_navigation_section&.items&.present? %>
+      <%= render "application/sub_navigation", section: current_navigation_section %>
     <% end %>
 
     <div class="govuk-width-container">
