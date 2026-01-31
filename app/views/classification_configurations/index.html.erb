@@ -1,0 +1,30 @@
+<h1 class="govuk-heading-l">Classification Configurations</h1>
+
+<% if @configurations.any? %>
+  <table class="govuk-table">
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th scope="col" class="govuk-table__header">Name</th>
+        <th scope="col" class="govuk-table__header">Type</th>
+        <th scope="col" class="govuk-table__header">Description</th>
+        <th scope="col" class="govuk-table__header">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+      <% @configurations.each do |config| %>
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell"><%= config.display_name %></td>
+          <td class="govuk-table__cell"><%= config.config_type %></td>
+          <td class="govuk-table__cell"><%= config.description %></td>
+          <td class="govuk-table__cell">
+            <%= link_to "View", classification_configuration_path(config), class: "govuk-link" %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <div class="govuk-inset-text">
+    <p>No configurations found.</p>
+  </div>
+<% end %>
