@@ -1,0 +1,52 @@
+<%= govuk_form_for configuration, as: :classification_configuration, url: classification_configuration_path(configuration) do |f| %>
+
+  <% case configuration.config_type %>
+  <% when "markdown" %>
+    <%= govuk_markdown_area f, :value, rows: 10, label: { text: "Value" } %>
+  <% when "boolean" %>
+    <%= f.govuk_collection_radio_buttons :value,
+                                         [OpenStruct.new(id: "true", name: "Yes"), OpenStruct.new(id: "false", name: "No")],
+                                         :id,
+                                         :name,
+                                         legend: { text: "Value" } %>
+  <% when "integer" %>
+    <%= f.govuk_number_field :value, label: { text: "Value" } %>
+  <% when "date" %>
+    <%= f.govuk_text_field :value,
+                            label: { text: "Value" },
+                            hint: { text: "YYYY-MM-DD" },
+                            width: "one-third" %>
+  <% when "options" %>
+    <% options = configuration.value.is_a?(Hash) ? (configuration.value["options"] || []) : [] %>
+    <% selected = configuration.value.is_a?(Hash) ? configuration.value["selected"] : "" %>
+
+    <input type="hidden"
+           id="options-hidden-field"
+           name="classification_configuration[value]"
+           value="<%= configuration.value.is_a?(Hash) ? configuration.value.to_json : configuration.value %>">
+
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="options-selected-value">Selected value</label>
+      <div class="govuk-hint">Choose which option is the active value</div>
+      <select class="govuk-select"
+              id="options-selected-value"
+              onchange="(function(sel){
+                var hidden = document.getElementById('options-hidden-field');
+                var data = JSON.parse(hidden.value);
+                data.selected = sel.value;
+                hidden.value = JSON.stringify(data);
+              })(this)">
+        <option value="">-- Select a value --</option>
+        <% options.each do |opt| %>
+          <option value="<%= opt["key"] %>" <%= "selected" if opt["key"] == selected %>><%= opt["label"] || opt["key"] %></option>
+        <% end %>
+      </select>
+    </div>
+  <% else %>
+    <%= f.govuk_text_area :value,
+                          label: { text: "Value" },
+                          rows: 6 %>
+  <% end %>
+
+  <%= submit_and_back_buttons f, classification_configurations_path %>
+<% end %>
