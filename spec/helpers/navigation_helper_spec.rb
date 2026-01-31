@@ -51,91 +51,124 @@ RSpec.describe NavigationHelper, type: :helper do
   end
 
   describe "#visible_navigation_sections" do
-    context "with UK service and technical_operator" do
+    shared_examples "visible sections and items" do |expected|
+      it "shows the correct sections" do
+        expect(helper.visible_navigation_sections.map(&:key)).to eq(expected.keys)
+      end
+
+      expected.each do |section_key, items|
+        next if items.nil? # standalone section, no items to check
+
+        it "shows #{items.any? ? items.join(', ') : 'no items'} in #{section_key}" do
+          section = helper.visible_navigation_sections.find { |s| s.key == section_key }
+          expect(section.items.map(&:text)).to eq(items)
+        end
+      end
+    end
+
+    context "with UK service and technical_operator role" do
       include_context "with UK service"
 
       let(:user) { build(:user, :technical_operator) }
 
-      it "shows OTT Admin, Classification, and Manage Users" do
-        expect(helper.visible_navigation_sections.map(&:key)).to eq(%i[ott_admin classification manage_users])
-      end
-
-      it "hides SPIMM" do
-        expect(helper.visible_navigation_sections.map(&:key)).not_to include(:spimm)
-      end
-
-      it "includes all 6 OTT Admin items on UK" do
-        section = helper.visible_navigation_sections.find { |s| s.key == :ott_admin }
-        expect(section.items.map(&:text)).to eq(
-          ["Section & chapter notes", "News", "Live Issues", "Quotas", "Updates", "Rollbacks"],
-        )
-      end
-
-      it "includes both Classification items on UK" do
-        section = helper.visible_navigation_sections.find { |s| s.key == :classification }
-        expect(section.items.map(&:text)).to eq(["Search References", "Labels"])
-      end
+      include_examples "visible sections and items",
+                       ott_admin: [
+                         "Section & chapter notes",
+                         "News",
+                         "Live Issues",
+                         "Quotas",
+                         "Updates",
+                         "Rollbacks",
+                       ],
+                       classification: ["Search References", "Labels"],
+                       manage_users: nil
     end
 
-    context "with XI service and technical_operator" do
-      include_context "with XI service"
-
-      let(:user) { build(:user, :technical_operator) }
-
-      it "shows OTT Admin, Classification, SPIMM, and Manage Users" do
-        expect(helper.visible_navigation_sections.map(&:key)).to eq(%i[ott_admin classification spimm manage_users])
-      end
-
-      it "hides UK-only items from OTT Admin" do
-        section = helper.visible_navigation_sections.find { |s| s.key == :ott_admin }
-        expect(section.items.map(&:text)).to eq(["Section & chapter notes", "Updates", "Rollbacks"])
-      end
-
-      it "hides Labels from Classification on XI" do
-        section = helper.visible_navigation_sections.find { |s| s.key == :classification }
-        expect(section.items.map(&:text)).to eq(["Search References"])
-      end
-
-      it "shows all 6 SPIMM items" do
-        section = helper.visible_navigation_sections.find { |s| s.key == :spimm }
-        expect(section.items.map(&:text)).to contain_exactly(
-          "Category Assessments", "Exemptions", "Measures",
-          "Exempting Overrides", "Update Notifications", "Measure Type Mappings"
-        )
-      end
-    end
-
-    context "with UK service and hmrc_admin" do
+    context "with UK service and hmrc_admin role" do
       include_context "with UK service"
 
       let(:user) { build(:user, :hmrc_admin) }
 
-      it "shows Classification" do
-        expect(helper.visible_navigation_sections.map(&:key)).to include(:classification)
-      end
+      include_examples "visible sections and items",
+                       ott_admin: ["News", "Live Issues"],
+                       classification: ["Search References", "Labels"]
+    end
 
-      it "hides Manage Users" do
-        expect(helper.visible_navigation_sections.map(&:key)).not_to include(:manage_users)
-      end
+    context "with UK service and auditor role" do
+      include_context "with UK service"
 
-      it "shows OTT Admin with News visible" do
-        ott = helper.visible_navigation_sections.find { |s| s.key == :ott_admin }
-        expect(ott.items.map(&:text)).to include("News")
-      end
+      let(:user) { build(:user, :auditor) }
 
-      it "hides Section & chapter notes from OTT Admin" do
-        ott = helper.visible_navigation_sections.find { |s| s.key == :ott_admin }
-        expect(ott.items.map(&:text)).not_to include("Section & chapter notes")
-      end
+      include_examples "visible sections and items",
+                       ott_admin: [
+                         "Section & chapter notes",
+                         "News",
+                         "Live Issues",
+                         "Quotas",
+                         "Updates",
+                         "Rollbacks",
+                       ],
+                       classification: ["Search References"]
+    end
 
-      it "includes Search References in Classification" do
-        section = helper.visible_navigation_sections.find { |s| s.key == :classification }
-        expect(section.items.map(&:text)).to include("Search References")
+    context "with UK service and guest role" do
+      include_context "with UK service"
+
+      let(:user) { build(:user, :guest) }
+
+      it "shows no sections" do
+        expect(helper.visible_navigation_sections).to be_empty
       end
     end
 
-    context "with UK service and guest" do
-      include_context "with UK service"
+    context "with XI service and technical_operator role" do
+      include_context "with XI service"
+
+      let(:user) { build(:user, :technical_operator) }
+
+      include_examples "visible sections and items",
+                       ott_admin: ["Section & chapter notes", "Updates", "Rollbacks"],
+                       classification: ["Search References"],
+                       spimm: [
+                         "Category Assessments",
+                         "Exemptions",
+                         "Measures",
+                         "Exempting Overrides",
+                         "Update Notifications",
+                         "Measure Type Mappings",
+                       ],
+                       manage_users: nil
+    end
+
+    context "with XI service and hmrc_admin role" do
+      include_context "with XI service"
+
+      let(:user) { build(:user, :hmrc_admin) }
+
+      include_examples "visible sections and items",
+                       classification: ["Search References"]
+    end
+
+    context "with XI service and auditor role" do
+      include_context "with XI service"
+
+      let(:user) { build(:user, :auditor) }
+
+      include_examples "visible sections and items",
+                       ott_admin: ["Section & chapter notes", "Updates", "Rollbacks"],
+                       classification: ["Search References"],
+                       spimm: [
+                         "Category Assessments",
+                         "Exemptions",
+                         "Measures",
+                         "Exempting Overrides",
+                         "Update Notifications",
+                         "Measure Type Mappings",
+                       ]
+    end
+
+    context "with XI service and guest role" do
+      include_context "with XI service"
 
       let(:user) { build(:user, :guest) }
 
