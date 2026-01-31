@@ -1,0 +1,20 @@
+<nav class="govuk-!-margin-top-6" aria-label="Version navigation">
+  <ul class="govuk-list govuk-!-margin-bottom-0" style="display: flex; justify-content: space-between;">
+    <li>
+      <% if configuration.has_previous_version? %>
+        <%= link_to classification_configuration_path(configuration, oid: configuration.version_previous_oid),
+                    class: "govuk-link" do %>
+          &larr; Previous version
+        <% end %>
+      <% end %>
+    </li>
+    <li>
+      <% unless configuration.current? %>
+        <%= link_to classification_configuration_path(configuration),
+                    class: "govuk-link" do %>
+          Current version &rarr;
+        <% end %>
+      <% end %>
+    </li>
+  </ul>
+</nav>

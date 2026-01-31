@@ -65,6 +65,27 @@ $govuk-image-url-function: frontend-image-url;
     @extend .govuk-list;
     @extend .govuk-list--number;
   }
+
+  pre {
+    background-color: govuk-colour("light-grey");
+    padding: govuk-spacing(3);
+    border: 1px solid govuk-colour("mid-grey");
+    overflow-x: auto;
+    @include govuk-font($size: 16);
+
+    code {
+      background: none;
+      padding: 0;
+      border: none;
+    }
+  }
+
+  code {
+    @include govuk-font($size: 16);
+    background-color: govuk-colour("light-grey");
+    padding: 2px 4px;
+    border-radius: 2px;
+  }
 }
 
 .table {

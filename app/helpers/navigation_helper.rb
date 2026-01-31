@@ -74,6 +74,13 @@ module NavigationHelper
             active_when: /\/goods_nomenclature_labels/,
             service: :uk,
           ),
+          NavigationItem.new(
+            text: "Configuration",
+            href: classification_configurations_path,
+            policy_class: AdminConfiguration,
+            active_when: /\/classification_configurations/,
+            service: :uk,
+          ),
         ],
       ),
       NavigationSection.new(
