@@ -63,6 +63,8 @@ Rails.application.routes.draw do
         to: "goods_nomenclature_labels#update",
         constraints: { goods_nomenclature_id: /\d{10}/ }
 
+  resources :classification_configurations, param: :name, only: %i[index show edit update]
+
   namespace :green_lanes, path: "green_lanes" do
     resources :category_assessments, only: %i[index new create edit update destroy] do
       member do

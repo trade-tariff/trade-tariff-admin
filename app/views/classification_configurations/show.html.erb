@@ -1,0 +1,72 @@
+<%= govuk_breadcrumbs "Configurations": classification_configurations_path %>
+
+<%= render "version_banner", configuration: @configuration %>
+
+<h1 class="govuk-heading-l">Configuration: <%= @configuration.display_name %></h1>
+
+<dl class="govuk-summary-list govuk-!-margin-bottom-6">
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Name</dt>
+    <dd class="govuk-summary-list__value"><%= @configuration.display_name %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Type</dt>
+    <dd class="govuk-summary-list__value"><%= @configuration.config_type %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Area</dt>
+    <dd class="govuk-summary-list__value"><%= @configuration.area %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Description</dt>
+    <dd class="govuk-summary-list__value"><%= @configuration.description %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Value</dt>
+    <dd class="govuk-summary-list__value">
+      <% case @configuration.config_type %>
+      <% when "markdown" %>
+        <div class="hott-markdown-preview">
+          <%= @configuration.display_value %>
+        </div>
+      <% when "boolean" %>
+        <%= @configuration.display_value %>
+      <% when "options" %>
+        <% if @configuration.value.is_a?(Hash) %>
+          <table class="govuk-table govuk-!-margin-bottom-0">
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th class="govuk-table__header" scope="col">Key</th>
+                <th class="govuk-table__header" scope="col">Label</th>
+                <th class="govuk-table__header" scope="col">Selected</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              <% (@configuration.value["options"] || []).each do |opt| %>
+                <tr class="govuk-table__row">
+                  <td class="govuk-table__cell"><%= opt["key"] %></td>
+                  <td class="govuk-table__cell"><%= opt["label"] %></td>
+                  <td class="govuk-table__cell">
+                    <% if opt["key"] == @configuration.value["selected"] %>
+                      <strong class="govuk-tag">Selected</strong>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% end %>
+      <% else %>
+        <pre><%= @configuration.value %></pre>
+      <% end %>
+    </dd>
+  </div>
+</dl>
+
+<% if @configuration.current? && policy(@configuration).update? %>
+  <div class="govuk-button-group">
+    <%= link_to "Edit", edit_classification_configuration_path(@configuration), class: "govuk-button" %>
+  </div>
+<% end %>
+
+<%= render "version_navigation", configuration: @configuration %>

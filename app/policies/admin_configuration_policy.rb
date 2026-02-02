@@ -1,5 +1,4 @@
-# UK Service - GoodsNomenclatureLabel: TECHNICAL_OPERATOR only
-class GoodsNomenclatureLabelPolicy < ApplicationPolicy
+class AdminConfigurationPolicy < ApplicationPolicy
   def index?
     technical_operator?
   end
@@ -10,5 +9,13 @@ class GoodsNomenclatureLabelPolicy < ApplicationPolicy
 
   def update?
     technical_operator?
+  end
+
+  def create?
+    false
+  end
+
+  def destroy?
+    false
   end
 end
