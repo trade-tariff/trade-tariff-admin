@@ -1,6 +1,6 @@
 module Notes
   class SectionsController < AuthenticatedController
-    respond_to :json
+    respond_to :html, :json
 
     def show
       authorize SectionNote, :show?

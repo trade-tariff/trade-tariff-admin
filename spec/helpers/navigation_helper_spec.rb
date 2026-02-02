@@ -232,16 +232,16 @@ RSpec.describe NavigationHelper, type: :helper do
     context "when on XI root path" do
       let(:request_path) { "/xi" }
 
-      it "returns OTT Admin section" do
-        expect(helper.current_navigation_section.key).to eq(:ott_admin)
+      it "returns nil (landing page has no active section)" do
+        expect(helper.current_navigation_section).to be_nil
       end
     end
 
     context "when on XI root path with trailing slash" do
       let(:request_path) { "/xi/" }
 
-      it "returns OTT Admin section" do
-        expect(helper.current_navigation_section.key).to eq(:ott_admin)
+      it "returns nil (landing page has no active section)" do
+        expect(helper.current_navigation_section).to be_nil
       end
     end
   end
@@ -270,7 +270,7 @@ RSpec.describe NavigationHelper, type: :helper do
 
     it "returns first item href for sections with items" do
       section = helper.visible_navigation_sections.find { |s| s.key == :ott_admin }
-      expect(helper.section_href(section)).to eq(helper.root_path)
+      expect(helper.section_href(section)).to eq(helper.notes_sections_path)
     end
 
     it "returns standalone href for Manage Users" do

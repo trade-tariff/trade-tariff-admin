@@ -25,7 +25,7 @@ class ApplicationController < ActionController::Base
   def default_landing_path
     return references_sections_path if current_user&.hmrc_admin?
 
-    root_path
+    dashboard_path
   end
   helper_method :default_landing_path
 

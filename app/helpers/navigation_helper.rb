@@ -12,9 +12,9 @@ module NavigationHelper
         items: [
           NavigationItem.new(
             text: "Section & chapter notes",
-            href: root_path,
+            href: notes_sections_path,
             policy_class: SectionNote,
-            active_when: /\/notes|trade-tariff-admin$|^\/(?:xi\/?)?$/,
+            active_when: /\/notes/,
             service: nil,
           ),
           NavigationItem.new(
