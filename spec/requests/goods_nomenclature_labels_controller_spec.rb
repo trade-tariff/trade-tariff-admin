@@ -325,25 +325,12 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
     end
   end
 
-  context "when user is HMRC admin" do
+  context "when user is HMRC admin (unauthorized)" do
     let(:current_user) { create(:user, :hmrc_admin) }
+    let(:make_request) { get goods_nomenclature_labels_path }
 
-    describe "GET #index" do
-      let(:make_request) { get goods_nomenclature_labels_path }
-
-      it { is_expected.to have_http_status :success }
-    end
-
-    describe "GET #show" do
-      before do
-        stub_api_request("/goods_nomenclatures/#{commodity_code}/goods_nomenclature_label", backend: "uk")
-          .and_return(label_response)
-      end
-
-      let(:make_request) { get goods_nomenclature_label_path(commodity_code) }
-
-      it { is_expected.to have_http_status :success }
-    end
+    it { is_expected.to have_http_status :forbidden }
+    it { is_expected.to have_attributes body: /contact your Delivery Manager/ }
   end
 
   context "when user is auditor (unauthorized)" do

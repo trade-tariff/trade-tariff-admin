@@ -91,7 +91,7 @@ RSpec.describe NavigationHelper, type: :helper do
 
       include_examples "visible sections and items",
                        ott_admin: ["News", "Live Issues"],
-                       classification: ["Search References", "Labels"]
+                       classification: ["Search References"]
     end
 
     context "with UK service and auditor role" do

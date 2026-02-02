@@ -41,6 +41,10 @@ RSpec.describe "RBAC Comprehensive Rules" do
       expect(GreenLanes::MeasurePolicy.new(guest_user, double).index?).to be(false)
     end
 
+    it "denies access to labels" do
+      expect(GoodsNomenclatureLabelPolicy.new(guest_user, GoodsNomenclatureLabel.new).index?).to be(false)
+    end
+
     it "denies access to user management" do
       expect(UserPolicy.new(guest_user, User.new).index?).to be(false)
     end
@@ -88,6 +92,10 @@ RSpec.describe "RBAC Comprehensive Rules" do
       expect(GreenLanes::CategoryAssessmentPolicy.new(hmrc_admin, double).index?).to be(false)
       expect(GreenLanes::ExemptionPolicy.new(hmrc_admin, double).index?).to be(false)
       expect(GreenLanes::MeasurePolicy.new(hmrc_admin, double).index?).to be(false)
+    end
+
+    it "denies access to labels (technical operator only)" do
+      expect(GoodsNomenclatureLabelPolicy.new(hmrc_admin, GoodsNomenclatureLabel.new).index?).to be(false)
     end
 
     it "denies access to user management" do
@@ -148,6 +156,10 @@ RSpec.describe "RBAC Comprehensive Rules" do
       expect(GreenLanes::CategoryAssessmentPolicy.new(auditor, double).create?).to be(false)
     end
 
+    it "denies access to labels (technical operator only)" do
+      expect(GoodsNomenclatureLabelPolicy.new(auditor, GoodsNomenclatureLabel.new).index?).to be(false)
+    end
+
     it "denies access to user management" do
       expect(UserPolicy.new(auditor, User.new).index?).to be(false)
     end
@@ -202,6 +214,12 @@ RSpec.describe "RBAC Comprehensive Rules" do
       expect(GreenLanes::CategoryAssessmentPolicy.new(technical_operator, double).index?).to be(true)
       expect(GreenLanes::CategoryAssessmentPolicy.new(technical_operator, double).create?).to be(true)
       expect(GreenLanes::CategoryAssessmentPolicy.new(technical_operator, double).destroy?).to be(true)
+    end
+
+    it "allows full access to labels", :aggregate_failures do
+      expect(GoodsNomenclatureLabelPolicy.new(technical_operator, GoodsNomenclatureLabel.new).index?).to be(true)
+      expect(GoodsNomenclatureLabelPolicy.new(technical_operator, GoodsNomenclatureLabel.new).show?).to be(true)
+      expect(GoodsNomenclatureLabelPolicy.new(technical_operator, GoodsNomenclatureLabel.new).update?).to be(true)
     end
 
     it "allows access to user management", :aggregate_failures do
