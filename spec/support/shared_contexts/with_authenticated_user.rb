@@ -19,7 +19,7 @@ RSpec.shared_context "with authenticated user" do # rubocop:disable RSpec/Multip
     VerifyToken::Result.new(valid: true, payload: decoded_id_token, reason: nil)
   end
 
-  let(:extra_session) { user_session.present? ? { token: user_session.token } : {} }
+  let(:extra_session) { user_session.present? ? { token: session_token } : {} }
 
   before do |example|
     # Ensure user_session is created before stubbing
