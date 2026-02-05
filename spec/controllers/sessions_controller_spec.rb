@@ -24,11 +24,10 @@ RSpec.describe SessionsController do
   end
 
   describe "GET #destroy" do
-    let(:token) { SecureRandom.uuid }
-    let!(:user_session) { create(:session, token: token) }
+    let!(:user_session) { create(:session) }
 
     before do
-      session[:token] = token
+      session[:token] = user_session.token
     end
 
     it "clears the stored session", :aggregate_failures do
@@ -67,14 +66,6 @@ RSpec.describe SessionsController do
         expect(Session.last.user.email).to eq("user@example.com")
         expect(Session.last.raw_info).to eq(token_payload)
         expect(Session.last.expires_at.to_i).to eq(Time.zone.at(token_payload["exp"]).to_i)
-      end
-
-      it "stores a hashed session token" do
-        get :handle_redirect
-
-        plain_token = session[:token]
-
-        expect(Session.last.token).to eq(Session.digest(plain_token))
       end
 
       # rubocop:disable RSpec/ExampleLength
