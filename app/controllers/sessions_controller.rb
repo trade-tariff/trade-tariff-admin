@@ -81,7 +81,7 @@ private
   end
 
   def user_session
-    Session.find_by(token: session[:token])
+    Session.find_by_token(session[:token])
   end
 
   def already_authenticated?
