@@ -49,6 +49,48 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
               "deleted" => false,
             },
           },
+          {
+            type: "admin_configuration",
+            id: "debug_mode",
+            attributes: {
+              "name" => "debug_mode",
+              "value" => false,
+              "config_type" => "boolean",
+              "area" => "classification",
+              "description" => "Enable debug mode",
+              "deleted" => false,
+            },
+          },
+          {
+            type: "admin_configuration",
+            id: "batch_size",
+            attributes: {
+              "name" => "batch_size",
+              "value" => 250,
+              "config_type" => "integer",
+              "area" => "classification",
+              "description" => "Batch processing size",
+              "deleted" => false,
+            },
+          },
+          {
+            type: "admin_configuration",
+            id: "model_selection",
+            attributes: {
+              "name" => "model_selection",
+              "value" => {
+                "selected" => "gpt-4o",
+                "options" => [
+                  { "key" => "gpt-4o", "label" => "GPT-4o (multimodal)" },
+                  { "key" => "gpt-5", "label" => "GPT-5 (latest)" },
+                ],
+              },
+              "config_type" => "options",
+              "area" => "classification",
+              "description" => "AI model selection",
+              "deleted" => false,
+            },
+          },
         ],
       }.to_json,
     }
@@ -96,6 +138,28 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
       markdown_pos = body.index("Expansion Prompt")
 
       expect(boolean_pos).to be < markdown_pos
+    end
+
+    it "displays boolean true values as green Yes tags" do
+      expect(rendered_page.body).to include("govuk-tag--green")
+      expect(rendered_page.body).to match(/Yes\s*<\/strong>/)
+    end
+
+    it "displays boolean false values as grey No tags" do
+      expect(rendered_page.body).to include("govuk-tag--grey")
+      expect(rendered_page.body).to match(/No\s*<\/strong>/)
+    end
+
+    it "displays integer values directly" do
+      expect(rendered_page.body).to match(/>\s*250\s*</)
+    end
+
+    it "displays options values as selected label" do
+      expect(rendered_page.body).to include("GPT-4o (multimodal)")
+    end
+
+    it "displays markdown/string values truncated" do
+      expect(rendered_page.body).to include("You are a trade classification expert...")
     end
 
     context "when in production environment" do
