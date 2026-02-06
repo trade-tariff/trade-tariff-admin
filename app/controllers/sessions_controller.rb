@@ -43,7 +43,8 @@ class SessionsController < ApplicationController
   rescue StandardError => e
     Rails.logger.error("[Auth] Authentication error: #{e.class}: #{e.message}")
     Rails.logger.error("[Auth] Backtrace: #{e.backtrace&.first(5)&.join("\n")}")
-    redirect_to root_path, alert: "Authentication failed. Please try again."
+    clear_authentication!
+    redirect_to root_path, alert: "You do not have access to the Admin Portal. Please contact your administrator if you believe you should have access."
   end
 
   def invalid

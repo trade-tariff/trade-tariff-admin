@@ -110,5 +110,17 @@ RSpec.describe SessionsController do
       end
       # rubocop:enable RSpec/ExampleLength
     end
+
+    context "when from_passwordless_payload! raises an error" do
+      it "redirects to start page with access denied flash message", :aggregate_failures do
+        allow(User).to receive(:from_passwordless_payload!).and_raise(StandardError.new("something went wrong"))
+        cookies[:id_token] = "encoded-token"
+
+        get :handle_redirect
+
+        expect(response).to redirect_to(root_path)
+        expect(flash[:alert]).to eq("You do not have access to the Admin Portal. Please contact your administrator if you believe you should have access.")
+      end
+    end
   end
 end
