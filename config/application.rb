@@ -24,6 +24,13 @@ module TradeTariffAdmin
       'Faraday::ResourceNotFound' => :not_found,
     )
 
+    config.action_dispatch.default_headers.merge!(
+      'X-Frame-Options' => 'SAMEORIGIN',
+      'X-XSS-Protection' => '0',
+      'X-Content-Type-Options' => 'nosniff'
+    )
+
+
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
