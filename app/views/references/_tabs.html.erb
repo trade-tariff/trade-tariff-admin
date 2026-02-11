@@ -1,0 +1,16 @@
+<% search_tab_active = current_page?(references_search_path) %>
+
+<nav class="app-sub-navigation" aria-label="Search references">
+  <ul class="app-sub-navigation__list">
+    <li class="app-sub-navigation__item<%= " app-sub-navigation__item--current" unless search_tab_active %>">
+      <%= link_to "Browse", references_sections_path,
+            class: "app-sub-navigation__link",
+            **({ "aria-current": "page" } unless search_tab_active).to_h %>
+    </li>
+    <li class="app-sub-navigation__item<%= " app-sub-navigation__item--current" if search_tab_active %>">
+      <%= link_to "Search", references_search_path,
+            class: "app-sub-navigation__link",
+            **({ "aria-current": "page" } if search_tab_active).to_h %>
+    </li>
+  </ul>
+</nav>
