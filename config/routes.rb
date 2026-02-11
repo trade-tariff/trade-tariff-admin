@@ -112,6 +112,8 @@ Rails.application.routes.draw do
   get "/dashboard", to: "pages#index", as: :dashboard
   root to: "homepage#index"
 
+  post "/csp-violation-report", to: "csp_reports#create"
+
   match "/400", to: "errors#bad_request", via: :all
   match "/404", to: "errors#not_found", via: :all
   match "/405", to: "errors#method_not_allowed", via: :all

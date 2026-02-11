@@ -16,7 +16,7 @@ Rails.application.configure do
   config.action_controller.perform_caching = true
 
   # Disable serving static files from `public/`, relying on NGINX/Apache to do so instead.
-  config.public_file_server.enabled = ENV['RAILS_SERVE_STATIC_FILES'].present?
+  config.public_file_server.enabled = ENV["RAILS_SERVE_STATIC_FILES"].present?
   # Cache assets for far-future expiry since they are all digest stamped.
   config.public_file_server.headers = { "cache-control" => "public, max-age=#{1.year.to_i}" }
 
@@ -26,26 +26,31 @@ Rails.application.configure do
   # Store uploaded files on the local file system (see config/storage.yml for options).
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
-  config.assume_ssl = ENV.fetch('RAILS_ASSUME_SSL', 'true') == 'true'
+  config.assume_ssl = ENV.fetch("RAILS_ASSUME_SSL", "true") == "true"
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = true
+
+  # HSTS should only be set over HTTPS
+  config.action_dispatch.default_headers.merge!(
+    "Strict-Transport-Security" => "max-age=31536000; includeSubDomains",
+  )
 
   # Skip http-to-https redirect for the default health check endpoint.
   # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
 
   # Log to STDOUT with the current request id as a default log tag.
-  config.log_tags = [ :request_id ]
+  config.log_tags = [:request_id]
   config.logger = ActiveSupport::Logger.new($stdout)
   config.lograge.enabled = true
   config.lograge.formatter = Lograge::Formatters::Logstash.new
   config.lograge.custom_options = lambda do |_event|
-    { domain: ENV['GOVUK_APP_DOMAIN'] }
+    { domain: ENV["GOVUK_APP_DOMAIN"] }
   end
 
   config.lograge.ignore_actions = [
-    'HealthcheckController#check',
-    'rails/health#show',
+    "HealthcheckController#check",
+    "rails/health#show",
   ]
 
   # Change to "debug" to log everything (including potentially personally-identifiable information!)
@@ -88,7 +93,7 @@ Rails.application.configure do
   config.active_record.dump_schema_after_migration = false
 
   # Only use :id for inspections in production.
-  config.active_record.attributes_for_inspect = [ :id ]
+  config.active_record.attributes_for_inspect = [:id]
 
   # Enable DNS rebinding protection and other `Host` header attacks.
   # config.hosts = [
