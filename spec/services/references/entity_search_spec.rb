@@ -1,4 +1,4 @@
-# rubocop:disable RSpec/ExampleLength, RSpec/MultipleExpectations
+# rubocop:disable RSpec/ExampleLength
 RSpec.describe References::EntitySearch do
   describe ".call" do
     let(:section) { build(:section, resource_id: 1, numeral: "I", title: "Live animals") }
@@ -8,7 +8,7 @@ RSpec.describe References::EntitySearch do
       allow(Section).to receive(:all).and_return([section])
     end
 
-    it "maps and de-duplicates searchable entities" do
+    it "maps and de-duplicates searchable entities", :aggregate_failures do
       stub_request(:post, internal_search_url).to_return(
         api_success_response(
           data: [
@@ -64,4 +64,4 @@ RSpec.describe References::EntitySearch do
     end
   end
 end
-# rubocop:enable RSpec/ExampleLength, RSpec/MultipleExpectations
+# rubocop:enable RSpec/ExampleLength

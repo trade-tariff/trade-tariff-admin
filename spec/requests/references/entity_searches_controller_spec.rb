@@ -1,4 +1,4 @@
-# rubocop:disable RSpec/ExampleLength, RSpec/MultipleExpectations
+# rubocop:disable RSpec/ExampleLength
 RSpec.describe References::EntitySearchesController do
   include_context "with authenticated user"
 
@@ -9,7 +9,7 @@ RSpec.describe References::EntitySearchesController do
       allow(References::EntitySearch).to receive(:call).and_return(results)
     end
 
-    it "returns success and renders the search page" do
+    it "returns success and renders the search page", :aggregate_failures do
       get references_search_path, params: { q: "horses" }
 
       expect(response).to have_http_status(:ok)
@@ -20,7 +20,7 @@ RSpec.describe References::EntitySearchesController do
     end
 
     context "when no results are found" do
-      it "renders the fallback copy" do
+      it "renders the fallback copy", :aggregate_failures do
         get references_search_path, params: { q: "does-not-exist" }
 
         expect(response).to have_http_status(:ok)
@@ -30,4 +30,4 @@ RSpec.describe References::EntitySearchesController do
     end
   end
 end
-# rubocop:enable RSpec/ExampleLength, RSpec/MultipleExpectations
+# rubocop:enable RSpec/ExampleLength

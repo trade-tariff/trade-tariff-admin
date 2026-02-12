@@ -1,4 +1,4 @@
-# rubocop:disable RSpec/NoExpectationExample, RSpec/ExampleLength, RSpec/MultipleExpectations
+# rubocop:disable RSpec/NoExpectationExample, RSpec/ExampleLength
 RSpec.describe "Entity search in references" do
   let(:section) { build(:section, resource_id: 1, numeral: "I", title: "Live animals; animal products") }
   let(:sections_url) { "#{TradeTariffAdmin::ServiceChooser.api_host}/admin/sections" }
@@ -34,7 +34,7 @@ RSpec.describe "Entity search in references" do
         )
     end
 
-    specify do
+    specify :aggregate_failures do
       ensure_on references_search_path
       fill_in "Search tariff entities", with: "01"
       click_button "Search"
@@ -63,7 +63,7 @@ RSpec.describe "Entity search in references" do
         )
     end
 
-    specify do
+    specify :aggregate_failures do
       ensure_on references_search_path
       fill_in "Search tariff entities", with: "0101"
       click_button "Search"
@@ -92,7 +92,7 @@ RSpec.describe "Entity search in references" do
         )
     end
 
-    specify do
+    specify :aggregate_failures do
       ensure_on references_search_path
       fill_in "Search tariff entities", with: "01012100"
       click_button "Search"
@@ -120,7 +120,7 @@ RSpec.describe "Entity search in references" do
         )
     end
 
-    specify do
+    specify :aggregate_failures do
       ensure_on references_search_path
       fill_in "Search tariff entities", with: "live animals"
       click_button "Search"
@@ -138,7 +138,7 @@ RSpec.describe "Entity search in references" do
         .to_return api_success_response(data: [])
     end
 
-    specify do
+    specify :aggregate_failures do
       ensure_on references_search_path
       fill_in "Search tariff entities", with: "zzzznotfound"
       click_button "Search"
@@ -173,7 +173,7 @@ RSpec.describe "Entity search in references" do
         .to_return jsonapi_success_response("search_reference", [])
     end
 
-    specify do
+    specify :aggregate_failures do
       ensure_on references_search_path
       fill_in "Search tariff entities", with: "0101"
       click_button "Search"
@@ -184,7 +184,7 @@ RSpec.describe "Entity search in references" do
   end
 
   describe "Browse and Search tabs" do
-    specify do
+    specify :aggregate_failures do
       ensure_on references_search_path
 
       expect(page).to have_link("Browse")
@@ -192,4 +192,4 @@ RSpec.describe "Entity search in references" do
     end
   end
 end
-# rubocop:enable RSpec/NoExpectationExample, RSpec/ExampleLength, RSpec/MultipleExpectations
+# rubocop:enable RSpec/NoExpectationExample, RSpec/ExampleLength
