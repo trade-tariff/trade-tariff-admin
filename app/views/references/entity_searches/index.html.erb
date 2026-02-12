@@ -1,0 +1,45 @@
+<%= govuk_breadcrumbs "Search References": references_sections_path,
+                      "Search": references_search_path %>
+
+<h2>Search references</h2>
+
+<p class="govuk-body">
+  Search by code (for example <code>0101</code> or <code>01012100</code>) or by description.
+</p>
+
+<%= form_with url: references_search_path, method: :get, local: true do |form| %>
+  <div class="govuk-form-group">
+    <%= form.label :q, "Search tariff entities", class: "govuk-label" %>
+    <%= form.text_field :q, value: @query, class: "govuk-input", autocomplete: "off" %>
+  </div>
+
+  <%= form.submit "Search", class: "govuk-button" %>
+<% end %>
+
+<% if @query.present? %>
+  <% if @results.any? %>
+    <table class="table table-bordered table-striped table-condensed table-search-references">
+      <thead>
+        <tr>
+          <th>Entity type</th>
+          <th>Code</th>
+          <th>Description</th>
+          <th class="hott-actions-col">Open</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @results.each do |result| %>
+          <tr>
+            <td><%= result.entity_type %></td>
+            <td><%= result.code %></td>
+            <td><%= result.description %></td>
+            <td><%= link_to "Open", result.path %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="govuk-body">No matching entities found</p>
+    <p class="govuk-body">Try using Browse to navigate the hierarchy and add a reference.</p>
+  <% end %>
+<% end %>

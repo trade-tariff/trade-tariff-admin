@@ -40,6 +40,7 @@
     <% if current_navigation_section&.items&.present? %>
       <%= render "application/sub_navigation", section: current_navigation_section %>
     <% end %>
+    <%= render "references/tabs" if request.path.include?("/search_references") %>
 
     <div class="govuk-width-container">
       <%= render 'application/auth_banner' unless @hide_auth_banner %>

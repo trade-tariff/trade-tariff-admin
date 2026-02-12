@@ -21,6 +21,8 @@ Rails.application.routes.draw do
   end
 
   namespace :references, path: "search_references" do
+    get :search, to: "entity_searches#index"
+
     resources :sections, only: %i[index] do
       scope module: "sections" do
         resources :chapters, only: [:index]
