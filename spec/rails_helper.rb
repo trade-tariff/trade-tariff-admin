@@ -56,3 +56,10 @@ RSpec.configure do |config|
     TradeTariffAdmin::ServiceChooser.service_choice = nil
   end
 end
+
+Shoulda::Matchers.configure do |config|
+  config.integrate do |with|
+    with.test_framework :rspec
+    with.library :rails
+  end
+end
