@@ -17,7 +17,13 @@ import './application.scss';
 import Rails from 'rails-ujs';
 import { initAll } from 'govuk-frontend';
 
+import { Application } from '@hotwired/stimulus';
+import SelfTextTableController from '../controllers/self_text_table_controller';
+
 import '../javascripts/markdown-preview';
 
 Rails.start();
 initAll();
+
+const application = Application.start();
+application.register('self-text-table', SelfTextTableController);

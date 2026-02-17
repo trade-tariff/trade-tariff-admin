@@ -1,0 +1,154 @@
+<%= govuk_breadcrumbs 'Self-texts': goods_nomenclature_self_texts_path %>
+
+<h1 class="govuk-heading-l">
+  Self-text <%= @self_text.goods_nomenclature_item_id %>
+</h1>
+
+<% if policy(@self_text).update? %>
+  <div class="govuk-button-group govuk-!-margin-bottom-6">
+    <% if @self_text.needs_review %>
+      <%= button_to "Approve",
+                    approve_goods_nomenclature_self_text_path(@self_text.goods_nomenclature_item_id),
+                    method: :post,
+                    class: "govuk-button",
+                    data: { module: "govuk-button" } %>
+    <% else %>
+      <%= button_to "Reject",
+                    reject_goods_nomenclature_self_text_path(@self_text.goods_nomenclature_item_id),
+                    method: :post,
+                    class: "govuk-button govuk-button--warning",
+                    data: { module: "govuk-button" } %>
+    <% end %>
+    <%= button_to "Generate score",
+                  score_goods_nomenclature_self_text_path(@self_text.goods_nomenclature_item_id),
+                  method: :post,
+                  class: "govuk-button govuk-button--secondary",
+                  data: { module: "govuk-button" } %>
+    <%= button_to "Regenerate self-text",
+                  regenerate_goods_nomenclature_self_text_path(@self_text.goods_nomenclature_item_id),
+                  method: :post,
+                  class: "govuk-button govuk-button--warning",
+                  data: { module: "govuk-button", confirm: "This will regenerate the self-text using the AI model. The current text will be overwritten. Continue?" } %>
+  </div>
+<% end %>
+
+<%= form_with model: @self_text,
+              url: goods_nomenclature_self_text_path(@self_text.goods_nomenclature_item_id),
+              method: :patch,
+              local: true do |f| %>
+
+  <% if @self_text.errors.any? %>
+    <div class="govuk-error-summary" data-module="govuk-error-summary">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">There is a problem</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <% @self_text.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <dl class="govuk-summary-list govuk-!-margin-bottom-6">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Commodity code</dt>
+      <dd class="govuk-summary-list__value"><%= @self_text.goods_nomenclature_item_id %></dd>
+    </div>
+
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">SID</dt>
+      <dd class="govuk-summary-list__value"><%= @self_text.goods_nomenclature_sid %></dd>
+    </div>
+
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Generated at</dt>
+      <dd class="govuk-summary-list__value"><%= @self_text.formatted_generated_at %></dd>
+    </div>
+
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Status</dt>
+      <dd class="govuk-summary-list__value">
+        <% if @self_text.needs_review %>
+          <strong class="govuk-tag govuk-tag--orange">Needs review</strong>
+        <% end %>
+        <% if @self_text.manually_edited %>
+          <strong class="govuk-tag govuk-tag--purple">Manually edited</strong>
+        <% end %>
+        <% if @self_text.stale %>
+          <strong class="govuk-tag govuk-tag--pink">Stale</strong>
+        <% end %>
+        <% unless @self_text.needs_review || @self_text.manually_edited || @self_text.stale %>
+          <strong class="govuk-tag govuk-tag--turquoise">Active</strong>
+        <% end %>
+      </dd>
+    </div>
+
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Score</dt>
+      <dd class="govuk-summary-list__value">
+        <strong class="govuk-tag govuk-tag--<%= @self_text.score_tag_colour %>"<% if @self_text.score_kind %> data-score-kind="<%= @self_text.score_kind %>"<% end %><% if @self_text.combined_score %> data-score="<%= @self_text.combined_score.round(4) %>"<% end %>>
+          <%= @self_text.score_label %>
+        </strong>
+      </dd>
+    </div>
+  </dl>
+
+  <div class="govuk-form-group">
+    <%= f.label :self_text, "Self-text", class: "govuk-label govuk-label--m" %>
+    <div class="govuk-hint">
+      The human-readable description for this commodity code.
+    </div>
+    <%= f.text_area :self_text,
+                    class: "govuk-textarea",
+                    rows: 5,
+                    value: @self_text.self_text %>
+  </div>
+
+  <% if @self_text.eu_self_text.present? %>
+    <details class="govuk-details">
+      <summary class="govuk-details__summary">
+        <span class="govuk-details__summary-text">EU reference text</span>
+      </summary>
+      <div class="govuk-details__text">
+        <p class="govuk-body"><%= format_tariff_text(@self_text.eu_self_text) %></p>
+      </div>
+    </details>
+  <% end %>
+
+  <% if @self_text.ancestor_chain.any? %>
+    <details class="govuk-details">
+      <summary class="govuk-details__summary">
+        <span class="govuk-details__summary-text">Review context</span>
+      </summary>
+      <div class="govuk-details__text">
+        <div class="govuk-body" style="line-height: 1.8">
+          <% if @self_text.ancestor_chain.last %>
+            <% @self_text.ancestor_chain.last.split(">").map(&:strip).reject(&:blank?).each_with_index do |part, i| %>
+              <div style="padding-left: <%= i * 20 %>px; color: #505a5f"><%= format_tariff_text(part) %></div>
+            <% end %>
+          <% end %>
+          <% parent_depth = @self_text.ancestor_chain.last&.split(">")&.size || 0 %>
+          <div style="padding-left: <%= parent_depth * 20 %>px"><strong><%= format_tariff_text(@self_text.context_description) %></strong></div>
+        </div>
+
+        <% if @self_text.context_siblings.any? %>
+          <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+          <ul class="govuk-list govuk-list--bullet">
+            <% @self_text.context_siblings.each do |sibling| %>
+              <li><%= sibling.present? ? format_tariff_text(sibling) : "(empty)" %></li>
+            <% end %>
+          </ul>
+        <% end %>
+      </div>
+    </details>
+  <% end %>
+
+  <% if policy(@self_text).update? %>
+    <div class="govuk-button-group">
+      <%= f.submit "Save changes", class: "govuk-button", data: { module: "govuk-button" } %>
+    </div>
+  <% end %>
+<% end %>

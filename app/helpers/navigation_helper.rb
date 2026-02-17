@@ -75,6 +75,13 @@ module NavigationHelper
             service: :uk,
           ),
           NavigationItem.new(
+            text: "Self-texts",
+            href: goods_nomenclature_self_texts_path,
+            policy_class: GoodsNomenclatureSelfText,
+            active_when: /\/goods_nomenclature_self_texts/,
+            service: :uk,
+          ),
+          NavigationItem.new(
             text: "Configuration",
             href: classification_configurations_path,
             policy_class: AdminConfiguration,
