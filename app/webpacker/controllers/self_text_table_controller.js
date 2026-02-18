@@ -15,6 +15,7 @@ export default class extends Controller {
       status: { type: String, default: '' },
       scoreCategory: { type: String, default: '' },
       page: { type: Number, default: 1 },
+      q: { type: String, default: '' },
     };
   }
 
@@ -79,6 +80,9 @@ export default class extends Controller {
     }
     if (this.scoreCategoryValue) {
       params.set('score_category', this.scoreCategoryValue);
+    }
+    if (this.qValue) {
+      params.set('q', this.qValue);
     }
 
     fetch(this.urlValue + '?' + params.toString(), {

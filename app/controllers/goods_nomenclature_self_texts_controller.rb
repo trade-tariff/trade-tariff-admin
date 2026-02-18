@@ -14,19 +14,24 @@ class GoodsNomenclatureSelfTextsController < AuthenticatedController
   def search
     authorize GoodsNomenclatureSelfText, :index?
 
-    commodity_code = normalize_commodity_code(search_params[:commodity_code])
+    query = search_params[:q].to_s.gsub(/\s+/, " ").strip
 
-    if commodity_code.blank?
-      redirect_to goods_nomenclature_self_texts_path, alert: "Please enter a commodity code."
+    if query.blank?
+      redirect_to goods_nomenclature_self_texts_path, alert: "Please enter a search term."
       return
     end
 
-    unless valid_commodity_code?(commodity_code)
-      redirect_to goods_nomenclature_self_texts_path, alert: "Commodity code must be 10 digits."
+    if query.length < 2
+      redirect_to goods_nomenclature_self_texts_path, alert: "Search must be at least 2 characters."
       return
     end
 
-    redirect_to goods_nomenclature_self_text_path(commodity_code)
+    if query.match?(/\A\d{10}\z/)
+      redirect_to goods_nomenclature_self_text_path(query)
+      return
+    end
+
+    redirect_to goods_nomenclature_self_texts_path(q: query)
   end
 
   def show
@@ -110,6 +115,7 @@ private
       direction: params[:direction] || "asc",
       status: params[:status],
       score_category: params[:score_category],
+      q: params[:q],
     )
 
     {
@@ -146,18 +152,10 @@ private
   end
 
   def search_params
-    params.permit(:commodity_code)
+    params.permit(:q)
   end
 
   def self_text_params
     params.require(:goods_nomenclature_self_text).permit(:self_text)
-  end
-
-  def normalize_commodity_code(code)
-    code.to_s.gsub(/\s+/, "")
-  end
-
-  def valid_commodity_code?(code)
-    code.match?(/\A\d{10}\z/)
   end
 end
