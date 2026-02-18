@@ -10,7 +10,7 @@ $govuk-global-styles: true;
 $govuk-font-url-function: frontend-font-url;
 $govuk-image-url-function: frontend-image-url;
 
-@import "~govuk-frontend/dist/govuk/all";
+@import "~govuk-frontend/dist/govuk";
 
 .govuk-auto-classes {
   h1 { @extend .govuk-heading-l ; }
@@ -25,8 +25,8 @@ $govuk-image-url-function: frontend-image-url;
 }
 
 .govuk-notification-banner--error {
-  border-color: $govuk-error-colour;
-  background-color: $govuk-error-colour;
+  border-color: govuk-functional-colour(error);
+  background-color: govuk-functional-colour(error);
 }
 
 .govuk-phase-banner__content {
@@ -67,9 +67,9 @@ $govuk-image-url-function: frontend-image-url;
   }
 
   pre {
-    background-color: govuk-colour("light-grey");
+    background-color: govuk-colour("black", $variant: "tint-95");
     padding: govuk-spacing(3);
-    border: 1px solid govuk-colour("mid-grey");
+    border: 1px solid govuk-colour("black", $variant: "tint-80");
     overflow-x: auto;
     @include govuk-font($size: 16);
 
@@ -82,7 +82,7 @@ $govuk-image-url-function: frontend-image-url;
 
   code {
     @include govuk-font($size: 16);
-    background-color: govuk-colour("light-grey");
+    background-color: govuk-colour("black", $variant: "tint-95");
     padding: 2px 4px;
     border-radius: 2px;
   }
@@ -94,7 +94,7 @@ $govuk-image-url-function: frontend-image-url;
   }
 
   .grey-background {
-    background-color: govuk-colour("light-grey");
+    background-color: govuk-colour("black", $variant: "tint-95");
     padding-right: 1em !important;
   }
 
@@ -107,7 +107,7 @@ $govuk-image-url-function: frontend-image-url;
   border-bottom: none;
 
   .govuk-width-container {
-    border-bottom: 1px solid $govuk-border-colour;
+    border-bottom: 1px solid govuk-functional-colour(border);
   }
 }
 
@@ -120,7 +120,7 @@ $govuk-image-url-function: frontend-image-url;
     margin-top: 0;
     margin-bottom: 0;
     padding: 0;
-    border-bottom: 1px solid govuk-colour("mid-grey");
+    border-bottom: 1px solid govuk-colour("black", $variant: "tint-80");
 
     @include govuk-media-query($from: tablet) {
       display: flex;
@@ -153,7 +153,7 @@ $govuk-image-url-function: frontend-image-url;
 
     &:hover {
       text-decoration: underline;
-      color: govuk-colour("dark-blue");
+      color: govuk-colour("blue", $variant: "shade-50");
     }
 
     &:focus {
