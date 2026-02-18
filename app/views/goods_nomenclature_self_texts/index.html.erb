@@ -1,18 +1,16 @@
-<h1 class="govuk-heading-l">Search for Self-text</h1>
+<h1 class="govuk-heading-l">Self-texts</h1>
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     <%= form_with url: search_goods_nomenclature_self_texts_path, method: :get, local: true do |f| %>
       <div class="govuk-form-group">
-        <%= f.label :commodity_code, "Commodity code", class: "govuk-label govuk-label--m" %>
+        <%= f.label :q, "Search", class: "govuk-label govuk-label--m" %>
         <div class="govuk-hint">
-          Enter the 10-digit commodity code to view or edit its self-text.
+          Search by commodity code (2+ digits), self-text content, or ancestor/sibling descriptions.
         </div>
-        <%= f.text_field :commodity_code,
-                         class: "govuk-input govuk-input--width-10",
-                         inputmode: "numeric",
-                         pattern: "[0-9]*",
-                         maxlength: 10 %>
+        <%= f.text_field :q,
+                         value: params[:q],
+                         class: "govuk-input govuk-input--width-20" %>
       </div>
 
       <%= f.submit "Search", class: "govuk-button", data: { module: "govuk-button" } %>
@@ -53,7 +51,8 @@
 <div class="govuk-grid-row"
      data-controller="self-text-table"
      data-self-text-table-url-value="<%= goods_nomenclature_self_texts_path(format: :json) %>"
-     data-self-text-table-show-url-value="<%= goods_nomenclature_self_texts_path %>/__ID__">
+     data-self-text-table-show-url-value="<%= goods_nomenclature_self_texts_path %>/__ID__"
+     data-self-text-table-q-value="<%= params[:q] %>">
 
   <div class="govuk-grid-column-one-quarter">
     <h3 class="govuk-heading-s">Filters</h3>
