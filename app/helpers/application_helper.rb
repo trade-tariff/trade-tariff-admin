@@ -1,4 +1,12 @@
 module ApplicationHelper
+  SAFE_TAGS = %w[br p em strong i b sub sup].freeze
+
+  def format_tariff_text(text)
+    return "" if text.blank?
+
+    sanitize(text, tags: SAFE_TAGS, attributes: [])
+  end
+
   def active_nav_link?(activator)
     (activator.is_a?(String) && request.path.start_with?(activator)) ||
       (activator.is_a?(Regexp) && request.path =~ activator)

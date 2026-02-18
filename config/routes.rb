@@ -65,6 +65,41 @@ Rails.application.routes.draw do
         to: "goods_nomenclature_labels#update",
         constraints: { goods_nomenclature_id: /\d{10}/ }
 
+  resources :goods_nomenclature_self_texts, only: %i[index] do
+    collection do
+      get :search
+    end
+  end
+
+  get "goods_nomenclature_self_texts/:goods_nomenclature_id",
+      to: "goods_nomenclature_self_texts#show",
+      as: :goods_nomenclature_self_text,
+      constraints: { goods_nomenclature_id: /\d{10}/ }
+
+  patch "goods_nomenclature_self_texts/:goods_nomenclature_id",
+        to: "goods_nomenclature_self_texts#update",
+        constraints: { goods_nomenclature_id: /\d{10}/ }
+
+  post "goods_nomenclature_self_texts/:goods_nomenclature_id/score",
+       to: "goods_nomenclature_self_texts#score",
+       as: :score_goods_nomenclature_self_text,
+       constraints: { goods_nomenclature_id: /\d{10}/ }
+
+  post "goods_nomenclature_self_texts/:goods_nomenclature_id/regenerate",
+       to: "goods_nomenclature_self_texts#regenerate",
+       as: :regenerate_goods_nomenclature_self_text,
+       constraints: { goods_nomenclature_id: /\d{10}/ }
+
+  post "goods_nomenclature_self_texts/:goods_nomenclature_id/approve",
+       to: "goods_nomenclature_self_texts#approve",
+       as: :approve_goods_nomenclature_self_text,
+       constraints: { goods_nomenclature_id: /\d{10}/ }
+
+  post "goods_nomenclature_self_texts/:goods_nomenclature_id/reject",
+       to: "goods_nomenclature_self_texts#reject",
+       as: :reject_goods_nomenclature_self_text,
+       constraints: { goods_nomenclature_id: /\d{10}/ }
+
   resources :classification_configurations, param: :name, only: %i[index show edit update]
 
   namespace :green_lanes, path: "green_lanes" do

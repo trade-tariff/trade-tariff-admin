@@ -1,0 +1,156 @@
+<h1 class="govuk-heading-l">Search for Self-text</h1>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <%= form_with url: search_goods_nomenclature_self_texts_path, method: :get, local: true do |f| %>
+      <div class="govuk-form-group">
+        <%= f.label :commodity_code, "Commodity code", class: "govuk-label govuk-label--m" %>
+        <div class="govuk-hint">
+          Enter the 10-digit commodity code to view or edit its self-text.
+        </div>
+        <%= f.text_field :commodity_code,
+                         class: "govuk-input govuk-input--width-10",
+                         inputmode: "numeric",
+                         pattern: "[0-9]*",
+                         maxlength: 10 %>
+      </div>
+
+      <%= f.submit "Search", class: "govuk-button", data: { module: "govuk-button" } %>
+    <% end %>
+  </div>
+</div>
+
+<details class="govuk-details">
+  <summary class="govuk-details__summary">
+    <span class="govuk-details__summary-text">About self-texts</span>
+  </summary>
+  <div class="govuk-details__text">
+    <p class="govuk-body">Self-texts are human-readable descriptions generated for each commodity code by a language model. They describe the commodity in plain language, using context from the tariff hierarchy.</p>
+
+    <h3 class="govuk-heading-s">Statuses</h3>
+    <ul class="govuk-list govuk-list--bullet">
+      <li><strong>Needs review</strong> - the self-text has been flagged by structural validation checks and should be reviewed by a human. For example, the AI may have reported excluding a different number of sibling commodities than actually exist in the hierarchy, suggesting it hallucinated or missed siblings in its response</li>
+      <li><strong>Stale</strong> - the commodity's hierarchy has changed since the self-text was generated, so it may no longer be accurate</li>
+      <li><strong>Manually edited</strong> - a human has edited the self-text</li>
+    </ul>
+
+    <h3 class="govuk-heading-s">Score categories</h3>
+    <p class="govuk-body">The score is derived from similarity to the EU reference text and coherence checks. When both are available, they are averaged. A self-text with no score has not yet been compared against the EU reference.</p>
+    <ul class="govuk-list govuk-list--bullet">
+      <li><strong>Bad</strong> - score below 0.3</li>
+      <li><strong>Okay</strong> - score 0.3 to 0.5</li>
+      <li><strong>Good</strong> - score 0.5 to 0.85</li>
+      <li><strong>Amazing</strong> - score 0.85 or above</li>
+    </ul>
+
+    <h3 class="govuk-heading-s">Score and status are independent</h3>
+    <p class="govuk-body">A self-text can have a high score but still need review. The score measures how closely the text matches the EU reference, while the review flag is set by structural validation checks (e.g. missing context, truncation). A well-worded self-text might closely match the EU text but still have structural issues that need attention.</p>
+  </div>
+</details>
+
+<h2 class="govuk-heading-m">Self-texts</h2>
+
+<div class="govuk-grid-row"
+     data-controller="self-text-table"
+     data-self-text-table-url-value="<%= goods_nomenclature_self_texts_path(format: :json) %>"
+     data-self-text-table-show-url-value="<%= goods_nomenclature_self_texts_path %>/__ID__">
+
+  <div class="govuk-grid-column-one-quarter">
+    <h3 class="govuk-heading-s">Filters</h3>
+
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Type</legend>
+        <div class="govuk-radios govuk-radios--small">
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="type-commodity" name="type" type="radio" value="commodity" checked
+                   data-action="change->self-text-table#changeType" data-type="commodity">
+            <label class="govuk-label govuk-radios__label" for="type-commodity">Commodity</label>
+          </div>
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="type-subheading" name="type" type="radio" value="subheading"
+                   data-action="change->self-text-table#changeType" data-type="subheading">
+            <label class="govuk-label govuk-radios__label" for="type-subheading">Subheading</label>
+          </div>
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="type-all" name="type" type="radio" value="all"
+                   data-action="change->self-text-table#changeType" data-type="all">
+            <label class="govuk-label govuk-radios__label" for="type-all">All</label>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Score</legend>
+        <div class="govuk-radios govuk-radios--small">
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="score-all" name="score_category" type="radio" value="" checked
+                   data-action="change->self-text-table#changeScoreCategory" data-score-category="">
+            <label class="govuk-label govuk-radios__label" for="score-all">All</label>
+          </div>
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="score-bad" name="score_category" type="radio" value="bad"
+                   data-action="change->self-text-table#changeScoreCategory" data-score-category="bad">
+            <label class="govuk-label govuk-radios__label" for="score-bad">Bad</label>
+          </div>
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="score-okay" name="score_category" type="radio" value="okay"
+                   data-action="change->self-text-table#changeScoreCategory" data-score-category="okay">
+            <label class="govuk-label govuk-radios__label" for="score-okay">Okay</label>
+          </div>
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="score-good" name="score_category" type="radio" value="good"
+                   data-action="change->self-text-table#changeScoreCategory" data-score-category="good">
+            <label class="govuk-label govuk-radios__label" for="score-good">Good</label>
+          </div>
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="score-amazing" name="score_category" type="radio" value="amazing"
+                   data-action="change->self-text-table#changeScoreCategory" data-score-category="amazing">
+            <label class="govuk-label govuk-radios__label" for="score-amazing">Amazing</label>
+          </div>
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="score-none" name="score_category" type="radio" value="no_score"
+                   data-action="change->self-text-table#changeScoreCategory" data-score-category="no_score">
+            <label class="govuk-label govuk-radios__label" for="score-none">No score</label>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Status</legend>
+        <div class="govuk-radios govuk-radios--small">
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="status-all" name="status" type="radio" value="" checked
+                   data-action="change->self-text-table#changeStatus" data-status="">
+            <label class="govuk-label govuk-radios__label" for="status-all">All</label>
+          </div>
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="status-needs-review" name="status" type="radio" value="needs_review"
+                   data-action="change->self-text-table#changeStatus" data-status="needs_review">
+            <label class="govuk-label govuk-radios__label" for="status-needs-review">Needs review</label>
+          </div>
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="status-stale" name="status" type="radio" value="stale"
+                   data-action="change->self-text-table#changeStatus" data-status="stale">
+            <label class="govuk-label govuk-radios__label" for="status-stale">Stale</label>
+          </div>
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="status-edited" name="status" type="radio" value="manually_edited"
+                   data-action="change->self-text-table#changeStatus" data-status="manually_edited">
+            <label class="govuk-label govuk-radios__label" for="status-edited">Manually edited</label>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+  </div>
+
+  <div class="govuk-grid-column-three-quarters">
+    <p class="govuk-body" data-self-text-table-target="loading">Loading...</p>
+    <div data-self-text-table-target="table"></div>
+    <div data-self-text-table-target="pagination"></div>
+  </div>
+</div>
