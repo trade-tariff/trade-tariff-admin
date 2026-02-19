@@ -125,12 +125,10 @@
       </summary>
       <div class="govuk-details__text">
         <div class="govuk-body" style="line-height: 1.8">
-          <% if @self_text.ancestor_chain.last %>
-            <% @self_text.ancestor_chain.last.split(">").map(&:strip).reject(&:blank?).each_with_index do |part, i| %>
-              <div style="padding-left: <%= i * 20 %>px; color: #505a5f"><%= format_tariff_text(part) %></div>
-            <% end %>
+          <% @self_text.ancestor_chain.each_with_index do |description, i| %>
+            <div style="padding-left: <%= i * 20 %>px; color: #505a5f"><%= format_tariff_text(description) %></div>
           <% end %>
-          <% parent_depth = @self_text.ancestor_chain.last&.split(">")&.size || 0 %>
+          <% parent_depth = @self_text.ancestor_chain.size %>
           <div style="padding-left: <%= parent_depth * 20 %>px"><strong><%= format_tariff_text(@self_text.context_description) %></strong></div>
         </div>
 
