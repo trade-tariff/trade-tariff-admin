@@ -2,6 +2,7 @@
   "name": "trade-tariff-admin",
   "private": true,
   "dependencies": {
+    "@hotwired/stimulus": "^3.2.2",
     "@rails/webpacker": "^5.4.4",
     "autosize": "^6.0.1",
     "chart.js": "^4.5.1",
