@@ -103,7 +103,13 @@ class GoodsNomenclatureSelfText
   def ancestor_chain
     return [] unless input_context.is_a?(Hash)
 
-    (input_context["ancestors"] || []).map { |a| a["description"] }
+    (input_context["ancestors"] || []).map { |a| a["self_text"] || a["description"] }
+  end
+
+  def kind
+    return nil unless input_context.is_a?(Hash)
+
+    input_context["goods_nomenclature_class"]
   end
 
   def context_description
