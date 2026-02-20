@@ -23,11 +23,11 @@
     <span class="govuk-details__summary-text">About self-texts</span>
   </summary>
   <div class="govuk-details__text">
-    <p class="govuk-body">Self-texts are human-readable descriptions generated for each commodity code by a language model. They describe the commodity in plain language, using context from the tariff hierarchy.</p>
+    <p class="govuk-body">Self-texts are self-contained descriptions of what each commodity code covers. They go into the search index so traders can find the right code. Non-'Other' nodes get a mechanical description built from their ancestor chain. 'Other' nodes get an AI-generated description that replaces the bare 'Other' with what the code actually covers, using sibling and parent context.</p>
 
     <h3 class="govuk-heading-s">Statuses</h3>
     <ul class="govuk-list govuk-list--bullet">
-      <li><strong>Needs review</strong> - the self-text has been flagged by structural validation checks and should be reviewed by a human. For example, the AI may have reported excluding a different number of sibling commodities than actually exist in the hierarchy, suggesting it hallucinated or missed siblings in its response</li>
+      <li><strong>Needs review</strong> - an admin has flagged this self-text for review</li>
       <li><strong>Stale</strong> - the commodity's hierarchy has changed since the self-text was generated, so it may no longer be accurate</li>
       <li><strong>Manually edited</strong> - a human has edited the self-text</li>
     </ul>
@@ -42,7 +42,7 @@
     </ul>
 
     <h3 class="govuk-heading-s">Score and status are independent</h3>
-    <p class="govuk-body">A self-text can have a high score but still need review. The score measures how closely the text matches the EU reference, while the review flag is set by structural validation checks (e.g. missing context, truncation). A well-worded self-text might closely match the EU text but still have structural issues that need attention.</p>
+    <p class="govuk-body">A self-text can have a high score but still need review. The score measures how closely the text matches the EU reference, while the review flag is set manually by admins to mark self-texts that need attention.</p>
   </div>
 </details>
 

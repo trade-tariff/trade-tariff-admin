@@ -13,10 +13,10 @@
                     class: "govuk-button",
                     data: { module: "govuk-button" } %>
     <% else %>
-      <%= button_to "Reject",
+      <%= button_to "Needs review",
                     reject_goods_nomenclature_self_text_path(@self_text.goods_nomenclature_item_id),
                     method: :post,
-                    class: "govuk-button govuk-button--warning",
+                    class: "govuk-button govuk-button--secondary",
                     data: { module: "govuk-button" } %>
     <% end %>
     <%= button_to "Generate score",
@@ -99,7 +99,7 @@
   <div class="govuk-form-group">
     <%= f.label :self_text, "Self-text", class: "govuk-label govuk-label--m" %>
     <div class="govuk-hint">
-      The human-readable description for this commodity code.
+      A self-contained description of what this commodity covers, used in the search index to help traders find it.
     </div>
     <%= f.text_area :self_text,
                     class: "govuk-textarea",
