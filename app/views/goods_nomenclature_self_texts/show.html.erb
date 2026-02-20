@@ -68,6 +68,13 @@
       <dd class="govuk-summary-list__value"><%= @self_text.formatted_generated_at %></dd>
     </div>
 
+    <% if @self_text.kind.present? %>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Kind</dt>
+        <dd class="govuk-summary-list__value"><%= @self_text.kind %></dd>
+      </div>
+    <% end %>
+
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">Status</dt>
       <dd class="govuk-summary-list__value">
