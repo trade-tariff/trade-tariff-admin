@@ -23,6 +23,12 @@ Rails.application.routes.draw do
   namespace :references, path: "search_references" do
     get :search, to: "entity_searches#index"
 
+    concern :search_reference_manageable do
+      member do
+        get :remove
+      end
+    end
+
     resources :sections, only: %i[index] do
       scope module: "sections" do
         resources :chapters, only: [:index]
@@ -32,20 +38,20 @@ Rails.application.routes.draw do
     resources :chapters, only: %i[index show] do
       scope module: "chapters" do
         resources :headings, only: [:index]
-        resources :search_references
+        resources :search_references, concerns: :search_reference_manageable
       end
     end
 
     resources :headings do
       scope module: "headings" do
         resources :commodities, only: [:index]
-        resources :search_references
+        resources :search_references, concerns: :search_reference_manageable
       end
     end
 
     resources :commodities do
       scope module: "commodities" do
-        resources :search_references
+        resources :search_references, concerns: :search_reference_manageable
       end
     end
   end
