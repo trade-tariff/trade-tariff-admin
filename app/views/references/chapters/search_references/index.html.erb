@@ -7,8 +7,6 @@
   <%= link_to 'Create new search reference', new_references_chapter_search_reference_path(chapter, release_service_query_params), class: 'govuk-button' %>
 <% end %>
 
-<%= render "references/release_services_selector", url: references_chapter_search_references_path(chapter) %>
-
 <% if @search_references.none? %>
   <p class="govuk-body">No search references are applied to this category.</p>
 <% else %>

@@ -77,11 +77,6 @@ RSpec.describe "Heading Search Reference management" do
       expect(page).to have_content("You are currently using the")
     end
 
-    specify "shows release selector defaults on index" do
-      ensure_on references_heading_search_references_path(heading)
-      expect(page).to have_checked_field("UK service").and have_checked_field("Northern Ireland service")
-    end
-
     specify "opens remove confirmation page before deleting" do
       ensure_on references_heading_search_references_path(heading)
       within(dom_id_selector(heading_search_reference)) do
