@@ -28,7 +28,7 @@ module References
         return render :new, status: :unprocessable_entity
       end
 
-      failed_reference = run_for_selected_services(selected_services) do
+      failed_reference, = run_for_selected_services(selected_services) do
         reference = build_search_reference
         assign_release_services_to_form(reference)
         reference.save

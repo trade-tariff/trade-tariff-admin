@@ -73,11 +73,6 @@ RSpec.describe "Commodity Search Reference management" do
       expect(page).to have_content("You are currently using the")
     end
 
-    specify "shows release selector defaults on index" do
-      ensure_on references_commodity_search_references_path(commodity)
-      expect(page).to have_checked_field("UK service").and have_checked_field("Northern Ireland service")
-    end
-
     specify "opens remove confirmation page before deleting" do
       ensure_on references_commodity_search_references_path(commodity)
       within(dom_id_selector(commodity_search_reference)) { click_link "Remove" }

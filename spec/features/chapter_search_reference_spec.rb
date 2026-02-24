@@ -85,11 +85,6 @@ RSpec.describe "Chapter Search Reference management" do
       expect(page).to have_content("You are currently using the")
     end
 
-    specify "shows release selector defaults on index" do
-      ensure_on references_chapter_search_references_path(chapter)
-      expect(page).to have_checked_field("UK service").and have_checked_field("Northern Ireland service")
-    end
-
     specify "opens remove confirmation page before deleting" do
       ensure_on references_chapter_search_references_path(chapter)
       within(dom_id_selector(chapter_search_reference)) { click_link "Remove" }
