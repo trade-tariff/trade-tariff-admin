@@ -15,6 +15,7 @@ RUN apk add --update --no-cache \
   sqlite \
   tzdata \
   yaml-dev \
+  openssl-dev \
   yarn && \
   cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
   echo "Europe/London" > /etc/timezone
@@ -79,4 +80,5 @@ HEALTHCHECK CMD nc -z 0.0.0.0 $PORT
 
 USER tariff
 
-CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
+#CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
+CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]

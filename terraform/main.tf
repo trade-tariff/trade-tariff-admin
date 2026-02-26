@@ -35,7 +35,7 @@ module "service" {
   task_role_policy_arns = [aws_iam_policy.task.arn]
   enable_ecs_exec       = true
 
-  service_environment_config = local.secret_env_vars
+  service_environment_config = local.admin_service_env_vars
 
   sns_topic_arns = [data.aws_sns_topic.slack_topic.arn]
 }
