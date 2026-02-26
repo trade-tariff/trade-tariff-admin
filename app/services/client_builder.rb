@@ -25,6 +25,9 @@ class ClientBuilder
 
   def call
     if TradeTariffAdmin::ServiceChooser.service_choices.present?
+      cert_path = "/tmp/backend.crt"
+      File.write(cert_path, ENV["SSL_CERT_PEM"]&.gsub('\\n', "\n"))
+
       Faraday.new(host) do |conn|
         conn.request :url_encoded
         conn.use WhodunnitMiddleware
@@ -32,6 +35,8 @@ class ClientBuilder
         conn.response :raise_error
         conn.adapter :net_http_persistent
         conn.response :json, content_type: /\bjson$/
+        conn.ssl.verify = false
+        conn.ssl.ca_file = cert_path
         conn.headers["User-Agent"] = user_agent
       end
     end
