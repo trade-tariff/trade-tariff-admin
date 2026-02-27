@@ -72,6 +72,18 @@ class GoodsNomenclatureLabel
   # Store goods_nomenclature_id for path building
   attr_accessor :goods_nomenclature_id
 
+  def self.find(goods_nomenclature_id, opts = {})
+    entity = new(goods_nomenclature_id: goods_nomenclature_id)
+    path = entity.singular_path
+
+    response = api.get(path, opts)
+    parsed = parse_jsonapi(response)
+
+    record = new(parsed)
+    record.goods_nomenclature_id = goods_nomenclature_id
+    record
+  end
+
   def to_param
     goods_nomenclature_id || goods_nomenclature_item_id
   end
