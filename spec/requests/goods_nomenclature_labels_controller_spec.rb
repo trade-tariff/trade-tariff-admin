@@ -11,8 +11,9 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
       "goods_nomenclature_item_id" => commodity_code,
       "goods_nomenclature_type" => "commodity",
       "producline_suffix" => "80",
-      "validity_start_date" => "2021-01-01",
-      "validity_end_date" => nil,
+      "stale" => false,
+      "manually_edited" => false,
+      "context_hash" => "abc123",
       "labels" => {
         "original_description" => "Live horses",
         "description" => "Horses (live)",
@@ -31,37 +32,6 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
           type: "goods_nomenclature_label",
           id: goods_nomenclature_sid.to_s,
           attributes: label_attributes,
-        },
-        meta: {
-          version: {
-            current: true,
-            oid: 100,
-            previous_oid: 99,
-            has_previous_version: true,
-          },
-        },
-      }.to_json,
-    }
-  end
-  let(:historical_label_response) do
-    {
-      status: 200,
-      headers: { "content-type" => "application/json; charset=utf-8" },
-      body: {
-        data: {
-          type: "goods_nomenclature_label",
-          id: goods_nomenclature_sid.to_s,
-          attributes: label_attributes.merge(
-            "labels" => label_attributes["labels"].merge("description" => "Old description"),
-          ),
-        },
-        meta: {
-          version: {
-            current: false,
-            oid: 99,
-            previous_oid: 98,
-            has_previous_version: true,
-          },
         },
       }.to_json,
     }
@@ -223,37 +193,6 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
       expect(rendered_page.body).to include("Save changes")
     end
     # rubocop:enable RSpec/MultipleExpectations
-
-    it "displays the previous version link" do
-      expect(rendered_page.body).to include("Previous version")
-    end
-
-    context "when viewing a historical version" do
-      before do
-        stub_api_request("/goods_nomenclatures/#{commodity_code}/goods_nomenclature_label?filter%5Boid%5D=100", backend: "uk")
-          .and_return(historical_label_response)
-      end
-
-      let(:make_request) { get goods_nomenclature_label_path(commodity_code, oid: 100) }
-
-      it { is_expected.to have_http_status :success }
-
-      it "displays the historical version banner" do
-        expect(rendered_page.body).to include("historical version")
-      end
-
-      it "displays disabled form fields" do
-        expect(rendered_page.body).to include("disabled")
-      end
-
-      it "does not display the save button" do
-        expect(rendered_page.body).not_to include("Save changes")
-      end
-
-      it "displays the current version link" do
-        expect(rendered_page.body).to include("Current version")
-      end
-    end
 
     context "when label not found" do
       before do

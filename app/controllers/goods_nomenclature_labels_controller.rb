@@ -38,13 +38,7 @@ class GoodsNomenclatureLabelsController < AuthenticatedController
   def update
     authorize GoodsNomenclatureLabel, :update?
 
-    @goods_nomenclature_label = find_label(skip_oid: true)
-
-    unless @goods_nomenclature_label.current?
-      redirect_to goods_nomenclature_label_path(goods_nomenclature_id),
-                  alert: "Cannot edit historical versions."
-      return
-    end
+    @goods_nomenclature_label = find_label
 
     @goods_nomenclature_label.assign_attributes(label_attributes)
 
@@ -66,11 +60,8 @@ private
     render "errors/not_found"
   end
 
-  def find_label(skip_oid: false)
-    opts = {}
-    opts[:oid] = params[:oid] if params[:oid].present? && !skip_oid
-
-    GoodsNomenclatureLabel.find(goods_nomenclature_id, opts)
+  def find_label
+    GoodsNomenclatureLabel.find(goods_nomenclature_id)
   end
 
   def goods_nomenclature_id

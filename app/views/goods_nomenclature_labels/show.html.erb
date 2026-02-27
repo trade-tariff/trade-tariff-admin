@@ -1,7 +1,5 @@
 <%= govuk_breadcrumbs 'Labels': goods_nomenclature_labels_path %>
 
-<%= render "version_banner", label: @goods_nomenclature_label %>
-
 <h1 class="govuk-heading-l">
   Commodity Label <%= @goods_nomenclature_label.goods_nomenclature_item_id %>
 </h1>
@@ -38,84 +36,58 @@
     </div>
 
     <div class="govuk-summary-list__row">
-      <dt class="govuk-summary-list__key">Validity start date</dt>
-      <dd class="govuk-summary-list__value"><%= @goods_nomenclature_label.validity_start_date %></dd>
-    </div>
-
-    <div class="govuk-summary-list__row">
-      <dt class="govuk-summary-list__key">Validity end date</dt>
-      <dd class="govuk-summary-list__value"><%= @goods_nomenclature_label.validity_end_date || "-" %></dd>
-    </div>
-
-    <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">Original description</dt>
       <dd class="govuk-summary-list__value"><%= @goods_nomenclature_label.original_description || "-" %></dd>
     </div>
   </dl>
 
-  <% disabled = !@goods_nomenclature_label.current? %>
-
   <div class="govuk-form-group">
     <%= f.label :description, "Description", class: "govuk-label govuk-label--m" %>
-    <% unless disabled %>
-      <div class="govuk-hint">
-        The simplified or clarified description for this commodity code.
-      </div>
-    <% end %>
+    <div class="govuk-hint">
+      The simplified or clarified description for this commodity code.
+    </div>
     <%= f.text_area :description,
                     class: "govuk-textarea",
                     rows: 3,
-                    disabled: disabled,
                     value: @goods_nomenclature_label.description %>
   </div>
 
   <div class="govuk-form-group">
     <%= f.label :known_brands_text, "Known brands", class: "govuk-label govuk-label--m" %>
-    <% unless disabled %>
-      <div class="govuk-hint">
-        Enter each brand name on a new line.
-      </div>
-    <% end %>
+    <div class="govuk-hint">
+      Enter each brand name on a new line.
+    </div>
     <%= f.text_area :known_brands_text,
                     class: "govuk-textarea",
                     rows: 4,
-                    disabled: disabled,
                     value: @goods_nomenclature_label.known_brands_text %>
   </div>
 
   <div class="govuk-form-group">
     <%= f.label :colloquial_terms_text, "Colloquial terms", class: "govuk-label govuk-label--m" %>
-    <% unless disabled %>
-      <div class="govuk-hint">
-        Enter each colloquial term on a new line.
-      </div>
-    <% end %>
+    <div class="govuk-hint">
+      Enter each colloquial term on a new line.
+    </div>
     <%= f.text_area :colloquial_terms_text,
                     class: "govuk-textarea",
                     rows: 4,
-                    disabled: disabled,
                     value: @goods_nomenclature_label.colloquial_terms_text %>
   </div>
 
   <div class="govuk-form-group">
     <%= f.label :synonyms_text, "Synonyms", class: "govuk-label govuk-label--m" %>
-    <% unless disabled %>
-      <div class="govuk-hint">
-        Enter each synonym on a new line.
-      </div>
-    <% end %>
+    <div class="govuk-hint">
+      Enter each synonym on a new line.
+    </div>
     <%= f.text_area :synonyms_text,
                     class: "govuk-textarea",
                     rows: 4,
-                    disabled: disabled,
                     value: @goods_nomenclature_label.synonyms_text %>
   </div>
 
-  <% if @goods_nomenclature_label.current? && policy(@goods_nomenclature_label).update? %>
+  <% if policy(@goods_nomenclature_label).update? %>
     <div class="govuk-button-group">
       <%= f.submit "Save changes", class: "govuk-button", data: { module: "govuk-button" } %>
     </div>
   <% end %>
 <% end %>
-
-<%= render "version_navigation", label: @goods_nomenclature_label %>
