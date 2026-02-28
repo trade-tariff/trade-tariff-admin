@@ -1,0 +1,10 @@
+<%= govuk_breadcrumbs 'Sections': references_sections_path,
+                      'Chapters': references_section_chapters_path(section_id: chapter.section.id),
+                      'Search references': references_chapter_search_references_path(chapter) %>
+
+<h2>Remove Search reference</h2>
+
+<%= render "references/remove_search_reference_form",
+           search_reference: search_reference,
+           url: references_chapter_search_reference_path(chapter, search_reference, release_service_query_params),
+           back_path: references_chapter_search_references_path(chapter, release_service_query_params) %>

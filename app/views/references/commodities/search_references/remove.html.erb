@@ -1,0 +1,10 @@
+<%= govuk_breadcrumbs 'Sections': references_sections_path,
+                      'Commodities': references_heading_commodities_path(heading_id: commodity.heading_id),
+                      'Search references': references_commodity_search_references_path(commodity) %>
+
+<h2>Remove Search reference</h2>
+
+<%= render "references/remove_search_reference_form",
+           search_reference: search_reference,
+           url: references_commodity_search_reference_path(commodity, search_reference, release_service_query_params),
+           back_path: references_commodity_search_references_path(commodity, release_service_query_params) %>

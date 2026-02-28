@@ -5,7 +5,10 @@
 <h2>Edit Search reference</h2>
 
 <%= govuk_form_for search_reference, url: references_chapter_search_reference_path(chapter, search_reference), as: :search_reference do |f| %>
+  <%= f.hidden_field :original_title, value: search_reference.title %>
   <%= f.govuk_text_field :title, width: 'one-half' %>
+
+  <%= render "references/release_services_fieldset", form: f %>
 
   <%= submit_and_back_buttons f, references_chapter_search_references_path(chapter) %>
 <% end %>
