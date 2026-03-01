@@ -23,36 +23,36 @@ class GoodsNomenclatureSelfText
 
   attr_accessor :goods_nomenclature_id
 
-  def self.find(goods_nomenclature_id, opts = {})
-    entity = new({ goods_nomenclature_id: goods_nomenclature_id }.merge(opts))
+  def self.find(goods_nomenclature_sid_param, opts = {})
+    entity = new({ goods_nomenclature_id: goods_nomenclature_sid_param }.merge(opts))
     path = entity.singular_path
 
     response = api.get(path, opts.except(*entity.cleaned_path_attributes))
     parsed = parse_jsonapi(response)
 
     record = new(parsed)
-    record.goods_nomenclature_id = goods_nomenclature_id
+    record.goods_nomenclature_id = goods_nomenclature_sid_param
     record
   end
 
   def to_param
-    goods_nomenclature_id || goods_nomenclature_item_id
+    goods_nomenclature_sid&.to_s || goods_nomenclature_id
   end
 
   def generate_score
-    api.post("admin/goods_nomenclatures/#{goods_nomenclature_id}/goods_nomenclature_self_text/score")
+    api.post("admin/goods_nomenclatures/#{goods_nomenclature_sid}/goods_nomenclature_self_text/score")
   end
 
   def regenerate
-    api.post("admin/goods_nomenclatures/#{goods_nomenclature_id}/goods_nomenclature_self_text/regenerate")
+    api.post("admin/goods_nomenclatures/#{goods_nomenclature_sid}/goods_nomenclature_self_text/regenerate")
   end
 
   def approve
-    api.post("admin/goods_nomenclatures/#{goods_nomenclature_id}/goods_nomenclature_self_text/approve")
+    api.post("admin/goods_nomenclatures/#{goods_nomenclature_sid}/goods_nomenclature_self_text/approve")
   end
 
   def reject
-    api.post("admin/goods_nomenclatures/#{goods_nomenclature_id}/goods_nomenclature_self_text/reject")
+    api.post("admin/goods_nomenclatures/#{goods_nomenclature_sid}/goods_nomenclature_self_text/reject")
   end
 
   def combined_score
