@@ -1,8 +1,6 @@
 class GoodsNomenclatureLabelStats
   include ApiEntity
 
-  uk_only
-
   set_singular_path "admin/goods_nomenclature_labels/stats"
 
   attributes :total_goods_nomenclatures,

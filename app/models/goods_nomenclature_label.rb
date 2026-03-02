@@ -1,10 +1,8 @@
-# UK Service - GoodsNomenclatureLabel for managing commodity labels
 class GoodsNomenclatureLabel
   include ApiEntity
 
-  uk_only
-
   set_singular_path "admin/goods_nomenclatures/:goods_nomenclature_id/goods_nomenclature_label"
+  set_collection_path "admin/goods_nomenclature_labels"
 
   attributes :goods_nomenclature_sid,
              :goods_nomenclature_item_id,
@@ -13,15 +11,21 @@ class GoodsNomenclatureLabel
              :stale,
              :manually_edited,
              :context_hash,
-             :labels
+             :labels,
+             :description_score,
+             :synonym_scores,
+             :colloquial_term_scores,
+             :score,
+             :nomenclature_type,
+             :original_description
 
-  # Label field accessors
-  def description
-    labels&.dig("description")
+  # Label field accessors - fall back to labels JSONB for singular (show) responses
+  def original_description
+    attributes[:original_description] || labels&.dig("original_description")
   end
 
-  def original_description
-    labels&.dig("original_description")
+  def description
+    labels&.dig("description")
   end
 
   def known_brands
@@ -67,6 +71,24 @@ class GoodsNomenclatureLabel
   def description=(value)
     self.labels ||= {}
     labels["description"] = value
+  end
+
+  def score_label(value = description_score)
+    return "No score" if value.nil?
+    return "Amazing" if value >= 0.85
+    return "Good" if value >= 0.5
+    return "Okay" if value >= 0.3
+
+    "Bad"
+  end
+
+  def score_tag_colour(value = description_score)
+    return "grey" if value.nil?
+    return "blue" if value >= 0.85
+    return "green" if value >= 0.5
+    return "yellow" if value >= 0.3
+
+    "red"
   end
 
   # Store goods_nomenclature_id for path building

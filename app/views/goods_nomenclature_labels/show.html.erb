@@ -1,4 +1,4 @@
-<%= govuk_breadcrumbs 'Labels': goods_nomenclature_labels_path %>
+<%= govuk_breadcrumbs 'Descriptions': "#{goods_nomenclature_self_texts_path}#labels" %>
 
 <h1 class="govuk-heading-l">
   Commodity Label <%= @goods_nomenclature_label.goods_nomenclature_item_id %>
@@ -38,6 +38,13 @@
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">Original description</dt>
       <dd class="govuk-summary-list__value"><%= @goods_nomenclature_label.original_description || "-" %></dd>
+    </div>
+
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Self-text</dt>
+      <dd class="govuk-summary-list__value">
+        <%= link_to "View self-text", goods_nomenclature_self_text_path(@goods_nomenclature_label.goods_nomenclature_sid), class: "govuk-link" %>
+      </dd>
     </div>
   </dl>
 

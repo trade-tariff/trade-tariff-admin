@@ -1,4 +1,4 @@
-<%= govuk_breadcrumbs 'Self-texts': goods_nomenclature_self_texts_path %>
+<%= govuk_breadcrumbs 'Descriptions': goods_nomenclature_self_texts_path %>
 
 <h1 class="govuk-heading-l">
   Self-text <%= @self_text.goods_nomenclature_item_id %>
@@ -99,6 +99,13 @@
         <strong class="govuk-tag govuk-tag--<%= @self_text.score_tag_colour %>"<% if @self_text.score_kind %> data-score-kind="<%= @self_text.score_kind %>"<% end %><% if @self_text.combined_score %> data-score="<%= @self_text.combined_score.round(4) %>"<% end %>>
           <%= @self_text.score_label %>
         </strong>
+      </dd>
+    </div>
+
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Labels</dt>
+      <dd class="govuk-summary-list__value">
+        <%= link_to "View labels", goods_nomenclature_label_path(@self_text.goods_nomenclature_sid), class: "govuk-link" %>
       </dd>
     </div>
   </dl>

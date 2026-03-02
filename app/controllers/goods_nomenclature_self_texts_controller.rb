@@ -1,5 +1,4 @@
 class GoodsNomenclatureSelfTextsController < AuthenticatedController
-  before_action :uk_only
   before_action :load_self_text, only: %i[show score regenerate approve reject update]
 
   def index
@@ -136,12 +135,6 @@ private
   rescue Faraday::Error => e
     Rails.logger.error("Failed to fetch self-texts: #{e.message}")
     { data: [], pagination: { page: 1, per_page: 20, total_count: 0, total_pages: 0 } }
-  end
-
-  def uk_only
-    return if TradeTariffAdmin::ServiceChooser.uk?
-
-    render "errors/not_found"
   end
 
   def goods_nomenclature_id

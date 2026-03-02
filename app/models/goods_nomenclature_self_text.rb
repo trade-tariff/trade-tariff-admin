@@ -1,8 +1,6 @@
 class GoodsNomenclatureSelfText
   include ApiEntity
 
-  uk_only
-
   set_singular_path "admin/goods_nomenclatures/:goods_nomenclature_id/goods_nomenclature_self_text"
   set_collection_path "admin/goods_nomenclature_self_texts"
 

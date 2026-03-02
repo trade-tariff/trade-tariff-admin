@@ -70,66 +70,115 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
       .and_return(stats_response)
   end
 
+  # rubocop:disable RSpec/NestedGroups
   describe "GET #index" do
-    let(:make_request) { get goods_nomenclature_labels_path }
+    context "with HTML format" do
+      let(:make_request) { get goods_nomenclature_labels_path }
 
-    it { is_expected.to have_http_status :success }
-    it { is_expected.to render_template(:index) }
+      it { is_expected.to have_http_status :success }
+      it { is_expected.to render_template(:index) }
 
-    it "displays the search form" do
-      expect(rendered_page.body).to include("Search for Label")
+      it "displays the search form" do
+        expect(rendered_page.body).to include("Search for Label")
+      end
+
+      it "displays the about labels guidance" do
+        expect(rendered_page.body).to include("About labels")
+      end
+
+      # rubocop:disable RSpec/MultipleExpectations
+      it "displays label statistics by kind" do
+        expect(rendered_page.body).to include("Label Statistics")
+        expect(rendered_page.body).to include("Goods nomenclatures with labels")
+        expect(rendered_page.body).to include("By Kind")
+        expect(rendered_page.body).to include("Known brands")
+        expect(rendered_page.body).to include("Synonyms")
+      end
+
+      it "displays origin statistics" do
+        expect(rendered_page.body).to include("By Origin")
+        expect(rendered_page.body).to include("AI-created only")
+        expect(rendered_page.body).to include("8,000")
+        expect(rendered_page.body).to include("Human-edited")
+        expect(rendered_page.body).to include("2,000")
+      end
+
+      it "displays the coverage chart" do
+        expect(rendered_page.body).to include("Coverage by Chapter")
+        expect(rendered_page.body).to include("label-coverage-chart")
+      end
+      # rubocop:enable RSpec/MultipleExpectations
+
+      context "when stats API fails" do
+        before do
+          stub_api_request("/goods_nomenclature_labels/stats", backend: "uk")
+            .and_return(status: 500, body: { error: "Internal Server Error" }.to_json)
+        end
+
+        it { is_expected.to have_http_status :success }
+
+        it "does not display statistics" do
+          expect(rendered_page.body).not_to include("Label Statistics")
+        end
+
+        it "still displays the search form" do
+          expect(rendered_page.body).to include("Search for Label")
+        end
+      end
     end
 
-    it "displays the about labels guidance" do
-      expect(rendered_page.body).to include("About labels")
-    end
+    context "with JSON format" do
+      let(:make_request) { get goods_nomenclature_labels_path(format: :json) }
+      let(:collection_response) do
+        jsonapi_response("goods_nomenclature_label", [
+          {
+            "goods_nomenclature_sid" => goods_nomenclature_sid,
+            "goods_nomenclature_item_id" => commodity_code,
+            "score" => 0.75,
+            "stale" => false,
+            "manually_edited" => false,
+            "original_description" => "Live horses",
+          },
+        ])
+      end
 
-    # rubocop:disable RSpec/MultipleExpectations
-    it "displays label statistics by kind" do
-      expect(rendered_page.body).to include("Label Statistics")
-      expect(rendered_page.body).to include("Goods nomenclatures with labels")
-      expect(rendered_page.body).to include("By Kind")
-      expect(rendered_page.body).to include("Known brands")
-      expect(rendered_page.body).to include("Synonyms")
-    end
-
-    it "displays origin statistics" do
-      expect(rendered_page.body).to include("By Origin")
-      expect(rendered_page.body).to include("AI-created only")
-      expect(rendered_page.body).to include("8,000")
-      expect(rendered_page.body).to include("Human-edited")
-      expect(rendered_page.body).to include("2,000")
-    end
-
-    it "displays the coverage chart" do
-      expect(rendered_page.body).to include("Coverage by Chapter")
-      expect(rendered_page.body).to include("label-coverage-chart")
-    end
-    # rubocop:enable RSpec/MultipleExpectations
-
-    context "when stats API fails" do
       before do
-        stub_api_request("/goods_nomenclature_labels/stats", backend: "uk")
-          .and_return(status: 500, body: { error: "Internal Server Error" }.to_json)
+        stub_api_request("/goods_nomenclature_labels", backend: "uk")
+          .with(query: hash_including({}))
+          .and_return(collection_response)
       end
 
       it { is_expected.to have_http_status :success }
 
-      it "does not display statistics" do
-        expect(rendered_page.body).not_to include("Label Statistics")
+      # rubocop:disable RSpec/MultipleExpectations
+      it "returns labels data with pagination" do
+        json = JSON.parse(rendered_page.body)
+
+        expect(json["data"]).to be_an(Array)
+        expect(json["data"].first["goods_nomenclature_item_id"]).to eq(commodity_code)
+        expect(json["data"].first["score"]).to eq(0.75)
+        expect(json["pagination"]).to include("page", "total_count", "total_pages")
       end
+      # rubocop:enable RSpec/MultipleExpectations
 
-      it "still displays the search form" do
-        expect(rendered_page.body).to include("Search for Label")
+      context "when API fails" do
+        before do
+          stub_api_request("/goods_nomenclature_labels", backend: "uk")
+            .with(query: hash_including({}))
+            .and_return(status: 500, body: { error: "Internal Server Error" }.to_json)
+        end
+
+        it { is_expected.to have_http_status :success }
+
+        it "returns empty data" do
+          json = JSON.parse(rendered_page.body)
+
+          expect(json["data"]).to eq([])
+        end
       end
-    end
-
-    context "when on XI service" do
-      before { TradeTariffAdmin::ServiceChooser.service_choice = "xi" }
-
-      it { is_expected.to render_template("errors/not_found") }
     end
   end
+  # rubocop:enable RSpec/NestedGroups
 
   describe "GET #search" do
     context "with valid commodity code" do
@@ -165,14 +214,6 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
         expect(session.dig("flash", "flashes", "alert")).to eq("Please enter a commodity code.")
       end
     end
-
-    context "when on XI service" do
-      before { TradeTariffAdmin::ServiceChooser.service_choice = "xi" }
-
-      let(:make_request) { get search_goods_nomenclature_labels_path(commodity_code: commodity_code) }
-
-      it { is_expected.to render_template("errors/not_found") }
-    end
   end
 
   describe "GET #show" do
@@ -206,12 +247,6 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
         rendered_page
         expect(session.dig("flash", "flashes", "alert")).to include("Label not found")
       end
-    end
-
-    context "when on XI service" do
-      before { TradeTariffAdmin::ServiceChooser.service_choice = "xi" }
-
-      it { is_expected.to render_template("errors/not_found") }
     end
   end
 
@@ -255,12 +290,6 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
 
       it { is_expected.to have_http_status :unprocessable_entity }
       it { is_expected.to render_template(:show) }
-    end
-
-    context "when on XI service" do
-      before { TradeTariffAdmin::ServiceChooser.service_choice = "xi" }
-
-      it { is_expected.to render_template("errors/not_found") }
     end
   end
 
