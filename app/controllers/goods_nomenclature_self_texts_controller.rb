@@ -26,11 +26,6 @@ class GoodsNomenclatureSelfTextsController < AuthenticatedController
       return
     end
 
-    if query.match?(/\A\d{10}\z/)
-      redirect_to goods_nomenclature_self_text_path(query)
-      return
-    end
-
     redirect_to goods_nomenclature_self_texts_path(q: query)
   end
 
@@ -45,9 +40,10 @@ class GoodsNomenclatureSelfTextsController < AuthenticatedController
 
     redirect_to goods_nomenclature_self_text_path(goods_nomenclature_id),
                 notice: "Score generated successfully."
-  rescue Faraday::Error
+  rescue Faraday::Error => e
+    Rails.logger.error("Failed to generate score for #{goods_nomenclature_id}: #{e.class} #{e.message}")
     redirect_to goods_nomenclature_self_text_path(goods_nomenclature_id),
-                alert: "Failed to generate score."
+                alert: "Failed to generate score: #{e.message.truncate(200)}"
   end
 
   def regenerate
@@ -104,7 +100,7 @@ private
   def load_self_text
     @self_text = GoodsNomenclatureSelfText.find(goods_nomenclature_id)
   rescue Faraday::ResourceNotFound
-    redirect_to goods_nomenclature_self_texts_path, alert: "Self-text not found for commodity code #{goods_nomenclature_id}."
+    redirect_to goods_nomenclature_self_texts_path, alert: "Self-text not found."
   end
 
   def self_texts_json
@@ -121,6 +117,7 @@ private
     {
       data: self_texts.map do |st|
         {
+          goods_nomenclature_sid: st.goods_nomenclature_sid,
           goods_nomenclature_item_id: st.goods_nomenclature_item_id,
           score: st.score,
           needs_review: st.needs_review,

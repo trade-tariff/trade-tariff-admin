@@ -133,7 +133,7 @@ export default class extends Controller {
       '</tr></thead><tbody class="govuk-table__body">';
 
     data.forEach(function(st) {
-      var showUrl = self.showUrlValue.replace('__ID__', st.goods_nomenclature_item_id);
+      var showUrl = self.showUrlValue.replace('__ID__', st.goods_nomenclature_sid);
       var sc = self.scoreMeta(st.score);
 
       html += '<tr class="govuk-table__row" data-score="' + (st.score !== null && st.score !== undefined ? st.score : '') + '" data-score-category="' + sc.category + '">' +
