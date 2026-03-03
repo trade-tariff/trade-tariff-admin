@@ -53,7 +53,7 @@
       Description
       <% ds = @goods_nomenclature_label.description_score %>
       <% if ds %>
-        <strong class="govuk-tag govuk-tag--<%= @goods_nomenclature_label.score_tag_colour(ds) %>"><%= ds.round(2) %></strong>
+        <strong class="govuk-tag govuk-tag--<%= @goods_nomenclature_label.score_tag_colour(ds) %> scored-tag-pill__score"><%= ds.round(2) %></strong>
       <% end %>
     <% end %>
     <div class="govuk-hint">

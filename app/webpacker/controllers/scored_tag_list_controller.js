@@ -52,13 +52,13 @@ export default class extends Controller {
 
       if (self.scoredValue) {
         var display = (score !== null && score !== undefined) ? score.toFixed(2) : '?';
-        scoreHtml = ' <strong class="govuk-tag govuk-tag--' + colour + '" style="font-size: 12px; padding: 2px 6px; margin-left: 4px">' + display + '</strong>';
+        scoreHtml = ' <strong class="govuk-tag govuk-tag--' + colour + ' scored-tag-pill__score">' + display + '</strong>';
       }
 
-      html += '<span style="display: inline-flex; align-items: center; background: #f3f2f1; border: 1px solid #b1b4b6; border-radius: 4px; padding: 4px 8px; margin: 0 4px 4px 0; font-size: 16px">' +
+      html += '<span class="scored-tag-pill">' +
         self.escapeHtml(term) + scoreHtml +
-        ' <button type="button" data-action="click->scored-tag-list#remove" data-index="' + i + '" ' +
-        'style="background: none; border: none; cursor: pointer; padding: 0 0 0 6px; font-size: 16px; color: #505a5f; line-height: 1" aria-label="Remove ' + self.escapeHtml(term) + '">&times;</button>' +
+        ' <button type="button" class="scored-tag-pill__remove" data-action="click->scored-tag-list#remove" data-index="' + i + '" ' +
+        'aria-label="Remove ' + self.escapeHtml(term) + '">&times;</button>' +
         '</span>';
     });
 
