@@ -140,7 +140,7 @@ export default class extends Controller {
       '</tr></thead><tbody class="govuk-table__body">';
 
     data.forEach(function(label) {
-      var showUrl = self.showUrlValue.replace('__ID__', label.goods_nomenclature_sid);
+      var showUrl = self.showUrlValue.replace('__ID__', label.goods_nomenclature_item_id);
       var sc = self.scoreMeta(label.score);
 
       html += '<tr class="govuk-table__row">' +
