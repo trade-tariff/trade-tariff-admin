@@ -147,7 +147,7 @@ RSpec.describe "Chapter Search Reference management" do
         ensure_on edit_references_chapter_search_reference_path(chapter, chapter_search_reference)
         fill_in "Search reference", with: "updated title"
         click_button "Update Search reference"
-        expect(page).to have_content("Not found in XI.")
+        expect(page).to have_content("Search reference was successfully updated only for UK. Not available in Northern Ireland.")
       end
     end
   end
@@ -175,7 +175,7 @@ RSpec.describe "Chapter Search Reference management" do
       ensure_on references_chapter_search_references_path(chapter)
       within(dom_id_selector(chapter_search_reference)) { click_link "Remove" }
       click_button "Remove Search reference"
-      expect(page).to have_content("Not found in XI.")
+      expect(page).to have_content("Search reference was successfully removed only for UK. Not available in Northern Ireland.")
       verify current_path == references_chapter_search_references_path(chapter)
     end
   end

@@ -1,6 +1,10 @@
 module References
   class SearchReferencesController < AuthenticatedController
     RELEASE_SERVICES = %w[uk xi].freeze
+    RELEASE_SERVICE_NAMES = {
+      "uk" => "UK",
+      "xi" => "Northern Ireland",
+    }.freeze
 
     def index
       authorize SearchReference, :index?
@@ -73,7 +77,7 @@ module References
         return render :edit, status: :unprocessable_entity
       end
 
-      failed_reference, missing_services = run_for_selected_services(selected_services) do
+      failed_reference, missing_services, successful_services = run_for_selected_services(selected_services) do
         reference = search_reference_for_action
         next :missing if reference.blank?
 
@@ -86,10 +90,14 @@ module References
       if failed_reference
         @search_reference = failed_reference
         render :edit, status: :unprocessable_entity
-      else
-        notice = "Search reference was successfully updated."
-        notice = "#{notice} Not found in #{missing_services.map(&:upcase).join(', ')}." if missing_services.any?
+      elsif successful_services.any? && missing_services.any?
+        notice = "Search reference was successfully updated only for #{format_release_services(successful_services)}. Not available in #{format_release_services(missing_services)}."
         redirect_to [:references, search_reference_parent, :search_references], notice:
+      elsif successful_services.empty? && missing_services.any?
+        alert = "Search reference could not be updated. Not available in #{format_release_services(missing_services)}."
+        redirect_to [:references, search_reference_parent, :search_references], alert:
+      else
+        redirect_to [:references, search_reference_parent, :search_references], notice: "Search reference was successfully updated."
       end
     end
 
@@ -104,7 +112,7 @@ module References
         return render :remove, status: :unprocessable_entity
       end
 
-      failed_reference, missing_services = run_for_selected_services(selected_services) do
+      failed_reference, missing_services, successful_services = run_for_selected_services(selected_services) do
         reference = search_reference_for_action
         next :missing if reference.blank?
 
@@ -114,10 +122,14 @@ module References
 
       if failed_reference
         redirect_to [:references, search_reference_parent, :search_references], alert: "Search reference could not be removed."
-      else
-        notice = "Search reference was successfully removed."
-        notice = "#{notice} Not found in #{missing_services.map(&:upcase).join(', ')}." if missing_services.any?
+      elsif successful_services.any? && missing_services.any?
+        notice = "Search reference was successfully removed only for #{format_release_services(successful_services)}. Not available in #{format_release_services(missing_services)}."
         redirect_to [:references, search_reference_parent, :search_references], notice:
+      elsif successful_services.empty? && missing_services.any?
+        alert = "Search reference could not be removed. Not available in #{format_release_services(missing_services)}."
+        redirect_to [:references, search_reference_parent, :search_references], alert:
+      else
+        redirect_to [:references, search_reference_parent, :search_references], notice: "Search reference was successfully removed."
       end
     end
 
@@ -199,6 +211,7 @@ module References
       original_service_choice = TradeTariffAdmin::ServiceChooser.service_choice
       failed_reference = nil
       missing_services = []
+      successful_services = []
 
       selected_services.each do |service|
         TradeTariffAdmin::ServiceChooser.service_choice = service
@@ -214,12 +227,18 @@ module References
           failed_reference = reference
           break
         end
+
+        successful_services << service
       end
 
-      [failed_reference, missing_services]
+      [failed_reference, missing_services, successful_services]
     ensure
       TradeTariffAdmin::ServiceChooser.service_choice = original_service_choice
       @search_reference_for_action = nil
+    end
+
+    def format_release_services(services)
+      services.map { |service| RELEASE_SERVICE_NAMES.fetch(service, service.upcase) }.to_sentence(two_words_connector: " and ")
     end
 
     def fallback_reference_by_original_title
