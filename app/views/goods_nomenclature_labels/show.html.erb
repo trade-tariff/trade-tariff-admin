@@ -40,12 +40,14 @@
       <dd class="govuk-summary-list__value"><%= @goods_nomenclature_label.original_description || "-" %></dd>
     </div>
 
-    <div class="govuk-summary-list__row">
-      <dt class="govuk-summary-list__key">Self-text</dt>
-      <dd class="govuk-summary-list__value">
-        <%= link_to "View self-text", goods_nomenclature_self_text_path(@goods_nomenclature_label.goods_nomenclature_sid), class: "govuk-link" %>
-      </dd>
-    </div>
+    <% if @goods_nomenclature_label.has_self_text %>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Self-text</dt>
+        <dd class="govuk-summary-list__value">
+          <%= link_to "View self-text", goods_nomenclature_self_text_path(@goods_nomenclature_label.goods_nomenclature_sid), class: "govuk-link" %>
+        </dd>
+      </div>
+    <% end %>
   </dl>
 
   <div class="govuk-form-group">

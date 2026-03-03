@@ -31,6 +31,7 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
       "coherence_score" => 0.68,
       "nomenclature_type" => "commodity",
       "score" => 0.70,
+      "has_label" => true,
     }
   end
   let(:self_text_response) do

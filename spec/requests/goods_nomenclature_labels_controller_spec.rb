@@ -21,6 +21,7 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
         "colloquial_terms" => %w[Ponies],
         "synonyms" => %w[Equine Steeds],
       },
+      "has_self_text" => true,
     }
   end
   let(:label_response) do
