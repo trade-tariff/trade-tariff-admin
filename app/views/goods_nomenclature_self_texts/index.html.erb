@@ -175,7 +175,10 @@
   </div>
 
   <%# ===== Labels tab ===== %>
-  <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="labels">
+  <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="labels"
+       data-controller="label-table"
+       data-label-table-url-value="<%= goods_nomenclature_labels_path(format: :json) %>"
+       data-label-table-show-url-value="<%= goods_nomenclature_labels_path %>/__ID__">
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-two-thirds">
         <div class="govuk-form-group">
@@ -184,7 +187,8 @@
             Search by commodity code, description, synonyms, or colloquial terms.
           </div>
           <input class="govuk-input govuk-input--width-20" id="label-search-q" type="text"
-                 data-label-table-target="searchInput">
+                 data-label-table-target="searchInput"
+                 data-action="keydown.enter->label-table#search">
         </div>
         <button class="govuk-button" data-module="govuk-button"
                 data-action="click->label-table#search">Search</button>
@@ -213,10 +217,7 @@
 
     <h2 class="govuk-heading-m">Labels</h2>
 
-    <div class="govuk-grid-row"
-         data-controller="label-table"
-         data-label-table-url-value="<%= goods_nomenclature_labels_path(format: :json) %>"
-         data-label-table-show-url-value="<%= goods_nomenclature_labels_path %>/__ID__">
+    <div class="govuk-grid-row">
 
       <div class="govuk-grid-column-one-quarter">
         <h3 class="govuk-heading-s">Filters</h3>

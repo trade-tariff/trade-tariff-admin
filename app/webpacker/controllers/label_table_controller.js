@@ -23,7 +23,8 @@ export default class extends Controller {
     this.fetchData();
   }
 
-  search() {
+  search(event) {
+    if (event) event.preventDefault();
     var q = this.hasSearchInputTarget ? this.searchInputTarget.value.trim() : '';
     this.qValue = q;
     this.pageValue = 1;
