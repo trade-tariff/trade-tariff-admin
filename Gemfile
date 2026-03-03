@@ -4,7 +4,7 @@ ruby File.read(".ruby-version").chomp
 
 # Server
 gem "puma"
-gem "rails", "~> 8"
+gem "rails", "~> 8.1"
 
 gem "routing-filter", github: "trade-tariff/routing-filter"
 
