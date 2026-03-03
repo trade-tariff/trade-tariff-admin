@@ -111,11 +111,52 @@ class GoodsNomenclatureLabel
     goods_nomenclature_id || goods_nomenclature_item_id
   end
 
+  def self.listing(params)
+    records = all(
+      page: params[:page] || 1,
+      type: params[:type] || "commodity",
+      sort: params[:sort] || "score",
+      direction: params[:direction] || "asc",
+      status: params[:status],
+      score_category: params[:score_category],
+      q: params[:q],
+    )
+
+    {
+      data: records.map(&:as_listing_json),
+      pagination: pagination_for(records),
+    }
+  rescue Faraday::Error => e
+    Rails.logger.error("Failed to fetch labels: #{e.message}")
+    { data: [], pagination: { page: 1, per_page: 20, total_count: 0, total_pages: 0 } }
+  end
+
+  def as_listing_json
+    {
+      goods_nomenclature_sid: goods_nomenclature_sid,
+      goods_nomenclature_item_id: goods_nomenclature_item_id,
+      score: score,
+      stale: stale,
+      manually_edited: manually_edited,
+      description: original_description.to_s.truncate(80),
+    }
+  end
+
   def self.text_to_array(text)
     return [] if text.blank?
 
     text.split(/[\r\n]+/).map(&:strip).reject(&:blank?)
   end
+
+  def self.pagination_for(records)
+    {
+      page: records.respond_to?(:current_page) ? records.current_page : 1,
+      per_page: records.respond_to?(:limit_value) ? records.limit_value : 20,
+      total_count: records.respond_to?(:total_count) ? records.total_count : records.size,
+      total_pages: records.respond_to?(:total_pages) ? records.total_pages : 1,
+    }
+  end
+  private_class_method :pagination_for
 
 private
 

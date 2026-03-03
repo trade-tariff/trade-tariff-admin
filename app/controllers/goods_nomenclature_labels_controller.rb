@@ -4,7 +4,7 @@ class GoodsNomenclatureLabelsController < AuthenticatedController
 
     respond_to do |format|
       format.html { redirect_to goods_nomenclature_self_texts_path(anchor: "labels") }
-      format.json { render json: labels_json }
+      format.json { render json: GoodsNomenclatureLabel.listing(params) }
     end
   end
 
@@ -52,40 +52,6 @@ class GoodsNomenclatureLabelsController < AuthenticatedController
   end
 
 private
-
-  def labels_json
-    labels = GoodsNomenclatureLabel.all(
-      page: params[:page] || 1,
-      type: params[:type] || "commodity",
-      sort: params[:sort] || "score",
-      direction: params[:direction] || "asc",
-      status: params[:status],
-      score_category: params[:score_category],
-      q: params[:q],
-    )
-
-    {
-      data: labels.map do |label|
-        {
-          goods_nomenclature_sid: label.goods_nomenclature_sid,
-          goods_nomenclature_item_id: label.goods_nomenclature_item_id,
-          score: label.score,
-          stale: label.stale,
-          manually_edited: label.manually_edited,
-          description: label.original_description.to_s.truncate(80),
-        }
-      end,
-      pagination: {
-        page: labels.respond_to?(:current_page) ? labels.current_page : 1,
-        per_page: labels.respond_to?(:limit_value) ? labels.limit_value : 20,
-        total_count: labels.respond_to?(:total_count) ? labels.total_count : labels.size,
-        total_pages: labels.respond_to?(:total_pages) ? labels.total_pages : 1,
-      },
-    }
-  rescue Faraday::Error => e
-    Rails.logger.error("Failed to fetch labels: #{e.message}")
-    { data: [], pagination: { page: 1, per_page: 20, total_count: 0, total_pages: 0 } }
-  end
 
   def find_label
     GoodsNomenclatureLabel.find(goods_nomenclature_id)
