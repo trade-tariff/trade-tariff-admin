@@ -181,8 +181,16 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
     end
     # rubocop:enable RSpec/MultipleExpectations
 
-    it "displays the View labels cross-link" do
+    it "displays the View labels cross-link when has_label is true" do
       expect(rendered_page.body).to include("View labels")
+    end
+
+    context "when has_label is false" do
+      let(:self_text_attributes) { super().merge("has_label" => false) }
+
+      it "does not display the View labels cross-link" do
+        expect(rendered_page.body).not_to include("View labels")
+      end
     end
 
     context "when self-text not found" do

@@ -3,12 +3,7 @@ class GoodsNomenclatureLabelsController < AuthenticatedController
     authorize GoodsNomenclatureLabel, :index?
 
     respond_to do |format|
-      format.html do
-        @stats = GoodsNomenclatureLabelStats.fetch
-      rescue Faraday::Error => e
-        Rails.logger.error("Failed to fetch label stats: #{e.message}")
-        @stats = nil
-      end
+      format.html { redirect_to goods_nomenclature_self_texts_path(anchor: "labels") }
       format.json { render json: labels_json }
     end
   end
@@ -122,24 +117,18 @@ private
     end
 
     if label_params[:known_brands_text]
-      attrs[:labels]["known_brands"] = text_to_array(label_params[:known_brands_text])
+      attrs[:labels]["known_brands"] = GoodsNomenclatureLabel.text_to_array(label_params[:known_brands_text])
     end
 
     if label_params[:colloquial_terms_text]
-      attrs[:labels]["colloquial_terms"] = text_to_array(label_params[:colloquial_terms_text])
+      attrs[:labels]["colloquial_terms"] = GoodsNomenclatureLabel.text_to_array(label_params[:colloquial_terms_text])
     end
 
     if label_params[:synonyms_text]
-      attrs[:labels]["synonyms"] = text_to_array(label_params[:synonyms_text])
+      attrs[:labels]["synonyms"] = GoodsNomenclatureLabel.text_to_array(label_params[:synonyms_text])
     end
 
     attrs
-  end
-
-  def text_to_array(text)
-    return [] if text.blank?
-
-    text.split(/[\r\n]+/).map(&:strip).reject(&:blank?)
   end
 
   def normalize_commodity_code(code)

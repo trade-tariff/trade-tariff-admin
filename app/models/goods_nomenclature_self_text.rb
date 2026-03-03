@@ -17,7 +17,8 @@ class GoodsNomenclatureSelfText
              :similarity_score,
              :coherence_score,
              :nomenclature_type,
-             :score
+             :score,
+             :has_label
 
   attr_accessor :goods_nomenclature_id
 

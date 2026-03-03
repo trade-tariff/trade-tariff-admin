@@ -17,7 +17,8 @@ class GoodsNomenclatureLabel
              :colloquial_term_scores,
              :score,
              :nomenclature_type,
-             :original_description
+             :original_description,
+             :has_self_text
 
   # Label field accessors - fall back to labels JSONB for singular (show) responses
   def original_description
@@ -110,11 +111,15 @@ class GoodsNomenclatureLabel
     goods_nomenclature_id || goods_nomenclature_item_id
   end
 
-private
-
-  def text_to_array(text)
+  def self.text_to_array(text)
     return [] if text.blank?
 
     text.split(/[\r\n]+/).map(&:strip).reject(&:blank?)
+  end
+
+private
+
+  def text_to_array(text)
+    self.class.text_to_array(text)
   end
 end
