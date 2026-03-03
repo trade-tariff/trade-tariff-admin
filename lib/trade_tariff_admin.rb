@@ -133,6 +133,19 @@ module TradeTariffAdmin
       ENV.fetch("ENVIRONMENT", "production")
     end
 
+    def frontend_host
+      case environment
+      when "production"
+        "https://www.trade-tariff.service.gov.uk"
+      when "staging"
+        "https://staging.trade-tariff.service.gov.uk"
+      when "development"
+        "https://dev.trade-tariff.service.gov.uk"
+      else
+        "http://localhost:3001"
+      end
+    end
+
     def id_token_cookie_name
       cookie_name_for("id_token")
     end
