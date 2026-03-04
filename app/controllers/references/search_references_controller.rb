@@ -141,6 +141,8 @@ module References
           reference.referenced_id = search_reference_parent.id
         end
       rescue Faraday::ResourceNotFound
+        return nil unless fallback_reference_lookup_enabled?
+
         fallback_reference_by_original_title
       end
     end
@@ -200,7 +202,16 @@ module References
     end
 
     def original_title_param
-      params.dig(:search_reference, :original_title) || params[:original_title]
+      value = params.dig(:search_reference, :original_title) || params[:original_title]
+      return nil if value.blank?
+
+      value.to_s.strip
+    end
+
+    def normalised_original_title_param
+      return nil if original_title_param.blank?
+
+      SearchReferences::TitleNormaliser.normalise_title(original_title_param)
     end
 
     def release_service_params_present?
@@ -242,11 +253,40 @@ module References
     end
 
     def fallback_reference_by_original_title
-      return nil if original_title_param.blank?
+      return nil if normalised_original_title_param.blank?
 
-      search_reference_parent.search_references.detect do |entry|
-        entry.title == original_title_param
+      reference = search_reference_parent.search_references.detect do |entry|
+        SearchReferences::TitleNormaliser.normalise_title(entry.title) == normalised_original_title_param
       end
+      return reference if reference
+
+      fallback_reference_from_other_services
+    rescue Faraday::ResourceNotFound
+      nil
+    end
+
+    def fallback_reference_from_other_services
+      original_service_choice = TradeTariffAdmin::ServiceChooser.service_choice
+      other_services = RELEASE_SERVICES - [original_service_choice]
+
+      other_services.each do |service|
+        TradeTariffAdmin::ServiceChooser.service_choice = service
+
+        reference = search_reference_parent.search_references.detect do |entry|
+          SearchReferences::TitleNormaliser.normalise_title(entry.title) == normalised_original_title_param
+        end
+        return reference if reference
+      rescue Faraday::ResourceNotFound
+        next
+      end
+
+      nil
+    ensure
+      TradeTariffAdmin::ServiceChooser.service_choice = original_service_choice
+    end
+
+    def fallback_reference_lookup_enabled?
+      request.get?
     end
 
     def search_reference_parent
