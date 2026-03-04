@@ -1,4 +1,4 @@
-<%= govuk_breadcrumbs 'Labels': goods_nomenclature_labels_path %>
+<%= govuk_breadcrumbs 'Descriptions': "#{goods_nomenclature_self_texts_path}#labels" %>
 
 <h1 class="govuk-heading-l">
   Commodity Label <%= @goods_nomenclature_label.goods_nomenclature_item_id %>
@@ -27,7 +27,7 @@
   <dl class="govuk-summary-list govuk-!-margin-bottom-6">
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">Commodity code</dt>
-      <dd class="govuk-summary-list__value"><%= @goods_nomenclature_label.goods_nomenclature_item_id %></dd>
+      <dd class="govuk-summary-list__value"><%= link_to @goods_nomenclature_label.goods_nomenclature_item_id, "#{TradeTariffAdmin.frontend_host}/commodities/#{@goods_nomenclature_label.goods_nomenclature_item_id}", class: "govuk-link", target: "_blank", rel: "noopener noreferrer" %></dd>
     </div>
 
     <div class="govuk-summary-list__row">
@@ -36,13 +36,28 @@
     </div>
 
     <div class="govuk-summary-list__row">
-      <dt class="govuk-summary-list__key">Original description</dt>
+      <dt class="govuk-summary-list__key">Input description</dt>
       <dd class="govuk-summary-list__value"><%= @goods_nomenclature_label.original_description || "-" %></dd>
     </div>
+
+    <% if @goods_nomenclature_label.has_self_text %>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Self-text</dt>
+        <dd class="govuk-summary-list__value">
+          <%= link_to "View self-text", goods_nomenclature_self_text_path(@goods_nomenclature_label.goods_nomenclature_sid), class: "govuk-link" %>
+        </dd>
+      </div>
+    <% end %>
   </dl>
 
   <div class="govuk-form-group">
-    <%= f.label :description, "Description", class: "govuk-label govuk-label--m" %>
+    <%= f.label :description, class: "govuk-label govuk-label--m" do %>
+      Description
+      <% ds = @goods_nomenclature_label.description_score %>
+      <% if ds %>
+        <strong class="govuk-tag govuk-tag--<%= @goods_nomenclature_label.score_tag_colour(ds) %> scored-tag-pill__score"><%= ds.round(2) %></strong>
+      <% end %>
+    <% end %>
     <div class="govuk-hint">
       The simplified or clarified description for this commodity code.
     </div>
@@ -52,37 +67,43 @@
                     value: @goods_nomenclature_label.description %>
   </div>
 
-  <div class="govuk-form-group">
-    <%= f.label :known_brands_text, "Known brands", class: "govuk-label govuk-label--m" %>
-    <div class="govuk-hint">
-      Enter each brand name on a new line.
-    </div>
-    <%= f.text_area :known_brands_text,
-                    class: "govuk-textarea",
-                    rows: 4,
-                    value: @goods_nomenclature_label.known_brands_text %>
+  <div class="govuk-form-group"
+       data-controller="scored-tag-list"
+       data-scored-tag-list-terms-value="<%= @goods_nomenclature_label.known_brands.to_json %>"
+       data-scored-tag-list-scores-value="[]"
+       data-scored-tag-list-scored-value="false">
+    <label class="govuk-label govuk-label--m" for="lb-known-brands-input">Known brands</label>
+    <div class="govuk-hint">Not scored.</div>
+    <div data-scored-tag-list-target="tags" class="govuk-!-margin-bottom-2"></div>
+    <input id="lb-known-brands-input" class="govuk-input" data-scored-tag-list-target="input"
+           data-action="keydown->scored-tag-list#add" placeholder="Add a brand and press Enter">
+    <textarea name="goods_nomenclature_label[known_brands_text]" data-scored-tag-list-target="hidden" style="display:none"><%= @goods_nomenclature_label.known_brands_text %></textarea>
   </div>
 
-  <div class="govuk-form-group">
-    <%= f.label :colloquial_terms_text, "Colloquial terms", class: "govuk-label govuk-label--m" %>
-    <div class="govuk-hint">
-      Enter each colloquial term on a new line.
-    </div>
-    <%= f.text_area :colloquial_terms_text,
-                    class: "govuk-textarea",
-                    rows: 4,
-                    value: @goods_nomenclature_label.colloquial_terms_text %>
+  <div class="govuk-form-group"
+       data-controller="scored-tag-list"
+       data-scored-tag-list-terms-value="<%= @goods_nomenclature_label.colloquial_terms.to_json %>"
+       data-scored-tag-list-scores-value="<%= Array(@goods_nomenclature_label.colloquial_term_scores).to_json %>"
+       data-scored-tag-list-scored-value="true">
+    <label class="govuk-label govuk-label--m" for="lb-colloquial-terms-input">Colloquial terms</label>
+    <div class="govuk-hint">Informal or everyday names traders might use.</div>
+    <div data-scored-tag-list-target="tags" class="govuk-!-margin-bottom-2"></div>
+    <input id="lb-colloquial-terms-input" class="govuk-input" data-scored-tag-list-target="input"
+           data-action="keydown->scored-tag-list#add" placeholder="Add a term and press Enter">
+    <textarea name="goods_nomenclature_label[colloquial_terms_text]" data-scored-tag-list-target="hidden" style="display:none"><%= @goods_nomenclature_label.colloquial_terms_text %></textarea>
   </div>
 
-  <div class="govuk-form-group">
-    <%= f.label :synonyms_text, "Synonyms", class: "govuk-label govuk-label--m" %>
-    <div class="govuk-hint">
-      Enter each synonym on a new line.
-    </div>
-    <%= f.text_area :synonyms_text,
-                    class: "govuk-textarea",
-                    rows: 4,
-                    value: @goods_nomenclature_label.synonyms_text %>
+  <div class="govuk-form-group"
+       data-controller="scored-tag-list"
+       data-scored-tag-list-terms-value="<%= @goods_nomenclature_label.synonyms.to_json %>"
+       data-scored-tag-list-scores-value="<%= Array(@goods_nomenclature_label.synonym_scores).to_json %>"
+       data-scored-tag-list-scored-value="true">
+    <label class="govuk-label govuk-label--m" for="lb-synonyms-input">Synonyms</label>
+    <div class="govuk-hint">Alternative names or technical terms.</div>
+    <div data-scored-tag-list-target="tags" class="govuk-!-margin-bottom-2"></div>
+    <input id="lb-synonyms-input" class="govuk-input" data-scored-tag-list-target="input"
+           data-action="keydown->scored-tag-list#add" placeholder="Add a synonym and press Enter">
+    <textarea name="goods_nomenclature_label[synonyms_text]" data-scored-tag-list-target="hidden" style="display:none"><%= @goods_nomenclature_label.synonyms_text %></textarea>
   </div>
 
   <% if policy(@goods_nomenclature_label).update? %>

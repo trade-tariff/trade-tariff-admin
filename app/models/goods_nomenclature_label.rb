@@ -1,10 +1,8 @@
-# UK Service - GoodsNomenclatureLabel for managing commodity labels
 class GoodsNomenclatureLabel
   include ApiEntity
 
-  uk_only
-
   set_singular_path "admin/goods_nomenclatures/:goods_nomenclature_id/goods_nomenclature_label"
+  set_collection_path "admin/goods_nomenclature_labels"
 
   attributes :goods_nomenclature_sid,
              :goods_nomenclature_item_id,
@@ -13,15 +11,22 @@ class GoodsNomenclatureLabel
              :stale,
              :manually_edited,
              :context_hash,
-             :labels
+             :labels,
+             :description_score,
+             :synonym_scores,
+             :colloquial_term_scores,
+             :score,
+             :nomenclature_type,
+             :original_description,
+             :has_self_text
 
-  # Label field accessors
-  def description
-    labels&.dig("description")
+  # Label field accessors - fall back to labels JSONB for singular (show) responses
+  def original_description
+    attributes[:original_description] || labels&.dig("original_description")
   end
 
-  def original_description
-    labels&.dig("original_description")
+  def description
+    labels&.dig("description")
   end
 
   def known_brands
@@ -69,6 +74,24 @@ class GoodsNomenclatureLabel
     labels["description"] = value
   end
 
+  def score_label(value = description_score)
+    return "No score" if value.nil?
+    return "Amazing" if value >= 0.85
+    return "Good" if value >= 0.5
+    return "Okay" if value >= 0.3
+
+    "Bad"
+  end
+
+  def score_tag_colour(value = description_score)
+    return "grey" if value.nil?
+    return "blue" if value >= 0.85
+    return "green" if value >= 0.5
+    return "yellow" if value >= 0.3
+
+    "red"
+  end
+
   # Store goods_nomenclature_id for path building
   attr_accessor :goods_nomenclature_id
 
@@ -88,11 +111,56 @@ class GoodsNomenclatureLabel
     goods_nomenclature_id || goods_nomenclature_item_id
   end
 
-private
+  def self.listing(params)
+    records = all(
+      page: params[:page] || 1,
+      type: params[:type] || "commodity",
+      sort: params[:sort] || "score",
+      direction: params[:direction] || "asc",
+      status: params[:status],
+      score_category: params[:score_category],
+      q: params[:q],
+    )
 
-  def text_to_array(text)
+    {
+      data: records.map(&:as_listing_json),
+      pagination: pagination_for(records),
+    }
+  rescue Faraday::Error => e
+    Rails.logger.error("Failed to fetch labels: #{e.message}")
+    { data: [], pagination: { page: 1, per_page: 20, total_count: 0, total_pages: 0 } }
+  end
+
+  def as_listing_json
+    {
+      goods_nomenclature_sid: goods_nomenclature_sid,
+      goods_nomenclature_item_id: goods_nomenclature_item_id,
+      score: score,
+      stale: stale,
+      manually_edited: manually_edited,
+      description: original_description.to_s.truncate(80),
+    }
+  end
+
+  def self.text_to_array(text)
     return [] if text.blank?
 
     text.split(/[\r\n]+/).map(&:strip).reject(&:blank?)
+  end
+
+  def self.pagination_for(records)
+    {
+      page: records.respond_to?(:current_page) ? records.current_page : 1,
+      per_page: records.respond_to?(:limit_value) ? records.limit_value : 20,
+      total_count: records.respond_to?(:total_count) ? records.total_count : records.size,
+      total_pages: records.respond_to?(:total_pages) ? records.total_pages : 1,
+    }
+  end
+  private_class_method :pagination_for
+
+private
+
+  def text_to_array(text)
+    self.class.text_to_array(text)
   end
 end

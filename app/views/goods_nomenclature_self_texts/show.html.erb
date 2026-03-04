@@ -1,4 +1,4 @@
-<%= govuk_breadcrumbs 'Self-texts': goods_nomenclature_self_texts_path %>
+<%= govuk_breadcrumbs 'Descriptions': goods_nomenclature_self_texts_path %>
 
 <h1 class="govuk-heading-l">
   Self-text <%= @self_text.goods_nomenclature_item_id %>
@@ -55,7 +55,7 @@
   <dl class="govuk-summary-list govuk-!-margin-bottom-6">
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">Commodity code</dt>
-      <dd class="govuk-summary-list__value"><%= @self_text.goods_nomenclature_item_id %></dd>
+      <dd class="govuk-summary-list__value"><%= link_to @self_text.goods_nomenclature_item_id, "#{TradeTariffAdmin.frontend_host}/commodities/#{@self_text.goods_nomenclature_item_id}", class: "govuk-link", target: "_blank", rel: "noopener noreferrer" %></dd>
     </div>
 
     <div class="govuk-summary-list__row">
@@ -101,6 +101,15 @@
         </strong>
       </dd>
     </div>
+
+    <% if @self_text.has_label %>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Labels</dt>
+        <dd class="govuk-summary-list__value">
+          <%= link_to "View labels", goods_nomenclature_label_path(@self_text.goods_nomenclature_item_id), class: "govuk-link" %>
+        </dd>
+      </div>
+    <% end %>
   </dl>
 
   <div class="govuk-form-group">
