@@ -1,0 +1,19 @@
+<%= form.govuk_check_boxes_fieldset :release_services,
+                                   legend: { text: "Release this reference to" } do %>
+  <% if (message = form.object.errors[:release_services].first).present? %>
+    <p class="govuk-error-message">
+      <span class="govuk-visually-hidden">Error:</span>
+      <%= message %>
+    </p>
+  <% end %>
+
+  <%= form.govuk_check_box :release_to_uk, 1, 0,
+                           label: { text: "UK service" },
+                           multiple: false,
+                           link_errors: true %>
+
+  <%= form.govuk_check_box :release_to_xi, 1, 0,
+                           label: { text: "Northern Ireland service" },
+                           multiple: false,
+                           link_errors: true %>
+<% end %>
