@@ -168,6 +168,99 @@ RSpec.describe AdminConfiguration do
         expect(configuration.display_value).to eq("plain text")
       end
     end
+
+    context "with model_config type" do
+      let(:attributes) do
+        {
+          name: "search_model",
+          config_type: "model_config",
+          value: {
+            "selected_model" => "gpt-5.2",
+            "reasoning_effort" => "low",
+            "models" => [
+              { "key" => "gpt-5.2", "label" => "GPT-5.2 (latest flagship)" },
+            ],
+          },
+        }
+      end
+
+      it "returns model label with reasoning effort" do
+        expect(configuration.display_value).to eq("GPT-5.2 (latest flagship) (reasoning: low)")
+      end
+    end
+  end
+
+  describe "#selected_model_label" do
+    context "with model_config type" do
+      let(:attributes) do
+        {
+          name: "search_model",
+          config_type: "model_config",
+          value: {
+            "selected_model" => "gpt-5.2",
+            "reasoning_effort" => "low",
+            "models" => [
+              { "key" => "gpt-5.2", "label" => "GPT-5.2 (latest flagship)", "reasoning_levels" => %w[none low medium high] },
+              { "key" => "gpt-4.1-2025-04-14", "label" => "GPT-4.1 (1M context)", "reasoning_levels" => [] },
+            ],
+          },
+        }
+      end
+
+      it "returns the label for the selected model" do
+        expect(configuration.selected_model_label).to eq("GPT-5.2 (latest flagship)")
+      end
+    end
+
+    context "with non-model_config type" do
+      it "returns nil" do
+        expect(configuration.selected_model_label).to be_nil
+      end
+    end
+  end
+
+  describe "#selected_reasoning_effort" do
+    context "with model_config type and reasoning set" do
+      let(:attributes) do
+        {
+          name: "search_model",
+          config_type: "model_config",
+          value: {
+            "selected_model" => "gpt-5.2",
+            "reasoning_effort" => "low",
+            "models" => [],
+          },
+        }
+      end
+
+      it "returns the reasoning effort" do
+        expect(configuration.selected_reasoning_effort).to eq("low")
+      end
+    end
+
+    context "with model_config type and no reasoning set" do
+      let(:attributes) do
+        {
+          name: "expand_model",
+          config_type: "model_config",
+          value: {
+            "selected_model" => "gpt-4.1-mini-2025-04-14",
+            "reasoning_effort" => nil,
+            "models" => [],
+          },
+        }
+      end
+
+      it "returns None" do
+        expect(configuration.selected_reasoning_effort).to eq("None")
+      end
+    end
+
+    context "with non-model_config type" do
+      it "returns nil" do
+        expect(configuration.selected_reasoning_effort).to be_nil
+      end
+    end
   end
 
   describe "#selected_option_label" do

@@ -42,6 +42,84 @@
         <% end %>
       </select>
     </div>
+  <% when "model_config" %>
+    <% models = configuration.value.is_a?(Hash) ? (configuration.value["models"] || []) : [] %>
+    <% selected_model = configuration.value.is_a?(Hash) ? configuration.value["selected_model"] : "" %>
+    <% selected_reasoning = configuration.value.is_a?(Hash) ? (configuration.value["reasoning_effort"] || "") : "" %>
+
+    <input type="hidden"
+           id="model-config-hidden-field"
+           name="classification_configuration[value]"
+           value="<%= configuration.value.is_a?(Hash) ? configuration.value.to_json : configuration.value %>">
+
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="model-config-model">Model</label>
+      <div class="govuk-hint">Choose which AI model to use for this journey</div>
+      <select class="govuk-select"
+              id="model-config-model"
+              onchange="updateModelConfig()">
+        <option value="">-- Select a model --</option>
+        <% models.each do |model| %>
+          <option value="<%= model["key"] %>"
+                  data-reasoning-levels="<%= (model["reasoning_levels"] || []).join(",") %>"
+                  <%= "selected" if model["key"] == selected_model %>><%= model["label"] || model["key"] %></option>
+        <% end %>
+      </select>
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="model-config-reasoning">Reasoning effort</label>
+      <div class="govuk-hint">Choose the reasoning effort level (only available for models that support it)</div>
+      <select class="govuk-select"
+              id="model-config-reasoning"
+              onchange="updateModelConfig()">
+        <option value="">None</option>
+      </select>
+    </div>
+
+    <script>
+      (function() {
+        var modelSelect = document.getElementById('model-config-model');
+        var reasoningSelect = document.getElementById('model-config-reasoning');
+        var hiddenField = document.getElementById('model-config-hidden-field');
+        var initialReasoning = "<%= selected_reasoning %>";
+
+        function rebuildReasoningOptions() {
+          var selectedOption = modelSelect.options[modelSelect.selectedIndex];
+          var levels = selectedOption ? (selectedOption.getAttribute('data-reasoning-levels') || '') : '';
+          var levelsArray = levels ? levels.split(',') : [];
+
+          reasoningSelect.innerHTML = '<option value="">None</option>';
+
+          levelsArray.forEach(function(level) {
+            if (level === 'none') return;
+            var opt = document.createElement('option');
+            opt.value = level;
+            opt.textContent = level.charAt(0).toUpperCase() + level.slice(1);
+            reasoningSelect.appendChild(opt);
+          });
+
+          if (levelsArray.length === 0) {
+            reasoningSelect.disabled = true;
+            reasoningSelect.value = '';
+          } else {
+            reasoningSelect.disabled = false;
+          }
+        }
+
+        window.updateModelConfig = function() {
+          var data = JSON.parse(hiddenField.value);
+          data.selected_model = modelSelect.value;
+          data.reasoning_effort = reasoningSelect.value || null;
+          hiddenField.value = JSON.stringify(data);
+        };
+
+        rebuildReasoningOptions();
+        if (initialReasoning) {
+          reasoningSelect.value = initialReasoning;
+        }
+      })();
+    </script>
   <% else %>
     <%= f.govuk_text_area :value,
                           label: { text: "Value" },

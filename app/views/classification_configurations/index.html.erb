@@ -24,6 +24,8 @@
               <%= config.value %>
             <% when "options" %>
               <%= config.selected_option_label %>
+            <% when "model_config" %>
+              <%= config.selected_model_label %> <span class="govuk-body-s govuk-!-margin-0">(reasoning: <%= config.selected_reasoning_effort %>)</span>
             <% else %>
               <span class="govuk-body-s govuk-!-margin-0"><%= truncate(config.value.to_s, length: 50) %></span>
             <% end %>

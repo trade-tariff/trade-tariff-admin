@@ -50,6 +50,21 @@ class AdminConfiguration
     option&.dig("label") || selected
   end
 
+  def selected_model_label
+    return unless config_type == "model_config" && value.is_a?(Hash)
+
+    selected = value["selected_model"]
+    models = value["models"] || []
+    model = models.find { |m| m["key"] == selected }
+    model&.dig("label") || selected
+  end
+
+  def selected_reasoning_effort
+    return unless config_type == "model_config" && value.is_a?(Hash)
+
+    value["reasoning_effort"].presence || "None"
+  end
+
   def display_value
     case config_type
     when "boolean"
@@ -58,6 +73,8 @@ class AdminConfiguration
       value.to_s
     when "options"
       selected_option_label
+    when "model_config"
+      "#{selected_model_label} (reasoning: #{selected_reasoning_effort})"
     when "markdown"
       preview
     else

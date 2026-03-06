@@ -56,6 +56,51 @@
             </tbody>
           </table>
         <% end %>
+      <% when "model_config" %>
+        <% if @configuration.value.is_a?(Hash) %>
+          <dl class="govuk-summary-list govuk-summary-list--no-border govuk-!-margin-bottom-4">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Selected model</dt>
+              <dd class="govuk-summary-list__value"><%= @configuration.selected_model_label %></dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Reasoning effort</dt>
+              <dd class="govuk-summary-list__value"><%= @configuration.selected_reasoning_effort %></dd>
+            </div>
+          </dl>
+
+          <details class="govuk-details govuk-!-margin-bottom-0">
+            <summary class="govuk-details__summary">
+              <span class="govuk-details__summary-text">Available models</span>
+            </summary>
+            <div class="govuk-details__text">
+              <table class="govuk-table govuk-!-margin-bottom-0">
+                <thead class="govuk-table__head">
+                  <tr class="govuk-table__row">
+                    <th class="govuk-table__header" scope="col">Key</th>
+                    <th class="govuk-table__header" scope="col">Label</th>
+                    <th class="govuk-table__header" scope="col">Reasoning levels</th>
+                    <th class="govuk-table__header" scope="col">Selected</th>
+                  </tr>
+                </thead>
+                <tbody class="govuk-table__body">
+                  <% (@configuration.value["models"] || []).each do |model| %>
+                    <tr class="govuk-table__row">
+                      <td class="govuk-table__cell"><%= model["key"] %></td>
+                      <td class="govuk-table__cell"><%= model["label"] %></td>
+                      <td class="govuk-table__cell"><%= (model["reasoning_levels"] || []).join(", ").presence || "-" %></td>
+                      <td class="govuk-table__cell">
+                        <% if model["key"] == @configuration.value["selected_model"] %>
+                          <strong class="govuk-tag">Selected</strong>
+                        <% end %>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          </details>
+        <% end %>
       <% else %>
         <pre><%= @configuration.value %></pre>
       <% end %>
