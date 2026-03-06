@@ -42,6 +42,105 @@
         <% end %>
       </select>
     </div>
+  <% when "nested_options" %>
+    <% options = configuration.value.is_a?(Hash) ? (configuration.value["options"] || []) : [] %>
+    <% selected_value = configuration.value.is_a?(Hash) ? configuration.value["selected"] : "" %>
+    <% sub_values = configuration.value.is_a?(Hash) ? (configuration.value["sub_values"] || {}) : {} %>
+
+    <input type="hidden"
+           id="nested-options-hidden-field"
+           name="classification_configuration[value]"
+           value="<%= configuration.value.is_a?(Hash) ? configuration.value.to_json : configuration.value %>">
+
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="nested-options-selected">Selected value</label>
+      <div class="govuk-hint">Choose the primary value for this configuration</div>
+      <select class="govuk-select"
+              id="nested-options-selected"
+              onchange="updateNestedOptions()">
+        <option value="">-- Select a value --</option>
+        <% options.each do |opt| %>
+          <option value="<%= opt["key"] %>"
+                  data-sub-options="<%= (opt["sub_options"] || {}).to_json %>"
+                  <%= "selected" if opt["key"] == selected_value %>><%= opt["label"] || opt["key"] %></option>
+        <% end %>
+      </select>
+    </div>
+
+    <div id="nested-sub-options-container"></div>
+
+    <script>
+      (function() {
+        var mainSelect = document.getElementById('nested-options-selected');
+        var container = document.getElementById('nested-sub-options-container');
+        var hiddenField = document.getElementById('nested-options-hidden-field');
+        var initialSubValues = <%= sub_values.to_json.html_safe %>;
+
+        function rebuildSubOptions() {
+          container.innerHTML = '';
+          var selectedOption = mainSelect.options[mainSelect.selectedIndex];
+          if (!selectedOption || !selectedOption.value) return;
+
+          var subOptions = {};
+          try { subOptions = JSON.parse(selectedOption.getAttribute('data-sub-options') || '{}'); } catch(e) {}
+
+          Object.keys(subOptions).forEach(function(key) {
+            var levels = subOptions[key];
+            if (!Array.isArray(levels) || levels.length === 0) return;
+
+            var group = document.createElement('div');
+            group.className = 'govuk-form-group';
+
+            var label = document.createElement('label');
+            label.className = 'govuk-label';
+            label.setAttribute('for', 'nested-sub-' + key);
+            label.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+            group.appendChild(label);
+
+            var select = document.createElement('select');
+            select.className = 'govuk-select';
+            select.id = 'nested-sub-' + key;
+            select.setAttribute('data-sub-key', key);
+            select.onchange = updateNestedOptions;
+
+            var noneOpt = document.createElement('option');
+            noneOpt.value = '';
+            noneOpt.textContent = 'None';
+            select.appendChild(noneOpt);
+
+            levels.forEach(function(level) {
+              if (level === 'none') return;
+              var opt = document.createElement('option');
+              opt.value = level;
+              opt.textContent = level.charAt(0).toUpperCase() + level.slice(1);
+              select.appendChild(opt);
+            });
+
+            var current = initialSubValues[key] || '';
+            select.value = current;
+
+            group.appendChild(select);
+            container.appendChild(group);
+          });
+        }
+
+        window.updateNestedOptions = function() {
+          var data = JSON.parse(hiddenField.value);
+          data.selected = mainSelect.value;
+
+          var subSelects = container.querySelectorAll('select[data-sub-key]');
+          var sv = {};
+          subSelects.forEach(function(sel) {
+            sv[sel.getAttribute('data-sub-key')] = sel.value || null;
+          });
+          data.sub_values = sv;
+
+          hiddenField.value = JSON.stringify(data);
+        };
+
+        rebuildSubOptions();
+      })();
+    </script>
   <% else %>
     <%= f.govuk_text_area :value,
                           label: { text: "Value" },
