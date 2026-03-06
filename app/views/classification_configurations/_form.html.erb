@@ -125,6 +125,8 @@
         }
 
         window.updateNestedOptions = function() {
+          rebuildSubOptions();
+
           var data = JSON.parse(hiddenField.value);
           data.selected = mainSelect.value;
 
