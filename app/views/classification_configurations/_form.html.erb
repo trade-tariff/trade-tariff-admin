@@ -42,82 +42,103 @@
         <% end %>
       </select>
     </div>
-  <% when "model_config" %>
-    <% models = configuration.value.is_a?(Hash) ? (configuration.value["models"] || []) : [] %>
-    <% selected_model = configuration.value.is_a?(Hash) ? configuration.value["selected_model"] : "" %>
-    <% selected_reasoning = configuration.value.is_a?(Hash) ? (configuration.value["reasoning_effort"] || "") : "" %>
+  <% when "nested_options" %>
+    <% options = configuration.value.is_a?(Hash) ? (configuration.value["options"] || []) : [] %>
+    <% selected_value = configuration.value.is_a?(Hash) ? configuration.value["selected"] : "" %>
+    <% sub_values = configuration.value.is_a?(Hash) ? (configuration.value["sub_values"] || {}) : {} %>
 
     <input type="hidden"
-           id="model-config-hidden-field"
+           id="nested-options-hidden-field"
            name="classification_configuration[value]"
            value="<%= configuration.value.is_a?(Hash) ? configuration.value.to_json : configuration.value %>">
 
     <div class="govuk-form-group">
-      <label class="govuk-label" for="model-config-model">Model</label>
-      <div class="govuk-hint">Choose which AI model to use for this journey</div>
+      <label class="govuk-label" for="nested-options-selected">Selected value</label>
+      <div class="govuk-hint">Choose the primary value for this configuration</div>
       <select class="govuk-select"
-              id="model-config-model"
-              onchange="updateModelConfig()">
-        <option value="">-- Select a model --</option>
-        <% models.each do |model| %>
-          <option value="<%= model["key"] %>"
-                  data-reasoning-levels="<%= (model["reasoning_levels"] || []).join(",") %>"
-                  <%= "selected" if model["key"] == selected_model %>><%= model["label"] || model["key"] %></option>
+              id="nested-options-selected"
+              onchange="updateNestedOptions()">
+        <option value="">-- Select a value --</option>
+        <% options.each do |opt| %>
+          <option value="<%= opt["key"] %>"
+                  data-sub-options="<%= (opt["sub_options"] || {}).to_json %>"
+                  <%= "selected" if opt["key"] == selected_value %>><%= opt["label"] || opt["key"] %></option>
         <% end %>
       </select>
     </div>
 
-    <div class="govuk-form-group">
-      <label class="govuk-label" for="model-config-reasoning">Reasoning effort</label>
-      <div class="govuk-hint">Choose the reasoning effort level (only available for models that support it)</div>
-      <select class="govuk-select"
-              id="model-config-reasoning"
-              onchange="updateModelConfig()">
-        <option value="">None</option>
-      </select>
-    </div>
+    <div id="nested-sub-options-container"></div>
 
     <script>
       (function() {
-        var modelSelect = document.getElementById('model-config-model');
-        var reasoningSelect = document.getElementById('model-config-reasoning');
-        var hiddenField = document.getElementById('model-config-hidden-field');
-        var initialReasoning = "<%= selected_reasoning %>";
+        var mainSelect = document.getElementById('nested-options-selected');
+        var container = document.getElementById('nested-sub-options-container');
+        var hiddenField = document.getElementById('nested-options-hidden-field');
+        var initialSubValues = <%= sub_values.to_json.html_safe %>;
 
-        function rebuildReasoningOptions() {
-          var selectedOption = modelSelect.options[modelSelect.selectedIndex];
-          var levels = selectedOption ? (selectedOption.getAttribute('data-reasoning-levels') || '') : '';
-          var levelsArray = levels ? levels.split(',') : [];
+        function rebuildSubOptions() {
+          container.innerHTML = '';
+          var selectedOption = mainSelect.options[mainSelect.selectedIndex];
+          if (!selectedOption || !selectedOption.value) return;
 
-          reasoningSelect.innerHTML = '<option value="">None</option>';
+          var subOptions = {};
+          try { subOptions = JSON.parse(selectedOption.getAttribute('data-sub-options') || '{}'); } catch(e) {}
 
-          levelsArray.forEach(function(level) {
-            if (level === 'none') return;
-            var opt = document.createElement('option');
-            opt.value = level;
-            opt.textContent = level.charAt(0).toUpperCase() + level.slice(1);
-            reasoningSelect.appendChild(opt);
+          Object.keys(subOptions).forEach(function(key) {
+            var levels = subOptions[key];
+            if (!Array.isArray(levels) || levels.length === 0) return;
+
+            var group = document.createElement('div');
+            group.className = 'govuk-form-group';
+
+            var label = document.createElement('label');
+            label.className = 'govuk-label';
+            label.setAttribute('for', 'nested-sub-' + key);
+            label.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+            group.appendChild(label);
+
+            var select = document.createElement('select');
+            select.className = 'govuk-select';
+            select.id = 'nested-sub-' + key;
+            select.setAttribute('data-sub-key', key);
+            select.onchange = updateNestedOptions;
+
+            var noneOpt = document.createElement('option');
+            noneOpt.value = '';
+            noneOpt.textContent = 'None';
+            select.appendChild(noneOpt);
+
+            levels.forEach(function(level) {
+              if (level === 'none') return;
+              var opt = document.createElement('option');
+              opt.value = level;
+              opt.textContent = level.charAt(0).toUpperCase() + level.slice(1);
+              select.appendChild(opt);
+            });
+
+            var current = initialSubValues[key] || '';
+            select.value = current;
+
+            group.appendChild(select);
+            container.appendChild(group);
           });
-
-          if (levelsArray.length === 0) {
-            reasoningSelect.disabled = true;
-            reasoningSelect.value = '';
-          } else {
-            reasoningSelect.disabled = false;
-          }
         }
 
-        window.updateModelConfig = function() {
+        window.updateNestedOptions = function() {
           var data = JSON.parse(hiddenField.value);
-          data.selected_model = modelSelect.value;
-          data.reasoning_effort = reasoningSelect.value || null;
+          data.selected = mainSelect.value;
+
+          var subSelects = container.querySelectorAll('select[data-sub-key]');
+          var sv = {};
+          subSelects.forEach(function(sel) {
+            sv[sel.getAttribute('data-sub-key')] = sel.value || null;
+          });
+          data.sub_values = sv;
+
           hiddenField.value = JSON.stringify(data);
         };
 
-        rebuildReasoningOptions();
-        if (initialReasoning) {
-          reasoningSelect.value = initialReasoning;
-        }
+        rebuildSubOptions();
       })();
     </script>
   <% else %>

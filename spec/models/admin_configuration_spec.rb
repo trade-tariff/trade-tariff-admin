@@ -169,96 +169,116 @@ RSpec.describe AdminConfiguration do
       end
     end
 
-    context "with model_config type" do
+    context "with nested_options type" do
       let(:attributes) do
         {
           name: "search_model",
-          config_type: "model_config",
+          config_type: "nested_options",
           value: {
-            "selected_model" => "gpt-5.2",
-            "reasoning_effort" => "low",
-            "models" => [
-              { "key" => "gpt-5.2", "label" => "GPT-5.2 (latest flagship)" },
+            "selected" => "gpt-5.2",
+            "sub_values" => { "reasoning_effort" => "low" },
+            "options" => [
+              { "key" => "gpt-5.2", "label" => "GPT-5.2 (latest flagship)", "sub_options" => { "reasoning_effort" => %w[none low medium high] } },
             ],
           },
         }
       end
 
-      it "returns model label with reasoning effort" do
-        expect(configuration.display_value).to eq("GPT-5.2 (latest flagship) (reasoning: low)")
-      end
-    end
-  end
-
-  describe "#selected_model_label" do
-    context "with model_config type" do
-      let(:attributes) do
-        {
-          name: "search_model",
-          config_type: "model_config",
-          value: {
-            "selected_model" => "gpt-5.2",
-            "reasoning_effort" => "low",
-            "models" => [
-              { "key" => "gpt-5.2", "label" => "GPT-5.2 (latest flagship)", "reasoning_levels" => %w[none low medium high] },
-              { "key" => "gpt-4.1-2025-04-14", "label" => "GPT-4.1 (1M context)", "reasoning_levels" => [] },
-            ],
-          },
-        }
-      end
-
-      it "returns the label for the selected model" do
-        expect(configuration.selected_model_label).to eq("GPT-5.2 (latest flagship)")
+      it "returns selected label with sub-values" do
+        expect(configuration.display_value).to eq("GPT-5.2 (latest flagship) (reasoning effort: low)")
       end
     end
 
-    context "with non-model_config type" do
-      it "returns nil" do
-        expect(configuration.selected_model_label).to be_nil
-      end
-    end
-  end
-
-  describe "#selected_reasoning_effort" do
-    context "with model_config type and reasoning set" do
-      let(:attributes) do
-        {
-          name: "search_model",
-          config_type: "model_config",
-          value: {
-            "selected_model" => "gpt-5.2",
-            "reasoning_effort" => "low",
-            "models" => [],
-          },
-        }
-      end
-
-      it "returns the reasoning effort" do
-        expect(configuration.selected_reasoning_effort).to eq("low")
-      end
-    end
-
-    context "with model_config type and no reasoning set" do
+    context "with nested_options type and no sub_values" do
       let(:attributes) do
         {
           name: "expand_model",
-          config_type: "model_config",
+          config_type: "nested_options",
           value: {
-            "selected_model" => "gpt-4.1-mini-2025-04-14",
-            "reasoning_effort" => nil,
-            "models" => [],
+            "selected" => "gpt-4.1-mini-2025-04-14",
+            "sub_values" => {},
+            "options" => [
+              { "key" => "gpt-4.1-mini-2025-04-14", "label" => "GPT-4.1 mini", "sub_options" => {} },
+            ],
           },
         }
       end
 
-      it "returns None" do
-        expect(configuration.selected_reasoning_effort).to eq("None")
+      it "returns just the selected label" do
+        expect(configuration.display_value).to eq("GPT-4.1 mini")
+      end
+    end
+  end
+
+  describe "#nested_selected_label" do
+    context "with nested_options type" do
+      let(:attributes) do
+        {
+          name: "search_model",
+          config_type: "nested_options",
+          value: {
+            "selected" => "gpt-5.2",
+            "sub_values" => { "reasoning_effort" => "low" },
+            "options" => [
+              { "key" => "gpt-5.2", "label" => "GPT-5.2 (latest flagship)", "sub_options" => { "reasoning_effort" => %w[none low medium high] } },
+              { "key" => "gpt-4.1-2025-04-14", "label" => "GPT-4.1 (1M context)", "sub_options" => {} },
+            ],
+          },
+        }
+      end
+
+      it "returns the label for the selected option" do
+        expect(configuration.nested_selected_label).to eq("GPT-5.2 (latest flagship)")
       end
     end
 
-    context "with non-model_config type" do
+    context "with non-nested_options type" do
       it "returns nil" do
-        expect(configuration.selected_reasoning_effort).to be_nil
+        expect(configuration.nested_selected_label).to be_nil
+      end
+    end
+  end
+
+  describe "#nested_sub_value" do
+    context "with nested_options type and sub_values set" do
+      let(:attributes) do
+        {
+          name: "search_model",
+          config_type: "nested_options",
+          value: {
+            "selected" => "gpt-5.2",
+            "sub_values" => { "reasoning_effort" => "low" },
+            "options" => [],
+          },
+        }
+      end
+
+      it "returns the sub_value for the given key" do
+        expect(configuration.nested_sub_value("reasoning_effort")).to eq("low")
+      end
+    end
+
+    context "with nested_options type and no sub_values" do
+      let(:attributes) do
+        {
+          name: "expand_model",
+          config_type: "nested_options",
+          value: {
+            "selected" => "gpt-4.1-mini-2025-04-14",
+            "sub_values" => {},
+            "options" => [],
+          },
+        }
+      end
+
+      it "returns nil" do
+        expect(configuration.nested_sub_value("reasoning_effort")).to be_nil
+      end
+    end
+
+    context "with non-nested_options type" do
+      it "returns nil" do
+        expect(configuration.nested_sub_value("reasoning_effort")).to be_nil
       end
     end
   end

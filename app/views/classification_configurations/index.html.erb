@@ -24,8 +24,12 @@
               <%= config.value %>
             <% when "options" %>
               <%= config.selected_option_label %>
-            <% when "model_config" %>
-              <%= config.selected_model_label %> <span class="govuk-body-s govuk-!-margin-0">(reasoning: <%= config.selected_reasoning_effort %>)</span>
+            <% when "nested_options" %>
+              <%= config.nested_selected_label %>
+              <% sub_values = config.value.is_a?(Hash) ? (config.value["sub_values"] || {}) : {} %>
+              <% if sub_values.values.any?(&:present?) %>
+                <span class="govuk-body-s govuk-!-margin-0">(<%= sub_values.filter_map { |k, v| "#{k.tr('_', ' ')}: #{v}" if v.present? }.join(", ") %>)</span>
+              <% end %>
             <% else %>
               <span class="govuk-body-s govuk-!-margin-0"><%= truncate(config.value.to_s, length: 50) %></span>
             <% end %>

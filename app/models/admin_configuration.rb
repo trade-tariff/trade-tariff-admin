@@ -50,19 +50,22 @@ class AdminConfiguration
     option&.dig("label") || selected
   end
 
-  def selected_model_label
-    return unless config_type == "model_config" && value.is_a?(Hash)
+  def nested_selected_label
+    return unless config_type == "nested_options" && value.is_a?(Hash)
 
-    selected = value["selected_model"]
-    models = value["models"] || []
-    model = models.find { |m| m["key"] == selected }
-    model&.dig("label") || selected
+    selected = value["selected"]
+    options = value["options"] || []
+    option = options.find { |o| o["key"] == selected }
+    option&.dig("label") || selected
   end
 
-  def selected_reasoning_effort
-    return unless config_type == "model_config" && value.is_a?(Hash)
+  def nested_sub_value(key)
+    return unless config_type == "nested_options" && value.is_a?(Hash)
 
-    value["reasoning_effort"].presence || "None"
+    sub_values = value["sub_values"]
+    return unless sub_values.is_a?(Hash)
+
+    sub_values[key]
   end
 
   def display_value
@@ -73,8 +76,15 @@ class AdminConfiguration
       value.to_s
     when "options"
       selected_option_label
-    when "model_config"
-      "#{selected_model_label} (reasoning: #{selected_reasoning_effort})"
+    when "nested_options"
+      label = nested_selected_label
+      sub_values = value.is_a?(Hash) ? value["sub_values"] : nil
+      if sub_values.is_a?(Hash) && sub_values.values.any?(&:present?)
+        sub_parts = sub_values.filter_map { |k, v| "#{k.tr('_', ' ')}: #{v}" if v.present? }
+        "#{label} (#{sub_parts.join(', ')})"
+      else
+        label
+      end
     when "markdown"
       preview
     else
