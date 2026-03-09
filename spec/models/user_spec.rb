@@ -222,6 +222,15 @@ RSpec.describe User do
       expect(updated.uid).to eq("user-123")
     end
 
+    it "matches email case-insensitively" do
+      existing_user = create(:user, email: "user@example.com")
+      payload = token_payload.merge("email" => "User@Example.COM")
+
+      user = described_class.from_passwordless_payload!(payload)
+
+      expect(user).to eq(existing_user)
+    end
+
     context "when the user does not exist" do
       it "does not create a user" do
         expect { described_class.from_passwordless_payload!(token_payload) }
