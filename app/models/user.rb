@@ -15,11 +15,11 @@ class User < ApplicationRecord
     def from_passwordless_payload!(token)
       return if token.blank?
 
-      email = token["email"].to_s.presence
+      email = token["email"].to_s.downcase.presence
       user_id = token["sub"].to_s.presence
       return if email.blank? || user_id.blank?
 
-      user = find_by(email: email)
+      user = where("LOWER(email) = ?", email).first
       return unless user
 
       user.assign_attributes(
