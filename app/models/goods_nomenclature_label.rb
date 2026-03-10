@@ -1,41 +1,32 @@
-# UK Service - GoodsNomenclatureLabel for managing commodity labels
-# Supports version history via oplog oid filter
 class GoodsNomenclatureLabel
   include ApiEntity
 
-  uk_only
-
   set_singular_path "admin/goods_nomenclatures/:goods_nomenclature_id/goods_nomenclature_label"
+  set_collection_path "admin/goods_nomenclature_labels"
 
   attributes :goods_nomenclature_sid,
              :goods_nomenclature_item_id,
              :goods_nomenclature_type,
              :producline_suffix,
-             :validity_start_date,
-             :validity_end_date,
-             :labels
+             :stale,
+             :manually_edited,
+             :context_hash,
+             :labels,
+             :description_score,
+             :synonym_scores,
+             :colloquial_term_scores,
+             :score,
+             :nomenclature_type,
+             :original_description,
+             :has_self_text
 
-  # Version metadata from API response
-  attr_accessor :version_current,
-                :version_oid,
-                :version_previous_oid,
-                :version_has_previous
-
-  def current?
-    version_current != false
+  # Label field accessors - fall back to labels JSONB for singular (show) responses
+  def original_description
+    attributes[:original_description] || labels&.dig("original_description")
   end
 
-  def has_previous_version?
-    version_has_previous == true
-  end
-
-  # Label field accessors
   def description
     labels&.dig("description")
-  end
-
-  def original_description
-    labels&.dig("original_description")
   end
 
   def known_brands
@@ -83,67 +74,93 @@ class GoodsNomenclatureLabel
     labels["description"] = value
   end
 
-  def validity_start_date
-    super.to_date.to_formatted_s(:govuk)
+  def score_label(value = description_score)
+    return "No score" if value.nil?
+    return "Amazing" if value >= 0.85
+    return "Good" if value >= 0.5
+    return "Okay" if value >= 0.3
+
+    "Bad"
   end
 
-  def validity_end_date
-    date = super
+  def score_tag_colour(value = description_score)
+    return "grey" if value.nil?
+    return "blue" if value >= 0.85
+    return "green" if value >= 0.5
+    return "yellow" if value >= 0.3
 
-    return "" if date.nil?
-
-    date.to_date.to_formatted_s(:govuk)
-  end
-
-  # Override find to extract version metadata from API response
-  def self.find(goods_nomenclature_id, opts = {})
-    entity = new({ goods_nomenclature_id: goods_nomenclature_id }.merge(opts))
-    path = entity.singular_path
-
-    filter_opts = {}
-    filter_opts[:filter] = { oid: opts[:oid] } if opts[:oid].present?
-
-    response = api.get(path, filter_opts)
-    body = handle_body(response)
-    parsed = parse_jsonapi(response)
-
-    label = new(parsed)
-    label.goods_nomenclature_id = goods_nomenclature_id
-
-    # Extract version metadata from top-level meta
-    if body.is_a?(Hash) && body["meta"]&.dig("version")
-      version = body["meta"]["version"]
-      label.version_current = version["current"]
-      label.version_oid = version["oid"]
-      label.version_previous_oid = version["previous_oid"]
-      label.version_has_previous = version["has_previous_version"]
-    end
-
-    label
+    "red"
   end
 
   # Store goods_nomenclature_id for path building
   attr_accessor :goods_nomenclature_id
 
+  def self.find(goods_nomenclature_id, opts = {})
+    entity = new(goods_nomenclature_id: goods_nomenclature_id)
+    path = entity.singular_path
+
+    response = api.get(path, opts)
+    parsed = parse_jsonapi(response)
+
+    record = new(parsed)
+    record.goods_nomenclature_id = goods_nomenclature_id
+    record
+  end
+
   def to_param
     goods_nomenclature_id || goods_nomenclature_item_id
   end
 
-  def self.handle_body(resp)
-    body = resp.try(:body) || resp.try(:[], :body)
+  def self.listing(params)
+    records = all(
+      page: params[:page] || 1,
+      type: params[:type] || "commodity",
+      sort: params[:sort] || "score",
+      direction: params[:direction] || "asc",
+      status: params[:status],
+      score_category: params[:score_category],
+      q: params[:q],
+    )
 
-    return "" if body.blank?
-    return JSON.parse(body) if body.is_a?(String)
-
-    body
+    {
+      data: records.map(&:as_listing_json),
+      pagination: pagination_for(records),
+    }
+  rescue Faraday::Error => e
+    Rails.logger.error("Failed to fetch labels: #{e.message}")
+    { data: [], pagination: { page: 1, per_page: 20, total_count: 0, total_pages: 0 } }
   end
-  private_class_method :handle_body
+
+  def as_listing_json
+    {
+      goods_nomenclature_sid: goods_nomenclature_sid,
+      goods_nomenclature_item_id: goods_nomenclature_item_id,
+      score: score,
+      stale: stale,
+      manually_edited: manually_edited,
+      description: original_description.to_s.truncate(80),
+    }
+  end
+
+  def self.text_to_array(text)
+    return [] if text.blank?
+
+    text.split(/[\r\n]+/).map(&:strip).reject(&:blank?)
+  end
+
+  def self.pagination_for(records)
+    {
+      page: records.respond_to?(:current_page) ? records.current_page : 1,
+      per_page: records.respond_to?(:limit_value) ? records.limit_value : 20,
+      total_count: records.respond_to?(:total_count) ? records.total_count : records.size,
+      total_pages: records.respond_to?(:total_pages) ? records.total_pages : 1,
+    }
+  end
+  private_class_method :pagination_for
 
 private
 
   def text_to_array(text)
-    return [] if text.blank?
-
-    text.split(/[\r\n]+/).map(&:strip).reject(&:blank?)
+    self.class.text_to_array(text)
   end
 end

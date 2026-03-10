@@ -68,18 +68,11 @@ module NavigationHelper
             service: nil,
           ),
           NavigationItem.new(
-            text: "Labels",
-            href: goods_nomenclature_labels_path,
-            policy_class: GoodsNomenclatureLabel,
-            active_when: /\/goods_nomenclature_labels/,
-            service: :uk,
-          ),
-          NavigationItem.new(
-            text: "Self-texts",
+            text: "Descriptions",
             href: goods_nomenclature_self_texts_path,
             policy_class: GoodsNomenclatureSelfText,
-            active_when: /\/goods_nomenclature_self_texts/,
-            service: :uk,
+            active_when: /\/goods_nomenclature_(self_texts|labels)/,
+            service: nil,
           ),
           NavigationItem.new(
             text: "Configuration",

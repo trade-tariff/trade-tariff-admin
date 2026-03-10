@@ -1,12 +1,11 @@
 class GoodsNomenclatureLabelsController < AuthenticatedController
-  before_action :uk_only
-
   def index
     authorize GoodsNomenclatureLabel, :index?
-    @stats = GoodsNomenclatureLabelStats.fetch
-  rescue Faraday::Error => e
-    Rails.logger.error("Failed to fetch label stats: #{e.message}")
-    @stats = nil
+
+    respond_to do |format|
+      format.html { redirect_to goods_nomenclature_self_texts_path(anchor: "labels") }
+      format.json { render json: GoodsNomenclatureLabel.listing(params) }
+    end
   end
 
   def search
@@ -38,13 +37,7 @@ class GoodsNomenclatureLabelsController < AuthenticatedController
   def update
     authorize GoodsNomenclatureLabel, :update?
 
-    @goods_nomenclature_label = find_label(skip_oid: true)
-
-    unless @goods_nomenclature_label.current?
-      redirect_to goods_nomenclature_label_path(goods_nomenclature_id),
-                  alert: "Cannot edit historical versions."
-      return
-    end
+    @goods_nomenclature_label = find_label
 
     @goods_nomenclature_label.assign_attributes(label_attributes)
 
@@ -60,17 +53,8 @@ class GoodsNomenclatureLabelsController < AuthenticatedController
 
 private
 
-  def uk_only
-    return if TradeTariffAdmin::ServiceChooser.uk?
-
-    render "errors/not_found"
-  end
-
-  def find_label(skip_oid: false)
-    opts = {}
-    opts[:oid] = params[:oid] if params[:oid].present? && !skip_oid
-
-    GoodsNomenclatureLabel.find(goods_nomenclature_id, opts)
+  def find_label
+    GoodsNomenclatureLabel.find(goods_nomenclature_id)
   end
 
   def goods_nomenclature_id
@@ -99,24 +83,18 @@ private
     end
 
     if label_params[:known_brands_text]
-      attrs[:labels]["known_brands"] = text_to_array(label_params[:known_brands_text])
+      attrs[:labels]["known_brands"] = GoodsNomenclatureLabel.text_to_array(label_params[:known_brands_text])
     end
 
     if label_params[:colloquial_terms_text]
-      attrs[:labels]["colloquial_terms"] = text_to_array(label_params[:colloquial_terms_text])
+      attrs[:labels]["colloquial_terms"] = GoodsNomenclatureLabel.text_to_array(label_params[:colloquial_terms_text])
     end
 
     if label_params[:synonyms_text]
-      attrs[:labels]["synonyms"] = text_to_array(label_params[:synonyms_text])
+      attrs[:labels]["synonyms"] = GoodsNomenclatureLabel.text_to_array(label_params[:synonyms_text])
     end
 
     attrs
-  end
-
-  def text_to_array(text)
-    return [] if text.blank?
-
-    text.split(/[\r\n]+/).map(&:strip).reject(&:blank?)
   end
 
   def normalize_commodity_code(code)

@@ -1,6 +1,4 @@
 class ClassificationConfigurationsController < AuthenticatedController
-  before_action :restrict_to_non_production
-  before_action :uk_only
   before_action :set_current_configuration, only: %i[edit update]
 
   def index
@@ -41,19 +39,6 @@ class ClassificationConfigurationsController < AuthenticatedController
   end
 
 private
-
-  def uk_only
-    return if TradeTariffAdmin::ServiceChooser.uk?
-
-    render "errors/not_found"
-  end
-
-  def restrict_to_non_production
-    return if TradeTariffAdmin.environment.in?(%w[development staging])
-    return if Rails.env.development?
-
-    render "errors/not_found", status: :not_found
-  end
 
   def set_current_configuration
     @configuration = find_configuration(skip_oid: true)

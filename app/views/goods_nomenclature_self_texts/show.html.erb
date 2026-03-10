@@ -1,4 +1,4 @@
-<%= govuk_breadcrumbs 'Self-texts': goods_nomenclature_self_texts_path %>
+<%= govuk_breadcrumbs 'Descriptions': goods_nomenclature_self_texts_path %>
 
 <h1 class="govuk-heading-l">
   Self-text <%= @self_text.goods_nomenclature_item_id %>
@@ -8,24 +8,24 @@
   <div class="govuk-button-group govuk-!-margin-bottom-6">
     <% if @self_text.needs_review %>
       <%= button_to "Approve",
-                    approve_goods_nomenclature_self_text_path(@self_text.goods_nomenclature_item_id),
+                    approve_goods_nomenclature_self_text_path(@self_text.to_param),
                     method: :post,
                     class: "govuk-button",
                     data: { module: "govuk-button" } %>
     <% else %>
       <%= button_to "Needs review",
-                    reject_goods_nomenclature_self_text_path(@self_text.goods_nomenclature_item_id),
+                    reject_goods_nomenclature_self_text_path(@self_text.to_param),
                     method: :post,
                     class: "govuk-button govuk-button--secondary",
                     data: { module: "govuk-button" } %>
     <% end %>
     <%= button_to "Generate score",
-                  score_goods_nomenclature_self_text_path(@self_text.goods_nomenclature_item_id),
+                  score_goods_nomenclature_self_text_path(@self_text.to_param),
                   method: :post,
                   class: "govuk-button govuk-button--secondary",
                   data: { module: "govuk-button" } %>
     <%= button_to "Regenerate self-text",
-                  regenerate_goods_nomenclature_self_text_path(@self_text.goods_nomenclature_item_id),
+                  regenerate_goods_nomenclature_self_text_path(@self_text.to_param),
                   method: :post,
                   class: "govuk-button govuk-button--warning",
                   data: { module: "govuk-button", confirm: "This will regenerate the self-text using the AI model. The current text will be overwritten. Continue?" } %>
@@ -33,7 +33,7 @@
 <% end %>
 
 <%= form_with model: @self_text,
-              url: goods_nomenclature_self_text_path(@self_text.goods_nomenclature_item_id),
+              url: goods_nomenclature_self_text_path(@self_text.to_param),
               method: :patch,
               local: true do |f| %>
 
@@ -55,7 +55,7 @@
   <dl class="govuk-summary-list govuk-!-margin-bottom-6">
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">Commodity code</dt>
-      <dd class="govuk-summary-list__value"><%= @self_text.goods_nomenclature_item_id %></dd>
+      <dd class="govuk-summary-list__value"><%= link_to @self_text.goods_nomenclature_item_id, "#{TradeTariffAdmin.frontend_host}/commodities/#{@self_text.goods_nomenclature_item_id}", class: "govuk-link", target: "_blank", rel: "noopener noreferrer" %></dd>
     </div>
 
     <div class="govuk-summary-list__row">
@@ -101,6 +101,15 @@
         </strong>
       </dd>
     </div>
+
+    <% if @self_text.has_label %>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Labels</dt>
+        <dd class="govuk-summary-list__value">
+          <%= link_to "View labels", goods_nomenclature_label_path(@self_text.goods_nomenclature_item_id), class: "govuk-link" %>
+        </dd>
+      </div>
+    <% end %>
   </dl>
 
   <div class="govuk-form-group">
