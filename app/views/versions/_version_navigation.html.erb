@@ -1,16 +1,16 @@
 <nav class="govuk-!-margin-top-6" aria-label="Version navigation">
   <ul class="govuk-list govuk-!-margin-bottom-0" style="display: flex; justify-content: space-between;">
     <li>
-      <% if configuration.has_previous_version? %>
-        <%= link_to classification_configuration_path(configuration, oid: configuration.version_previous_oid),
+      <% if record.has_previous_version? %>
+        <%= link_to version_path_helper.call(record.version_previous_oid),
                     class: "govuk-link" do %>
           &larr; Previous version
         <% end %>
       <% end %>
     </li>
     <li>
-      <% unless configuration.current? %>
-        <%= link_to classification_configuration_path(configuration),
+      <% if !record.current? && !record.deleted? %>
+        <%= link_to version_path_helper.call(nil),
                     class: "govuk-link" do %>
           Current version &rarr;
         <% end %>

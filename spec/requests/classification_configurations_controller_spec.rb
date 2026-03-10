@@ -160,6 +160,8 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
     before do
       stub_api_request("/admin_configurations/#{config_name}")
         .and_return(config_response)
+      stub_request(:get, /admin\/versions/)
+        .and_return(status: 200, headers: { "content-type" => "application/json; charset=utf-8" }, body: { data: [] }.to_json)
     end
 
     let(:make_request) { get classification_configuration_path(config_name) }

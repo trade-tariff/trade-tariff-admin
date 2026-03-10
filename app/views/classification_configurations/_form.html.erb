@@ -74,7 +74,7 @@
         var mainSelect = document.getElementById('nested-options-selected');
         var container = document.getElementById('nested-sub-options-container');
         var hiddenField = document.getElementById('nested-options-hidden-field');
-        var initialSubValues = <%= sub_values.to_json.html_safe %>;
+        var currentSubValues = <%= sub_values.to_json.html_safe %>;
 
         function rebuildSubOptions() {
           container.innerHTML = '';
@@ -101,7 +101,7 @@
             select.className = 'govuk-select';
             select.id = 'nested-sub-' + key;
             select.setAttribute('data-sub-key', key);
-            select.onchange = updateNestedOptions;
+            select.onchange = syncHiddenField;
 
             var noneOpt = document.createElement('option');
             noneOpt.value = '';
@@ -116,28 +116,31 @@
               select.appendChild(opt);
             });
 
-            var current = initialSubValues[key] || '';
-            select.value = current;
+            select.value = currentSubValues[key] || '';
 
             group.appendChild(select);
             container.appendChild(group);
           });
+
+          syncHiddenField();
         }
 
-        window.updateNestedOptions = function() {
-          rebuildSubOptions();
-
+        function syncHiddenField() {
           var data = JSON.parse(hiddenField.value);
           data.selected = mainSelect.value;
 
-          var subSelects = container.querySelectorAll('select[data-sub-key]');
           var sv = {};
-          subSelects.forEach(function(sel) {
+          container.querySelectorAll('select[data-sub-key]').forEach(function(sel) {
             sv[sel.getAttribute('data-sub-key')] = sel.value || null;
           });
           data.sub_values = sv;
+          currentSubValues = sv;
 
           hiddenField.value = JSON.stringify(data);
+        }
+
+        mainSelect.onchange = function() {
+          rebuildSubOptions();
         };
 
         rebuildSubOptions();

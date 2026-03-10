@@ -13,6 +13,7 @@ class ClassificationConfigurationsController < AuthenticatedController
   def show
     authorize AdminConfiguration, :show?
     @configuration = find_configuration
+    @versions = fetch_versions
   rescue Faraday::ResourceNotFound
     redirect_to classification_configurations_path, alert: "Configuration not found."
   end
@@ -54,6 +55,13 @@ private
     opts[:oid] = params[:oid] if params[:oid].present? && !skip_oid
 
     AdminConfiguration.find(params[:name], opts)
+  end
+
+  def fetch_versions
+    Version.all(item_type: "AdminConfiguration", item_id: params[:name])
+  rescue Faraday::Error => e
+    Rails.logger.error("Failed to fetch versions: #{e.message}")
+    []
   end
 
   def configuration_params

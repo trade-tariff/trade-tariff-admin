@@ -27,6 +27,7 @@ class ClientBuilder
     if TradeTariffAdmin::ServiceChooser.service_choices.present?
       Faraday.new(host) do |conn|
         conn.request :url_encoded
+        conn.use WhodunnitMiddleware
         conn.request :retry, RETRY_DEFAULTS.merge(Rails.configuration.x.http.retry_options)
         conn.response :raise_error
         conn.adapter :net_http_persistent

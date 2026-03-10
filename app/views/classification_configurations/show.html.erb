@@ -1,6 +1,9 @@
 <%= govuk_breadcrumbs "Configurations": classification_configurations_path %>
 
-<%= render "version_banner", configuration: @configuration %>
+<%= render "versions/version_banner",
+           record: @configuration,
+           current_path: classification_configuration_path(@configuration),
+           type_name: "configuration" %>
 
 <h1 class="govuk-heading-l">Configuration: <%= @configuration.display_name %></h1>
 
@@ -127,4 +130,15 @@
   </div>
 <% end %>
 
-<%= render "version_navigation", configuration: @configuration %>
+<% if @versions.present? %>
+  <%= render "versions/history_section",
+             versions: @versions,
+             view_path_helper: ->(v) { classification_configuration_path(@configuration, oid: v.resource_id) },
+             restore_path_helper: ->(v) { restore_version_path(v.resource_id) },
+             can_restore: policy(@configuration).update?,
+             current_oid: @configuration.version_oid %>
+<% end %>
+
+<%= render "versions/version_navigation",
+           record: @configuration,
+           version_path_helper: ->(oid) { classification_configuration_path(@configuration, oid: oid) } %>

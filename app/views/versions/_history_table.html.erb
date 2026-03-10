@@ -1,0 +1,65 @@
+<table class="govuk-table">
+  <thead class="govuk-table__header">
+    <tr class="govuk-table__row">
+      <th class="govuk-table__header" scope="col">Version</th>
+      <th class="govuk-table__header" scope="col">Event</th>
+      <th class="govuk-table__header" scope="col">Changes</th>
+      <th class="govuk-table__header" scope="col">Changed by</th>
+      <th class="govuk-table__header" scope="col">Date</th>
+      <% if defined?(can_restore) && can_restore %>
+        <th class="govuk-table__header" scope="col"></th>
+      <% end %>
+      <% if defined?(view_path_helper) && view_path_helper %>
+        <th class="govuk-table__header" scope="col"></th>
+      <% end %>
+    </tr>
+  </thead>
+  <tbody class="govuk-table__body">
+    <% versions.each_with_index do |version, index| %>
+      <% oid = defined?(current_oid) ? current_oid : nil %>
+      <% row_selected = oid.present? ? version.resource_id.to_s == oid.to_s : index == 0 %>
+      <% cell_style = row_selected ? "background-color: #d2e2f1" : nil %>
+      <tr class="govuk-table__row">
+        <td class="govuk-table__cell" style="<%= cell_style %>"><%= versions.size - index %></td>
+        <td class="govuk-table__cell" style="<%= cell_style %>"><%= version.event.capitalize %></td>
+        <td class="govuk-table__cell" style="<%= cell_style %>">
+          <% summary = changeset_summary(version) %>
+          <% if version.has_changeset? %>
+            <details class="govuk-details govuk-!-margin-bottom-0">
+              <summary class="govuk-details__summary">
+                <span class="govuk-details__summary-text"><%= summary %></span>
+              </summary>
+              <div class="govuk-details__text">
+                <%= changeset_detail_html(version) %>
+              </div>
+            </details>
+          <% elsif summary %>
+            <%= summary %>
+          <% else %>
+            -
+          <% end %>
+        </td>
+        <td class="govuk-table__cell" style="<%= cell_style %>"><%= version.whodunnit_name || "-" %></td>
+        <td class="govuk-table__cell" style="<%= cell_style %>"><%= version.created_at_formatted %></td>
+        <% if defined?(can_restore) && can_restore %>
+          <td class="govuk-table__cell" style="<%= cell_style %>">
+            <% unless index == 0 %>
+              <%= button_to "Restore",
+                            restore_path_helper.call(version),
+                            method: :post,
+                            class: "govuk-button govuk-button--secondary govuk-!-margin-bottom-0",
+                            data: { module: "govuk-button", confirm: "Restore to this version? The current values will be overwritten." } %>
+            <% end %>
+          </td>
+        <% end %>
+        <% if defined?(view_path_helper) && view_path_helper %>
+          <td class="govuk-table__cell" style="<%= cell_style %>">
+            <% unless row_selected %>
+              <%= link_to "View", view_path_helper.call(version), class: "govuk-link" %>
+            <% end %>
+          </td>
+        <% end %>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

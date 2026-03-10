@@ -1,5 +1,6 @@
 class GoodsNomenclatureSelfText
   include ApiEntity
+  include VersionMetadata
 
   set_singular_path "admin/goods_nomenclatures/:goods_nomenclature_id/goods_nomenclature_self_text"
   set_collection_path "admin/goods_nomenclature_self_texts"
@@ -23,14 +24,19 @@ class GoodsNomenclatureSelfText
   attr_accessor :goods_nomenclature_id
 
   def self.find(goods_nomenclature_sid_param, opts = {})
-    entity = new({ goods_nomenclature_id: goods_nomenclature_sid_param }.merge(opts))
+    entity = new({ goods_nomenclature_id: goods_nomenclature_sid_param }.merge(opts.except(:oid)))
     path = entity.singular_path
 
-    response = api.get(path, opts.except(*entity.cleaned_path_attributes))
+    api_params = opts.except(*entity.cleaned_path_attributes, :oid)
+    api_params[:filter] = { oid: opts[:oid] } if opts[:oid].present?
+
+    response = api.get(path, api_params)
     parsed = parse_jsonapi(response)
 
     record = new(parsed)
     record.goods_nomenclature_id = goods_nomenclature_sid_param
+    record.extract_version_meta!(response)
+
     record
   end
 

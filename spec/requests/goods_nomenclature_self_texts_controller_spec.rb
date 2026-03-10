@@ -166,6 +166,9 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
     before do
       stub_api_request("/goods_nomenclatures/#{goods_nomenclature_sid}/goods_nomenclature_self_text", backend: "uk")
         .and_return(self_text_response)
+      stub_api_request("/versions", backend: "uk")
+        .with(query: hash_including("item_type" => "GoodsNomenclatureSelfText", "item_id" => goods_nomenclature_sid.to_s))
+        .and_return(status: 200, headers: { "content-type" => "application/json; charset=utf-8" }, body: { data: [] }.to_json)
     end
 
     let(:make_request) { get goods_nomenclature_self_text_path(goods_nomenclature_sid) }
@@ -190,6 +193,46 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
 
       it "does not display the View labels cross-link" do
         expect(rendered_page.body).not_to include("View labels")
+      end
+    end
+
+    context "when viewing a historical version via oid" do
+      let(:make_request) { get goods_nomenclature_self_text_path(goods_nomenclature_sid, oid: "42") }
+
+      let(:historical_self_text_response) do
+        {
+          status: 200,
+          headers: { "content-type" => "application/json; charset=utf-8" },
+          body: {
+            data: {
+              type: "goods_nomenclature_self_text",
+              id: goods_nomenclature_sid.to_s,
+              attributes: self_text_attributes.merge("self_text" => "Old self-text content"),
+            },
+            meta: { version: { current: false, oid: 42, previous_oid: 41, has_previous_version: true } },
+          }.to_json,
+        }
+      end
+
+      before do
+        stub_api_request("/goods_nomenclatures/#{goods_nomenclature_sid}/goods_nomenclature_self_text", backend: "uk")
+          .with(query: { "filter" => { "oid" => "42" } })
+          .and_return(historical_self_text_response)
+      end
+
+      it { is_expected.to have_http_status :success }
+
+      it "displays the version banner" do
+        expect(rendered_page.body).to include("Historical version")
+      end
+
+      it "does not display the save button" do
+        expect(rendered_page.body).not_to include("Save changes")
+      end
+
+      it "hides the action buttons" do # rubocop:disable RSpec/MultipleExpectations
+        expect(rendered_page.body).not_to include("Generate score")
+        expect(rendered_page.body).not_to include("Regenerate self-text")
       end
     end
 
@@ -360,6 +403,9 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
     before do
       stub_api_request("/goods_nomenclatures/#{goods_nomenclature_sid}/goods_nomenclature_self_text", backend: "uk")
         .and_return(self_text_response)
+      stub_api_request("/versions", backend: "uk")
+        .with(query: hash_including("item_type" => "GoodsNomenclatureSelfText", "item_id" => goods_nomenclature_sid.to_s))
+        .and_return(status: 200, headers: { "content-type" => "application/json; charset=utf-8" }, body: { data: [] }.to_json)
     end
 
     let(:make_request) do

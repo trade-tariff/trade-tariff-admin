@@ -1,0 +1,23 @@
+<details class="govuk-details govuk-!-margin-top-6">
+  <summary class="govuk-details__summary">
+    <span class="govuk-details__summary-text">Version history (<%= versions.size %>)</span>
+  </summary>
+  <div class="govuk-details__text">
+    <%= render "versions/history_table",
+               versions: versions,
+               view_path_helper: defined?(view_path_helper) ? view_path_helper : nil,
+               restore_path_helper: defined?(restore_path_helper) ? restore_path_helper : nil,
+               can_restore: defined?(can_restore) ? can_restore : false,
+               current_oid: defined?(current_oid) ? current_oid : nil %>
+
+    <details class="govuk-details govuk-!-margin-top-4 govuk-!-margin-bottom-0">
+      <summary class="govuk-details__summary">
+        <span class="govuk-details__summary-text">How restore works</span>
+      </summary>
+      <div class="govuk-details__text">
+        <p class="govuk-body">Each version stores a snapshot of the record at the time the event occurred. Restoring a version overwrites the current record with that snapshot.</p>
+        <p class="govuk-body">For deleted records, restoring any version (including the destroy event) re-creates the record from its pre-deletion state. To delete it again, use the normal delete action.</p>
+      </div>
+    </details>
+  </div>
+</details>

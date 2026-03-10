@@ -1,5 +1,10 @@
 <%= govuk_breadcrumbs 'Descriptions': "#{goods_nomenclature_self_texts_path}#labels" %>
 
+<%= render "versions/version_banner",
+           record: @goods_nomenclature_label,
+           current_path: goods_nomenclature_label_path(@goods_nomenclature_label.goods_nomenclature_item_id),
+           type_name: "label" %>
+
 <h1 class="govuk-heading-l">
   Commodity Label <%= @goods_nomenclature_label.goods_nomenclature_item_id %>
 </h1>
@@ -106,9 +111,22 @@
     <textarea name="goods_nomenclature_label[synonyms_text]" data-scored-tag-list-target="hidden" style="display:none"><%= @goods_nomenclature_label.synonyms_text %></textarea>
   </div>
 
-  <% if policy(@goods_nomenclature_label).update? %>
+  <% if @goods_nomenclature_label.current? && policy(@goods_nomenclature_label).update? %>
     <div class="govuk-button-group">
       <%= f.submit "Save changes", class: "govuk-button", data: { module: "govuk-button" } %>
     </div>
   <% end %>
 <% end %>
+
+<% if @versions.present? %>
+  <%= render "versions/history_section",
+             versions: @versions,
+             view_path_helper: ->(v) { goods_nomenclature_label_path(@goods_nomenclature_label.goods_nomenclature_item_id, oid: v.resource_id) },
+             restore_path_helper: ->(v) { restore_version_path(v.resource_id) },
+             can_restore: policy(@goods_nomenclature_label).update?,
+             current_oid: @goods_nomenclature_label.version_oid %>
+<% end %>
+
+<%= render "versions/version_navigation",
+           record: @goods_nomenclature_label,
+           version_path_helper: ->(oid) { goods_nomenclature_label_path(@goods_nomenclature_label.goods_nomenclature_item_id, oid: oid) } %>

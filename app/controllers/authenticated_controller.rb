@@ -10,11 +10,17 @@ class AuthenticatedController < ApplicationController
     include PasswordlessAuth
   end
 
+  before_action :set_paper_trail_whodunnit
+
   protect_from_forgery with: :exception
 
   after_action :verify_authorized, unless: :skip_pundit_verification?
 
 private
+
+  def set_paper_trail_whodunnit
+    Current.whodunnit = current_user&.uid
+  end
 
   def skip_pundit_verification?
     false
