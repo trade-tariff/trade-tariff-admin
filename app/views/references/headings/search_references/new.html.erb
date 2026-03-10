@@ -7,5 +7,7 @@
 <%= govuk_form_for search_reference, url: references_heading_search_references_path(heading), as: :search_reference do |f| %>
   <%= f.govuk_text_field :title, width: 'one-half' %>
 
+  <%= render "references/release_services_fieldset", form: f %>
+
   <%= submit_and_back_buttons f, references_heading_search_references_path(heading) %>
 <% end %>

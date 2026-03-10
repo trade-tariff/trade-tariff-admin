@@ -1,0 +1,10 @@
+<%= govuk_form_for search_reference, url: url, as: :search_reference, method: :delete do |f| %>
+  <%= f.hidden_field :original_title, value: search_reference.title %>
+
+  <p class="govuk-body">You are removing: <strong><%= search_reference.title %></strong></p>
+
+  <%= render "references/release_services_fieldset", form: f %>
+
+  <%= f.govuk_submit "Remove Search reference", warning: true %>
+  <%= govuk_link_to "Back", back_path, class: "govuk-link govuk-!-margin-left-4" %>
+<% end %>

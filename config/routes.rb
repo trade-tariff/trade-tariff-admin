@@ -23,6 +23,12 @@ Rails.application.routes.draw do
   namespace :references, path: "search_references" do
     get :search, to: "entity_searches#index"
 
+    concern :search_reference_manageable do
+      member do
+        get :remove
+      end
+    end
+
     resources :sections, only: %i[index] do
       scope module: "sections" do
         resources :chapters, only: [:index]
@@ -32,20 +38,20 @@ Rails.application.routes.draw do
     resources :chapters, only: %i[index show] do
       scope module: "chapters" do
         resources :headings, only: [:index]
-        resources :search_references
+        resources :search_references, concerns: :search_reference_manageable
       end
     end
 
     resources :headings do
       scope module: "headings" do
         resources :commodities, only: [:index]
-        resources :search_references
+        resources :search_references, concerns: :search_reference_manageable
       end
     end
 
     resources :commodities do
       scope module: "commodities" do
-        resources :search_references
+        resources :search_references, concerns: :search_reference_manageable
       end
     end
   end
@@ -59,11 +65,11 @@ Rails.application.routes.draw do
   get "goods_nomenclature_labels/:goods_nomenclature_id",
       to: "goods_nomenclature_labels#show",
       as: :goods_nomenclature_label,
-      constraints: { goods_nomenclature_id: /\d{10}/ }
+      constraints: { goods_nomenclature_id: /\d+/ }
 
   patch "goods_nomenclature_labels/:goods_nomenclature_id",
         to: "goods_nomenclature_labels#update",
-        constraints: { goods_nomenclature_id: /\d{10}/ }
+        constraints: { goods_nomenclature_id: /\d+/ }
 
   resources :goods_nomenclature_self_texts, only: %i[index] do
     collection do
@@ -74,31 +80,31 @@ Rails.application.routes.draw do
   get "goods_nomenclature_self_texts/:goods_nomenclature_id",
       to: "goods_nomenclature_self_texts#show",
       as: :goods_nomenclature_self_text,
-      constraints: { goods_nomenclature_id: /\d{10}/ }
+      constraints: { goods_nomenclature_id: /\d+/ }
 
   patch "goods_nomenclature_self_texts/:goods_nomenclature_id",
         to: "goods_nomenclature_self_texts#update",
-        constraints: { goods_nomenclature_id: /\d{10}/ }
+        constraints: { goods_nomenclature_id: /\d+/ }
 
   post "goods_nomenclature_self_texts/:goods_nomenclature_id/score",
        to: "goods_nomenclature_self_texts#score",
        as: :score_goods_nomenclature_self_text,
-       constraints: { goods_nomenclature_id: /\d{10}/ }
+       constraints: { goods_nomenclature_id: /\d+/ }
 
   post "goods_nomenclature_self_texts/:goods_nomenclature_id/regenerate",
        to: "goods_nomenclature_self_texts#regenerate",
        as: :regenerate_goods_nomenclature_self_text,
-       constraints: { goods_nomenclature_id: /\d{10}/ }
+       constraints: { goods_nomenclature_id: /\d+/ }
 
   post "goods_nomenclature_self_texts/:goods_nomenclature_id/approve",
        to: "goods_nomenclature_self_texts#approve",
        as: :approve_goods_nomenclature_self_text,
-       constraints: { goods_nomenclature_id: /\d{10}/ }
+       constraints: { goods_nomenclature_id: /\d+/ }
 
   post "goods_nomenclature_self_texts/:goods_nomenclature_id/reject",
        to: "goods_nomenclature_self_texts#reject",
        as: :reject_goods_nomenclature_self_text,
-       constraints: { goods_nomenclature_id: /\d{10}/ }
+       constraints: { goods_nomenclature_id: /\d+/ }
 
   resources :classification_configurations, param: :name, only: %i[index show edit update]
 

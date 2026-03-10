@@ -1,41 +1,113 @@
 <h1 class="govuk-heading-l">Classification Configurations</h1>
 
 <% if @configurations.any? %>
-  <table class="govuk-table">
-    <thead class="govuk-table__head">
-      <tr class="govuk-table__row">
-        <th scope="col" class="govuk-table__header">Name</th>
-        <th scope="col" class="govuk-table__header">Value</th>
-        <th scope="col" class="govuk-table__header">Description</th>
-        <th scope="col" class="govuk-table__header">Actions</th>
-      </tr>
-    </thead>
-    <tbody class="govuk-table__body">
-      <% @configurations.each do |config| %>
-        <tr class="govuk-table__row">
-          <td class="govuk-table__cell"><%= config.display_name %></td>
-          <td class="govuk-table__cell">
-            <% case config.config_type %>
-            <% when "boolean" %>
-              <strong class="govuk-tag govuk-tag--<%= config.value == true ? 'green' : 'grey' %>">
-                <%= config.value == true ? "Yes" : "No" %>
-              </strong>
-            <% when "integer" %>
-              <%= config.value %>
-            <% when "options" %>
-              <%= config.selected_option_label %>
-            <% else %>
-              <span class="govuk-body-s govuk-!-margin-0"><%= truncate(config.value.to_s, length: 50) %></span>
+  <div data-controller="config-table">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-one-quarter">
+        <h3 class="govuk-heading-s">Filters</h3>
+
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="config-search">Search</label>
+          <input class="govuk-input govuk-input--width-10" id="config-search" type="text"
+                 data-action="input->config-table#search">
+        </div>
+
+        <div class="govuk-form-group">
+          <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Type</legend>
+            <div class="govuk-radios govuk-radios--small">
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="ct-type-all" name="ct_type" type="radio" value="" checked
+                       data-action="change->config-table#changeType" data-config-type="">
+                <label class="govuk-label govuk-radios__label" for="ct-type-all">All</label>
+              </div>
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="ct-type-boolean" name="ct_type" type="radio" value="boolean"
+                       data-action="change->config-table#changeType" data-config-type="boolean">
+                <label class="govuk-label govuk-radios__label" for="ct-type-boolean">Boolean</label>
+              </div>
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="ct-type-integer" name="ct_type" type="radio" value="integer"
+                       data-action="change->config-table#changeType" data-config-type="integer">
+                <label class="govuk-label govuk-radios__label" for="ct-type-integer">Integer</label>
+              </div>
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="ct-type-markdown" name="ct_type" type="radio" value="markdown"
+                       data-action="change->config-table#changeType" data-config-type="markdown">
+                <label class="govuk-label govuk-radios__label" for="ct-type-markdown">Markdown</label>
+              </div>
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="ct-type-nested-options" name="ct_type" type="radio" value="nested_options"
+                       data-action="change->config-table#changeType" data-config-type="nested_options">
+                <label class="govuk-label govuk-radios__label" for="ct-type-nested-options">Nested options</label>
+              </div>
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="ct-type-options" name="ct_type" type="radio" value="options"
+                       data-action="change->config-table#changeType" data-config-type="options">
+                <label class="govuk-label govuk-radios__label" for="ct-type-options">Options</label>
+              </div>
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="ct-type-string" name="ct_type" type="radio" value="string"
+                       data-action="change->config-table#changeType" data-config-type="string">
+                <label class="govuk-label govuk-radios__label" for="ct-type-string">String</label>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+
+      <div class="govuk-grid-column-three-quarters">
+        <p class="govuk-body govuk-!-margin-bottom-2" data-config-table-target="count"></p>
+
+        <table class="govuk-table">
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header">Name</th>
+              <th scope="col" class="govuk-table__header">Value</th>
+              <th scope="col" class="govuk-table__header">Description</th>
+              <th scope="col" class="govuk-table__header">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            <% @configurations.each do |config| %>
+              <tr class="govuk-table__row"
+                  data-config-table-target="row"
+                  data-config-type="<%= config.config_type %>"
+                  data-searchable="<%= "#{config.display_name} #{config.description}".downcase %>">
+                <td class="govuk-table__cell"><%= config.display_name %></td>
+                <td class="govuk-table__cell">
+                  <% case config.config_type %>
+                  <% when "boolean" %>
+                    <strong class="govuk-tag govuk-tag--<%= config.value == true ? 'green' : 'grey' %>">
+                      <%= config.value == true ? "Yes" : "No" %>
+                    </strong>
+                  <% when "integer" %>
+                    <%= config.value %>
+                  <% when "options" %>
+                    <%= config.selected_option_label %>
+                  <% when "nested_options" %>
+                    <%= config.nested_selected_label %>
+                    <% sub_values = config.value.is_a?(Hash) ? (config.value["sub_values"] || {}) : {} %>
+                    <% if sub_values.values.any?(&:present?) %>
+                      <span class="govuk-body-s govuk-!-margin-0">(<%= sub_values.filter_map { |k, v| "#{k.tr('_', ' ')}: #{v}" if v.present? }.join(", ") %>)</span>
+                    <% end %>
+                  <% else %>
+                    <span class="govuk-body-s govuk-!-margin-0"><%= truncate(config.value.to_s, length: 50) %></span>
+                  <% end %>
+                </td>
+                <td class="govuk-table__cell"><%= config.description %></td>
+                <td class="govuk-table__cell">
+                  <%= link_to "View", classification_configuration_path(config), class: "govuk-link" %>
+                </td>
+              </tr>
             <% end %>
-          </td>
-          <td class="govuk-table__cell"><%= config.description %></td>
-          <td class="govuk-table__cell">
-            <%= link_to "View", classification_configuration_path(config), class: "govuk-link" %>
-          </td>
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
+          </tbody>
+        </table>
+
+        <div data-config-table-target="pagination"></div>
+      </div>
+    </div>
+  </div>
 <% else %>
   <div class="govuk-inset-text">
     <p>No configurations found.</p>

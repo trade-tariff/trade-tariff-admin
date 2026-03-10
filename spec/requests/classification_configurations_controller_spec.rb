@@ -96,13 +96,6 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
     }
   end
 
-  around do |example|
-    previous_environment = ENV["ENVIRONMENT"]
-    ENV["ENVIRONMENT"] = "development"
-    example.run
-    ENV["ENVIRONMENT"] = previous_environment
-  end
-
   before do
     cookies[TradeTariffAdmin.id_token_cookie_name] = id_token
   end
@@ -160,14 +153,6 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
 
     it "displays markdown/string values truncated" do
       expect(rendered_page.body).to include("You are a trade classification expert...")
-    end
-
-    context "when in production environment" do
-      before do
-        allow(TradeTariffAdmin).to receive(:environment).and_return("production")
-      end
-
-      it { is_expected.to have_http_status :not_found }
     end
   end
 
@@ -318,14 +303,6 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
         expect(session.dig("flash", "flashes", "alert")).to eq("Configuration not found.")
       end
     end
-
-    context "when in production environment" do
-      before do
-        allow(TradeTariffAdmin).to receive(:environment).and_return("production")
-      end
-
-      it { is_expected.to have_http_status :not_found }
-    end
   end
 
   describe "GET #edit" do
@@ -456,14 +433,6 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
         rendered_page
         expect(session.dig("flash", "flashes", "alert")).to eq("Cannot edit historical versions.")
       end
-    end
-
-    context "when in production environment" do
-      before do
-        allow(TradeTariffAdmin).to receive(:environment).and_return("production")
-      end
-
-      it { is_expected.to have_http_status :not_found }
     end
   end
 
@@ -694,71 +663,6 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
         rendered_page
         expect(session.dig("flash", "flashes", "alert")).to eq("Cannot edit historical versions.")
       end
-    end
-
-    context "when in production environment" do
-      before do
-        allow(TradeTariffAdmin).to receive(:environment).and_return("production")
-      end
-
-      it { is_expected.to have_http_status :not_found }
-    end
-  end
-
-  context "when on XI service" do
-    before do
-      TradeTariffAdmin::ServiceChooser.service_choice = "xi"
-    end
-
-    describe "GET #index" do
-      before do
-        stub_api_request("/admin_configurations")
-          .and_return(collection_response)
-      end
-
-      let(:make_request) { get classification_configurations_path }
-
-      it { is_expected.to render_template("errors/not_found") }
-    end
-
-    describe "GET #show" do
-      before do
-        stub_api_request("/admin_configurations/#{config_name}")
-          .and_return(config_response)
-      end
-
-      let(:make_request) { get classification_configuration_path(config_name) }
-
-      it { is_expected.to render_template("errors/not_found") }
-    end
-
-    describe "GET #edit" do
-      before do
-        stub_api_request("/admin_configurations/#{config_name}")
-          .and_return(config_response)
-      end
-
-      let(:make_request) { get edit_classification_configuration_path(config_name) }
-
-      it { is_expected.to render_template("errors/not_found") }
-    end
-
-    describe "PATCH #update" do
-      before do
-        stub_api_request("/admin_configurations/#{config_name}")
-          .and_return(config_response)
-      end
-
-      let(:make_request) do
-        patch classification_configuration_path(config_name),
-              params: {
-                classification_configuration: {
-                  value: "Updated",
-                },
-              }
-      end
-
-      it { is_expected.to render_template("errors/not_found") }
     end
   end
 

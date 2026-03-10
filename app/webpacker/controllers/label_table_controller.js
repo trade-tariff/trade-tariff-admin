@@ -2,7 +2,7 @@ import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
   static get targets() {
-    return ['table', 'pagination', 'loading'];
+    return ['table', 'pagination', 'loading', 'searchInput'];
   }
 
   static get values() {
@@ -20,6 +20,14 @@ export default class extends Controller {
   }
 
   connect() {
+    this.fetchData();
+  }
+
+  search(event) {
+    if (event) event.preventDefault();
+    var q = this.hasSearchInputTarget ? this.searchInputTarget.value.trim() : '';
+    this.qValue = q;
+    this.pageValue = 1;
     this.fetchData();
   }
 
@@ -104,13 +112,13 @@ export default class extends Controller {
     this.loadingTarget.style.display = 'none';
     this.tableTarget.style.opacity = '1';
     this.tableTarget.innerHTML =
-      '<div class="govuk-inset-text"><p class="govuk-body">Failed to load self-texts.</p></div>';
+      '<div class="govuk-inset-text"><p class="govuk-body">Failed to load labels.</p></div>';
     this.paginationTarget.innerHTML = '';
   }
 
   buildTable(data) {
     if (!data || data.length === 0) {
-      return '<div class="govuk-inset-text"><p class="govuk-body">No self-texts found.</p></div>';
+      return '<div class="govuk-inset-text"><p class="govuk-body">No labels found.</p></div>';
     }
 
     var self = this;
@@ -120,7 +128,7 @@ export default class extends Controller {
     };
 
     var sortHeader = function(col, label) {
-      return '<a href="#" class="govuk-link" data-action="click->self-text-table#changeSort" data-column="' +
+      return '<a href="#" class="govuk-link" data-action="click->label-table#changeSort" data-column="' +
         col + '">' + label + arrow(col) + '</a>';
     };
 
@@ -129,18 +137,18 @@ export default class extends Controller {
       '<th class="govuk-table__header" scope="col">' + sortHeader('goods_nomenclature_item_id', 'Commodity code') + '</th>' +
       '<th class="govuk-table__header" scope="col">' + sortHeader('score', 'Score') + '</th>' +
       '<th class="govuk-table__header" scope="col">Status</th>' +
-      '<th class="govuk-table__header" scope="col">Self-text</th>' +
+      '<th class="govuk-table__header" scope="col">Description</th>' +
       '</tr></thead><tbody class="govuk-table__body">';
 
-    data.forEach(function(st) {
-      var showUrl = self.showUrlValue.replace('__ID__', st.goods_nomenclature_sid);
-      var sc = self.scoreMeta(st.score);
+    data.forEach(function(label) {
+      var showUrl = self.showUrlValue.replace('__ID__', label.goods_nomenclature_item_id);
+      var sc = self.scoreMeta(label.score);
 
-      html += '<tr class="govuk-table__row" data-score="' + (st.score !== null && st.score !== undefined ? st.score : '') + '" data-score-category="' + sc.category + '">' +
-        '<td class="govuk-table__cell"><a href="' + showUrl + '" class="govuk-link">' + self.escapeHtml(st.goods_nomenclature_item_id) + '</a></td>' +
+      html += '<tr class="govuk-table__row">' +
+        '<td class="govuk-table__cell"><a href="' + showUrl + '" class="govuk-link">' + self.escapeHtml(label.goods_nomenclature_item_id) + '</a></td>' +
         '<td class="govuk-table__cell">' + sc.tag + '</td>' +
-        '<td class="govuk-table__cell">' + self.statusTags(st) + '</td>' +
-        '<td class="govuk-table__cell">' + self.escapeHtml(st.self_text || '') + '</td>' +
+        '<td class="govuk-table__cell">' + self.statusTags(label) + '</td>' +
+        '<td class="govuk-table__cell">' + self.escapeHtml(label.description || '') + '</td>' +
         '</tr>';
     });
 
@@ -165,16 +173,13 @@ export default class extends Controller {
     };
   }
 
-  statusTags(st) {
+  statusTags(label) {
     var tags = [];
 
-    if (st.needs_review) {
-      tags.push('<strong class="govuk-tag govuk-tag--orange">Needs review</strong>');
-    }
-    if (st.stale) {
+    if (label.stale) {
       tags.push('<strong class="govuk-tag govuk-tag--pink">Stale</strong>');
     }
-    if (st.manually_edited) {
+    if (label.manually_edited) {
       tags.push('<strong class="govuk-tag govuk-tag--purple">Edited</strong>');
     }
 
@@ -190,7 +195,7 @@ export default class extends Controller {
 
     if (page > 1) {
       html += '<div class="govuk-pagination__prev">' +
-        '<a class="govuk-link govuk-pagination__link" href="#" data-action="click->self-text-table#changePage" data-page="' + (page - 1) + '" rel="prev">' +
+        '<a class="govuk-link govuk-pagination__link" href="#" data-action="click->label-table#changePage" data-page="' + (page - 1) + '" rel="prev">' +
         '<svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">' +
         '<path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path></svg>' +
         '<span class="govuk-pagination__link-title">Previous</span></a></div>';
@@ -207,14 +212,14 @@ export default class extends Controller {
           '<a class="govuk-link govuk-pagination__link" href="#" aria-label="Page ' + p + '" aria-current="page">' + p + '</a></li>';
       } else {
         html += '<li class="govuk-pagination__item">' +
-          '<a class="govuk-link govuk-pagination__link" href="#" data-action="click->self-text-table#changePage" data-page="' + p + '" aria-label="Page ' + p + '">' + p + '</a></li>';
+          '<a class="govuk-link govuk-pagination__link" href="#" data-action="click->label-table#changePage" data-page="' + p + '" aria-label="Page ' + p + '">' + p + '</a></li>';
       }
     }
     html += '</ul>';
 
     if (page < total) {
       html += '<div class="govuk-pagination__next">' +
-        '<a class="govuk-link govuk-pagination__link" href="#" data-action="click->self-text-table#changePage" data-page="' + (page + 1) + '" rel="next">' +
+        '<a class="govuk-link govuk-pagination__link" href="#" data-action="click->label-table#changePage" data-page="' + (page + 1) + '" rel="next">' +
         '<span class="govuk-pagination__link-title">Next</span>' +
         '<svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">' +
         '<path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path></svg></a></div>';

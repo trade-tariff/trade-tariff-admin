@@ -19,6 +19,9 @@ import { initAll } from 'govuk-frontend';
 
 import { Application } from '@hotwired/stimulus';
 import SelfTextTableController from '../controllers/self_text_table_controller';
+import LabelTableController from '../controllers/label_table_controller';
+import ScoredTagListController from '../controllers/scored_tag_list_controller';
+import ConfigTableController from '../controllers/config_table_controller';
 
 import '../javascripts/markdown-preview';
 
@@ -27,3 +30,6 @@ initAll();
 
 const application = Application.start();
 application.register('self-text-table', SelfTextTableController);
+application.register('label-table', LabelTableController);
+application.register('scored-tag-list', ScoredTagListController);
+application.register('config-table', ConfigTableController);
