@@ -2,6 +2,6 @@ class Download
   include ApiEntity
 
   def user
-    @user ||= User.find_by(id: user_id)
+    @user ||= User.find_by(uid: whodunnit)
   end
 end

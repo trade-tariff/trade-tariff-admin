@@ -1,9 +1,9 @@
-# rubocop:disable RSpec/NoExpectationExample
+# rubocop:disable RSpec/NoExpectationExample, RSpec/LetSetup
 RSpec.describe "Rollbacks management" do
   let!(:user) { create :user, :technical_operator }
 
   describe "Rollback creation" do
-    let(:rollback) { build :rollback, user_id: user.id }
+    let(:rollback) { build :rollback }
 
     before do
       stub_api_request("/admin/rollbacks")
@@ -27,4 +27,4 @@ RSpec.describe "Rollbacks management" do
     end
   end
 end
-# rubocop:enable RSpec/NoExpectationExample
+# rubocop:enable RSpec/NoExpectationExample, RSpec/LetSetup

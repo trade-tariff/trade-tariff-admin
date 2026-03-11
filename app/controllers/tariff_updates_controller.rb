@@ -11,7 +11,7 @@ class TariffUpdatesController < AuthenticatedController
 
   def download
     authorize Update, :download?
-    @download = Download.build(user_id: current_user.id)
+    @download = Download.build
     @download.save
 
     redirect_to tariff_updates_path, notice: "Download was scheduled"
@@ -31,7 +31,7 @@ class TariffUpdatesController < AuthenticatedController
 
   def apply_and_clear_cache
     authorize Update, :apply_and_clear_cache?
-    @apply = Apply.build(user_id: current_user.id)
+    @apply = Apply.build
     @apply.save
 
     redirect_to tariff_updates_path, notice: "Apply & ClearCache was scheduled"
@@ -46,7 +46,6 @@ private
       .require(:cds_update_notification)
       .permit(:filename)
       .to_h
-      .merge(user_id: current_user.id)
   end
 
   def error_messages_for(model)
