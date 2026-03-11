@@ -1,0 +1,28 @@
+<% unless record.current? %>
+  <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+    <div class="govuk-notification-banner__header">
+      <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+        Historical version
+      </h2>
+    </div>
+    <div class="govuk-notification-banner__content">
+      <p class="govuk-notification-banner__heading">
+        You are viewing a historical version of this <%= type_name %>.
+      </p>
+      <% unless record.deleted? %>
+        <p class="govuk-body">
+          <%= link_to "View current version",
+                      current_path,
+                      class: "govuk-notification-banner__link" %>
+        </p>
+      <% end %>
+      <% if policy(record).update? %>
+        <%= button_to "Restore this version",
+                      restore_version_path(record.version_oid),
+                      method: :post,
+                      class: "govuk-button govuk-button--secondary govuk-!-margin-bottom-0",
+                      data: { module: "govuk-button", confirm: "Restore to this version? The current values will be overwritten." } %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

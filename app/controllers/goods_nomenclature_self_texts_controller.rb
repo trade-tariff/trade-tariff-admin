@@ -1,5 +1,5 @@
 class GoodsNomenclatureSelfTextsController < AuthenticatedController
-  before_action :load_self_text, only: %i[show score regenerate approve reject update]
+  before_action :load_self_text, only: %i[score regenerate approve reject update]
 
   def index
     authorize GoodsNomenclatureSelfText, :index?
@@ -30,6 +30,11 @@ class GoodsNomenclatureSelfTextsController < AuthenticatedController
 
   def show
     authorize GoodsNomenclatureSelfText, :show?
+
+    @self_text = find_self_text
+    @versions = fetch_versions
+  rescue Faraday::ResourceNotFound
+    redirect_to goods_nomenclature_self_texts_path, alert: "Self-text not found."
   end
 
   def score
@@ -90,11 +95,26 @@ class GoodsNomenclatureSelfTextsController < AuthenticatedController
       redirect_to goods_nomenclature_self_text_path(goods_nomenclature_id),
                   notice: "Self-text updated successfully."
     else
+      @versions = fetch_versions
       render :show, status: :unprocessable_entity
     end
   end
 
 private
+
+  def fetch_versions
+    Version.all(item_type: "GoodsNomenclatureSelfText", item_id: @self_text.goods_nomenclature_sid)
+  rescue Faraday::Error => e
+    Rails.logger.error("Failed to fetch versions: #{e.message}")
+    []
+  end
+
+  def find_self_text
+    opts = {}
+    opts[:oid] = params[:oid] if params[:oid].present?
+
+    GoodsNomenclatureSelfText.find(goods_nomenclature_id, opts)
+  end
 
   def load_self_text
     @self_text = GoodsNomenclatureSelfText.find(goods_nomenclature_id)

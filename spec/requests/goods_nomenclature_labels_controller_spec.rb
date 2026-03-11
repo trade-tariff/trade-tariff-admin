@@ -144,6 +144,17 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
     before do
       stub_api_request("/goods_nomenclatures/#{commodity_code}/goods_nomenclature_label", backend: "uk")
         .and_return(label_response)
+      stub_api_request("/versions", backend: "uk")
+        .with(query: hash_including("item_type" => "GoodsNomenclatureLabel", "item_id" => goods_nomenclature_sid.to_s))
+        .and_return(versions_response)
+    end
+
+    let(:versions_response) do
+      {
+        status: 200,
+        headers: { "content-type" => "application/json; charset=utf-8" },
+        body: { data: [] }.to_json,
+      }
     end
 
     let(:make_request) { get goods_nomenclature_label_path(commodity_code) }
@@ -171,6 +182,41 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
       end
     end
 
+    context "when viewing a historical version via oid" do
+      let(:make_request) { get goods_nomenclature_label_path(commodity_code, oid: "42") }
+
+      let(:historical_label_response) do
+        {
+          status: 200,
+          headers: { "content-type" => "application/json; charset=utf-8" },
+          body: {
+            data: {
+              type: "goods_nomenclature_label",
+              id: goods_nomenclature_sid.to_s,
+              attributes: label_attributes.merge("labels" => label_attributes["labels"].merge("description" => "Old description")),
+            },
+            meta: { version: { current: false, oid: 42, previous_oid: 41, has_previous_version: true } },
+          }.to_json,
+        }
+      end
+
+      before do
+        stub_api_request("/goods_nomenclatures/#{commodity_code}/goods_nomenclature_label", backend: "uk")
+          .with(query: { "filter" => { "oid" => "42" } })
+          .and_return(historical_label_response)
+      end
+
+      it { is_expected.to have_http_status :success }
+
+      it "displays the version banner" do
+        expect(rendered_page.body).to include("Historical version")
+      end
+
+      it "does not display the save button" do
+        expect(rendered_page.body).not_to include("Save changes")
+      end
+    end
+
     context "when label not found" do
       before do
         stub_api_request("/goods_nomenclatures/#{commodity_code}/goods_nomenclature_label", backend: "uk")
@@ -190,6 +236,9 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
     before do
       stub_api_request("/goods_nomenclatures/#{commodity_code}/goods_nomenclature_label", backend: "uk")
         .and_return(label_response)
+      stub_api_request("/versions", backend: "uk")
+        .with(query: hash_including("item_type" => "GoodsNomenclatureLabel", "item_id" => goods_nomenclature_sid.to_s))
+        .and_return(status: 200, headers: { "content-type" => "application/json; charset=utf-8" }, body: { data: [] }.to_json)
     end
 
     let(:make_request) do

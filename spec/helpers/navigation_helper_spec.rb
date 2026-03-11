@@ -24,9 +24,9 @@ RSpec.describe NavigationHelper, type: :helper do
       )
     end
 
-    it "defines Classification with 3 items" do
+    it "defines Classification with 4 items" do
       section = helper.navigation_sections.find { |s| s.key == :classification }
-      expect(section.items.map(&:text)).to eq(["Search References", "Descriptions", "Configuration"])
+      expect(section.items.map(&:text)).to eq(["Search References", "Descriptions", "Configuration", "Recent changes"])
     end
 
     it "defines SPIMM with xi service restriction" do
@@ -80,7 +80,7 @@ RSpec.describe NavigationHelper, type: :helper do
                          "Updates",
                          "Rollbacks",
                        ],
-                       classification: ["Search References", "Descriptions", "Configuration"],
+                       classification: ["Search References", "Descriptions", "Configuration", "Recent changes"],
                        manage_users: nil
     end
 
@@ -128,7 +128,7 @@ RSpec.describe NavigationHelper, type: :helper do
 
       include_examples "visible sections and items",
                        ott_admin: ["Section & chapter notes", "Updates", "Rollbacks"],
-                       classification: ["Search References", "Descriptions"],
+                       classification: ["Search References", "Descriptions", "Recent changes"],
                        spimm: [
                          "Category Assessments",
                          "Exemptions",

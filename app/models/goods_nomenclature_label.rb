@@ -1,5 +1,6 @@
 class GoodsNomenclatureLabel
   include ApiEntity
+  include VersionMetadata
 
   set_singular_path "admin/goods_nomenclatures/:goods_nomenclature_id/goods_nomenclature_label"
   set_collection_path "admin/goods_nomenclature_labels"
@@ -99,11 +100,16 @@ class GoodsNomenclatureLabel
     entity = new(goods_nomenclature_id: goods_nomenclature_id)
     path = entity.singular_path
 
-    response = api.get(path, opts)
+    api_params = {}
+    api_params[:filter] = { oid: opts[:oid] } if opts[:oid].present?
+
+    response = api.get(path, api_params)
     parsed = parse_jsonapi(response)
 
     record = new(parsed)
     record.goods_nomenclature_id = goods_nomenclature_id
+    record.extract_version_meta!(response)
+
     record
   end
 

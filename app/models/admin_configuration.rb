@@ -1,5 +1,6 @@
 class AdminConfiguration
   include ApiEntity
+  include VersionMetadata
 
   uk_only
 
@@ -11,20 +12,6 @@ class AdminConfiguration
              :area,
              :description,
              :deleted
-
-  # Version metadata from API response
-  attr_accessor :version_current,
-                :version_oid,
-                :version_previous_oid,
-                :version_has_previous
-
-  def current?
-    version_current != false
-  end
-
-  def has_previous_version?
-    version_has_previous == true
-  end
 
   def to_param
     resource_id
@@ -101,29 +88,11 @@ class AdminConfiguration
     filter_opts[:filter] = { oid: opts[:oid] } if opts[:oid].present?
 
     response = api.get(path, filter_opts)
-    body = handle_body(response)
     parsed = parse_jsonapi(response)
 
     config = new(parsed)
-
-    if body.is_a?(Hash) && body["meta"]&.dig("version")
-      version = body["meta"]["version"]
-      config.version_current = version["current"]
-      config.version_oid = version["oid"]
-      config.version_previous_oid = version["previous_oid"]
-      config.version_has_previous = version["has_previous_version"]
-    end
+    config.extract_version_meta!(response)
 
     config
   end
-
-  def self.handle_body(resp)
-    body = resp.try(:body) || resp.try(:[], :body)
-
-    return "" if body.blank?
-    return JSON.parse(body) if body.is_a?(String)
-
-    body
-  end
-  private_class_method :handle_body
 end

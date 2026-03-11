@@ -1,10 +1,15 @@
 <%= govuk_breadcrumbs 'Descriptions': goods_nomenclature_self_texts_path %>
 
+<%= render "versions/version_banner",
+           record: @self_text,
+           current_path: goods_nomenclature_self_text_path(@self_text.to_param),
+           type_name: "self-text" %>
+
 <h1 class="govuk-heading-l">
   Self-text <%= @self_text.goods_nomenclature_item_id %>
 </h1>
 
-<% if policy(@self_text).update? %>
+<% if @self_text.current? && policy(@self_text).update? %>
   <div class="govuk-button-group govuk-!-margin-bottom-6">
     <% if @self_text.needs_review %>
       <%= button_to "Approve",
@@ -160,9 +165,22 @@
     </details>
   <% end %>
 
-  <% if policy(@self_text).update? %>
+  <% if @self_text.current? && policy(@self_text).update? %>
     <div class="govuk-button-group">
       <%= f.submit "Save changes", class: "govuk-button", data: { module: "govuk-button" } %>
     </div>
   <% end %>
 <% end %>
+
+<% if @versions.present? %>
+  <%= render "versions/history_section",
+             versions: @versions,
+             view_path_helper: ->(v) { goods_nomenclature_self_text_path(@self_text.to_param, oid: v.resource_id) },
+             restore_path_helper: ->(v) { restore_version_path(v.resource_id) },
+             can_restore: policy(@self_text).update?,
+             current_oid: @self_text.version_oid %>
+<% end %>
+
+<%= render "versions/version_navigation",
+           record: @self_text,
+           version_path_helper: ->(oid) { goods_nomenclature_self_text_path(@self_text.to_param, oid: oid) } %>

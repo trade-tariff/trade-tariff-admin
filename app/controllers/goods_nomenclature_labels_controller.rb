@@ -30,6 +30,7 @@ class GoodsNomenclatureLabelsController < AuthenticatedController
     authorize GoodsNomenclatureLabel, :show?
 
     @goods_nomenclature_label = find_label
+    @versions = fetch_versions
   rescue Faraday::ResourceNotFound
     redirect_to goods_nomenclature_labels_path, alert: "Label not found for commodity code #{goods_nomenclature_id}."
   end
@@ -37,7 +38,7 @@ class GoodsNomenclatureLabelsController < AuthenticatedController
   def update
     authorize GoodsNomenclatureLabel, :update?
 
-    @goods_nomenclature_label = find_label
+    @goods_nomenclature_label = find_label(skip_oid: true)
 
     @goods_nomenclature_label.assign_attributes(label_attributes)
 
@@ -45,6 +46,7 @@ class GoodsNomenclatureLabelsController < AuthenticatedController
       redirect_to goods_nomenclature_label_path(goods_nomenclature_id),
                   notice: "Label updated successfully."
     else
+      @versions = fetch_versions
       render :show, status: :unprocessable_entity
     end
   rescue Faraday::ResourceNotFound
@@ -53,8 +55,11 @@ class GoodsNomenclatureLabelsController < AuthenticatedController
 
 private
 
-  def find_label
-    GoodsNomenclatureLabel.find(goods_nomenclature_id)
+  def find_label(skip_oid: false)
+    opts = {}
+    opts[:oid] = params[:oid] if params[:oid].present? && !skip_oid
+
+    GoodsNomenclatureLabel.find(goods_nomenclature_id, opts)
   end
 
   def goods_nomenclature_id
@@ -95,6 +100,13 @@ private
     end
 
     attrs
+  end
+
+  def fetch_versions
+    Version.all(item_type: "GoodsNomenclatureLabel", item_id: @goods_nomenclature_label.goods_nomenclature_sid)
+  rescue Faraday::Error => e
+    Rails.logger.error("Failed to fetch versions: #{e.message}")
+    []
   end
 
   def normalize_commodity_code(code)

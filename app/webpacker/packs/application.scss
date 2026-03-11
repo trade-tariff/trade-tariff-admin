@@ -212,3 +212,65 @@ $govuk-image-url-function: frontend-image-url;
   flex: 4;
   padding: 20px;
 }
+
+// Version diff styles
+.diff-insert {
+  background-color: #e6ffec;
+  text-decoration: none;
+}
+
+.diff-delete {
+  background-color: #ffebe9;
+  text-decoration: line-through;
+}
+
+.diff-unchanged {
+  color: govuk-colour("dark-grey");
+}
+
+.diff-field {
+  background-color: govuk-colour("light-grey");
+  padding: govuk-spacing(2) govuk-spacing(3);
+  margin-bottom: govuk-spacing(2);
+  border-radius: 2px;
+
+  &__label {
+    display: block;
+    margin-bottom: govuk-spacing(1);
+    @include govuk-font($size: 16, $weight: bold);
+  }
+
+  &__content {
+    @include govuk-font($size: 16);
+    word-break: break-word;
+  }
+}
+
+.diff-array {
+  display: flex;
+  flex-wrap: wrap;
+  gap: govuk-spacing(1);
+}
+
+.diff-pill {
+  display: inline-block;
+  border: 1px solid govuk-colour("mid-grey");
+  border-radius: 4px;
+  padding: govuk-spacing(1) govuk-spacing(2);
+  @include govuk-font($size: 16);
+
+  &--added {
+    background-color: #e6ffec;
+    border-color: #a7f3d0;
+  }
+
+  &--removed {
+    background-color: #ffebe9;
+    border-color: #fca5a5;
+    text-decoration: line-through;
+  }
+
+  &--unchanged {
+    background-color: govuk-colour("light-grey");
+  }
+}

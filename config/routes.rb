@@ -106,6 +106,12 @@ Rails.application.routes.draw do
        as: :reject_goods_nomenclature_self_text,
        constraints: { goods_nomenclature_id: /\d+/ }
 
+  resources :versions, only: %i[index] do
+    member do
+      post :restore
+    end
+  end
+
   resources :classification_configurations, param: :name, only: %i[index show edit update]
 
   namespace :green_lanes, path: "green_lanes" do

@@ -81,6 +81,13 @@ module NavigationHelper
             active_when: /\/classification_configurations/,
             service: :uk,
           ),
+          NavigationItem.new(
+            text: "Recent changes",
+            href: versions_path,
+            policy_class: Version,
+            active_when: /\/versions/,
+            service: nil,
+          ),
         ],
       ),
       NavigationSection.new(
