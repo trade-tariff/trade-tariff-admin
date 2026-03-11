@@ -31,7 +31,6 @@ private
         .require(:rollback)
         .permit(:date, :keep, :reason)
         .to_h
-        .merge(user_id: current_user.id)
     end
   end
 end

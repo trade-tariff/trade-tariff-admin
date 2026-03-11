@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :rollback do
-    user
+    whodunnit { "user-#{SecureRandom.hex(4)}" }
 
     resource_id { 10.times.map { Random.rand(1..9) }.join }
     jid { 10.times.map { Random.rand(1..9) }.join }

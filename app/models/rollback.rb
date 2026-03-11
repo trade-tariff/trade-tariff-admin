@@ -4,13 +4,13 @@ class Rollback
   attributes :reason,
              :date,
              :keep,
-             :user_id
+             :whodunnit
 
   def enqueued_at
     Time.zone.parse(self[:enqueued_at]) if self[:enqueued_at].present?
   end
 
   def user
-    @user ||= User.find_by(id: user_id)
+    @user ||= User.find_by(uid: whodunnit)
   end
 end
