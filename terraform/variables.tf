@@ -38,6 +38,18 @@ variable "memory" {
   type        = number
 }
 
+variable "container_port" {
+  description = "Listening port."
+  type        = number
+  default     = 8080
+}
+
+variable "container_protocol" {
+  description = "Protocol the application exposes."
+  type        = string
+  default     = "http"
+}
+
 variable "autoscaling_metrics" {
   description = "A map of autoscaling metrics."
   type = map(object({

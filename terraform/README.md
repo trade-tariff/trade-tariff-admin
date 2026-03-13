@@ -42,6 +42,8 @@ Terraform to deploy the service into AWS.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_autoscaling_metrics"></a> [autoscaling\_metrics](#input\_autoscaling\_metrics) | A map of autoscaling metrics. | <pre>map(object({<br/>    metric_type  = string<br/>    target_value = number<br/>  }))</pre> | <pre>{<br/>  "cpu": {<br/>    "metric_type": "ECSServiceAverageCPUUtilization",<br/>    "target_value": 40<br/>  },<br/>  "memory": {<br/>    "metric_type": "ECSServiceAverageMemoryUtilization",<br/>    "target_value": 40<br/>  }<br/>}</pre> | no |
+| <a name="input_container_port"></a> [container\_port](#input\_container\_port) | Listening port. | `number` | `8080` | no |
+| <a name="input_container_protocol"></a> [container\_protocol](#input\_container\_protocol) | Protocol the application exposes. | `string` | `"http"` | no |
 | <a name="input_cpu"></a> [cpu](#input\_cpu) | CPU units to use. | `number` | n/a | yes |
 | <a name="input_docker_tag"></a> [docker\_tag](#input\_docker\_tag) | Image tag to use. | `string` | n/a | yes |
 | <a name="input_environment"></a> [environment](#input\_environment) | Deployment environment. | `string` | n/a | yes |
