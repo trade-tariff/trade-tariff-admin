@@ -44,6 +44,11 @@ variable "container_port" {
   default     = 8080
 }
 
+variable "container_protocol" {
+  description = "Protocol the application exposes."
+  type        = string
+  default     = "http"
+}
 
 variable "autoscaling_metrics" {
   description = "A map of autoscaling metrics."

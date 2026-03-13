@@ -26,7 +26,7 @@ class ClientBuilder
   def call
     if TradeTariffAdmin::ServiceChooser.service_choices.present?
       cert_path = "/tmp/backend.crt"
-      File.write(cert_path, ENV["SSL_CERT_PEM"])
+      File.write(cert_path, ENV["SSL_CERT_PEM"]&.gsub('\\n', "\n"))
 
       Faraday.new(host) do |conn|
         conn.request :url_encoded
