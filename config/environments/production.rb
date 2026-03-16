@@ -1,6 +1,9 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
+  force_ssl_enabled = ENV.fetch("RAILS_FORCE_SSL", "true") == "true"
+  assume_ssl_enabled = force_ssl_enabled && ENV.fetch("RAILS_ASSUME_SSL", "true") == "true"
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Code is not reloaded between requests.
@@ -26,15 +29,17 @@ Rails.application.configure do
   # Store uploaded files on the local file system (see config/storage.yml for options).
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
-  config.assume_ssl = ENV.fetch("RAILS_ASSUME_SSL", "true") == "true"
+  config.assume_ssl = assume_ssl_enabled
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  config.force_ssl = true
+  config.force_ssl = force_ssl_enabled
 
   # HSTS should only be set over HTTPS
-  config.action_dispatch.default_headers.merge!(
-    "Strict-Transport-Security" => "max-age=31536000; includeSubDomains",
-  )
+  if force_ssl_enabled
+    config.action_dispatch.default_headers.merge!(
+      "Strict-Transport-Security" => "max-age=31536000; includeSubDomains",
+    )
+  end
 
   # Skip http-to-https redirect for the default health check endpoint.
   # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
