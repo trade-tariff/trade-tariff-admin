@@ -14,13 +14,20 @@ environment files, see the backend's [README](https://github.com/trade-tariff/tr
 
 * Ruby (see .ruby-version for current version)
 * NodeJS
-* SQLite3 (`brew install sqlite`)
+* PostgreSQL
+
+## Development
 
 ## Setup
 
 ```
 $ bin/setup
 ```
+
+By default the app uses `postgres://localhost/tariff_admin_development` for development
+and `postgres://localhost/tariff_admin_test` for test. The Rails config follows
+the backend pattern and reads `PGHOST`, `DB_USER`, and optional `PGPASSWORD` for
+development and test, while production uses `DATABASE_URL`.
 
 ## Run Trade Tariff Admin
 

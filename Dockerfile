@@ -12,7 +12,6 @@ RUN apk add --update --no-cache \
   git \
   linux-headers \
   postgresql-dev \
-  sqlite \
   tzdata \
   yaml-dev \
   openssl-dev \
@@ -36,6 +35,7 @@ COPY . /app/
 ENV GOVUK_APP_DOMAIN=localhost \
   GOVUK_WEBSITE_ROOT=http://localhost/ \
   RAILS_ENV=production \
+  DATABASE_URL=postgres://localhost/tariff_admin_production \
   SECRET_TOKEN="foo" \
   SECRET_KEY_BASE="bar" \
   NODE_OPTIONS="--openssl-legacy-provider"
@@ -54,7 +54,7 @@ RUN rm -rf node_modules log tmp && \
 # Build runtime image
 FROM ruby:${RUBY_VERSION}-alpine${ALPINE_VERSION} AS production
 
-RUN apk add --update --no-cache tzdata postgresql-dev nodejs sqlite && \
+RUN apk add --update --no-cache tzdata postgresql-dev nodejs && \
   cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
   echo "Europe/London" > /etc/timezone
 

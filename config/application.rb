@@ -45,10 +45,4 @@ module TradeTariffAdmin
   end
 end
 
-ADAPTER = Rails.application.config.database_configuration[Rails.env].try(:[], "adapter")
-
-if ADAPTER == "sqlite3"
-  require "sqlite3"
-else
-  require "pg"
-end
+require "pg"

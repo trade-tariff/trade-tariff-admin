@@ -1,23 +1,22 @@
 default: &default
+  adapter: postgresql
   encoding: utf8
-  pool: 5
+  pool: <%= ENV.fetch("DB_POOL", ENV.fetch("MAX_THREADS", 5)) %>
 
 development:
   <<: *default
-  adapter: sqlite3
-  database: db/development.sqlite3
+  host: <%= ENV.fetch("PGHOST", "localhost") %>
+  user: <%= ENV.fetch("DB_USER", "postgres") %>
+  password: <%= ENV["PGPASSWORD"] %>
+  database: tariff_admin_development
 
 test:
   <<: *default
-  adapter: sqlite3
-  database: db/test.sqlite3
+  host: <%= ENV.fetch("PGHOST", "localhost") %>
+  user: <%= ENV.fetch("DB_USER", "postgres") %>
+  password: <%= ENV["PGPASSWORD"] %>
+  database: tariff_admin_test
 
 production:
   <<: *default
-  <% if ENV['DATABASE_URL'].present? %>
-  url: <%= ENV['DATABASE_URL'] %>
-  pool: <%= ENV['DB_POOL'] || ENV['MAX_THREADS'] || 5 %>
-  <% else %>
-  adapter: sqlite3
-  database: db/production.sqlite3
-  <% end %>
+  url: <%= ENV["DATABASE_URL"] %>

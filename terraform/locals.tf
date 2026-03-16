@@ -8,6 +8,13 @@ locals {
     }
   ]
 
+  database_env_vars = [
+    {
+      name  = "DATABASE_URL"
+      value = data.aws_secretsmanager_secret_version.database_url.secret_string
+    }
+  ]
+
   tls_secret = jsondecode(data.aws_secretsmanager_secret_version.ecs_tls_certificate.secret_string)
 
   ecs_tls_env_vars = [
@@ -25,5 +32,5 @@ locals {
     }
   ]
 
-  admin_service_env_vars = concat(local.secret_env_vars, local.ecs_tls_env_vars)
+  admin_service_env_vars = concat(local.secret_env_vars, local.database_env_vars, local.ecs_tls_env_vars)
 }

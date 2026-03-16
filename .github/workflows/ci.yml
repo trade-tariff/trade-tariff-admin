@@ -62,5 +62,7 @@ jobs:
       - run: yarn install --frozen-lockfile
       - name: Run tests
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tariff_admin_test
+          PGHOST: localhost
+          DB_USER: postgres
+          PGPASSWORD: postgres
         run: bundle exec rspec
