@@ -2,7 +2,7 @@ require_relative "./trade_tariff_admin"
 
 module TradeTariffAdmin
   class << self
-    AUTH_STRATEGIES = %w[basic passwordless].freeze
+    AUTH_STRATEGIES = %w[none basic passwordless].freeze
 
     def revision
       `cat REVISION 2>/dev/null || git rev-parse --short HEAD`.strip
@@ -32,6 +32,10 @@ module TradeTariffAdmin
 
     def authenticate_with_passwordless?
       auth_strategy == :passwordless
+    end
+
+    def no_authentication?
+      auth_strategy == :none
     end
 
     def basic_session_authentication?

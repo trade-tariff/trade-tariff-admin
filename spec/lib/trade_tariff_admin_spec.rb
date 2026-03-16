@@ -35,6 +35,14 @@ RSpec.describe TradeTariffAdmin do
       expect(described_class.authenticate_with_passwordless?).to be(true)
     end
 
+    it "returns none when configured", :aggregate_failures do
+      ENV["AUTH_STRATEGY"] = "none"
+      reset_auth_caches!
+
+      expect(described_class.auth_strategy).to eq(:none)
+      expect(described_class.no_authentication?).to be(true)
+    end
+
     it "returns basic when configured with a password", :aggregate_failures do
       ENV["AUTH_STRATEGY"] = "basic"
       ENV["BASIC_PASSWORD"] = "secret"

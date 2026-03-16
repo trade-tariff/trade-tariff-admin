@@ -5,6 +5,8 @@ class SessionsController < ApplicationController
     # Redirect to the appropriate login based on auth strategy
     if TradeTariffAdmin.basic_session_authentication?
       redirect_to "/basic_sessions/new"
+    elsif TradeTariffAdmin.no_authentication?
+      redirect_to default_landing_path
     else
       redirect_to TradeTariffAdmin.identity_consumer_url, allow_other_host: true
     end
