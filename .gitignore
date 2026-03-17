@@ -23,10 +23,13 @@ vendor
 /node_modules
 yarn-error.log
 .byebug_history
+.pycache/
+__pycache__/
 .direnv
 .envrc
 .tool-versions
 db/*.sqlite3-shm
 db/*.sqlite3-wal
+db/*.sqlite3
 
 .claude/

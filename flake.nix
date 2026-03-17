@@ -36,10 +36,38 @@
           exec $binary "$@"
         '';
 
+        postgresqlBuildFlags = with pkgs; [
+          "--with-pg-config=${lib.getDev postgresql_18.pg_config}/bin/pg_config"
+        ];
         psychBuildFlags = with pkgs; [
           "--with-libyaml-include=${libyaml.dev}/include"
           "--with-libyaml-lib=${libyaml.out}/lib"
         ];
+        zlibBuildFlags = with pkgs; [
+          "--with-zlib-include=${zlib.dev}/include"
+          "--with-zlib-lib=${zlib.out}/lib"
+        ];
+        postgresql = pkgs.postgresql_18;
+        pg-environment-variables = ''
+          export PGDATA=$PWD/.nix/postgres/data
+          export PGHOST=$PWD/.nix/postgres
+          export PGPORT=5432
+          export DB_USER=""
+        '';
+
+        postgresql-start = pkgs.writeShellScriptBin "pg-start" ''
+          ${pg-environment-variables}
+
+          mkdir -p $PGHOST
+
+          if [ ! -d $PGDATA ]; then
+            mkdir -p $PGDATA
+
+            ${postgresql}/bin/initdb $PGDATA --auth=trust
+          fi
+
+          ${postgresql}/bin/postgres -k $PGHOST -c listen_addresses=''' -c unix_socket_directories=$PGHOST
+        '';
 
         lint = pkgs.writeShellScriptBin "lint" ''
           changed_files=$(git diff --name-only --diff-filter=ACM --merge-base main)
@@ -62,23 +90,36 @@
       {
         devShells.default = pkgs.mkShell {
           shellHook = ''
+            # For misbehaving gems that don't pick up the flags from BUNDLE_BUILD_*
+            export CPATH="${pkgs.zlib.dev}/include:$CPATH"
+            export LIBRARY_PATH="${pkgs.zlib.out}/lib:$LIBRARY_PATH"
+
             export GEM_HOME=$PWD/.nix/ruby/$(${ruby}/bin/ruby -e "puts RUBY_VERSION")
             mkdir -p $GEM_HOME
 
+            export BUNDLE_BUILD__PG="${builtins.concatStringsSep " " postgresqlBuildFlags}"
             export GEM_PATH=$GEM_HOME
             export PATH=$GEM_HOME/bin:$PATH
 
             export BUNDLE_BUILD__PSYCH="${builtins.concatStringsSep " " psychBuildFlags}"
+            export BUNDLE_BUILD__ZLIB="${builtins.concatStringsSep " " zlibBuildFlags}"
+
+            ${pg-environment-variables}
           '';
 
           buildInputs = [
             chrome
+            init
             lint
             lint-all
             pkgs.circleci-cli
+            pkgs.python3
             pkgs.rufo
-            pkgs.sqlite
+            pkgs.socat
             pkgs.yarn
+            pkgs.zlib
+            postgresql
+            postgresql-start
             ruby
             update-providers
           ];
