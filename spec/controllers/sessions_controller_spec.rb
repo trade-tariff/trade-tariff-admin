@@ -21,6 +21,18 @@ RSpec.describe SessionsController do
         expect(response).to redirect_to("/basic_sessions/new")
       end
     end
+
+    context "when using no authentication" do
+      before do
+        allow(TradeTariffAdmin).to receive_messages(basic_session_authentication?: false,
+                                                    no_authentication?: true)
+      end
+
+      it "redirects to the default landing page" do
+        get :login
+        expect(response).to redirect_to(dashboard_path)
+      end
+    end
   end
 
   describe "GET #destroy" do
