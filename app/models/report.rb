@@ -1,15 +1,14 @@
 class Report
   include ApiEntity
 
-  attributes :name, :description, :available, :dependencies_missing, :missing_dependencies
+  attributes :name, :description, :available, :dependencies_missing, :missing_dependencies, :download_url
 
   def run
     api.post("admin/reports/#{to_param}/run")
   end
 
   def download_redirect_url
-    response = api.get("admin/reports/#{to_param}/download")
-    response.headers.fetch("location")
+    download_url
   end
 
   def available?

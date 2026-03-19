@@ -6,8 +6,8 @@ RSpec.describe ReportsController do
   describe "GET #index" do
     before do
       stub_api_request("/reports").and_return jsonapi_response(:report, [
-        { resource_id: "commodities", name: "Commodities report", description: "Commodity export", available: true, dependencies_missing: false, missing_dependencies: [] },
-        { resource_id: "differences", name: "Differences report", description: "Potential issues", available: false, dependencies_missing: true, missing_dependencies: ["UK commodities report", "XI commodities report"] },
+        { resource_id: "commodities", name: "Commodities report", description: "Commodity export", available: true, dependencies_missing: false, missing_dependencies: [], download_url: "https://reporting.trade-tariff.service.gov.uk/uk/reporting/file.csv" },
+        { resource_id: "differences", name: "Differences report", description: "Potential issues", available: false, dependencies_missing: true, missing_dependencies: ["UK commodities report", "XI commodities report"], download_url: nil },
       ])
     end
 
@@ -30,7 +30,7 @@ RSpec.describe ReportsController do
     before do
       stub_api_request("/reports/commodities").and_return jsonapi_response(
         :report,
-        { resource_id: "commodities", name: "Commodities report", description: "Commodity export", available: true, dependencies_missing: false, missing_dependencies: [] },
+        { resource_id: "commodities", name: "Commodities report", description: "Commodity export", available: true, dependencies_missing: false, missing_dependencies: [], download_url: "https://reporting.trade-tariff.service.gov.uk/uk/reporting/file.csv" },
       )
     end
 
@@ -48,12 +48,7 @@ RSpec.describe ReportsController do
     before do
       stub_api_request("/reports/commodities").and_return jsonapi_response(
         :report,
-        { resource_id: "commodities", name: "Commodities report", description: "Commodity export", available: true, dependencies_missing: false, missing_dependencies: [] },
-      )
-      stub_api_request("/reports/commodities/download").to_return(
-        status: 302,
-        body: "",
-        headers: { "location" => "https://reporting.trade-tariff.service.gov.uk/uk/reporting/file.csv" },
+        { resource_id: "commodities", name: "Commodities report", description: "Commodity export", available: true, dependencies_missing: false, missing_dependencies: [], download_url: "https://reporting.trade-tariff.service.gov.uk/uk/reporting/file.csv" },
       )
     end
 
@@ -66,7 +61,7 @@ RSpec.describe ReportsController do
     before do
       stub_api_request("/reports/commodities").and_return jsonapi_response(
         :report,
-        { resource_id: "commodities", name: "Commodities report", description: "Commodity export", available: true, dependencies_missing: false, missing_dependencies: [] },
+        { resource_id: "commodities", name: "Commodities report", description: "Commodity export", available: true, dependencies_missing: false, missing_dependencies: [], download_url: "https://reporting.trade-tariff.service.gov.uk/uk/reporting/file.csv" },
       )
       stub_api_request("/reports/commodities/run", :post).to_return(status: 202, body: "", headers: {})
     end

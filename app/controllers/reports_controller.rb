@@ -27,7 +27,7 @@ class ReportsController < AuthenticatedController
   def download
     authorize @report, :show?
 
-    download_url = @report.download_redirect_url
+    download_url = @report.download_url
     redirect_to validated_download_url(download_url), allow_other_host: true
   rescue Faraday::Error => e
     Rails.logger.error("Failed to download report #{params[:id]}: #{e.class} #{e.message}")
