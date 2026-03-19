@@ -36,7 +36,7 @@
                     <%= button_to "Generate", run_report_path(report), method: :post, class: "govuk-button govuk-button--secondary" %>
                   <% end %>
                   <% if report.available? %>
-                    <%= link_to "Download", report.download_url, class: "govuk-link", target: "_blank", rel: "noreferrer" %>
+                    <%= link_to "Download", download_report_path(report), class: "govuk-link" %>
                   <% else %>
                     <span class="govuk-hint">Not available today</span>
                   <% end %>

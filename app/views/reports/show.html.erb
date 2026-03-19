@@ -1,6 +1,6 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
-    <%= link_to 'Back to reports', reports_path, class: 'govuk-back-link' %>
+    <%= link_to "Back to reports", reports_path, class: "govuk-back-link" %>
 
     <h1 class="govuk-heading-l"><%= @report.name %></h1>
 
@@ -9,17 +9,17 @@
     <dl class="govuk-summary-list">
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">Available today</dt>
-        <dd class="govuk-summary-list__value"><%= @report.available? ? 'Yes' : 'No' %></dd>
+        <dd class="govuk-summary-list__value"><%= @report.available? ? "Yes" : "No" %></dd>
         <dd class="govuk-summary-list__actions"></dd>
       </div>
     </dl>
 
     <div class="govuk-button-group">
       <% if policy(@report).run? %>
-        <%= button_to 'Generate report', run_report_path(@report), method: :post, class: 'govuk-button' %>
+        <%= button_to "Generate report", run_report_path(@report), method: :post, class: "govuk-button" %>
       <% end %>
       <% if @report.available? %>
-        <%= link_to 'Download report', @report.download_url, class: 'govuk-link', target: '_blank', rel: 'noreferrer' %>
+        <%= link_to "Download report", download_report_path(@report), class: "govuk-link" %>
       <% else %>
         <span class="govuk-hint">No report file is currently available for today.</span>
       <% end %>

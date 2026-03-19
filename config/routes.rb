@@ -140,6 +140,7 @@ Rails.application.routes.draw do
   end
   resources :reports, only: %i[index show] do
     member do
+      get :download
       post :run
     end
   end

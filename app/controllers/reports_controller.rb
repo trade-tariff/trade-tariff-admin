@@ -1,5 +1,5 @@
 class ReportsController < AuthenticatedController
-  before_action :load_report, only: %i[show run]
+  before_action :load_report, only: %i[show run download]
 
   def index
     authorize Report, :index?
@@ -22,6 +22,15 @@ class ReportsController < AuthenticatedController
   rescue Faraday::Error => e
     Rails.logger.error("Failed to schedule report #{params[:id]}: #{e.class} #{e.message}")
     redirect_to report_path(@report), alert: "Failed to schedule report: #{e.message.truncate(200)}"
+  end
+
+  def download
+    authorize @report, :show?
+
+    redirect_to @report.download_redirect_url, allow_other_host: true
+  rescue Faraday::Error => e
+    Rails.logger.error("Failed to download report #{params[:id]}: #{e.class} #{e.message}")
+    redirect_to report_path(@report), alert: "Failed to download report."
   end
 
 private

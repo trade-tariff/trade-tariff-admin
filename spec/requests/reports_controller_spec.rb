@@ -44,6 +44,24 @@ RSpec.describe ReportsController do
     end
   end
 
+  describe "GET #download" do
+    before do
+      stub_api_request("/reports/commodities").and_return jsonapi_response(
+        :report,
+        { resource_id: "commodities", name: "Commodities report", description: "Commodity export", available: true, dependencies_missing: false, missing_dependencies: [] },
+      )
+      stub_api_request("/reports/commodities/download").to_return(
+        status: 302,
+        body: "",
+        headers: { "location" => "https://reporting.trade-tariff.service.gov.uk/uk/reporting/file.csv" },
+      )
+    end
+
+    let(:make_request) { get download_report_path("commodities") }
+
+    it { is_expected.to redirect_to("https://reporting.trade-tariff.service.gov.uk/uk/reporting/file.csv") }
+  end
+
   describe "POST #run" do
     before do
       stub_api_request("/reports/commodities").and_return jsonapi_response(
