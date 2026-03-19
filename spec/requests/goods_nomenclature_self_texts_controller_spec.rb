@@ -69,6 +69,13 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
         expect(rendered_page.body).to include("Self-texts")
         expect(rendered_page.body).to include("Labels")
       end
+
+      it "does not show a heading self-text filter" do
+        expect(rendered_page.body).to include('for="st-type-commodity"')
+        expect(rendered_page.body).to include('for="st-type-subheading"')
+        expect(rendered_page.body).to include('for="st-type-all"')
+        expect(rendered_page.body).not_to include('for="st-type-heading"')
+      end
       # rubocop:enable RSpec/MultipleExpectations
     end
 
