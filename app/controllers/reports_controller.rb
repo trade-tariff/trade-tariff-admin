@@ -47,7 +47,7 @@ private
 
   def validated_download_url(download_url)
     uri = URI.parse(download_url)
-    expected_host = URI.parse(ENV.fetch("REPORTING_CDN_HOST", "https://reporting.trade-tariff.service.gov.uk")).host
+    expected_host = URI.parse(TradeTariffAdmin.reporting_cdn_host).host
 
     raise ActionController::Redirecting::UnsafeRedirectError, download_url unless uri.is_a?(URI::HTTPS)
     raise ActionController::Redirecting::UnsafeRedirectError, download_url unless uri.host == expected_host
