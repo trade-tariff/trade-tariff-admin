@@ -32,7 +32,7 @@
               </td>
               <td class="govuk-table__cell">
                 <div class="govuk-button-group">
-                  <% if policy(report).run? %>
+                  <% if policy(report).run? && !report.supports_email %>
                     <%= button_to "Generate", run_report_path(report), method: :post, class: "govuk-button govuk-button--secondary" %>
                   <% end %>
                   <% if report.supports_email && policy(report).send_email? %>

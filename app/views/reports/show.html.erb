@@ -15,7 +15,7 @@
     </dl>
 
     <div class="govuk-button-group">
-      <% if policy(@report).run? %>
+      <% if policy(@report).run? && !@report.supports_email %>
         <%= button_to "Generate report", run_report_path(@report), method: :post, class: "govuk-button" %>
       <% end %>
       <% if @report.supports_email && policy(@report).send_email? %>
