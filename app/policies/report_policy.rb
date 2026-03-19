@@ -10,4 +10,8 @@ class ReportPolicy < ApplicationPolicy
   def run?
     technical_operator?
   end
+
+  def send_email?
+    technical_operator?
+  end
 end

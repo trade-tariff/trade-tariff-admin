@@ -10,6 +10,18 @@ RSpec.describe Report do
     it { is_expected.to eq("https://reporting.trade-tariff.service.gov.uk/uk/reporting/file.csv") }
   end
 
+  describe "#send_email" do
+    let(:api_client) { instance_double(Faraday::Connection) }
+
+    before do
+      allow(described_class).to receive(:api).and_return(api_client)
+      allow(api_client).to receive(:post).with("admin/reports/differences/send_email")
+      described_class.new(resource_id: "differences").send_email
+    end
+
+    it { expect(api_client).to have_received(:post).with("admin/reports/differences/send_email") }
+  end
+
   describe "#available?" do
     subject(:report) { described_class.new(available: true) }
 

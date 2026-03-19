@@ -142,6 +142,7 @@ Rails.application.routes.draw do
     member do
       get :download
       post :run
+      post :send_email
     end
   end
   resources :rollbacks, only: %i[index new create]

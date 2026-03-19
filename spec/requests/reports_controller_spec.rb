@@ -6,8 +6,8 @@ RSpec.describe ReportsController do
   describe "GET #index" do
     before do
       stub_api_request("/reports").and_return jsonapi_response(:report, [
-        { resource_id: "commodities", name: "Commodities report", description: "Commodity export", available: true, dependencies_missing: false, missing_dependencies: [], download_url: "https://reporting.trade-tariff.service.gov.uk/uk/reporting/file.csv" },
-        { resource_id: "differences", name: "Differences report", description: "Potential issues", available: false, dependencies_missing: true, missing_dependencies: ["UK commodities report", "XI commodities report"], download_url: nil },
+        { resource_id: "commodities", name: "Commodities report", description: "Commodity export", available: true, dependencies_missing: false, missing_dependencies: [], download_url: "https://reporting.trade-tariff.service.gov.uk/uk/reporting/file.csv", supports_email: false },
+        { resource_id: "differences", name: "Differences report", description: "Potential issues", available: false, dependencies_missing: true, missing_dependencies: ["UK commodities report", "XI commodities report"], download_url: nil, supports_email: true },
       ])
     end
 
@@ -30,7 +30,7 @@ RSpec.describe ReportsController do
     before do
       stub_api_request("/reports/commodities").and_return jsonapi_response(
         :report,
-        { resource_id: "commodities", name: "Commodities report", description: "Commodity export", available: true, dependencies_missing: false, missing_dependencies: [], download_url: "https://reporting.trade-tariff.service.gov.uk/uk/reporting/file.csv" },
+        { resource_id: "commodities", name: "Commodities report", description: "Commodity export", available: true, dependencies_missing: false, missing_dependencies: [], download_url: "https://reporting.trade-tariff.service.gov.uk/uk/reporting/file.csv", supports_email: false },
       )
     end
 
@@ -48,7 +48,7 @@ RSpec.describe ReportsController do
     before do
       stub_api_request("/reports/commodities").and_return jsonapi_response(
         :report,
-        { resource_id: "commodities", name: "Commodities report", description: "Commodity export", available: true, dependencies_missing: false, missing_dependencies: [], download_url: "https://reporting.trade-tariff.service.gov.uk/uk/reporting/file.csv" },
+        { resource_id: "commodities", name: "Commodities report", description: "Commodity export", available: true, dependencies_missing: false, missing_dependencies: [], download_url: "https://reporting.trade-tariff.service.gov.uk/uk/reporting/file.csv", supports_email: false },
       )
     end
 
@@ -57,11 +57,30 @@ RSpec.describe ReportsController do
     it { is_expected.to redirect_to("https://reporting.trade-tariff.service.gov.uk/uk/reporting/file.csv") }
   end
 
+  describe "POST #send_email" do
+    before do
+      stub_api_request("/reports/differences").and_return jsonapi_response(
+        :report,
+        { resource_id: "differences", name: "Differences report", description: "Potential issues", available: true, dependencies_missing: false, missing_dependencies: [], download_url: "https://reporting.trade-tariff.service.gov.uk/uk/reporting/file.xlsx", supports_email: true },
+      )
+      stub_api_request("/reports/differences/send_email", :post).to_return(status: 202, body: "", headers: {})
+    end
+
+    let(:make_request) { post send_email_report_path("differences") }
+
+    it { is_expected.to redirect_to(report_path("differences")) }
+
+    it "shows a success message" do
+      rendered_page
+      expect(flash[:notice]).to eq("Report email was scheduled.")
+    end
+  end
+
   describe "POST #run" do
     before do
       stub_api_request("/reports/commodities").and_return jsonapi_response(
         :report,
-        { resource_id: "commodities", name: "Commodities report", description: "Commodity export", available: true, dependencies_missing: false, missing_dependencies: [], download_url: "https://reporting.trade-tariff.service.gov.uk/uk/reporting/file.csv" },
+        { resource_id: "commodities", name: "Commodities report", description: "Commodity export", available: true, dependencies_missing: false, missing_dependencies: [], download_url: "https://reporting.trade-tariff.service.gov.uk/uk/reporting/file.csv", supports_email: false },
       )
       stub_api_request("/reports/commodities/run", :post).to_return(status: 202, body: "", headers: {})
     end

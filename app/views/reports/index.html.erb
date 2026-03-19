@@ -35,6 +35,9 @@
                   <% if policy(report).run? %>
                     <%= button_to "Generate", run_report_path(report), method: :post, class: "govuk-button govuk-button--secondary" %>
                   <% end %>
+                  <% if report.supports_email && policy(report).send_email? %>
+                    <%= button_to "Generate and email", send_email_report_path(report), method: :post, class: "govuk-button govuk-button--secondary" %>
+                  <% end %>
                   <% if report.available? %>
                     <%= link_to "Download", download_report_path(report), class: "govuk-link" %>
                   <% else %>
