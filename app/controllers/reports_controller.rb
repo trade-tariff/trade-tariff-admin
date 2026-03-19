@@ -38,11 +38,17 @@ class ReportsController < AuthenticatedController
     authorize @report, :show?
 
     download_url = @report.download_url
+
+    if download_url.blank?
+      Rails.logger.error("Missing report download URL for #{params[:id]}")
+      return redirect_to report_path(@report), alert: "Failed to download report."
+    end
+
     redirect_to validated_download_url(download_url), allow_other_host: true
   rescue Faraday::Error => e
     Rails.logger.error("Failed to download report #{params[:id]}: #{e.class} #{e.message}")
     redirect_to report_path(@report), alert: "Failed to download report."
-  rescue URI::InvalidURIError, ActionController::Redirecting::UnsafeRedirectError => e
+  rescue URI::InvalidURIError, ArgumentError, ActionController::Redirecting::UnsafeRedirectError => e
     Rails.logger.error("Unsafe report download URL for #{params[:id]}: #{e.class} #{e.message}")
     redirect_to report_path(@report), alert: "Failed to download report."
   end

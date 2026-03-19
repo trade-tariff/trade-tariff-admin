@@ -57,6 +57,24 @@ RSpec.describe ReportsController do
     it { is_expected.to redirect_to("https://reporting.trade-tariff.service.gov.uk/uk/reporting/file.csv") }
   end
 
+  describe "GET #download when download_url is missing" do
+    before do
+      stub_api_request("/reports/commodities").and_return jsonapi_response(
+        :report,
+        { resource_id: "commodities", name: "Commodities report", description: "Commodity export", available: false, dependencies_missing: false, missing_dependencies: [], download_url: nil, supports_email: false },
+      )
+    end
+
+    let(:make_request) { get download_report_path("commodities") }
+
+    it { is_expected.to redirect_to(report_path("commodities")) }
+
+    it "shows a failure message" do
+      rendered_page
+      expect(flash[:alert]).to eq("Failed to download report.")
+    end
+  end
+
   describe "POST #send_email" do
     before do
       stub_api_request("/reports/differences").and_return jsonapi_response(
