@@ -150,6 +150,16 @@ module TradeTariffAdmin
       end
     end
 
+    def reporting_cdn_host
+      return ENV["REPORTING_CDN_HOST"] if ENV["REPORTING_CDN_HOST"].present?
+
+      {
+        "production" => "https://reporting.trade-tariff.service.gov.uk",
+        "staging" => "https://reporting.staging.trade-tariff.service.gov.uk",
+        "development" => "https://reporting.dev.trade-tariff.service.gov.uk",
+      }[environment]
+    end
+
     def id_token_cookie_name
       cookie_name_for("id_token")
     end

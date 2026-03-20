@@ -138,6 +138,13 @@ Rails.application.routes.draw do
       post "/resend_cds_update_notification", to: "tariff_updates#resend_cds_update_notification"
     end
   end
+  resources :reports, only: %i[index show] do
+    member do
+      get :download
+      post :run
+      post :send_email
+    end
+  end
   resources :rollbacks, only: %i[index new create]
   resources :news_items, except: %i[show]
   resources :news_collections, only: %i[index edit update create new]

@@ -46,6 +46,13 @@ module NavigationHelper
             service: nil,
           ),
           NavigationItem.new(
+            text: "Reports",
+            href: reports_path,
+            policy_class: Report,
+            active_when: /\/reports/,
+            service: nil,
+          ),
+          NavigationItem.new(
             text: "Rollbacks",
             href: rollbacks_path,
             policy_class: Rollback,
@@ -167,7 +174,6 @@ module NavigationHelper
           service: section.service,
         )
       else
-        # Standalone section (e.g. Manage Users) — check policy on href
         next unless policy_allows_section?(section)
 
         section

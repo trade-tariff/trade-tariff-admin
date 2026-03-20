@@ -1,0 +1,56 @@
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-l">Reports</h1>
+    <p class="govuk-body">Generate and download report files for the currently selected service.</p>
+
+    <% if @reports.any? %>
+      <table class="govuk-table">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Report</th>
+            <th scope="col" class="govuk-table__header">Description</th>
+            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          <% @reports.each do |report| %>
+            <tr class="govuk-table__row" id="<%= dom_id(report) %>">
+              <th scope="row" class="govuk-table__header">
+                <%= link_to report.name, report_path(report), class: "govuk-link" %>
+              </th>
+              <td class="govuk-table__cell">
+                <p class="govuk-body"><%= report.description %></p>
+                <% if report.dependencies_missing? %>
+                  <div class="govuk-warning-text">
+                    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                    <strong class="govuk-warning-text__text">
+                      <span class="govuk-warning-text__assistive">Warning</span>
+                      Missing dependencies: <%= report.missing_dependencies.to_sentence %>.
+                    </strong>
+                  </div>
+                <% end %>
+              </td>
+              <td class="govuk-table__cell">
+                <div class="govuk-button-group">
+                  <% if policy(report).run? && !report.supports_email %>
+                    <%= button_to "Generate", run_report_path(report), method: :post, class: "govuk-button govuk-button--secondary" %>
+                  <% end %>
+                  <% if report.supports_email && policy(report).send_email? %>
+                    <%= button_to "Generate and email", send_email_report_path(report), method: :post, class: "govuk-button govuk-button--secondary" %>
+                  <% end %>
+                  <% if report.available? %>
+                    <%= link_to "Download", download_report_path(report), class: "govuk-link" %>
+                  <% else %>
+                    <span class="govuk-hint">Not available today</span>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="govuk-body">No reports are available for this service.</p>
+    <% end %>
+  </div>
+</div>
