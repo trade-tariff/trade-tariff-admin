@@ -7,6 +7,10 @@ FactoryBot.define do
     # Default user has GUEST role (assigned by User model before_create callback)
     # No need to remove it - GUEST is the valid default
 
+    trait :superadmin do
+      role { User::SUPERADMIN }
+    end
+
     trait :technical_operator do
       role { User::TECHNICAL_OPERATOR }
     end

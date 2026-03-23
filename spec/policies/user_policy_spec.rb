@@ -1,6 +1,26 @@
 RSpec.describe UserPolicy do
   subject(:user_policy) { described_class }
 
+  permissions :create?, :destroy? do
+    context "when not using basic auth" do
+      before do
+        allow(TradeTariffAdmin).to receive(:basic_session_authentication?).and_return(false)
+      end
+
+      it "grants access to superadmin" do
+        user = create(:user, :superadmin)
+        target_user = create(:user)
+        expect(user_policy).to permit(user, target_user)
+      end
+
+      it "denies access to technical operator" do
+        user = create(:user, :technical_operator)
+        target_user = create(:user)
+        expect(user_policy).not_to permit(user, target_user)
+      end
+    end
+  end
+
   permissions :update? do
     context "when using basic auth" do
       before do
@@ -42,6 +62,12 @@ RSpec.describe UserPolicy do
     context "when not using basic auth" do
       before do
         allow(TradeTariffAdmin).to receive(:basic_session_authentication?).and_return(false)
+      end
+
+      it "grants access to superadmin" do
+        user = create(:user, :superadmin)
+        target_user = create(:user)
+        expect(user_policy).to permit(user, target_user)
       end
 
       it "grants access to technical operator" do

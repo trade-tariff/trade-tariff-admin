@@ -199,15 +199,13 @@ RSpec.describe "RBAC Comprehensive Rules" do
       expect(QuotaPolicy.new(technical_operator, Quota.new).destroy?).to be(true)
     end
 
-    it "allows full access to updates", :aggregate_failures do
-      expect(UpdatePolicy.new(technical_operator, Update.new).index?).to be(true)
-      expect(UpdatePolicy.new(technical_operator, Update.new).download?).to be(true)
-      expect(UpdatePolicy.new(technical_operator, Update.new).apply_and_clear_cache?).to be(true)
+    it "denies access to updates" do
+      expect(UpdatePolicy.new(technical_operator, Update.new).index?).to be(false)
     end
 
-    it "allows full access to rollbacks", :aggregate_failures do
-      expect(RollbackPolicy.new(technical_operator, Rollback.new).index?).to be(true)
-      expect(RollbackPolicy.new(technical_operator, Rollback.new).create?).to be(true)
+    it "denies access to rollbacks", :aggregate_failures do
+      expect(RollbackPolicy.new(technical_operator, Rollback.new).index?).to be(false)
+      expect(RollbackPolicy.new(technical_operator, Rollback.new).create?).to be(false)
     end
 
     it "allows full access to XI services", :aggregate_failures do
@@ -222,15 +220,36 @@ RSpec.describe "RBAC Comprehensive Rules" do
       expect(GoodsNomenclatureLabelPolicy.new(technical_operator, GoodsNomenclatureLabel.new).update?).to be(true)
     end
 
-    it "allows access to user management", :aggregate_failures do
+    it "allows view and update access to user management", :aggregate_failures do
       expect(UserPolicy.new(technical_operator, User.new).index?).to be(true)
       expect(UserPolicy.new(technical_operator, User.new).update?).to be(true)
+      expect(UserPolicy.new(technical_operator, User.new).create?).to be(false)
+      expect(UserPolicy.new(technical_operator, User.new).destroy?).to be(false)
+    end
+  end
+
+  describe "SUPERADMIN role - technical operator plus user lifecycle" do
+    let(:superadmin) { create(:user, :superadmin) }
+
+    it "inherits technical operator access for content management", :aggregate_failures do
+      expect(SectionNotePolicy.new(superadmin, SectionNote.new).index?).to be(true)
+      expect(SearchReferencePolicy.new(superadmin, SearchReference.new).create?).to be(true)
+      expect(AdminConfigurationPolicy.new(superadmin, AdminConfiguration.new(name: "test")).update?).to be(true)
+      expect(UpdatePolicy.new(superadmin, Update.new).apply_and_clear_cache?).to be(true)
+      expect(RollbackPolicy.new(superadmin, Rollback.new).create?).to be(true)
+    end
+
+    it "allows full access to user management", :aggregate_failures do
+      expect(UserPolicy.new(superadmin, User.new).index?).to be(true)
+      expect(UserPolicy.new(superadmin, User.new).update?).to be(true)
+      expect(UserPolicy.new(superadmin, User.new).create?).to be(true)
+      expect(UserPolicy.new(superadmin, User.new).destroy?).to be(true)
     end
   end
 
   describe "XI Service access restriction" do
-    it "only TECHNICAL_OPERATOR and AUDITOR can access XI services", :aggregate_failures do
-      allowed = [create(:user, :technical_operator), create(:user, :auditor)]
+    it "only privileged operators and AUDITOR can access XI services", :aggregate_failures do
+      allowed = [create(:user, :superadmin), create(:user, :technical_operator), create(:user, :auditor)]
       denied = [create(:user, :hmrc_admin), create(:user, :guest)]
       index = ->(user) { GreenLanes::CategoryAssessmentPolicy.new(user, double).index? }
       expect(allowed.map(&index)).to all(be(true))

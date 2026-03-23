@@ -5,14 +5,19 @@ RSpec.describe UpdatePolicy do
   let(:update) { Update.new }
 
   permissions :index?, :show? do
-    it "grants access to technical operator" do
-      user = create(:user, :technical_operator)
+    it "grants access to superadmin" do
+      user = create(:user, :superadmin)
       expect(update_policy).to permit(user, update)
     end
 
     it "grants access to auditor" do
       user = create(:user, :auditor)
       expect(update_policy).to permit(user, update)
+    end
+
+    it "denies access to technical operator" do
+      user = create(:user, :technical_operator)
+      expect(update_policy).not_to permit(user, update)
     end
 
     it "denies access to hmrc admin" do
@@ -27,13 +32,18 @@ RSpec.describe UpdatePolicy do
   end
 
   permissions :download?, :apply_and_clear_cache?, :resend_cds_update_notification? do
-    it "grants access to technical operator" do
-      user = create(:user, :technical_operator)
+    it "grants access to superadmin" do
+      user = create(:user, :superadmin)
       expect(update_policy).to permit(user, update)
     end
 
     it "denies access to auditor" do
       user = create(:user, :auditor)
+      expect(update_policy).not_to permit(user, update)
+    end
+
+    it "denies access to technical operator" do
+      user = create(:user, :technical_operator)
       expect(update_policy).not_to permit(user, update)
     end
 

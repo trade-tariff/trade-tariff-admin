@@ -2,6 +2,7 @@ RSpec.describe RollbacksController do
   subject(:rendered_page) { make_request && response }
 
   include_context "with authenticated user"
+  let(:current_user) { create(:user, :superadmin) }
 
   describe "GET #index" do
     before do
@@ -30,5 +31,12 @@ RSpec.describe RollbacksController do
 
     it { is_expected.to have_http_status :forbidden }
     it { is_expected.to have_attributes body: /contact your Delivery Manager/ }
+  end
+
+  context "when technical operator" do
+    let(:current_user) { create(:user, :technical_operator) }
+    let(:make_request) { get rollbacks_path }
+
+    it { is_expected.to have_http_status :forbidden }
   end
 end

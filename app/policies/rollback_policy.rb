@@ -1,14 +1,14 @@
-# Rollback: TECHNICAL_OPERATOR execute/download/recover, HMRC_ADMIN hidden, AUDITOR index (history only), GUEST hidden
+# Rollback: SUPERADMIN execute/download/recover, AUDITOR index (history only), HMRC_ADMIN hidden, GUEST hidden
 class RollbackPolicy < ApplicationPolicy
   def index?
-    technical_operator? || auditor?
+    superadmin? || auditor?
   end
 
   def show?
-    technical_operator? || auditor?
+    superadmin? || auditor?
   end
 
   def create?
-    technical_operator?
+    superadmin?
   end
 end

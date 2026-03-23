@@ -2,6 +2,7 @@ RSpec.describe TariffUpdatesController do
   subject(:rendered_page) { make_request && response }
 
   include_context "with authenticated user"
+  let(:current_user) { create(:user, :superadmin) }
 
   describe "GET #index" do
     before do
@@ -30,6 +31,13 @@ RSpec.describe TariffUpdatesController do
 
     it { is_expected.to have_http_status :forbidden }
     it { is_expected.to have_attributes body: /contact your Delivery Manager/ }
+  end
+
+  context "when technical operator" do
+    let(:current_user) { create(:user, :technical_operator) }
+    let(:make_request) { get tariff_updates_path }
+
+    it { is_expected.to have_http_status :forbidden }
   end
 
   describe "POST #download" do
