@@ -1,12 +1,14 @@
 class User < ApplicationRecord
   has_many :sessions, dependent: :destroy
 
+  SUPERADMIN = "SUPERADMIN".freeze
   TECHNICAL_OPERATOR = "TECHNICAL_OPERATOR".freeze
   HMRC_ADMIN = "HMRC_ADMIN".freeze
   AUDITOR = "AUDITOR".freeze
   GUEST = "GUEST".freeze
 
-  VALID_ROLES = [TECHNICAL_OPERATOR, HMRC_ADMIN, AUDITOR, GUEST].freeze
+  PRIVILEGED_OPERATOR_ROLES = [SUPERADMIN, TECHNICAL_OPERATOR].freeze
+  VALID_ROLES = [SUPERADMIN, TECHNICAL_OPERATOR, HMRC_ADMIN, AUDITOR, GUEST].freeze
 
   validates :role, inclusion: { in: VALID_ROLES }
   validates :name, presence: true
@@ -55,7 +57,11 @@ class User < ApplicationRecord
 
   # Role helper methods - assume single role exclusivity
   def technical_operator?
-    current_role == TECHNICAL_OPERATOR
+    PRIVILEGED_OPERATOR_ROLES.include?(current_role)
+  end
+
+  def superadmin?
+    current_role == SUPERADMIN
   end
 
   def hmrc_admin?

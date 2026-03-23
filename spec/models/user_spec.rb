@@ -2,6 +2,12 @@ RSpec.describe User do
   describe "#technical_operator?" do
     subject(:user) { create(:user, *traits) }
 
+    context "when user has superadmin role" do
+      let(:traits) { [:superadmin] }
+
+      it { is_expected.to be_technical_operator }
+    end
+
     context "when user has technical operator role" do
       let(:traits) { [:technical_operator] }
 
@@ -12,6 +18,22 @@ RSpec.describe User do
       let(:traits) { [] }
 
       it { is_expected.not_to be_technical_operator }
+    end
+  end
+
+  describe "#superadmin?" do
+    subject(:user) { create(:user, *traits) }
+
+    context "when user has superadmin role" do
+      let(:traits) { [:superadmin] }
+
+      it { is_expected.to be_superadmin }
+    end
+
+    context "when user does not have superadmin role" do
+      let(:traits) { [:technical_operator] }
+
+      it { is_expected.not_to be_superadmin }
     end
   end
 
@@ -130,6 +152,7 @@ RSpec.describe User do
 
     describe "role constants" do
       it "defines all required role constants", :aggregate_failures do
+        expect(User::SUPERADMIN).to eq("SUPERADMIN")
         expect(User::TECHNICAL_OPERATOR).to eq("TECHNICAL_OPERATOR")
         expect(User::HMRC_ADMIN).to eq("HMRC_ADMIN")
         expect(User::AUDITOR).to eq("AUDITOR")
@@ -137,7 +160,7 @@ RSpec.describe User do
       end
 
       it "includes all roles in VALID_ROLES" do
-        expect(User::VALID_ROLES).to contain_exactly(User::TECHNICAL_OPERATOR, User::HMRC_ADMIN, User::AUDITOR, User::GUEST)
+        expect(User::VALID_ROLES).to contain_exactly(User::SUPERADMIN, User::TECHNICAL_OPERATOR, User::HMRC_ADMIN, User::AUDITOR, User::GUEST)
       end
     end
 
