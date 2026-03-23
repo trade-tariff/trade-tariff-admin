@@ -1,4 +1,4 @@
-# User Management: ONLY TECHNICAL_OPERATOR may manage users
+# User Management: SUPERADMIN can create/delete users, TECHNICAL_OPERATOR can view/update users
 # Exception: Basic auth allows user management regardless of role (testing mode)
 # Basic auth override only works when basic auth is enabled and for non-guest users
 class UserPolicy < ApplicationPolicy
@@ -7,7 +7,7 @@ class UserPolicy < ApplicationPolicy
   end
 
   def create?
-    basic_auth_override? || technical_operator?
+    basic_auth_override? || superadmin?
   end
 
   def show?
@@ -19,7 +19,7 @@ class UserPolicy < ApplicationPolicy
   end
 
   def destroy?
-    basic_auth_override? || technical_operator?
+    basic_auth_override? || superadmin?
   end
 
 private

@@ -19,6 +19,7 @@ RSpec.describe UsersController do
   end
 
   describe "GET #new" do
+    let(:current_user) { create(:user, :superadmin) }
     let(:make_request) { get new_user_path }
 
     it { is_expected.to have_http_status :success }
@@ -26,7 +27,7 @@ RSpec.describe UsersController do
     it "displays fields for email and role selection", :aggregate_failures do
       rendered_page
 
-      expect(response.body).to include("Email address", "radio", User::GUEST, User::TECHNICAL_OPERATOR, User::HMRC_ADMIN, User::AUDITOR)
+      expect(response.body).to include("Email address", "radio", User::SUPERADMIN, User::GUEST, User::TECHNICAL_OPERATOR, User::HMRC_ADMIN, User::AUDITOR)
     end
   end
 
@@ -37,7 +38,7 @@ RSpec.describe UsersController do
 
     it "displays radio buttons for role selection", :aggregate_failures do
       rendered_page
-      expect(response.body).to include("radio", User::GUEST, User::TECHNICAL_OPERATOR, User::HMRC_ADMIN, User::AUDITOR)
+      expect(response.body).to include("radio", User::SUPERADMIN, User::GUEST, User::TECHNICAL_OPERATOR, User::HMRC_ADMIN, User::AUDITOR)
     end
 
     it "preselects the current role" do
@@ -47,6 +48,7 @@ RSpec.describe UsersController do
   end
 
   describe "POST #create" do
+    let(:current_user) { create(:user, :superadmin) }
     let(:make_request) do
       post users_path,
            params: { user: new_user_params }
@@ -164,6 +166,7 @@ RSpec.describe UsersController do
   end
 
   describe "DELETE #destroy" do
+    let(:current_user) { create(:user, :superadmin) }
     let(:make_request) { delete user_path(target_user) }
 
     it { is_expected.to redirect_to users_path }
@@ -205,8 +208,20 @@ RSpec.describe UsersController do
     it { is_expected.to have_http_status :forbidden }
   end
 
-  context "when non-technical operator tries to remove a user" do
+  context "when technical operator tries to add a user" do
+    let(:make_request) { get new_user_path }
+
+    it { is_expected.to have_http_status :forbidden }
+  end
+
+  context "when non-superadmin tries to remove a user" do
     let(:current_user) { create(:user, :hmrc_admin) }
+    let(:make_request) { delete user_path(target_user) }
+
+    it { is_expected.to have_http_status :forbidden }
+  end
+
+  context "when technical operator tries to remove a user" do
     let(:make_request) { delete user_path(target_user) }
 
     it { is_expected.to have_http_status :forbidden }

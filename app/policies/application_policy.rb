@@ -34,6 +34,10 @@ class ApplicationPolicy
     user&.technical_operator? || false
   end
 
+  def superadmin?
+    user&.superadmin? || false
+  end
+
   def hmrc_admin?
     user&.hmrc_admin? || false
   end

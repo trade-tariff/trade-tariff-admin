@@ -4,7 +4,7 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
 
   include_context "with authenticated user"
 
-  let(:current_user) { create(:user, :technical_operator) }
+  let(:current_user) { create(:user, :superadmin) }
   let(:config_name) { "expansion_prompt" }
   let(:config_attributes) do
     {

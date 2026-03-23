@@ -77,11 +77,9 @@ RSpec.describe NavigationHelper, type: :helper do
                          "News",
                          "Live Issues",
                          "Quotas",
-                         "Updates",
                          "Reports",
-                         "Rollbacks",
                        ],
-                       classification: ["Search References", "Descriptions", "Configuration", "Recent changes"],
+                       classification: ["Search References", "Descriptions", "Recent changes"],
                        manage_users: nil
     end
 
@@ -128,7 +126,7 @@ RSpec.describe NavigationHelper, type: :helper do
       let(:user) { build(:user, :technical_operator) }
 
       include_examples "visible sections and items",
-                       ott_admin: ["Section & chapter notes", "Updates", "Reports", "Rollbacks"],
+                       ott_admin: ["Section & chapter notes", "Reports"],
                        classification: ["Search References", "Descriptions", "Recent changes"],
                        spimm: [
                          "Category Assessments",
@@ -251,7 +249,7 @@ RSpec.describe NavigationHelper, type: :helper do
     include_context "with UK service"
 
     let(:user) { build(:user, :technical_operator) }
-    let(:request_path) { "/tariff_updates" }
+    let(:request_path) { "/notes/1" }
 
     it "returns true for OTT Admin when path matches" do
       section = helper.visible_navigation_sections.find { |s| s.key == :ott_admin }
