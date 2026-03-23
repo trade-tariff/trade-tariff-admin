@@ -6,11 +6,19 @@ class UserPolicy < ApplicationPolicy
     basic_auth_override? || technical_operator?
   end
 
+  def create?
+    basic_auth_override? || technical_operator?
+  end
+
   def show?
     basic_auth_override? || technical_operator?
   end
 
   def update?
+    basic_auth_override? || technical_operator?
+  end
+
+  def destroy?
     basic_auth_override? || technical_operator?
   end
 

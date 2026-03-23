@@ -149,7 +149,7 @@ Rails.application.routes.draw do
   resources :news_items, except: %i[show]
   resources :news_collections, only: %i[index edit update create new]
   resources :live_issues, only: %i[index create new update edit destroy]
-  resources :users, only: %i[index edit update]
+  resources :users, only: %i[index new create edit update destroy]
 
   resources :quotas, only: %i[new show] do
     collection do

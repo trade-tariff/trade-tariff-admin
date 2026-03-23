@@ -1,5 +1,17 @@
-<%= govuk_form_for user, url: user_path(user), method: :patch do |f| %>
-  <% role_options = User::VALID_ROLES.map { |role| [role, format_role_name(role)] }.to_h %>
+<% submit_text = user.persisted? ? "Update role" : "Add user" %>
+
+<%= govuk_form_for user do |f| %>
+  <% role_options = User::VALID_ROLES.index_with { |role| format_role_name(role) } %>
+
+  <% unless user.persisted? %>
+    <%= f.govuk_text_field :email,
+                           label: { text: "Email address" },
+                           hint: { text: "Use the email address the user will sign in with." },
+                           autocomplete: "email",
+                           spellcheck: false,
+                           width: "two-thirds" %>
+  <% end %>
+
   <%= f.govuk_collection_radio_buttons :role,
                                        role_options,
                                        :first,
@@ -7,5 +19,5 @@
                                        legend: { text: "Role" },
                                        hint: { text: "Select a role for this user. Only one role can be assigned at a time." } %>
 
-  <%= submit_and_back_buttons f, users_path, submit: "Update Role" %>
+  <%= submit_and_back_buttons f, users_path, submit: submit_text %>
 <% end %>
