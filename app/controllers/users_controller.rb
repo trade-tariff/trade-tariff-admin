@@ -31,10 +31,11 @@ class UsersController < AuthenticatedController
   def update
     authorize @user, :update?
 
+    @user.assign_attributes(update_user_params)
     @user.role = role_param
 
     if @user.save
-      redirect_to users_path, notice: "User role updated successfully"
+      redirect_to users_path, notice: "User updated successfully"
     else
       render :edit, status: :unprocessable_content
     end
@@ -55,7 +56,11 @@ private
   end
 
   def create_user_params
-    params.require(:user).permit(:email)
+    params.require(:user).permit(:email, :name)
+  end
+
+  def update_user_params
+    params.require(:user).permit(:name)
   end
 
   def role_param

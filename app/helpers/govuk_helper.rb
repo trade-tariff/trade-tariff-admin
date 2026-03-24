@@ -3,7 +3,7 @@ module GovukHelper
     render GovukComponent::BreadcrumbsComponent.new(breadcrumbs:)
   end
 
-  def govuk_form_for(*args, **options, &block)
+  def govuk_form_for(*args, error_summary: {}, **options, &block)
     merged = options.dup
     merged[:builder] = GOVUKDesignSystemFormBuilder::FormBuilder
     merged[:html] ||= {}
@@ -11,7 +11,7 @@ module GovukHelper
 
     form_for(*args, **merged) do |form|
       safe_join [
-        form.govuk_error_summary,
+        form.govuk_error_summary(**error_summary),
         capture(form, &block),
       ], "\n"
     end

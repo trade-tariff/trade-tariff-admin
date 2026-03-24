@@ -8,6 +8,7 @@ RSpec.describe UsersController do
   let(:new_user_params) do
     {
       email: "new.user@example.com",
+      name: "New User",
       role: User::AUDITOR,
     }
   end
@@ -23,10 +24,10 @@ RSpec.describe UsersController do
 
     it { is_expected.to have_http_status :success }
 
-    it "displays fields for email and role selection", :aggregate_failures do
+    it "displays fields for name, email and role selection", :aggregate_failures do
       rendered_page
 
-      expect(response.body).to include("Email address", "radio", User::GUEST, User::TECHNICAL_OPERATOR, User::HMRC_ADMIN, User::AUDITOR)
+      expect(response.body).to include("Name", "Email address", "radio", User::GUEST, User::TECHNICAL_OPERATOR, User::HMRC_ADMIN, User::AUDITOR)
     end
   end
 
@@ -35,9 +36,9 @@ RSpec.describe UsersController do
 
     it { is_expected.to have_http_status :success }
 
-    it "displays radio buttons for role selection", :aggregate_failures do
+    it "displays fields for name and role selection", :aggregate_failures do
       rendered_page
-      expect(response.body).to include("radio", User::GUEST, User::TECHNICAL_OPERATOR, User::HMRC_ADMIN, User::AUDITOR)
+      expect(response.body).to include("Name", "radio", User::GUEST, User::TECHNICAL_OPERATOR, User::HMRC_ADMIN, User::AUDITOR)
     end
 
     it "preselects the current role" do
@@ -60,6 +61,7 @@ RSpec.describe UsersController do
       created_user = User.order(:created_at).last
 
       expect(created_user.email).to eq("new.user@example.com")
+      expect(created_user.name).to eq("New User")
       expect(created_user.current_role).to eq(User::AUDITOR)
     end
 
@@ -79,7 +81,7 @@ RSpec.describe UsersController do
       it "renders the email validation error" do
         make_request
 
-        expect(response.body).to include("There is a problem", "can&#39;t be blank")
+        expect(response.body).to include("There is a problem", "Email address can&#39;t be blank")
       end
     end
 
@@ -93,7 +95,7 @@ RSpec.describe UsersController do
       it "renders the invalid email error" do
         make_request
 
-        expect(response.body).to include("There is a problem", "is invalid")
+        expect(response.body).to include("There is a problem", "Email address is invalid")
       end
 
       it "does not create the user" do
@@ -115,32 +117,52 @@ RSpec.describe UsersController do
       it "renders the duplicate email validation error" do
         make_request
 
-        expect(response.body).to include("There is a problem", "has already been taken")
+        expect(response.body).to include("There is a problem", "Email address has already been taken")
+      end
+    end
+
+    context "with a blank name" do
+      let(:new_user_params) do
+        super().merge(name: "")
+      end
+
+      it { is_expected.to have_http_status :unprocessable_content }
+
+      it "renders the name validation error" do
+        make_request
+
+        expect(response.body).to include("There is a problem", "Name can&#39;t be blank")
       end
     end
   end
 
   describe "PATCH #update" do
-    let(:make_request) do
+    def update_request(name:, role:)
       patch user_path(target_user),
-            params: { user: { role: new_role } }
+            params: { user: { name:, role: } }
     end
 
     context "with valid role change" do
-      let(:new_role) { User::HMRC_ADMIN }
+      it "redirects to users" do
+        update_request(name: "Updated User", role: User::HMRC_ADMIN)
 
-      it { is_expected.to redirect_to users_path }
+        expect(response).to redirect_to(users_path)
+      end
 
-      it "updates the user's role", :aggregate_failures do
-        make_request
+      it "updates the user's details", :aggregate_failures do
+        update_request(name: "Updated User", role: User::HMRC_ADMIN)
+
         target_user.reload
         expect(target_user.current_role).to eq(User::HMRC_ADMIN)
+        expect(target_user.name).to eq("Updated User")
         expect(target_user.role).to eq(User::HMRC_ADMIN)
       end
 
       it "removes the previous role", :aggregate_failures do
         expect(target_user.current_role).to eq(User::GUEST)
-        make_request
+
+        update_request(name: "Updated User", role: User::HMRC_ADMIN)
+
         target_user.reload
         expect(target_user.current_role).to eq(User::HMRC_ADMIN)
         expect(target_user.guest?).to be(false)
@@ -148,17 +170,35 @@ RSpec.describe UsersController do
     end
 
     context "with invalid role" do
-      let(:new_role) { "INVALID_ROLE" }
+      it "returns unprocessable content" do
+        update_request(name: "Updated User", role: "INVALID_ROLE")
 
-      it { is_expected.to have_http_status :unprocessable_content }
+        expect(response).to have_http_status(:unprocessable_content)
+      end
     end
 
     context "when changing role multiple times" do
       it "updates the role correctly", :aggregate_failures do
         target_user.role = User::TECHNICAL_OPERATOR
         target_user.save!
-        patch user_path(target_user), params: { user: { role: User::AUDITOR } }
+
+        update_request(name: target_user.name, role: User::AUDITOR)
+
         expect(target_user.reload).to have_attributes(current_role: User::AUDITOR, role: User::AUDITOR)
+      end
+    end
+
+    context "with a blank name" do
+      it "returns unprocessable content" do
+        update_request(name: "", role: User::HMRC_ADMIN)
+
+        expect(response).to have_http_status(:unprocessable_content)
+      end
+
+      it "renders the name validation error" do
+        update_request(name: "", role: User::HMRC_ADMIN)
+
+        expect(response.body).to include("There is a problem", "Name can&#39;t be blank")
       end
     end
   end

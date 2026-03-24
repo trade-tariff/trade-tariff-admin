@@ -1,7 +1,14 @@
-<% submit_text = user.persisted? ? "Update role" : "Add user" %>
+<% submit_text = user.persisted? ? "Update user" : "Add user" %>
 
-<%= govuk_form_for user do |f| %>
+<%= govuk_form_for user, error_summary: { presenter: FullMessageErrorSummaryPresenter.new(user) } do |f| %>
   <% role_options = User::VALID_ROLES.index_with { |role| format_role_name(role) } %>
+
+  <%= f.govuk_text_field :name,
+                         label: { text: "Name" },
+                         hint: { text: "Use the name that should appear in Trade Tariff Admin." },
+                         autocomplete: "name",
+                         spellcheck: false,
+                         width: "two-thirds" %>
 
   <% unless user.persisted? %>
     <%= f.govuk_text_field :email,

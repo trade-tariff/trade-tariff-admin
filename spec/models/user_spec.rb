@@ -84,6 +84,13 @@ RSpec.describe User do
         expect(user.errors[:email]).to include("can't be blank")
       end
 
+      it "requires a name", :aggregate_failures do
+        user = build(:user, name: "")
+
+        expect(user).not_to be_valid
+        expect(user.errors[:name]).to include("can't be blank")
+      end
+
       it "requires a valid email address when creating a user", :aggregate_failures do
         user = build(:user, email: "not-an-email")
 
@@ -210,7 +217,7 @@ RSpec.describe User do
       it "raises a validation error for duplicate email" do
         expect {
           described_class.create!(attrs)
-        }.to raise_error(ActiveRecord::RecordInvalid, /Email has already been taken/)
+        }.to raise_error(ActiveRecord::RecordInvalid, /Email address has already been taken/)
       end
     end
   end
