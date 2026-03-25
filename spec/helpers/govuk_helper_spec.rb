@@ -33,12 +33,13 @@ RSpec.describe GovukHelper do
 
   describe ".govuk_form_for" do
     subject do
-      govuk_form_for instance, url: "/ignore" do |f|
+      govuk_form_for instance, url: "/ignore", error_summary: error_summary do |f|
         f.govuk_text_field :name
       end
     end
 
     let(:instance) { model.new name: "Joe" }
+    let(:error_summary) { {} }
 
     it { is_expected.to have_css "form .govuk-form-group label" }
 
@@ -46,6 +47,13 @@ RSpec.describe GovukHelper do
       let(:instance) { model.new.tap(&:valid?) }
 
       it { is_expected.to have_css "form .govuk-error-summary ul li" }
+    end
+
+    context "with a custom error summary presenter" do
+      let(:instance) { model.new.tap(&:valid?) }
+      let(:error_summary) { { presenter: FullMessageErrorSummaryPresenter.new(instance) } }
+
+      it { is_expected.to have_css "form .govuk-error-summary ul li", text: "Name can't be blank" }
     end
   end
 

@@ -32,6 +32,12 @@ en:
       short: "%-d %m %Y"
       tariff: "%d/%m/%Y"
 
+  activerecord:
+    attributes:
+      user:
+        email: Email address
+        name: Name
+
   helpers:
     service_update_type:
       xi: Taric

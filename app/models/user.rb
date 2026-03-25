@@ -9,6 +9,11 @@ class User < ApplicationRecord
   VALID_ROLES = [TECHNICAL_OPERATOR, HMRC_ADMIN, AUDITOR, GUEST].freeze
 
   validates :role, inclusion: { in: VALID_ROLES }
+  validates :name, presence: true
+  validates :email, presence: true, on: :create
+  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true, on: :create
+  validates :email, uniqueness: true, on: :create
+  before_validation :normalize_email
   before_validation :ensure_default_role
 
   class << self
@@ -42,6 +47,7 @@ class User < ApplicationRecord
         user.remotely_signed_out = false
         user.role = TECHNICAL_OPERATOR
       end
+      user.name ||= "basic_auth_user"
       user.save!
       user
     end
@@ -73,6 +79,10 @@ class User < ApplicationRecord
   end
 
 private
+
+  def normalize_email
+    self.email = email.to_s.strip.downcase.presence
+  end
 
   def ensure_default_role
     self.role = GUEST if role.blank?

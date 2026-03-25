@@ -76,6 +76,35 @@ RSpec.describe User do
         expect(user).not_to be_valid
         expect(user.errors[:role]).to be_present
       end
+
+      it "requires an email address when creating a user", :aggregate_failures do
+        user = build(:user, email: "")
+
+        expect(user).not_to be_valid
+        expect(user.errors[:email]).to include("can't be blank")
+      end
+
+      it "requires a name", :aggregate_failures do
+        user = build(:user, name: "")
+
+        expect(user).not_to be_valid
+        expect(user.errors[:name]).to include("can't be blank")
+      end
+
+      it "requires a valid email address when creating a user", :aggregate_failures do
+        user = build(:user, email: "not-an-email")
+
+        expect(user).not_to be_valid
+        expect(user.errors[:email]).to include("is invalid")
+      end
+
+      it "validates email uniqueness case-insensitively when creating a user", :aggregate_failures do
+        create(:user, email: "user@example.com")
+        user = build(:user, email: "USER@example.com")
+
+        expect(user).not_to be_valid
+        expect(user.errors[:email]).to include("has already been taken")
+      end
     end
 
     describe "default role assignment" do
@@ -139,6 +168,14 @@ RSpec.describe User do
         expect(user.current_role).to eq(User::AUDITOR)
       end
     end
+
+    describe "email normalization" do
+      it "normalizes the email before validation" do
+        user = described_class.create!(attributes_for(:user).merge(email: "  USER@Example.COM "))
+
+        expect(user.email).to eq("user@example.com")
+      end
+    end
   end
 
   describe "#update" do
@@ -174,16 +211,14 @@ RSpec.describe User do
     describe "invalid" do
       let!(:user) { create :user }
       let(:attrs) do
-        attributes_for(:user).merge(
-          id: user.id,
-        )
+        attributes_for(:user).merge(email: user.email.upcase)
       end
 
-      it {
+      it "raises a validation error for duplicate email" do
         expect {
           described_class.create!(attrs)
-        }.to raise_error(ActiveRecord::RecordNotUnique)
-      }
+        }.to raise_error(ActiveRecord::RecordInvalid, /Email address has already been taken/)
+      end
     end
   end
 

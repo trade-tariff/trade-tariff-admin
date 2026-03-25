@@ -1,11 +1,14 @@
 <h2>Manage Users</h2>
 
 <p>
-  Use this page to manage user roles.
-  <% unless policy(User.new).update? %>
-    Only technical operators can change user roles.
-  <% end %>
+  Use this page to manage users and roles.
 </p>
+
+<% if policy(User.new).create? %>
+  <p>
+    <%= link_to "Add user", new_user_path, class: "govuk-button" %>
+  </p>
+<% end %>
 
 <% if @users.any? %>
   <table class="govuk-table">

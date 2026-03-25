@@ -3,3 +3,12 @@
 <h2>Edit User: <%= @user.email %></h2>
 
 <%= render 'form', user: @user %>
+
+<% if policy(@user).destroy? %>
+  <%= button_to "Remove user",
+                user_path(@user),
+                method: :delete,
+                class: "govuk-button govuk-button--warning",
+                form_class: "govuk-!-margin-top-6",
+                data: { confirm: "Are you sure you want to remove this user?" } %>
+<% end %>
