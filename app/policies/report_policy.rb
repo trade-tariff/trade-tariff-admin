@@ -14,4 +14,8 @@ class ReportPolicy < ApplicationPolicy
   def send_email?
     technical_operator?
   end
+
+  def backfill_difference?
+    technical_operator? && record.to_param == "differences"
+  end
 end

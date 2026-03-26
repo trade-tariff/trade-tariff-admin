@@ -143,6 +143,7 @@ Rails.application.routes.draw do
       get :download
       post :run
       post :send_email
+      post :backfill_difference
     end
   end
   resources :rollbacks, only: %i[index new create]

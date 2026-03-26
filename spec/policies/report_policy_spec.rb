@@ -20,4 +20,18 @@ RSpec.describe ReportPolicy do
       expect(report_policy).not_to permit(create(:user, :guest), report)
     end
   end
+
+  permissions :backfill_difference? do
+    it "permits technical operators for differences report" do
+      expect(report_policy).to permit(create(:user, :technical_operator), Report.new(resource_id: "differences"))
+    end
+
+    it "denies technical operators for commodities report" do
+      expect(report_policy).not_to permit(create(:user, :technical_operator), Report.new(resource_id: "commodities"))
+    end
+
+    it "denies auditors for differences report" do
+      expect(report_policy).not_to permit(create(:user, :auditor), Report.new(resource_id: "differences"))
+    end
+  end
 end

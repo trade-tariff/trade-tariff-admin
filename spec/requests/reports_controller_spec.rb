@@ -113,6 +113,32 @@ RSpec.describe ReportsController do
     end
   end
 
+  describe "POST #backfill_difference" do
+    before do
+      stub_api_request("/reports/differences").and_return jsonapi_response(
+        :report,
+        { resource_id: "differences", name: "Differences report", description: "Potential issues", available: true, dependencies_missing: false, missing_dependencies: [], download_url: nil, supports_email: false },
+      )
+      stub_api_request("/reports/differences/backfill", :post).to_return(status: 202, body: "", headers: {})
+    end
+
+    let(:make_request) { post backfill_difference_report_path("differences") }
+
+    it { is_expected.to redirect_to(report_path("differences")) }
+
+    it "shows a success message" do
+      rendered_page
+      expect(flash[:notice]).to eq("Difference report backfill was scheduled.")
+    end
+
+    context "when unauthorised" do
+      let(:current_user) { create(:user, :guest) }
+      let(:make_request) { post backfill_difference_report_path("differences") }
+
+      it { is_expected.to have_http_status :forbidden }
+    end
+  end
+
   context "when unauthorised" do
     let(:current_user) { create(:user, :guest) }
     let(:make_request) { get reports_path }

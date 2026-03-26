@@ -11,6 +11,12 @@ class Report
     api.post("admin/reports/#{to_param}/send_email")
   end
 
+  # Triggers a backfill job for the configured report type.
+  # Used for operational backfills of the differences report.
+  def backfill_difference
+    api.post("admin/reports/#{to_param}/backfill")
+  end
+
   def download_redirect_url
     download_url
   end
