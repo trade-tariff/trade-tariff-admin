@@ -26,9 +26,10 @@
 # threads. This includes Active Record's `pool` parameter in `database.yml`.
 threads_count = ENV.fetch("RAILS_MAX_THREADS", 3)
 threads threads_count, threads_count
+rails_env = ENV.fetch("RAILS_ENV", "development")
 
 # Explicit HTTP bind,  default is 3000.
-if Rails.env.development?
+if rails_env == "development"
   bind "tcp://0.0.0.0:#{ENV.fetch('PORT', 3000)}"
 end
 
