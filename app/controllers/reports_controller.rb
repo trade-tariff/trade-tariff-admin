@@ -1,5 +1,5 @@
 class ReportsController < AuthenticatedController
-  before_action :load_report, only: %i[show run send_email download]
+  before_action :load_report, only: %i[show run send_email download backfill_difference]
 
   def index
     authorize Report, :index?
@@ -51,6 +51,16 @@ class ReportsController < AuthenticatedController
   rescue URI::InvalidURIError, ArgumentError, ActionController::Redirecting::UnsafeRedirectError => e
     Rails.logger.error("Unsafe report download URL for #{params[:id]}: #{e.class} #{e.message}")
     redirect_to report_path(@report), alert: "Failed to download report."
+  end
+
+  def backfill_difference
+    authorize @report, :backfill_difference?
+
+    @report.backfill_difference
+    redirect_to report_path(@report), notice: "Difference report backfill was scheduled."
+  rescue Faraday::Error => e
+    Rails.logger.error("Failed to backfill difference report #{params[:id]}: #{e.class} #{e.message}")
+    redirect_to report_path(@report), alert: "Failed to backfill difference report: #{e.message.truncate(200)}"
   end
 
 private
