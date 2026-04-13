@@ -91,6 +91,24 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
               "deleted" => false,
             },
           },
+          {
+            type: "admin_configuration",
+            id: "interactive_search_excluded_chapters",
+            attributes: {
+              "name" => "interactive_search_excluded_chapters",
+              "value" => {
+                "selected" => %w[98 99],
+                "options" => [
+                  { "key" => "98", "label" => "Chapter 98" },
+                  { "key" => "99", "label" => "Chapter 99" },
+                ],
+              },
+              "config_type" => "multi_options",
+              "area" => "classification",
+              "description" => "Chapters excluded from guided search results",
+              "deleted" => false,
+            },
+          },
         ],
       }.to_json,
     }
@@ -149,6 +167,10 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
 
     it "displays options values as selected label" do
       expect(rendered_page.body).to include("GPT-4o (multimodal)")
+    end
+
+    it "displays multi_options values as selected labels" do
+      expect(rendered_page.body).to include("Chapter 98, Chapter 99")
     end
 
     it "displays markdown/string values truncated" do
@@ -266,6 +288,33 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
 
       it "displays the integer value in a pre block" do
         expect(rendered_page.body).to include("<pre>250</pre>")
+      end
+    end
+
+    context "with a multi_options config" do
+      let(:config_name) { "interactive_search_excluded_chapters" }
+      let(:config_attributes) do
+        {
+          "name" => "interactive_search_excluded_chapters",
+          "value" => {
+            "selected" => %w[98 99],
+            "options" => [
+              { "key" => "97", "label" => "Chapter 97" },
+              { "key" => "98", "label" => "Chapter 98" },
+              { "key" => "99", "label" => "Chapter 99" },
+            ],
+          },
+          "config_type" => "multi_options",
+          "area" => "classification",
+          "description" => "Chapters excluded from guided search results",
+          "deleted" => false,
+        }
+      end
+
+      it "displays selected values and available options", :aggregate_failures do
+        expect(rendered_page.body).to include("Chapter 98")
+        expect(rendered_page.body).to include("Chapter 99")
+        expect(rendered_page.body).to include("Chapter 97")
       end
     end
 
@@ -413,6 +462,34 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
 
       it "renders a number field" do
         expect(rendered_page.body).to include('type="number"')
+      end
+    end
+
+    context "with a multi_options config" do
+      let(:config_name) { "interactive_search_excluded_chapters" }
+      let(:config_attributes) do
+        {
+          "name" => "interactive_search_excluded_chapters",
+          "value" => {
+            "selected" => %w[98 99],
+            "options" => [
+              { "key" => "97", "label" => "Chapter 97" },
+              { "key" => "98", "label" => "Chapter 98" },
+              { "key" => "99", "label" => "Chapter 99" },
+            ],
+          },
+          "config_type" => "multi_options",
+          "area" => "classification",
+          "description" => "Chapters excluded from guided search results",
+          "deleted" => false,
+        }
+      end
+
+      it "renders checkboxes for available chapter options", :aggregate_failures do
+        expect(rendered_page.body).to include('type="checkbox"')
+        expect(rendered_page.body).to include("Chapter 97")
+        expect(rendered_page.body).to include("Chapter 98")
+        expect(rendered_page.body).to include("Chapter 99")
       end
     end
 
@@ -602,6 +679,52 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
 
       before do
         stub_api_request("/admin_configurations/#{config_name}", :patch)
+          .and_return(config_response)
+      end
+
+      it { is_expected.to redirect_to(classification_configuration_path(config_name)) }
+    end
+
+    context "with a multi_options config JSON value" do
+      let(:config_name) { "interactive_search_excluded_chapters" }
+      let(:multi_options_json) do
+        '{"selected":["97","99"],"options":[{"key":"97","label":"Chapter 97"},{"key":"98","label":"Chapter 98"},{"key":"99","label":"Chapter 99"}]}'
+      end
+      let(:config_attributes) do
+        {
+          "name" => "interactive_search_excluded_chapters",
+          "value" => JSON.parse(multi_options_json),
+          "config_type" => "multi_options",
+          "area" => "classification",
+          "description" => "Chapters excluded from guided search results",
+          "deleted" => false,
+        }
+      end
+      let(:make_request) do
+        patch classification_configuration_path(config_name),
+              params: {
+                classification_configuration: {
+                  value: multi_options_json,
+                },
+              }
+      end
+
+      before do
+        stub_api_request("/admin_configurations/#{config_name}", :patch)
+          .with(body: hash_including(
+            "data" => hash_including(
+              "attributes" => hash_including(
+                "value" => {
+                  "selected" => %w[97 99],
+                  "options" => [
+                    { "key" => "97", "label" => "Chapter 97" },
+                    { "key" => "98", "label" => "Chapter 98" },
+                    { "key" => "99", "label" => "Chapter 99" },
+                  ],
+                },
+              ),
+            ),
+          ))
           .and_return(config_response)
       end
 
