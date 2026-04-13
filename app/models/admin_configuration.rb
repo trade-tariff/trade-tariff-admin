@@ -37,6 +37,18 @@ class AdminConfiguration
     option&.dig("label") || selected
   end
 
+  def multi_selected_labels
+    return [] unless config_type == "multi_options" && value.is_a?(Hash)
+
+    selected_values = Array(value["selected"])
+    options = value["options"] || []
+
+    selected_values.filter_map do |selected|
+      option = options.find { |o| o["key"] == selected }
+      option&.dig("label") || selected
+    end
+  end
+
   def nested_selected_label
     return unless config_type == "nested_options" && value.is_a?(Hash)
 
@@ -63,6 +75,8 @@ class AdminConfiguration
       value.to_s
     when "options"
       selected_option_label
+    when "multi_options"
+      multi_selected_labels.join(", ")
     when "nested_options"
       label = nested_selected_label
       sub_values = value.is_a?(Hash) ? value["sub_values"] : nil
