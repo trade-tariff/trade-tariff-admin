@@ -42,6 +42,51 @@
         <% end %>
       </select>
     </div>
+  <% when "multi_options" %>
+    <% options = configuration.value.is_a?(Hash) ? (configuration.value["options"] || []) : [] %>
+    <% selected_values = configuration.value.is_a?(Hash) ? Array(configuration.value["selected"]) : [] %>
+
+    <input type="hidden"
+           id="multi-options-hidden-field"
+           name="classification_configuration[value]"
+           value="<%= configuration.value.is_a?(Hash) ? configuration.value.to_json : configuration.value %>">
+
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Selected values</legend>
+        <div class="govuk-hint">Choose which options are active for this configuration</div>
+        <div class="govuk-checkboxes">
+          <% options.each do |opt| %>
+            <% option_key = opt["key"] %>
+            <% option_label = opt["label"] || option_key %>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input"
+                     id="multi-option-<%= option_key %>"
+                     type="checkbox"
+                     value="<%= option_key %>"
+                     <%= "checked" if selected_values.include?(option_key) %>
+                     onchange="(function(box){
+                       var hidden = document.getElementById('multi-options-hidden-field');
+                       var data = JSON.parse(hidden.value);
+                       var selected = Array.isArray(data.selected) ? data.selected : [];
+
+                       if (box.checked) {
+                         if (!selected.includes(box.value)) selected.push(box.value);
+                       } else {
+                         selected = selected.filter(function(value) { return value !== box.value; });
+                       }
+
+                       data.selected = selected;
+                       hidden.value = JSON.stringify(data);
+                     })(this)">
+              <label class="govuk-label govuk-checkboxes__label" for="multi-option-<%= option_key %>">
+                <%= option_label %>
+              </label>
+            </div>
+          <% end %>
+        </div>
+      </fieldset>
+    </div>
   <% when "nested_options" %>
     <% options = configuration.value.is_a?(Hash) ? (configuration.value["options"] || []) : [] %>
     <% selected_value = configuration.value.is_a?(Hash) ? configuration.value["selected"] : "" %>

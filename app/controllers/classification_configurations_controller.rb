@@ -67,7 +67,7 @@ private
   def configuration_params
     permitted = params.require(:classification_configuration).permit(:value).to_h
 
-    if permitted[:value].is_a?(String) && permitted[:value].start_with?("{")
+    if permitted[:value].is_a?(String) && permitted[:value].match?(/\A\s*[\[{]/)
       begin
         permitted[:value] = JSON.parse(permitted[:value])
       rescue JSON::ParserError
