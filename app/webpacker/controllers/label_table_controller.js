@@ -132,12 +132,12 @@ export default class extends Controller {
         col + '">' + label + arrow(col) + '</a>';
     };
 
-    var html = '<table class="govuk-table">' +
+    var html = '<table class="govuk-table label-table">' +
       '<thead class="govuk-table__head"><tr class="govuk-table__row">' +
-      '<th class="govuk-table__header" scope="col">' + sortHeader('goods_nomenclature_item_id', 'Commodity code') + '</th>' +
-      '<th class="govuk-table__header" scope="col">' + sortHeader('score', 'Score') + '</th>' +
-      '<th class="govuk-table__header" scope="col">Status</th>' +
-      '<th class="govuk-table__header" scope="col">Description</th>' +
+      '<th class="govuk-table__header label-table__code" scope="col">' + sortHeader('goods_nomenclature_item_id', 'Commodity code') + '</th>' +
+      '<th class="govuk-table__header label-table__score" scope="col">' + sortHeader('score', 'Score') + '</th>' +
+      '<th class="govuk-table__header label-table__status" scope="col">Status</th>' +
+      '<th class="govuk-table__header label-table__description" scope="col">Description</th>' +
       '</tr></thead><tbody class="govuk-table__body">';
 
     data.forEach(function(label) {
@@ -145,10 +145,10 @@ export default class extends Controller {
       var sc = self.scoreMeta(label.score);
 
       html += '<tr class="govuk-table__row">' +
-        '<td class="govuk-table__cell"><a href="' + showUrl + '" class="govuk-link">' + self.escapeHtml(label.goods_nomenclature_item_id) + '</a></td>' +
-        '<td class="govuk-table__cell">' + sc.tag + '</td>' +
-        '<td class="govuk-table__cell">' + self.statusTags(label) + '</td>' +
-        '<td class="govuk-table__cell">' + self.escapeHtml(label.description || '') + '</td>' +
+        '<td class="govuk-table__cell label-table__code"><a href="' + showUrl + '" class="govuk-link">' + self.escapeHtml(label.goods_nomenclature_item_id) + '</a></td>' +
+        '<td class="govuk-table__cell label-table__score">' + sc.tag + '</td>' +
+        '<td class="govuk-table__cell label-table__status">' + self.statusTags(label) + '</td>' +
+        '<td class="govuk-table__cell label-table__description">' + self.escapeHtml(label.description || '') + '</td>' +
         '</tr>';
     });
 
