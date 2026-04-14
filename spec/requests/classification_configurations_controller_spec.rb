@@ -407,6 +407,14 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
         expect(rendered_page.body).not_to include("Add option")
         expect(rendered_page.body).not_to include("Remove")
       end
+
+      it "uses stimulus instead of inline javascript", :aggregate_failures do
+        body = rendered_page.body
+        expect(body).to include('data-controller="config-form"')
+        expect(body).to include('data-action="change->config-form#updateOption"')
+        expect(body).not_to include("onchange=")
+        expect(body).not_to include("<script>")
+      end
     end
 
     context "with a boolean config" do
@@ -490,6 +498,58 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
         expect(rendered_page.body).to include("Chapter 97")
         expect(rendered_page.body).to include("Chapter 98")
         expect(rendered_page.body).to include("Chapter 99")
+      end
+
+      it "uses stimulus instead of inline javascript", :aggregate_failures do
+        body = rendered_page.body
+        expect(body).to include('data-controller="config-form"')
+        expect(body).to include('data-action="change->config-form#updateMultiOption"')
+        expect(body).not_to include("onchange=")
+        expect(body).not_to include("<script>")
+      end
+    end
+
+    context "with a nested_options config" do
+      let(:config_name) { "search_term_confidence_thresholds" }
+      let(:config_attributes) do
+        {
+          "name" => "search_term_confidence_thresholds",
+          "value" => {
+            "selected" => "strict",
+            "options" => [
+              {
+                "key" => "strict",
+                "label" => "Strict",
+                "sub_options" => {
+                  "minimum_confidence" => %w[high medium low],
+                },
+              },
+              {
+                "key" => "relaxed",
+                "label" => "Relaxed",
+                "sub_options" => {
+                  "minimum_confidence" => %w[medium low],
+                },
+              },
+            ],
+            "sub_values" => {
+              "minimum_confidence" => "medium",
+            },
+          },
+          "config_type" => "nested_options",
+          "area" => "classification",
+          "description" => "Thresholds for search term confidence",
+          "deleted" => false,
+        }
+      end
+
+      it "uses stimulus instead of inline javascript", :aggregate_failures do
+        body = rendered_page.body
+        expect(body).to include('data-controller="config-form"')
+        expect(body).to include('data-action="change->config-form#updateNestedOption"')
+        expect(body).to include('data-config-form-target="nestedSubOptionsContainer"')
+        expect(body).not_to include("onchange=")
+        expect(body).not_to include("<script>")
       end
     end
 

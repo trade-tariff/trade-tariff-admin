@@ -1,4 +1,9 @@
-<%= govuk_form_for configuration, as: :classification_configuration, url: classification_configuration_path(configuration) do |f| %>
+<% form_data = %w[options multi_options nested_options].include?(configuration.config_type) ? { controller: 'config-form' } : {} %>
+
+<%= govuk_form_for configuration,
+                   as: :classification_configuration,
+                   url: classification_configuration_path(configuration),
+                   html: { data: form_data } do |f| %>
 
   <% case configuration.config_type %>
   <% when "markdown" %>
@@ -13,29 +18,24 @@
     <%= f.govuk_number_field :value, label: { text: "Value" } %>
   <% when "date" %>
     <%= f.govuk_text_field :value,
-                            label: { text: "Value" },
-                            hint: { text: "YYYY-MM-DD" },
-                            width: "one-third" %>
+                           label: { text: "Value" },
+                           hint: { text: "YYYY-MM-DD" },
+                           width: "one-third" %>
   <% when "options" %>
     <% options = configuration.value.is_a?(Hash) ? (configuration.value["options"] || []) : [] %>
     <% selected = configuration.value.is_a?(Hash) ? configuration.value["selected"] : "" %>
 
     <input type="hidden"
-           id="options-hidden-field"
            name="classification_configuration[value]"
-           value="<%= configuration.value.is_a?(Hash) ? configuration.value.to_json : configuration.value %>">
+           value="<%= configuration.value.is_a?(Hash) ? configuration.value.to_json : configuration.value %>"
+           data-config-form-target="hiddenField">
 
     <div class="govuk-form-group">
       <label class="govuk-label" for="options-selected-value">Selected value</label>
       <div class="govuk-hint">Choose which option is the active value</div>
       <select class="govuk-select"
               id="options-selected-value"
-              onchange="(function(sel){
-                var hidden = document.getElementById('options-hidden-field');
-                var data = JSON.parse(hidden.value);
-                data.selected = sel.value;
-                hidden.value = JSON.stringify(data);
-              })(this)">
+              data-action="change->config-form#updateOption">
         <option value="">-- Select a value --</option>
         <% options.each do |opt| %>
           <option value="<%= opt["key"] %>" <%= "selected" if opt["key"] == selected %>><%= opt["label"] || opt["key"] %></option>
@@ -47,9 +47,9 @@
     <% selected_values = configuration.value.is_a?(Hash) ? Array(configuration.value["selected"]) : [] %>
 
     <input type="hidden"
-           id="multi-options-hidden-field"
            name="classification_configuration[value]"
-           value="<%= configuration.value.is_a?(Hash) ? configuration.value.to_json : configuration.value %>">
+           value="<%= configuration.value.is_a?(Hash) ? configuration.value.to_json : configuration.value %>"
+           data-config-form-target="hiddenField">
 
     <div class="govuk-form-group">
       <fieldset class="govuk-fieldset">
@@ -65,20 +65,7 @@
                      type="checkbox"
                      value="<%= option_key %>"
                      <%= "checked" if selected_values.include?(option_key) %>
-                     onchange="(function(box){
-                       var hidden = document.getElementById('multi-options-hidden-field');
-                       var data = JSON.parse(hidden.value);
-                       var selected = Array.isArray(data.selected) ? data.selected : [];
-
-                       if (box.checked) {
-                         if (!selected.includes(box.value)) selected.push(box.value);
-                       } else {
-                         selected = selected.filter(function(value) { return value !== box.value; });
-                       }
-
-                       data.selected = selected;
-                       hidden.value = JSON.stringify(data);
-                     })(this)">
+                     data-action="change->config-form#updateMultiOption">
               <label class="govuk-label govuk-checkboxes__label" for="multi-option-<%= option_key %>">
                 <%= option_label %>
               </label>
@@ -93,16 +80,17 @@
     <% sub_values = configuration.value.is_a?(Hash) ? (configuration.value["sub_values"] || {}) : {} %>
 
     <input type="hidden"
-           id="nested-options-hidden-field"
            name="classification_configuration[value]"
-           value="<%= configuration.value.is_a?(Hash) ? configuration.value.to_json : configuration.value %>">
+           value="<%= configuration.value.is_a?(Hash) ? configuration.value.to_json : configuration.value %>"
+           data-config-form-target="hiddenField">
 
     <div class="govuk-form-group">
       <label class="govuk-label" for="nested-options-selected">Selected value</label>
       <div class="govuk-hint">Choose the primary value for this configuration</div>
       <select class="govuk-select"
               id="nested-options-selected"
-              onchange="updateNestedOptions()">
+              data-config-form-target="nestedSelect"
+              data-action="change->config-form#updateNestedOption">
         <option value="">-- Select a value --</option>
         <% options.each do |opt| %>
           <option value="<%= opt["key"] %>"
@@ -112,85 +100,7 @@
       </select>
     </div>
 
-    <div id="nested-sub-options-container"></div>
-
-    <script>
-      (function() {
-        var mainSelect = document.getElementById('nested-options-selected');
-        var container = document.getElementById('nested-sub-options-container');
-        var hiddenField = document.getElementById('nested-options-hidden-field');
-        var currentSubValues = <%= sub_values.to_json.html_safe %>;
-
-        function rebuildSubOptions() {
-          container.innerHTML = '';
-          var selectedOption = mainSelect.options[mainSelect.selectedIndex];
-          if (!selectedOption || !selectedOption.value) return;
-
-          var subOptions = {};
-          try { subOptions = JSON.parse(selectedOption.getAttribute('data-sub-options') || '{}'); } catch(e) {}
-
-          Object.keys(subOptions).forEach(function(key) {
-            var levels = subOptions[key];
-            if (!Array.isArray(levels) || levels.length === 0) return;
-
-            var group = document.createElement('div');
-            group.className = 'govuk-form-group';
-
-            var label = document.createElement('label');
-            label.className = 'govuk-label';
-            label.setAttribute('for', 'nested-sub-' + key);
-            label.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
-            group.appendChild(label);
-
-            var select = document.createElement('select');
-            select.className = 'govuk-select';
-            select.id = 'nested-sub-' + key;
-            select.setAttribute('data-sub-key', key);
-            select.onchange = syncHiddenField;
-
-            var noneOpt = document.createElement('option');
-            noneOpt.value = '';
-            noneOpt.textContent = 'None';
-            select.appendChild(noneOpt);
-
-            levels.forEach(function(level) {
-              if (level === 'none') return;
-              var opt = document.createElement('option');
-              opt.value = level;
-              opt.textContent = level.charAt(0).toUpperCase() + level.slice(1);
-              select.appendChild(opt);
-            });
-
-            select.value = currentSubValues[key] || '';
-
-            group.appendChild(select);
-            container.appendChild(group);
-          });
-
-          syncHiddenField();
-        }
-
-        function syncHiddenField() {
-          var data = JSON.parse(hiddenField.value);
-          data.selected = mainSelect.value;
-
-          var sv = {};
-          container.querySelectorAll('select[data-sub-key]').forEach(function(sel) {
-            sv[sel.getAttribute('data-sub-key')] = sel.value || null;
-          });
-          data.sub_values = sv;
-          currentSubValues = sv;
-
-          hiddenField.value = JSON.stringify(data);
-        }
-
-        mainSelect.onchange = function() {
-          rebuildSubOptions();
-        };
-
-        rebuildSubOptions();
-      })();
-    </script>
+    <div data-config-form-target="nestedSubOptionsContainer" data-sub-values="<%= sub_values.to_json %>"></div>
   <% else %>
     <%= f.govuk_text_area :value,
                           label: { text: "Value" },
