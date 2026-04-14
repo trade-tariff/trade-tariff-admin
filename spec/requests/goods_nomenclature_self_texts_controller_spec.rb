@@ -76,6 +76,38 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
         expect(rendered_page.body).to include('for="st-type-all"')
         expect(rendered_page.body).not_to include('for="st-type-heading"')
       end
+
+      it "renders the self-text table inside a bounded container" do
+        expect(rendered_page.body).to include('class="self-text-table-container" data-self-text-table-target="table"')
+      end
+
+      it "renders the labels table inside a bounded container" do
+        expect(rendered_page.body).to include('class="label-table-container" data-label-table-target="table"')
+      end
+
+      it "defines a fixed layout for the self-text table styles" do
+        stylesheet = Rails.root.join("app/webpacker/packs/application.scss").read
+
+        expect(stylesheet).to match(/\.self-text-table\s*\{[\s\S]*table-layout:\s*fixed;/)
+      end
+
+      it "defines wrapping styles for long self-text content" do
+        stylesheet = Rails.root.join("app/webpacker/packs/application.scss").read
+
+        expect(stylesheet).to match(/\.self-text-table\s*\{[\s\S]*&__description\s*\{[\s\S]*overflow-wrap:\s*anywhere;[\s\S]*word-break:\s*break-word;/)
+      end
+
+      it "defines a fixed layout for the labels table styles" do
+        stylesheet = Rails.root.join("app/webpacker/packs/application.scss").read
+
+        expect(stylesheet).to match(/\.label-table\s*\{[\s\S]*table-layout:\s*fixed;/)
+      end
+
+      it "defines wrapping styles for long label descriptions" do
+        stylesheet = Rails.root.join("app/webpacker/packs/application.scss").read
+
+        expect(stylesheet).to match(/\.label-table\s*\{[\s\S]*&__description\s*\{[\s\S]*overflow-wrap:\s*anywhere;[\s\S]*word-break:\s*break-word;/)
+      end
       # rubocop:enable RSpec/MultipleExpectations
     end
 
