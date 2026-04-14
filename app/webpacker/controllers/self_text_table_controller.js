@@ -124,12 +124,12 @@ export default class extends Controller {
         col + '">' + label + arrow(col) + '</a>';
     };
 
-    var html = '<table class="govuk-table">' +
+    var html = '<table class="govuk-table self-text-table">' +
       '<thead class="govuk-table__head"><tr class="govuk-table__row">' +
-      '<th class="govuk-table__header" scope="col">' + sortHeader('goods_nomenclature_item_id', 'Commodity code') + '</th>' +
-      '<th class="govuk-table__header" scope="col">' + sortHeader('score', 'Score') + '</th>' +
-      '<th class="govuk-table__header" scope="col">Status</th>' +
-      '<th class="govuk-table__header" scope="col">Self-text</th>' +
+      '<th class="govuk-table__header self-text-table__code" scope="col">' + sortHeader('goods_nomenclature_item_id', 'Commodity code') + '</th>' +
+      '<th class="govuk-table__header self-text-table__score" scope="col">' + sortHeader('score', 'Score') + '</th>' +
+      '<th class="govuk-table__header self-text-table__status" scope="col">Status</th>' +
+      '<th class="govuk-table__header self-text-table__description" scope="col">Self-text</th>' +
       '</tr></thead><tbody class="govuk-table__body">';
 
     data.forEach(function(st) {
@@ -137,10 +137,10 @@ export default class extends Controller {
       var sc = self.scoreMeta(st.score);
 
       html += '<tr class="govuk-table__row" data-score="' + (st.score !== null && st.score !== undefined ? st.score : '') + '" data-score-category="' + sc.category + '">' +
-        '<td class="govuk-table__cell"><a href="' + showUrl + '" class="govuk-link">' + self.escapeHtml(st.goods_nomenclature_item_id) + '</a></td>' +
-        '<td class="govuk-table__cell">' + sc.tag + '</td>' +
-        '<td class="govuk-table__cell">' + self.statusTags(st) + '</td>' +
-        '<td class="govuk-table__cell">' + self.escapeHtml(st.self_text || '') + '</td>' +
+        '<td class="govuk-table__cell self-text-table__code"><a href="' + showUrl + '" class="govuk-link">' + self.escapeHtml(st.goods_nomenclature_item_id) + '</a></td>' +
+        '<td class="govuk-table__cell self-text-table__score">' + sc.tag + '</td>' +
+        '<td class="govuk-table__cell self-text-table__status">' + self.statusTags(st) + '</td>' +
+        '<td class="govuk-table__cell self-text-table__description">' + self.escapeHtml(st.self_text || '') + '</td>' +
         '</tr>';
     });
 

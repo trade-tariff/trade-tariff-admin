@@ -200,6 +200,32 @@ $govuk-image-url-function: frontend-image-url;
   }
 }
 
+.self-text-table-container {
+  overflow-x: hidden;
+}
+
+.self-text-table {
+  table-layout: fixed;
+  width: 100%;
+
+  &__code {
+    width: 18%;
+  }
+
+  &__score {
+    width: 11%;
+  }
+
+  &__status {
+    width: 12%;
+  }
+
+  &__description {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}
+
 #ca-search-container {
   display: flex;
 }
