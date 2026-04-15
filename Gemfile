@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-ruby File.read(".ruby-version").chomp
+ruby file: ".ruby-version"
 
 # Server
 gem "puma"
@@ -15,22 +15,19 @@ gem "pg", require: false
 gem "webpacker"
 
 # GovUK
+gem "govuk-components", "6.1.0"
 gem "govuk_design_system_formbuilder"
 
 # Markdown
-gem "addressable"
 gem "govspeak"
-gem "govuk-components", "6.1.0"
 
 # API
 gem "faraday"
 gem "faraday-net_http_persistent"
 gem "faraday-retry"
 gem "jwt"
-gem "net-http-persistent"
 
 # Authorization
-gem "plek"
 gem "pundit"
 
 # Helpers
@@ -44,7 +41,6 @@ gem "logstash-event"
 # Misc
 gem "bootsnap", require: false
 gem "nokogiri"
-gem "sentry-rails"
 
 group :development, :test do
   gem "brakeman"
