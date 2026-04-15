@@ -11,6 +11,7 @@ $govuk-font-url-function: frontend-font-url;
 $govuk-image-url-function: frontend-image-url;
 
 @import "~govuk-frontend/dist/govuk";
+@import "~accessible-autocomplete/src/autocomplete";
 
 .govuk-auto-classes {
   h1 { @extend .govuk-heading-l ; }
@@ -185,6 +186,19 @@ $govuk-image-url-function: frontend-image-url;
     border-radius: 10px;
   }
 
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: govuk-spacing(1);
+  }
+
+  &__description {
+    @include govuk-font($size: 16);
+    color: govuk-colour("black", $variant: "tint-25");
+    max-width: 32rem;
+    overflow-wrap: anywhere;
+  }
+
   &__remove {
     background: none;
     border: none;
@@ -324,5 +338,97 @@ $govuk-image-url-function: frontend-image-url;
 
   &--unchanged {
     background-color: govuk-colour("light-grey");
+  }
+}
+
+
+
+
+.app-tabs__tab--disabled {
+  color: govuk-colour("black", $variant: "tint-25");
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.description-intercept-table {
+  table-layout: fixed;
+  width: 100%;
+
+  &__term {
+    width: 24%;
+  }
+}
+
+.description-intercept-short-code-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: govuk-spacing(2);
+}
+
+.description-intercept-short-code-pill {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: govuk-spacing(2);
+  background-color: govuk-colour("black", $variant: "tint-95");
+  border: 1px solid govuk-colour("black", $variant: "tint-80");
+  border-radius: 4px;
+  padding: govuk-spacing(1) govuk-spacing(2);
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: govuk-spacing(1);
+  }
+
+  &__description {
+    @include govuk-font($size: 16);
+    color: govuk-colour("black", $variant: "tint-25");
+    max-width: 32rem;
+    overflow-wrap: anywhere;
+  }
+
+  &__remove {
+    @include govuk-font($size: 16);
+    background: none;
+    border: 0;
+    color: govuk-colour("blue");
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+
+    &:hover {
+      color: govuk-shade(govuk-colour("blue"), 30%);
+    }
+  }
+}
+
+.description-intercept-short-code-autocomplete {
+  .autocomplete__wrapper {
+    width: 100%;
+  }
+
+  .autocomplete__input {
+    @extend .govuk-input;
+  }
+
+  .autocomplete__menu {
+    @extend .govuk-body;
+    border: 1px solid govuk-colour("mid-grey");
+    box-shadow: 0 2px 6px rgb(0 0 0 / 12%);
+    max-height: 20rem;
+    overflow-y: auto;
+  }
+
+  .autocomplete__option {
+    @include govuk-font($size: 16);
+    border-bottom: 1px solid govuk-colour("light-grey");
+    padding: govuk-spacing(2);
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .autocomplete__option--focused,
+  .autocomplete__option:hover {
+    background-color: govuk-tint(govuk-colour("blue"), 90%);
   }
 }

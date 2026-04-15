@@ -1,0 +1,96 @@
+<%= govuk_breadcrumbs 'Intercepts': description_intercepts_path %>
+
+<%= render 'versions/version_banner',
+           record: @description_intercept,
+           current_path: description_intercept_path(@description_intercept),
+           type_name: 'description intercept' %>
+
+<span class="govuk-caption-l">Description intercept</span>
+<h1 class="govuk-heading-l"><%= @description_intercept.term %></h1>
+
+<div class="govuk-inset-text govuk-!-margin-bottom-6">
+  <p class="govuk-body govuk-!-margin-bottom-2"><strong>Behaviour:</strong> <%= @description_intercept.behaviour_summary %></p>
+  <p class="govuk-body govuk-!-margin-bottom-0"><strong>Sources:</strong> <%= @description_intercept.sources_label %></p>
+</div>
+
+<dl class="govuk-summary-list govuk-!-margin-bottom-6">
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Excluded</dt>
+    <dd class="govuk-summary-list__value">
+      <strong class="govuk-tag govuk-tag--<%= @description_intercept.excluded_tag_colour %>"><%= @description_intercept.excluded? ? 'Excluded' : 'Not excluded' %></strong>
+    </dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Sources</dt>
+    <dd class="govuk-summary-list__value"><%= @description_intercept.sources_label %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Search behaviour</dt>
+    <dd class="govuk-summary-list__value"><%= @description_intercept.behaviour_summary %></dd>
+  </div>
+  <% if @description_intercept.guidance? %>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Guidance</dt>
+      <dd class="govuk-summary-list__value"><%= @description_intercept.message %></dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Guidance level</dt>
+      <dd class="govuk-summary-list__value"><%= @description_intercept.level_label %></dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Guidance location</dt>
+      <dd class="govuk-summary-list__value"><%= @description_intercept.location_label %></dd>
+    </div>
+  <% else %>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Guidance</dt>
+      <dd class="govuk-summary-list__value">None</dd>
+    </div>
+  <% end %>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Escalation</dt>
+    <dd class="govuk-summary-list__value">
+      <strong class="govuk-tag govuk-tag--<%= @description_intercept.escalation_tag_colour %>"><%= @description_intercept.escalate_to_webchat? ? 'Enabled' : 'Not enabled' %></strong>
+    </dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Selected short codes</dt>
+    <dd class="govuk-summary-list__value">
+      <% if @selected_short_codes.present? %>
+        <div class="description-intercept-short-code-list">
+          <% @selected_short_codes.each do |short_code| %>
+            <div class="description-intercept-short-code-pill">
+              <div class="description-intercept-short-code-pill__content">
+                <strong class="govuk-tag govuk-tag--grey"><%= short_code[:goods_nomenclature_item_id] %></strong>
+                <% if short_code[:truncated_description].present? %>
+                  <span class="description-intercept-short-code-pill__description"><%= short_code[:truncated_description] %></span>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        None
+      <% end %>
+    </dd>
+  </div>
+</dl>
+
+<% if @description_intercept.current? && policy(@description_intercept).update? %>
+  <div class="govuk-button-group">
+    <%= link_to 'Edit', edit_description_intercept_path(@description_intercept), class: 'govuk-button' %>
+  </div>
+<% end %>
+
+<% if @versions.present? %>
+  <%= render 'versions/history_section',
+             versions: @versions,
+             view_path_helper: ->(v) { description_intercept_path(@description_intercept, oid: v.resource_id) },
+             restore_path_helper: ->(v) { restore_version_path(v.resource_id) },
+             can_restore: policy(@description_intercept).update?,
+             current_oid: @description_intercept.version_oid %>
+<% end %>
+
+<%= render 'versions/version_navigation',
+           record: @description_intercept,
+           version_path_helper: ->(oid) { description_intercept_path(@description_intercept, oid: oid) } %>

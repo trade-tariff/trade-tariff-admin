@@ -4,6 +4,7 @@
   "dependencies": {
     "@hotwired/stimulus": "^3.2.2",
     "@rails/webpacker": "^5.4.4",
+    "accessible-autocomplete": "^3.0.1",
     "autosize": "^6.0.1",
     "chart.js": "^4.5.1",
     "govuk-frontend": "6.1.0",

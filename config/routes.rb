@@ -114,6 +114,9 @@ Rails.application.routes.draw do
 
   resources :classification_configurations, param: :name, only: %i[index show edit update]
 
+  resources :description_intercepts, only: %i[index new create show edit update]
+  resources :goods_nomenclature_autocomplete_results, only: %i[index]
+
   namespace :green_lanes, path: "green_lanes" do
     resources :category_assessments, only: %i[index new create edit update destroy] do
       member do

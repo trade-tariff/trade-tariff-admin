@@ -1,0 +1,155 @@
+<%= govuk_form_for description_intercept,
+                   as: :description_intercept,
+                   url: description_intercept.persisted? ? description_intercept_path(description_intercept) : description_intercepts_path,
+                   html: { data: { controller: "description-intercept-form",
+                                   description_intercept_form_autocomplete_url_value: goods_nomenclature_autocomplete_results_path(format: :json) } } do |f| %>
+  <%= govuk_details(summary_text: "How description intercepts work") do %>
+    <p class="govuk-body">Use a description intercept to control how guided search behaves when a trader enters a known term.</p>
+    <ul class="govuk-list govuk-list--bullet">
+      <li><strong>Exclude search results</strong> stops results being returned for the term.</li>
+      <li><strong>Limit results to selected short codes</strong> narrows retrieval to the short codes you choose.</li>
+      <li><strong>Guidance</strong> lets the frontend show a message with a level and location.</li>
+      <li><strong>Escalation</strong> signals that the trader-facing frontend may offer HMRC support.</li>
+    </ul>
+  <% end %>
+
+  <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Search Term</h2>
+  <%= f.govuk_text_field :term,
+                         label: { text: "", hidden: true },
+                         hint: { text: "The term or phrase that should trigger this intercept." } %>
+
+  <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Search behaviour</h2>
+  <div class="govuk-form-group">
+    <div class="govuk-checkboxes govuk-checkboxes--small">
+      <div class="govuk-checkboxes__item">
+        <input type="hidden" name="description_intercept[excluded]" value="0">
+        <input class="govuk-checkboxes__input"
+               id="description-intercept-excluded"
+               type="checkbox"
+               name="description_intercept[excluded]"
+               value="1"
+               <%= 'checked' if description_intercept.excluded? %>
+               data-action="change->description-intercept-form#toggleExcluded"
+               data-description-intercept-form-target="excludedInput">
+        <label class="govuk-label govuk-checkboxes__label" for="description-intercept-excluded">Exclude search results</label>
+        <div class="govuk-hint govuk-checkboxes__hint">Stops search results being returned for this term.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="govuk-form-group">
+    <div class="govuk-checkboxes govuk-checkboxes--small">
+      <div class="govuk-checkboxes__item">
+        <input class="govuk-checkboxes__input" id="description-intercept-filtering-enabled" type="checkbox"
+               <%= 'checked' if description_intercept.filtering? %>
+               <%= 'disabled="disabled"'.html_safe if description_intercept.excluded? %>
+               data-action="change->description-intercept-form#toggleFiltering"
+               data-description-intercept-form-target="filteringToggle">
+        <label class="govuk-label govuk-checkboxes__label" for="description-intercept-filtering-enabled">Limit results to selected short codes</label>
+        <div class="govuk-hint govuk-checkboxes__hint">Use this when the term should only search within selected goods short codes.</div>
+      </div>
+    </div>
+    <div class="govuk-hint" data-description-intercept-form-target="filteringHint" <%= 'style="display:none"'.html_safe unless description_intercept.excluded? %>>
+      Filtering is unavailable while exclude search results is selected.
+    </div>
+  </div>
+
+  <% filter_prefixes_error = description_intercept.errors[:filter_prefixes].first %>
+  <div class="govuk-form-group <%= 'govuk-form-group--error' if filter_prefixes_error.present? %>"
+       data-description-intercept-form-target="filteringFields"
+       <%= 'style="display:none"'.html_safe if description_intercept.excluded? || !description_intercept.filtering? %>>
+    <label class="govuk-label govuk-label--s" for="description-intercept-filter-prefixes-field-error">Search for a short code</label>
+    <div id="description-intercept-filter-prefixes-hint" class="govuk-hint">Search active goods nomenclatures by short code and description, then add one or more values.</div>
+    <% if filter_prefixes_error.present? %>
+      <p id="description-intercept-filter-prefixes-error" class="govuk-error-message">
+        <span class="govuk-visually-hidden">Error:</span>
+        <%= filter_prefixes_error %>
+      </p>
+    <% end %>
+    <div class="description-intercept-short-code-autocomplete"
+         data-description-intercept-form-target="autocompleteContainer"
+         data-disabled="<%= description_intercept.excluded? || !description_intercept.filtering? %>"></div>
+    <div class="govuk-hint">Suggestions include the short code and a truncated description.</div>
+    <div class="govuk-!-margin-top-3">
+      <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-2">Selected short codes</p>
+      <div class="description-intercept-short-code-list" data-description-intercept-form-target="selectedShortCodes">
+      <% Array(@selected_short_codes).each do |short_code| %>
+        <div class="description-intercept-short-code-pill" data-short-code-item="true">
+          <div class="description-intercept-short-code-pill__content">
+            <strong class="govuk-tag govuk-tag--grey"><%= short_code[:goods_nomenclature_item_id] %></strong>
+            <% if short_code[:truncated_description].present? %>
+              <span class="description-intercept-short-code-pill__description"><%= short_code[:truncated_description] %></span>
+            <% end %>
+          </div>
+          <button type="button" class="description-intercept-short-code-pill__remove" data-action="click->description-intercept-form#removeShortCode" aria-label="Remove <%= short_code[:goods_nomenclature_item_id] %>">Remove</button>
+          <input type="hidden" name="description_intercept[filter_prefixes][]" value="<%= short_code[:goods_nomenclature_item_id] %>">
+        </div>
+      <% end %>
+    </div>
+    </div>
+  </div>
+
+  <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Sources</h2>
+  <div class="govuk-form-group">
+    <fieldset class="govuk-fieldset" aria-describedby="description_intercept_sources_hint">
+      <legend class="govuk-visually-hidden">Search sources</legend>
+      <div id="description_intercept_sources_hint" class="govuk-hint">Choose where this intercept should apply.</div>
+      <div class="govuk-checkboxes govuk-checkboxes--small">
+        <% DescriptionIntercept::SOURCES.each do |source| %>
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input"
+                   id="description_intercept_sources_<%= source %>"
+                   type="checkbox"
+                   name="description_intercept[sources][]"
+                   value="<%= source %>"
+                   <%= 'checked' if Array(description_intercept.sources).include?(source) %>>
+            <label class="govuk-label govuk-checkboxes__label" for="description_intercept_sources_<%= source %>"><%= DescriptionIntercept::SOURCE_LABELS[source] %></label>
+          </div>
+        <% end %>
+      </div>
+    </fieldset>
+  </div>
+
+  <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Guidance</h2>
+  <%= f.govuk_text_area :message,
+                        label: { text: "Guidance message" },
+                        hint: { text: "Shown to the trader-facing frontend when this intercept matches." },
+                        rows: 5,
+                        data: { action: "input->description-intercept-form#toggleGuidance", description_intercept_form_target: "messageInput" } %>
+
+  <div data-description-intercept-form-target="guidanceFields">
+    <%= f.govuk_select :guidance_level,
+                       DescriptionIntercept::GUIDANCE_LEVELS,
+                       label: { text: "Guidance level" },
+                       hint: { text: "Controls how strongly the frontend should present the guidance." },
+                       include_blank: true,
+                       data: { description_intercept_form_target: "guidanceLevelInput" } %>
+    <%= f.govuk_select :guidance_location,
+                       DescriptionIntercept::GUIDANCE_LOCATIONS,
+                       label: { text: "Guidance location" },
+                       hint: { text: "Choose where the guidance message is intended to appear." },
+                       include_blank: true,
+                       data: { description_intercept_form_target: "guidanceLocationInput" } %>
+  </div>
+
+  <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Support</h2>
+  <div class="govuk-form-group">
+    <div class="govuk-checkboxes govuk-checkboxes--small">
+      <div class="govuk-checkboxes__item">
+        <input type="hidden" name="description_intercept[escalate_to_webchat]" value="0">
+        <input class="govuk-checkboxes__input"
+               id="description-intercept-escalate-to-webchat"
+               type="checkbox"
+               name="description_intercept[escalate_to_webchat]"
+               value="1"
+               <%= 'checked' if description_intercept.escalate_to_webchat? %>>
+        <label class="govuk-label govuk-checkboxes__label" for="description-intercept-escalate-to-webchat">Allow HMRC support escalation</label>
+        <div class="govuk-hint govuk-checkboxes__hint">Signals that the trader-facing frontend may offer HMRC support for this term.</div>
+      </div>
+    </div>
+  </div>
+
+  <%= submit_and_back_buttons f,
+                              description_intercept.persisted? ? description_intercept_path(description_intercept) : description_intercepts_path,
+                              submit: description_intercept.persisted? ? "Save changes" : "Create description intercept" %>
+<% end %>

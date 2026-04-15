@@ -8,18 +8,11 @@ class SearchReference
              :referenced_id,
              :referenced_class
 
-  def serializable_hash
-    hash = super
-
-    attrs = hash.dig(:data, :attributes)
-    return hash unless attrs.is_a?(Hash)
-
+  def normalize_serialized_attributes(attrs)
     %w[release_services release_to_uk release_to_xi].each do |key|
       attrs.delete(key)
       attrs.delete(key.to_sym)
     end
-
-    hash
   end
 
   def referenced_entity

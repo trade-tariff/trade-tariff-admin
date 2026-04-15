@@ -211,4 +211,40 @@ RSpec.describe GoodsNomenclatureSelfText do
       expect(record.to_param).to eq("99999")
     end
   end
+
+  describe ".find" do
+    before do
+      stub_api_request("/goods_nomenclatures/0101210000/goods_nomenclature_self_text")
+        .with(query: hash_including("filter" => { "oid" => "789" }))
+        .and_return(
+          status: 200,
+          headers: { "content-type" => "application/json; charset=utf-8" },
+          body: {
+            data: {
+              type: "goods_nomenclature_self_text",
+              id: "12345",
+              attributes: attributes.merge(self_text: "Historical self text"),
+            },
+            meta: {
+              version: {
+                current: false,
+                oid: 789,
+                previous_oid: 788,
+                has_previous_version: true,
+                latest_event: "update",
+              },
+            },
+          }.to_json,
+        )
+    end
+
+    it "uses the path id and extracts version metadata through API entity", :aggregate_failures do
+      record = described_class.find("0101210000", oid: "789")
+
+      expect(record.goods_nomenclature_id).to eq("0101210000")
+      expect(record.self_text).to eq("Historical self text")
+      expect(record.version_oid).to eq(789)
+      expect(record.current?).to be(false)
+    end
+  end
 end

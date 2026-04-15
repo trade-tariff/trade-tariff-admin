@@ -1,8 +1,6 @@
 class Version
   include ApiEntity
 
-  set_collection_path "admin/versions"
-
   attributes :id, :item_type, :item_id, :event, :object, :whodunnit, :created_at, :changeset, :previous_version_id
 
   FRIENDLY_TYPE_NAMES = {
@@ -10,6 +8,7 @@ class Version
     "GoodsNomenclatureSelfText" => "Self-text",
     "SearchReference" => "Search reference",
     "AdminConfiguration" => "Configuration",
+    "DescriptionIntercept" => "Description intercept",
   }.freeze
 
   def whodunnit_name
@@ -34,7 +33,7 @@ class Version
   def item_description
     return nil unless object.is_a?(Hash)
 
-    object["goods_nomenclature_item_id"] || object["name"] || object["title"] || item_id
+    object["goods_nomenclature_item_id"] || object["term"] || object["name"] || object["title"] || item_id
   end
 
   def changed_fields
