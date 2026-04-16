@@ -96,7 +96,7 @@ class GoodsNomenclatureSelfTextsController < AuthenticatedController
                   notice: "Self-text updated successfully."
     else
       @versions = fetch_versions
-      render :show, status: :unprocessable_entity
+      render :show, status: :unprocessable_content
     end
   end
 

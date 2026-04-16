@@ -273,7 +273,7 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
           .and_return(webmock_response(:error, description: "can't be blank"))
       end
 
-      it { is_expected.to have_http_status :unprocessable_entity }
+      it { is_expected.to have_http_status :unprocessable_content }
       it { is_expected.to render_template(:show) }
     end
   end
