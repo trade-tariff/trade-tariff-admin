@@ -47,7 +47,7 @@ class GoodsNomenclatureLabelsController < AuthenticatedController
                   notice: "Label updated successfully."
     else
       @versions = fetch_versions
-      render :show, status: :unprocessable_entity
+      render :show, status: :unprocessable_content
     end
   rescue Faraday::ResourceNotFound
     redirect_to goods_nomenclature_labels_path, alert: "Label not found for commodity code #{goods_nomenclature_id}."

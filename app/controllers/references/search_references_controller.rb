@@ -29,7 +29,7 @@ module References
         @search_reference = build_search_reference
         assign_release_services_to_form(@search_reference)
         @search_reference.errors.add(:release_services, "Select at least one service to release this reference")
-        return render :new, status: :unprocessable_entity
+        return render :new, status: :unprocessable_content
       end
 
       failed_reference, = run_for_selected_services(selected_services) do
@@ -41,7 +41,7 @@ module References
 
       if failed_reference
         @search_reference = failed_reference
-        render :new, status: :unprocessable_entity
+        render :new, status: :unprocessable_content
       else
         redirect_to [:references, search_reference_parent, :search_references], notice: "Search reference was successfully created."
       end
@@ -74,7 +74,7 @@ module References
         @search_reference = search_reference_for_action || SearchReference.new(title: original_title_param)
         assign_release_services_to_form(@search_reference)
         @search_reference.errors.add(:release_services, "Select at least one service to release this reference")
-        return render :edit, status: :unprocessable_entity
+        return render :edit, status: :unprocessable_contents
       end
 
       failed_reference, missing_services, successful_services = run_for_selected_services(selected_services) do
@@ -89,7 +89,7 @@ module References
 
       if failed_reference
         @search_reference = failed_reference
-        render :edit, status: :unprocessable_entity
+        render :edit, status: :unprocessable_content
       elsif successful_services.any? && missing_services.any?
         notice = "Search reference was successfully updated only for #{format_release_services(successful_services)}. Not available in #{format_release_services(missing_services)}."
         redirect_to [:references, search_reference_parent, :search_references], notice:
@@ -109,7 +109,7 @@ module References
         @search_reference = search_reference_for_action || SearchReference.new(title: original_title_param)
         assign_release_services_to_form(@search_reference)
         @search_reference.errors.add(:release_services, "Select at least one service to release this reference")
-        return render :remove, status: :unprocessable_entity
+        return render :remove, status: :unprocessable_content
       end
 
       failed_reference, missing_services, successful_services = run_for_selected_services(selected_services) do

@@ -7,6 +7,6 @@ RSpec.describe ApplicationController, type: :request do
     let(:exception) { ActionController::InvalidAuthenticityToken }
 
     it { is_expected.to have_http_status(:unprocessable_content) }
-    it { expect(do_response.body).to include("Unprocessable entity") }
+    it { expect(do_response.body).to include("Unprocessable content") }
   end
 end
