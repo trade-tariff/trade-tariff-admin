@@ -435,15 +435,8 @@ GEM
       nokogiri (>= 1.16.8)
     securerandom (0.4.1)
     semantic_range (3.1.0)
-    sentry-rails (6.5.0)
-      railties (>= 5.2.0)
-      sentry-ruby (~> 6.5.0)
     sentry-raven (3.1.2)
       faraday (>= 1.0)
-    sentry-ruby (6.5.0)
-      bigdecimal
-      concurrent-ruby (~> 1.0, >= 1.0.2)
-      logger
     shoulda-matchers (7.0.1)
       activesupport (>= 7.1)
     simplecov (0.22.0)
@@ -507,7 +500,6 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
-  addressable
   amazing_print
   bootsnap
   brakeman
@@ -525,10 +517,8 @@ DEPENDENCIES
   kaminari
   lograge
   logstash-event
-  net-http-persistent
   nokogiri
   pg
-  plek
   pry-rails
   puma
   pundit
@@ -540,7 +530,6 @@ DEPENDENCIES
   rspec_junit_formatter
   rubocop-govuk
   ruby-lsp-rails
-  sentry-rails
   shoulda-matchers
   simplecov
   webmock
