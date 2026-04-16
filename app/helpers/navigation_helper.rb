@@ -89,6 +89,13 @@ module NavigationHelper
             service: :uk,
           ),
           NavigationItem.new(
+            text: "Intercepts",
+            href: description_intercepts_path,
+            policy_class: DescriptionIntercept,
+            active_when: /\/description_intercepts/,
+            service: :uk,
+          ),
+          NavigationItem.new(
             text: "Recent changes",
             href: versions_path,
             policy_class: Version,

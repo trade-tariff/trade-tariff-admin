@@ -1,0 +1,546 @@
+# rubocop:disable RSpec/ExampleLength, RSpec/MultipleExpectations
+RSpec.describe DescriptionInterceptsController, type: :request do
+  subject(:rendered_page) { make_request && response }
+
+  include_context "with authenticated user"
+
+  let(:current_user) { create(:user, :technical_operator) }
+  let(:intercept_id) { "123" }
+  let(:intercept_attributes) do
+    {
+      "term" => "animal feed",
+      "excluded" => false,
+      "message" => "Ask the trader to pick a more specific feed type.",
+      "guidance_level" => "warning",
+      "guidance_location" => "results",
+      "escalate_to_webchat" => true,
+      "filter_prefixes" => %w[1201 2309],
+      "sources" => %w[guided_search],
+      "created_at" => "2026-04-15T10:30:00Z",
+    }
+  end
+
+  let(:intercept_response) do
+    {
+      status: 200,
+      headers: { "content-type" => "application/json; charset=utf-8" },
+      body: {
+        data: {
+          type: "description_intercept",
+          id: intercept_id,
+          attributes: intercept_attributes,
+        },
+      }.to_json,
+    }
+  end
+
+  describe "GET #index" do
+    let(:make_request) { get description_intercepts_path }
+
+    it { is_expected.to have_http_status :success }
+
+    it "renders the intercepts page" do
+      expect(rendered_page.body).to include("Intercepts")
+      expect(rendered_page.body).to include("Description intercepts let you control how guided search behaves for known search terms.")
+      expect(rendered_page.body).to include("Description Intercepts")
+      expect(rendered_page.body).to include("Filtering enabled")
+      expect(rendered_page.body).to include("Has guidance")
+      expect(rendered_page.body).to include("Escalation enabled")
+      expect(rendered_page.body).to include("Excluded")
+      expect(rendered_page.body).to include("Commodity Intercepts (coming soon)")
+      expect(rendered_page.body).to include("New description intercept")
+    end
+  end
+
+  describe "GET #index with JSON format" do
+    let(:make_request) do
+      get description_intercepts_path(format: :json), params: {
+        q: "animal",
+        filtering: "true",
+        escalates: "true",
+        guidance: "true",
+        excluded: "false",
+      }
+    end
+
+    before do
+      stub_api_request("/description_intercepts")
+        .with(query: hash_including(
+          "q" => "animal",
+          "filtering" => "true",
+          "escalates" => "true",
+          "guidance" => "true",
+          "excluded" => "false",
+        ))
+        .and_return(jsonapi_response("description_intercept", [intercept_attributes.merge("resource_id" => intercept_id)]))
+    end
+
+    it { is_expected.to have_http_status :success }
+
+    it "returns the table payload" do
+      json = JSON.parse(rendered_page.body)
+
+      expect(json["data"]).to eq([
+        {
+          "id" => "123",
+          "term" => "animal feed",
+          "excluded" => false,
+          "guidance" => "Ask the trader to pick a more specific feed type.",
+          "guidance_present" => true,
+          "filtering" => true,
+          "behaviour" => "Filters to selected short codes",
+          "escalates" => true,
+          "created_at" => "15 April 2026",
+        },
+      ])
+    end
+  end
+
+  describe "GET #new" do
+    let(:make_request) { get new_description_intercept_path }
+
+    it { is_expected.to have_http_status :success }
+
+    it "shows the new form" do
+      expect(rendered_page.body).to include("New description intercept")
+      expect(rendered_page.body).to include("Create description intercept")
+    end
+
+    it "defaults guided search to selected" do
+      expect(rendered_page.body).to include('id="description_intercept_sources_guided_search"')
+      expect(rendered_page.body).to match(/id="description_intercept_sources_guided_search"[\s\S]*?value="guided_search"[\s\S]*?checked/)
+    end
+  end
+
+  describe "GET #show" do
+    before do
+      stub_api_request("/description_intercepts/#{intercept_id}")
+        .and_return(intercept_response)
+      stub_api_request("/versions")
+        .with(query: hash_including("item_type" => "DescriptionIntercept", "item_id" => intercept_id))
+        .and_return(status: 200, headers: { "content-type" => "application/json; charset=utf-8" }, body: { data: [] }.to_json)
+      stub_api_request("/goods_nomenclature_autocomplete")
+        .with(query: hash_including("q" => "1201"))
+        .and_return(status: 200, headers: { "content-type" => "application/json; charset=utf-8" }, body: { data: [{ type: "goods_nomenclature_autocomplete", id: "1201", attributes: { "resource_id" => "1201", "goods_nomenclature_item_id" => "1201900000", "description" => "Soya bean flour and meal, whether or not defatted" } }] }.to_json)
+      stub_api_request("/goods_nomenclature_autocomplete")
+        .with(query: hash_including("q" => "2309"))
+        .and_return(status: 200, headers: { "content-type" => "application/json; charset=utf-8" }, body: { data: [{ type: "goods_nomenclature_autocomplete", id: "2309", attributes: { "resource_id" => "2309", "goods_nomenclature_item_id" => "2309900000", "description" => "Preparations of a kind used in animal feeding" } }] }.to_json)
+    end
+
+    let(:make_request) { get description_intercept_path(intercept_id) }
+
+    it { is_expected.to have_http_status :success }
+
+    it "shows the description intercept details" do
+      expect(rendered_page.body).to include("Description intercept")
+      expect(rendered_page.body).to include("animal feed")
+      expect(rendered_page.body).to include("Ask the trader to pick a more specific feed type.")
+      expect(rendered_page.body).to include("Edit")
+    end
+
+    it "shows the full intercept summary" do
+      expect(rendered_page.body).to include("Filters to selected short codes")
+      expect(rendered_page.body).to include("Warning")
+      expect(rendered_page.body).to include("Results")
+      expect(rendered_page.body).to include("Guided search")
+      expect(rendered_page.body).to include("Soya bean flour and meal")
+      expect(rendered_page.body).to include("Preparations of a kind used in animal feeding")
+      expect(rendered_page.body).to include("Enabled")
+      expect(rendered_page.body).to include("Not excluded")
+    end
+
+    context "when the intercept has no guidance" do
+      let(:intercept_attributes) do
+        super().merge(
+          "message" => nil,
+          "guidance_level" => nil,
+          "guidance_location" => nil,
+          "filter_prefixes" => [],
+          "escalate_to_webchat" => false,
+          "sources" => %w[fpo_search],
+        )
+      end
+
+      it "shows guidance as none and hides level and location rows" do
+        expect(rendered_page.body).to include("Guidance")
+        expect(rendered_page.body).to include("None")
+        expect(rendered_page.body).not_to include("Guidance level")
+        expect(rendered_page.body).not_to include("Guidance location")
+      end
+    end
+  end
+
+  describe "GET #edit" do
+    before do
+      stub_api_request("/description_intercepts/#{intercept_id}")
+        .and_return(intercept_response)
+      stub_api_request("/goods_nomenclature_autocomplete")
+        .with(query: hash_including("q" => "1201"))
+        .and_return(status: 200, headers: { "content-type" => "application/json; charset=utf-8" }, body: { data: [{ type: "goods_nomenclature_autocomplete", id: "1201", attributes: { "resource_id" => "1201", "goods_nomenclature_item_id" => "1201900000", "description" => "Soya bean flour and meal, whether or not defatted" } }] }.to_json)
+      stub_api_request("/goods_nomenclature_autocomplete")
+        .with(query: hash_including("q" => "2309"))
+        .and_return(status: 200, headers: { "content-type" => "application/json; charset=utf-8" }, body: { data: [{ type: "goods_nomenclature_autocomplete", id: "2309", attributes: { "resource_id" => "2309", "goods_nomenclature_item_id" => "2309900000", "description" => "Preparations of a kind used in animal feeding" } }] }.to_json)
+    end
+
+    let(:make_request) { get edit_description_intercept_path(intercept_id) }
+
+    it { is_expected.to have_http_status :success }
+
+    it "shows the edit form" do
+      expect(rendered_page.body).to include("Save changes")
+      expect(rendered_page.body).to include("Allow HMRC support escalation")
+      expect(rendered_page.body).to include("Guidance message")
+      expect(rendered_page.body).to include("Selected short codes")
+    end
+
+    it "shows remove controls for selected short codes" do
+      expect(rendered_page.body).to include('aria-label="Remove 1201900000"')
+      expect(rendered_page.body).to include('aria-label="Remove 2309900000"')
+    end
+
+    it "shows truncated descriptions for selected short codes" do
+      expect(rendered_page.body).to include("Soya bean flour and meal")
+      expect(rendered_page.body).to include("Preparations of a kind used in animal feeding")
+    end
+
+    context "when the intercept excludes search results" do
+      let(:intercept_attributes) { super().merge("excluded" => true) }
+
+      it "renders filtering as disabled" do
+        expect(rendered_page.body).to include('id="description-intercept-filtering-enabled"')
+        expect(rendered_page.body).to include('disabled="disabled"')
+        expect(rendered_page.body).to include("Filtering is unavailable while exclude search results is selected.")
+      end
+    end
+  end
+
+  describe "POST #create" do
+    let(:make_request) do
+      post description_intercepts_path, params: {
+        description_intercept: {
+          term: "new animal feed",
+          excluded: "0",
+          message: "New guidance",
+          guidance_level: "info",
+          guidance_location: "results",
+          escalate_to_webchat: "1",
+          sources: %w[guided_search],
+          filter_prefixes: %w[1201 2309],
+        },
+      }
+    end
+
+    context "with valid create" do
+      before do
+        stub_api_request("/description_intercepts", :post)
+          .and_return(
+            status: 200,
+            headers: { "content-type" => "application/json; charset=utf-8" },
+            body: {
+              data: {
+                type: "description_intercept",
+                id: "456",
+                attributes: intercept_attributes.merge("term" => "new animal feed"),
+              },
+            }.to_json,
+          )
+      end
+
+      it { is_expected.to redirect_to(description_intercept_path("456")) }
+
+      it "shows a success message" do
+        rendered_page
+        expect(session.dig("flash", "flashes", "notice")).to eq("Description intercept created successfully.")
+      end
+    end
+
+    context "with no sources selected" do
+      let(:make_request) do
+        post description_intercepts_path, params: {
+          description_intercept: {
+            term: "parked intercept",
+            excluded: "0",
+            message: "",
+            escalate_to_webchat: "0",
+            sources: [""],
+            filter_prefixes: [],
+          },
+        }
+      end
+
+      before do
+        stub_api_request("/description_intercepts", :post)
+          .with { |request|
+            attrs = Rack::Utils.parse_nested_query(request.body).dig("data", "attributes")
+            Array(attrs["sources"]).all?(&:blank?)
+          }
+          .and_return(
+            status: 200,
+            headers: { "content-type" => "application/json; charset=utf-8" },
+            body: {
+              data: {
+                type: "description_intercept",
+                id: "790",
+                attributes: intercept_attributes.merge(
+                  "term" => "parked intercept",
+                  "message" => nil,
+                  "guidance_level" => nil,
+                  "guidance_location" => nil,
+                  "escalate_to_webchat" => false,
+                  "filter_prefixes" => [],
+                  "sources" => [],
+                ),
+              },
+            }.to_json,
+          )
+      end
+
+      it "allows the intercept to be saved without sources" do
+        expect(rendered_page).to redirect_to(description_intercept_path("790"))
+      end
+    end
+
+    context "without guidance" do
+      let(:make_request) do
+        post description_intercepts_path, params: {
+          description_intercept: {
+            term: "plain term",
+            excluded: "0",
+            message: "",
+            guidance_level: "info",
+            guidance_location: "results",
+            escalate_to_webchat: "0",
+            sources: %w[guided_search],
+            filter_prefixes: [],
+          },
+        }
+      end
+
+      before do
+        stub_api_request("/description_intercepts", :post)
+          .with { |request|
+            attrs = Rack::Utils.parse_nested_query(request.body).dig("data", "attributes")
+            attrs["message"].nil? &&
+              attrs.key?("guidance_level") &&
+              attrs["guidance_level"].nil? &&
+              attrs.key?("guidance_location") &&
+              attrs["guidance_location"].nil?
+          }
+          .and_return(
+            status: 200,
+            headers: { "content-type" => "application/json; charset=utf-8" },
+            body: {
+              data: {
+                type: "description_intercept",
+                id: "789",
+                attributes: intercept_attributes.merge(
+                  "term" => "plain term",
+                  "message" => nil,
+                  "guidance_level" => nil,
+                  "guidance_location" => nil,
+                  "escalate_to_webchat" => false,
+                  "filter_prefixes" => [],
+                ),
+              },
+            }.to_json,
+          )
+      end
+
+      it "sends nil guidance fields and still creates the intercept" do
+        expect(rendered_page).to redirect_to(description_intercept_path("789"))
+      end
+    end
+
+    context "with invalid create" do
+      before do
+        stub_api_request("/description_intercepts", :post)
+          .and_return(webmock_response(:error, term: "can't be blank"))
+        stub_api_request("/goods_nomenclature_autocomplete")
+          .with(query: hash_including("q" => "1201"))
+          .and_return(status: 200, headers: { "content-type" => "application/json; charset=utf-8" }, body: { data: [{ type: "goods_nomenclature_autocomplete", id: "1201", attributes: { "resource_id" => "1201", "goods_nomenclature_item_id" => "1201900000", "description" => "Soya bean flour and meal, whether or not defatted" } }] }.to_json)
+        stub_api_request("/goods_nomenclature_autocomplete")
+          .with(query: hash_including("q" => "2309"))
+          .and_return(status: 200, headers: { "content-type" => "application/json; charset=utf-8" }, body: { data: [{ type: "goods_nomenclature_autocomplete", id: "2309", attributes: { "resource_id" => "2309", "goods_nomenclature_item_id" => "2309900000", "description" => "Preparations of a kind used in animal feeding" } }] }.to_json)
+      end
+
+      it { is_expected.to have_http_status :unprocessable_content }
+      it { is_expected.to render_template(:new) }
+    end
+
+    context "when exclude search results is selected" do
+      let(:make_request) do
+        post description_intercepts_path, params: {
+          description_intercept: {
+            term: "gift",
+            excluded: "1",
+            message: "",
+            escalate_to_webchat: "0",
+            sources: %w[fpo_search],
+            filter_prefixes: %w[01 02],
+          },
+        }
+      end
+
+      before do
+        stub_api_request("/description_intercepts", :post)
+          .with { |request|
+            attrs = Rack::Utils.parse_nested_query(request.body).dig("data", "attributes")
+            attrs["excluded"] == "true" &&
+              attrs.key?("filter_prefixes") &&
+              Array(attrs["filter_prefixes"]).all?(&:blank?)
+          }
+          .and_return(
+            status: 200,
+            headers: { "content-type" => "application/json; charset=utf-8" },
+            body: {
+              data: {
+                type: "description_intercept",
+                id: "999",
+                attributes: intercept_attributes.merge(
+                  "term" => "gift",
+                  "excluded" => true,
+                  "message" => nil,
+                  "guidance_level" => nil,
+                  "guidance_location" => nil,
+                  "escalate_to_webchat" => false,
+                  "filter_prefixes" => [],
+                  "sources" => %w[fpo_search],
+                ),
+              },
+            }.to_json,
+          )
+      end
+
+      it "sends empty filter prefixes in the payload" do
+        expect(rendered_page).to redirect_to(description_intercept_path("999"))
+      end
+    end
+  end
+
+  describe "PATCH #update" do
+    before do
+      stub_api_request("/description_intercepts/#{intercept_id}")
+        .and_return(intercept_response)
+      stub_api_request("/goods_nomenclature_autocomplete")
+        .with(query: hash_including("q" => "1201"))
+        .and_return(status: 200, headers: { "content-type" => "application/json; charset=utf-8" }, body: { data: [{ type: "goods_nomenclature_autocomplete", id: "1201", attributes: { "resource_id" => "1201", "goods_nomenclature_item_id" => "1201900000", "description" => "Soya bean flour and meal, whether or not defatted" } }] }.to_json)
+      stub_api_request("/goods_nomenclature_autocomplete")
+        .with(query: hash_including("q" => "2309"))
+        .and_return(status: 200, headers: { "content-type" => "application/json; charset=utf-8" }, body: { data: [{ type: "goods_nomenclature_autocomplete", id: "2309", attributes: { "resource_id" => "2309", "goods_nomenclature_item_id" => "2309900000", "description" => "Preparations of a kind used in animal feeding" } }] }.to_json)
+    end
+
+    let(:make_request) do
+      patch description_intercept_path(intercept_id), params: {
+        description_intercept: {
+          term: "animal feed",
+          excluded: "0",
+          message: "Updated guidance",
+          guidance_level: "info",
+          guidance_location: "question",
+          escalate_to_webchat: "1",
+          sources: %w[guided_search fpo_search],
+          filter_prefixes: %w[1201 2309],
+        },
+      }
+    end
+
+    context "with valid update" do
+      before do
+        stub_api_request("/description_intercepts/#{intercept_id}", :patch)
+          .and_return(intercept_response)
+      end
+
+      it { is_expected.to redirect_to(description_intercept_path(intercept_id)) }
+
+      it "shows a success message" do
+        rendered_page
+        expect(session.dig("flash", "flashes", "notice")).to eq("Description intercept updated successfully.")
+      end
+    end
+
+    context "with invalid update" do
+      before do
+        stub_api_request("/description_intercepts/#{intercept_id}", :patch)
+          .and_return(webmock_response(:error, filter_prefixes: "cannot be combined with excluded"))
+        stub_api_request("/versions")
+          .with(query: hash_including("item_type" => "DescriptionIntercept", "item_id" => intercept_id))
+          .and_return(status: 200, headers: { "content-type" => "application/json; charset=utf-8" }, body: { data: [] }.to_json)
+      end
+
+      it { is_expected.to have_http_status :unprocessable_content }
+      it { is_expected.to render_template(:edit) }
+
+      it "links the error summary to the filter prefixes input" do
+        expect(rendered_page.body).to include('href="#description-intercept-filter-prefixes-field-error"')
+        expect(rendered_page.body).to include('id="description-intercept-filter-prefixes-error"')
+      end
+    end
+
+    context "when exclude search results is selected" do
+      let(:make_request) do
+        patch description_intercept_path(intercept_id), params: {
+          description_intercept: {
+            term: "animal feed",
+            excluded: "1",
+            message: "",
+            guidance_level: "info",
+            guidance_location: "question",
+            escalate_to_webchat: "0",
+            sources: %w[fpo_search],
+            filter_prefixes: %w[1201 2309],
+          },
+        }
+      end
+
+      before do
+        stub_api_request("/description_intercepts/#{intercept_id}", :patch)
+          .with { |request|
+            attrs = Rack::Utils.parse_nested_query(request.body).dig("data", "attributes")
+            attrs["excluded"] == "true" &&
+              Array(attrs["filter_prefixes"]).all?(&:blank?) &&
+              attrs["message"].nil? &&
+              attrs["guidance_level"].nil? &&
+              attrs["guidance_location"].nil?
+          }
+          .and_return(intercept_response.merge(status: 200))
+      end
+
+      it "drops filter prefixes from the payload" do
+        expect(rendered_page).to redirect_to(description_intercept_path(intercept_id))
+      end
+    end
+
+    context "when guidance is completely removed" do
+      let(:make_request) do
+        patch description_intercept_path(intercept_id), params: {
+          description_intercept: {
+            term: "animal feed",
+            excluded: "0",
+            message: "",
+            guidance_level: "info",
+            guidance_location: "question",
+            escalate_to_webchat: "1",
+            sources: %w[guided_search fpo_search],
+            filter_prefixes: %w[1201 2309],
+          },
+        }
+      end
+
+      before do
+        stub_api_request("/description_intercepts/#{intercept_id}", :patch)
+          .with { |request|
+            attrs = Rack::Utils.parse_nested_query(request.body).dig("data", "attributes")
+            attrs["message"].nil? &&
+              attrs["guidance_level"].nil? &&
+              attrs["guidance_location"].nil?
+          }
+          .and_return(intercept_response.merge(status: 200))
+      end
+
+      it "sends nil guidance fields so the backend clears them" do
+        expect(rendered_page).to redirect_to(description_intercept_path(intercept_id))
+      end
+    end
+  end
+end
+# rubocop:enable RSpec/ExampleLength, RSpec/MultipleExpectations

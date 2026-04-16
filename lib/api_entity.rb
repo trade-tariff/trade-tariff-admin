@@ -24,6 +24,7 @@ module ApiEntity
   end
 
   included do
+    include VersionMetadata
     include ActiveModel::Conversion
     include ActiveModel::Validations
     extend  ActiveModel::Naming
@@ -120,8 +121,12 @@ module ApiEntity
   end
 
   def serializable_hash
-    TariffJsonapiSerializer.new(self).serializable_hash
+    payload = TariffJsonapiSerializer.new(self).serializable_hash
+    normalize_serialized_attributes(payload.dig(:data, :attributes) || {})
+    payload
   end
+
+  def normalize_serialized_attributes(_attrs); end
 
   def singular_path
     if self.class.set_singular_path?
@@ -249,6 +254,16 @@ private
       end
     end
 
+    def boolean_attributes(*attribute_list)
+      attribute_list.each do |resource_attribute|
+        attribute resource_attribute
+
+        define_method("#{resource_attribute}?") do
+          public_send(resource_attribute) == true
+        end
+      end
+    end
+
     def relationships
       @relationships ||= superclass.include?(ApiEntity) ? superclass.relationships.dup : []
     end
@@ -259,14 +274,44 @@ private
 
     def find(id, opts = {}, headers = {})
       id = id.to_s
-      entity = new({ resource_id: id }.merge(opts))
+      entity = new(find_attributes(id, opts))
       path = entity.singular_path
 
-      opts = opts.except(*entity.cleaned_path_attributes)
+      opts = api_find_params(entity, opts)
 
       response = api.get(path, opts, headers)
+      record = new(parse_jsonapi(response))
+      entity.cleaned_path_attributes.each do |path_attribute|
+        next if record[path_attribute].present? || entity[path_attribute].blank?
 
-      new parse_jsonapi(response)
+        record.assign_attributes(path_attribute => entity[path_attribute])
+      end
+
+      record.extract_version_meta!(response)
+
+      record
+    end
+
+    def find_attributes(id, opts = {})
+      opts = opts.except(:oid)
+      attrs = { resource_id: id }.merge(opts)
+
+      path_attributes = singular_find_path_attributes
+      if path_attributes.one? && path_attributes.exclude?("id")
+        attrs[path_attributes.first] ||= id
+      end
+
+      attrs
+    end
+
+    def api_find_params(entity, opts = {})
+      params = opts.except(*entity.cleaned_path_attributes, :oid)
+      params[:filter] = { oid: opts[:oid] } if opts[:oid].present?
+      params
+    end
+
+    def singular_find_path_attributes
+      singular_path.scan(/:(\w+)\/?/).flatten
     end
 
     def collection(opts = {})
@@ -413,6 +458,15 @@ private
     end
 
   private
+
+    def pagination_for(records)
+      {
+        page: records.respond_to?(:current_page) ? records.current_page : 1,
+        per_page: records.respond_to?(:limit_value) ? records.limit_value : 20,
+        total_count: records.respond_to?(:total_count) ? records.total_count : records.size,
+        total_pages: records.respond_to?(:total_pages) ? records.total_pages : 1,
+      }
+    end
 
     def handle_body(resp)
       body = resp.try(:body) || resp.try(:[], :body)

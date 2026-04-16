@@ -1,9 +1,7 @@
 class GoodsNomenclatureSelfText
   include ApiEntity
-  include VersionMetadata
 
   set_singular_path "admin/goods_nomenclatures/:goods_nomenclature_id/goods_nomenclature_self_text"
-  set_collection_path "admin/goods_nomenclature_self_texts"
 
   attributes :goods_nomenclature_sid,
              :goods_nomenclature_item_id,
@@ -22,23 +20,6 @@ class GoodsNomenclatureSelfText
              :has_label
 
   attr_accessor :goods_nomenclature_id
-
-  def self.find(goods_nomenclature_sid_param, opts = {})
-    entity = new({ goods_nomenclature_id: goods_nomenclature_sid_param }.merge(opts.except(:oid)))
-    path = entity.singular_path
-
-    api_params = opts.except(*entity.cleaned_path_attributes, :oid)
-    api_params[:filter] = { oid: opts[:oid] } if opts[:oid].present?
-
-    response = api.get(path, api_params)
-    parsed = parse_jsonapi(response)
-
-    record = new(parsed)
-    record.goods_nomenclature_id = goods_nomenclature_sid_param
-    record.extract_version_meta!(response)
-
-    record
-  end
 
   def self.listing(params)
     records = all(
@@ -167,14 +148,4 @@ class GoodsNomenclatureSelfText
 
     input_context["siblings"] || []
   end
-
-  def self.pagination_for(records)
-    {
-      page: records.respond_to?(:current_page) ? records.current_page : 1,
-      per_page: records.respond_to?(:limit_value) ? records.limit_value : 20,
-      total_count: records.respond_to?(:total_count) ? records.total_count : records.size,
-      total_pages: records.respond_to?(:total_pages) ? records.total_pages : 1,
-    }
-  end
-  private_class_method :pagination_for
 end

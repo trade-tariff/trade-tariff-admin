@@ -1,10 +1,7 @@
 class AdminConfiguration
   include ApiEntity
-  include VersionMetadata
 
   uk_only
-
-  set_collection_path "admin/admin_configurations"
 
   attributes :name,
              :value,
@@ -91,22 +88,5 @@ class AdminConfiguration
     else
       value
     end
-  end
-
-  # Override find to extract version metadata from API response
-  def self.find(config_name, opts = {})
-    entity = new(resource_id: config_name)
-    path = entity.singular_path
-
-    filter_opts = {}
-    filter_opts[:filter] = { oid: opts[:oid] } if opts[:oid].present?
-
-    response = api.get(path, filter_opts)
-    parsed = parse_jsonapi(response)
-
-    config = new(parsed)
-    config.extract_version_meta!(response)
-
-    config
   end
 end

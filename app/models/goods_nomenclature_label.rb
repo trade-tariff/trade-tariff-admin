@@ -1,9 +1,7 @@
 class GoodsNomenclatureLabel
   include ApiEntity
-  include VersionMetadata
 
   set_singular_path "admin/goods_nomenclatures/:goods_nomenclature_id/goods_nomenclature_label"
-  set_collection_path "admin/goods_nomenclature_labels"
 
   attributes :goods_nomenclature_sid,
              :goods_nomenclature_item_id,
@@ -96,23 +94,6 @@ class GoodsNomenclatureLabel
   # Store goods_nomenclature_id for path building
   attr_accessor :goods_nomenclature_id
 
-  def self.find(goods_nomenclature_id, opts = {})
-    entity = new(goods_nomenclature_id: goods_nomenclature_id)
-    path = entity.singular_path
-
-    api_params = {}
-    api_params[:filter] = { oid: opts[:oid] } if opts[:oid].present?
-
-    response = api.get(path, api_params)
-    parsed = parse_jsonapi(response)
-
-    record = new(parsed)
-    record.goods_nomenclature_id = goods_nomenclature_id
-    record.extract_version_meta!(response)
-
-    record
-  end
-
   def to_param
     goods_nomenclature_id || goods_nomenclature_item_id
   end
@@ -153,16 +134,6 @@ class GoodsNomenclatureLabel
 
     text.split(/[\r\n]+/).map(&:strip).reject(&:blank?)
   end
-
-  def self.pagination_for(records)
-    {
-      page: records.respond_to?(:current_page) ? records.current_page : 1,
-      per_page: records.respond_to?(:limit_value) ? records.limit_value : 20,
-      total_count: records.respond_to?(:total_count) ? records.total_count : records.size,
-      total_pages: records.respond_to?(:total_pages) ? records.total_pages : 1,
-    }
-  end
-  private_class_method :pagination_for
 
 private
 

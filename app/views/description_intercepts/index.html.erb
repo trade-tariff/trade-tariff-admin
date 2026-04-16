@@ -1,0 +1,73 @@
+<h1 class="govuk-heading-l">Intercepts</h1>
+
+<div class="govuk-tabs" data-module="govuk-tabs">
+  <h2 class="govuk-tabs__title">Contents</h2>
+
+  <ul class="govuk-tabs__list">
+    <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+      <a class="govuk-tabs__tab" href="#description-intercepts">Description Intercepts</a>
+    </li>
+    <li class="govuk-tabs__list-item" aria-disabled="true">
+      <span class="govuk-tabs__tab app-tabs__tab--disabled">Commodity Intercepts (coming soon)</span>
+    </li>
+  </ul>
+
+  <div class="govuk-tabs__panel" id="description-intercepts">
+    <p class="govuk-body">
+      Description intercepts let you control how guided search behaves for known search terms.
+      You can exclude results, limit results to selected short codes, show guidance, or flag the search for HMRC support escalation.
+    </p>
+
+    <div class="govuk-button-group govuk-!-margin-bottom-4">
+      <%= link_to "New description intercept", new_description_intercept_path, class: "govuk-button" %>
+    </div>
+
+    <div class="govuk-grid-row"
+         data-controller="description-intercept-table"
+         data-description-intercept-table-url-value="<%= description_intercepts_path(format: :json) %>"
+         data-description-intercept-table-show-url-value="<%= description_intercepts_path %>/__ID__"
+         data-description-intercept-table-q-value="<%= params[:q] %>">
+      <div class="govuk-grid-column-one-quarter">
+        <div class="govuk-form-group govuk-!-margin-bottom-4">
+          <label class="govuk-label govuk-label--m" for="description-intercept-search">Search by term</label>
+          <input class="govuk-input" id="description-intercept-search" type="text" value="<%= params[:q] %>"
+                 data-description-intercept-table-target="searchInput"
+                 data-action="keydown.enter->description-intercept-table#search input->description-intercept-table#debouncedSearch">
+        </div>
+
+        <fieldset class="govuk-fieldset" aria-describedby="description-intercept-filters-hint">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Filters</legend>
+          <div id="description-intercept-filters-hint" class="govuk-hint">Narrow the list to matching intercepts.</div>
+          <div class="govuk-checkboxes govuk-checkboxes--small">
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="filter-filtering" type="checkbox"
+                     data-action="change->description-intercept-table#toggleFiltering">
+              <label class="govuk-label govuk-checkboxes__label" for="filter-filtering">Filtering enabled</label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="filter-escalates" type="checkbox"
+                     data-action="change->description-intercept-table#toggleEscalates">
+              <label class="govuk-label govuk-checkboxes__label" for="filter-escalates">Escalation enabled</label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="filter-guidance" type="checkbox"
+                     data-action="change->description-intercept-table#toggleGuidance">
+              <label class="govuk-label govuk-checkboxes__label" for="filter-guidance">Has guidance</label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="filter-excluded" type="checkbox"
+                     data-action="change->description-intercept-table#toggleExcluded">
+              <label class="govuk-label govuk-checkboxes__label" for="filter-excluded">Excluded</label>
+            </div>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="govuk-grid-column-three-quarters">
+        <p class="govuk-body" data-description-intercept-table-target="loading">Loading...</p>
+        <div data-description-intercept-table-target="table"></div>
+        <div data-description-intercept-table-target="pagination"></div>
+      </div>
+    </div>
+  </div>
+</div>
