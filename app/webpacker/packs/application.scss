@@ -104,14 +104,6 @@ $govuk-image-url-function: frontend-image-url;
   }
 }
 
-.govuk-service-navigation {
-  border-bottom: none;
-
-  .govuk-width-container {
-    border-bottom: 1px solid govuk-functional-colour(border);
-  }
-}
-
 .app-sub-navigation {
   background-color: govuk-colour("white");
 
