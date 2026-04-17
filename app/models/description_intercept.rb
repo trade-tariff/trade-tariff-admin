@@ -30,7 +30,10 @@ class DescriptionIntercept
       attrs[:guidance_location] = nil
     end
 
-    attrs[:filter_prefixes] = [] if attrs[:excluded] || Array(attrs[:filter_prefixes]).reject(&:blank?).empty?
+    # Faraday URL-encodes API payloads, which drops empty arrays entirely.
+    # Send a blank array value so updates can explicitly clear existing values.
+    attrs[:filter_prefixes] = [""] if attrs[:excluded] || Array(attrs[:filter_prefixes]).reject(&:blank?).empty?
+    attrs[:sources] = [""] if Array(attrs[:sources]).reject(&:blank?).empty?
   end
 
   def self.listing(params)
