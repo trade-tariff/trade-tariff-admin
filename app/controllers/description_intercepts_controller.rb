@@ -102,8 +102,8 @@ private
     permitted[:message] = permitted[:message].presence if permitted.key?(:message)
     permitted[:guidance_level] = permitted[:guidance_level].presence if permitted.key?(:guidance_level)
     permitted[:guidance_location] = permitted[:guidance_location].presence if permitted.key?(:guidance_location)
-    permitted[:sources] = Array(permitted[:sources]).reject(&:blank?) if permitted.key?(:sources)
-    permitted[:filter_prefixes] = Array(permitted[:filter_prefixes]).reject(&:blank?) if permitted.key?(:filter_prefixes)
+    permitted[:sources] = Array(permitted[:sources]).reject(&:blank?)
+    permitted[:filter_prefixes] = Array(permitted[:filter_prefixes]).reject(&:blank?)
 
     if permitted[:message].blank?
       permitted.delete(:guidance_level)

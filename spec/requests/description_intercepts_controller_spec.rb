@@ -510,6 +510,64 @@ RSpec.describe DescriptionInterceptsController, type: :request do
       end
     end
 
+    context "when all selected short codes are removed" do
+      let(:make_request) do
+        patch description_intercept_path(intercept_id), params: {
+          description_intercept: {
+            term: "animal feed",
+            excluded: "0",
+            message: "Updated guidance",
+            guidance_level: "info",
+            guidance_location: "question",
+            escalate_to_webchat: "1",
+            sources: %w[guided_search],
+          },
+        }
+      end
+
+      before do
+        stub_api_request("/description_intercepts/#{intercept_id}", :patch)
+          .with { |request|
+            attrs = Rack::Utils.parse_nested_query(request.body).dig("data", "attributes")
+            attrs.key?("filter_prefixes") && Array(attrs["filter_prefixes"]).all?(&:blank?)
+          }
+          .and_return(intercept_response.merge(status: 200))
+      end
+
+      it "sends an empty filter prefix array" do
+        expect(rendered_page).to redirect_to(description_intercept_path(intercept_id))
+      end
+    end
+
+    context "when all sources are deselected" do
+      let(:make_request) do
+        patch description_intercept_path(intercept_id), params: {
+          description_intercept: {
+            term: "animal feed",
+            excluded: "0",
+            message: "Updated guidance",
+            guidance_level: "info",
+            guidance_location: "question",
+            escalate_to_webchat: "1",
+            filter_prefixes: %w[1201],
+          },
+        }
+      end
+
+      before do
+        stub_api_request("/description_intercepts/#{intercept_id}", :patch)
+          .with { |request|
+            attrs = Rack::Utils.parse_nested_query(request.body).dig("data", "attributes")
+            attrs.key?("sources") && Array(attrs["sources"]).all?(&:blank?)
+          }
+          .and_return(intercept_response.merge(status: 200))
+      end
+
+      it "sends an empty sources array" do
+        expect(rendered_page).to redirect_to(description_intercept_path(intercept_id))
+      end
+    end
+
     context "when guidance is completely removed" do
       let(:make_request) do
         patch description_intercept_path(intercept_id), params: {

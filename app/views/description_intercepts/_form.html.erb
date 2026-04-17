@@ -55,6 +55,7 @@
   </div>
 
   <% filter_prefixes_error = description_intercept.errors[:filter_prefixes].first %>
+  <input type="hidden" name="description_intercept[filter_prefixes][]" value="">
   <div class="govuk-form-group <%= 'govuk-form-group--error' if filter_prefixes_error.present? %>"
        data-description-intercept-form-target="filteringFields"
        <%= 'style="display:none"'.html_safe if description_intercept.excluded? || !description_intercept.filtering? %>>
@@ -94,6 +95,7 @@
     <fieldset class="govuk-fieldset" aria-describedby="description_intercept_sources_hint">
       <legend class="govuk-visually-hidden">Search sources</legend>
       <div id="description_intercept_sources_hint" class="govuk-hint">Choose where this intercept should apply.</div>
+      <input type="hidden" name="description_intercept[sources][]" value="">
       <div class="govuk-checkboxes govuk-checkboxes--small">
         <% DescriptionIntercept::SOURCES.each do |source| %>
           <div class="govuk-checkboxes__item">
