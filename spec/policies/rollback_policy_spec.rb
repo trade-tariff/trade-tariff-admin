@@ -10,14 +10,14 @@ RSpec.describe RollbackPolicy do
       expect(rollback_policy).to permit(user, rollback)
     end
 
-    it "grants access to auditor" do
-      user = create(:user, :auditor)
+    it "grants access to technical operator" do
+      user = create(:user, :technical_operator)
       expect(rollback_policy).to permit(user, rollback)
     end
 
-    it "denies access to technical operator" do
-      user = create(:user, :technical_operator)
-      expect(rollback_policy).not_to permit(user, rollback)
+    it "grants access to auditor" do
+      user = create(:user, :auditor)
+      expect(rollback_policy).to permit(user, rollback)
     end
 
     it "denies access to hmrc admin" do

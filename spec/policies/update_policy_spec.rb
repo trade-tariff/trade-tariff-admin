@@ -10,14 +10,14 @@ RSpec.describe UpdatePolicy do
       expect(update_policy).to permit(user, update)
     end
 
-    it "grants access to auditor" do
-      user = create(:user, :auditor)
+    it "grants access to technical operator" do
+      user = create(:user, :technical_operator)
       expect(update_policy).to permit(user, update)
     end
 
-    it "denies access to technical operator" do
-      user = create(:user, :technical_operator)
-      expect(update_policy).not_to permit(user, update)
+    it "grants access to auditor" do
+      user = create(:user, :auditor)
+      expect(update_policy).to permit(user, update)
     end
 
     it "denies access to hmrc admin" do

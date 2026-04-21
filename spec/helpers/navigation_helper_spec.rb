@@ -77,9 +77,11 @@ RSpec.describe NavigationHelper, type: :helper do
                          "News",
                          "Live Issues",
                          "Quotas",
+                         "Updates",
                          "Reports",
+                         "Rollbacks",
                        ],
-                       classification: ["Search References", "Descriptions", "Intercepts", "Recent changes"],
+                       classification: ["Search References", "Descriptions", "Configuration", "Intercepts", "Recent changes"],
                        manage_users: nil
     end
 
@@ -107,7 +109,7 @@ RSpec.describe NavigationHelper, type: :helper do
                          "Updates",
                          "Rollbacks",
                        ],
-                       classification: ["Search References"]
+                       classification: ["Search References", "Configuration"]
     end
 
     context "with UK service and guest role" do
@@ -126,7 +128,7 @@ RSpec.describe NavigationHelper, type: :helper do
       let(:user) { build(:user, :technical_operator) }
 
       include_examples "visible sections and items",
-                       ott_admin: ["Section & chapter notes", "Reports"],
+                       ott_admin: ["Section & chapter notes", "Updates", "Reports", "Rollbacks"],
                        classification: ["Search References", "Descriptions", "Recent changes"],
                        spimm: [
                          "Category Assessments",

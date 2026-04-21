@@ -1,10 +1,10 @@
 class AdminConfigurationPolicy < ApplicationPolicy
   def index?
-    superadmin?
+    technical_operator? || auditor?
   end
 
   def show?
-    superadmin?
+    technical_operator? || auditor?
   end
 
   def update?

@@ -1,11 +1,11 @@
-# Rollback: SUPERADMIN execute/download/recover, AUDITOR index (history only), HMRC_ADMIN hidden, GUEST hidden
+# Rollback: SUPERADMIN execute/download/recover, TECHNICAL_OPERATOR/AUDITOR history access, HMRC_ADMIN hidden, GUEST hidden
 class RollbackPolicy < ApplicationPolicy
   def index?
-    superadmin? || auditor?
+    technical_operator? || auditor?
   end
 
   def show?
-    superadmin? || auditor?
+    technical_operator? || auditor?
   end
 
   def create?

@@ -1,11 +1,11 @@
-# Updates (Daily Tariff Files): SUPERADMIN full control, AUDITOR read-only, HMRC_ADMIN hidden, GUEST hidden
+# Updates (Daily Tariff Files): SUPERADMIN destructive actions, TECHNICAL_OPERATOR/AUDITOR read-only, HMRC_ADMIN hidden, GUEST hidden
 class UpdatePolicy < ApplicationPolicy
   def index?
-    superadmin? || auditor?
+    technical_operator? || auditor?
   end
 
   def show?
-    superadmin? || auditor?
+    technical_operator? || auditor?
   end
 
   # Actions like download, apply_and_clear_cache, resend_cds_update_notification
