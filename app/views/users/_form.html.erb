@@ -1,7 +1,8 @@
 <% submit_text = user.persisted? ? "Update user" : "Add user" %>
 
 <%= govuk_form_for user, error_summary: { presenter: FullMessageErrorSummaryPresenter.new(user) } do |f| %>
-  <% role_options = User::VALID_ROLES.index_with { |role| format_role_name(role) } %>
+  <% assignable_roles = policy(user).assign_superadmin? ? User::VALID_ROLES : User::VALID_ROLES - [User::SUPERADMIN] %>
+  <% role_options = assignable_roles.index_with { |role| format_role_name(role) } %>
 
   <%= f.govuk_text_field :name,
                          label: { text: "Name" },
