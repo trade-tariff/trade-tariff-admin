@@ -2,11 +2,15 @@
   <div class="govuk-grid-column-one-half">
     <%= form.govuk_text_area field_name, **field_options %>
 
-    <p>
-      <a href="https://govspeak-preview.publishing.service.gov.uk/guide" rel="noopener" target="_blank">
-        Markdown guide
-      </a>
-    </p>
+    <% if help_content.present? %>
+      <%= help_content %>
+    <% else %>
+      <p>
+        <a href="https://govspeak-preview.publishing.service.gov.uk/guide" rel="noopener" target="_blank">
+          Markdown guide
+        </a>
+      </p>
+    <% end %>
   </div>
 
   <div class="govuk-grid-column-one-half">

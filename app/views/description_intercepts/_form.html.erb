@@ -113,11 +113,30 @@
   </div>
 
   <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Guidance</h2>
-  <%= f.govuk_text_area :message,
-                        label: { text: "Guidance message" },
-                        hint: { text: "Shown to the trader-facing frontend when this intercept matches." },
-                        rows: 5,
-                        data: { action: "input->description-intercept-form#toggleGuidance", description_intercept_form_target: "messageInput" } %>
+  <%= govuk_markdown_area f,
+                          :message,
+                          label: { text: "Guidance message" },
+                          hint: { text: "Shown to the trader-facing frontend when this intercept matches." },
+                          rows: 5,
+                          data: { action: "input->description-intercept-form#toggleGuidance", description_intercept_form_target: "messageInput" } do %>
+    <%= govuk_details(summary_text: "Markdown and automatic short code links") do %>
+      <p class="govuk-body">
+        Short codes are automatically rendered as links in the frontend. You do not need to add markdown links for
+        chapters, headings, subheadings or commodities.
+      </p>
+      <p class="govuk-body">
+        For example, <code>01</code>, <code>0101</code>, <code>010121</code> and <code>0101210000</code> will be linked
+        automatically.
+      </p>
+      <p class="govuk-body">
+        Use the
+        <a class="govuk-link" href="https://govspeak-preview.publishing.service.gov.uk/guide" rel="noopener" target="_blank">
+          Markdown guide
+        </a>
+        for formatting such as headings, lists and emphasis.
+      </p>
+    <% end %>
+  <% end %>
 
   <div data-description-intercept-form-target="guidanceFields">
     <%= f.govuk_select :guidance_level,
