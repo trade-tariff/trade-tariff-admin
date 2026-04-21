@@ -223,7 +223,7 @@ RSpec.describe UsersController do
       it "does not update the user role" do
         expect {
           update_request(name: "Updated User", role: User::SUPERADMIN)
-        }.not_to change { target_user.reload.current_role }
+        }.not_to(change { target_user.reload.current_role })
       end
     end
 

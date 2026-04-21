@@ -4,11 +4,13 @@ RSpec.describe RollbacksController do
   include_context "with authenticated user"
   let(:current_user) { create(:user, :superadmin) }
 
+  def stub_rollbacks_index
+    stub_api_request("/rollbacks?page=1").and_return \
+      jsonapi_response :rollbacks, attributes_for_list(:rollback, 3)
+  end
+
   describe "GET #index" do
-    before do
-      stub_api_request("/rollbacks?page=1").and_return \
-        jsonapi_response :rollbacks, attributes_for_list(:rollback, 3)
-    end
+    before { stub_rollbacks_index }
 
     let(:make_request) { get rollbacks_path }
 
@@ -37,14 +39,20 @@ RSpec.describe RollbacksController do
     let(:current_user) { create(:user, :technical_operator) }
     let(:make_request) { get rollbacks_path }
 
+    before { stub_rollbacks_index }
+
     it { is_expected.to have_http_status :success }
+    it { is_expected.not_to have_attributes body: /New Rollback/ }
   end
 
   context "when auditor" do
     let(:current_user) { create(:user, :auditor) }
     let(:make_request) { get rollbacks_path }
 
+    before { stub_rollbacks_index }
+
     it { is_expected.to have_http_status :success }
+    it { is_expected.not_to have_attributes body: /New Rollback/ }
   end
 
   describe "POST #create" do
