@@ -250,25 +250,35 @@ RSpec.describe "RBAC Comprehensive Rules" do
   describe "SUPERADMIN role - technical operator plus user lifecycle" do
     let(:superadmin) { create(:user, :superadmin) }
 
-    it "inherits technical operator access for content management", :aggregate_failures do
-      expect(SectionNotePolicy.new(superadmin, SectionNote.new).index?).to be(true)
-      expect(SearchReferencePolicy.new(superadmin, SearchReference.new).create?).to be(true)
-      expect(AdminConfigurationPolicy.new(superadmin, AdminConfiguration.new(name: "test")).index?).to be(true)
-      expect(AdminConfigurationPolicy.new(superadmin, AdminConfiguration.new(name: "test")).show?).to be(true)
-      expect(AdminConfigurationPolicy.new(superadmin, AdminConfiguration.new(name: "test")).update?).to be(true)
-      expect(UpdatePolicy.new(superadmin, Update.new).index?).to be(true)
-      expect(UpdatePolicy.new(superadmin, Update.new).show?).to be(true)
-      expect(UpdatePolicy.new(superadmin, Update.new).apply_and_clear_cache?).to be(true)
-      expect(RollbackPolicy.new(superadmin, Rollback.new).index?).to be(true)
-      expect(RollbackPolicy.new(superadmin, Rollback.new).show?).to be(true)
-      expect(RollbackPolicy.new(superadmin, Rollback.new).create?).to be(true)
+    it "inherits content management access", :aggregate_failures do
+      expect([SectionNotePolicy.new(superadmin, SectionNote.new).index?,
+              SearchReferencePolicy.new(superadmin, SearchReference.new).create?]).to all(be(true))
     end
 
-    it "allows full access to user management", :aggregate_failures do
-      expect(UserPolicy.new(superadmin, User.new).index?).to be(true)
-      expect(UserPolicy.new(superadmin, User.new).update?).to be(true)
-      expect(UserPolicy.new(superadmin, User.new).create?).to be(true)
-      expect(UserPolicy.new(superadmin, User.new).destroy?).to be(true)
+    it "allows full access to admin configuration" do
+      policy = AdminConfigurationPolicy.new(superadmin, AdminConfiguration.new(name: "test"))
+      expect([policy.index?, policy.show?, policy.update?]).to all(be(true))
+    end
+
+    it "allows full access to updates" do
+      expect([
+        UpdatePolicy.new(superadmin, Update.new).index?,
+        UpdatePolicy.new(superadmin, Update.new).show?,
+        UpdatePolicy.new(superadmin, Update.new).apply_and_clear_cache?,
+      ]).to all(be(true))
+    end
+
+    it "allows full access to rollbacks" do
+      expect([
+        RollbackPolicy.new(superadmin, Rollback.new).index?,
+        RollbackPolicy.new(superadmin, Rollback.new).show?,
+        RollbackPolicy.new(superadmin, Rollback.new).create?,
+      ]).to all(be(true))
+    end
+
+    it "allows full access to user management" do
+      policy = UserPolicy.new(superadmin, User.new)
+      expect([policy.index?, policy.update?, policy.create?, policy.destroy?]).to all(be(true))
     end
   end
 

@@ -4,11 +4,13 @@ RSpec.describe TariffUpdatesController do
   include_context "with authenticated user"
   let(:current_user) { create(:user, :superadmin) }
 
+  def stub_tariff_updates_index
+    stub_api_request("/updates?page=1").and_return \
+      jsonapi_response :tariff_updates, attributes_for_list(:update, 3)
+  end
+
   describe "GET #index" do
-    before do
-      stub_api_request("/updates?page=1").and_return \
-        jsonapi_response :tariff_updates, attributes_for_list(:update, 3)
-    end
+    before { stub_tariff_updates_index }
 
     let(:make_request) { get tariff_updates_path }
 
@@ -37,12 +39,16 @@ RSpec.describe TariffUpdatesController do
     let(:current_user) { create(:user, :technical_operator) }
     let(:make_request) { get tariff_updates_path }
 
+    before { stub_tariff_updates_index }
+
     it { is_expected.to have_http_status :success }
   end
 
   context "when auditor" do
     let(:current_user) { create(:user, :auditor) }
     let(:make_request) { get tariff_updates_path }
+
+    before { stub_tariff_updates_index }
 
     it { is_expected.to have_http_status :success }
   end

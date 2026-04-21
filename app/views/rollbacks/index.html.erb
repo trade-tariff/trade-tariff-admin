@@ -35,4 +35,6 @@
   </p>
 <% end %>
 
-<%= link_to 'New Rollback', new_rollback_path, class: 'govuk-button' %>
+<% if policy(Rollback).create? %>
+  <%= link_to 'New Rollback', new_rollback_path, class: 'govuk-button' %>
+<% end %>
