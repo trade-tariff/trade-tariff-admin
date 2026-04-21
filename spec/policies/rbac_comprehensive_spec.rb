@@ -88,6 +88,10 @@ RSpec.describe "RBAC Comprehensive Rules" do
       expect(RollbackPolicy.new(hmrc_admin, Rollback.new).index?).to be(false)
     end
 
+    it "denies access to admin configuration" do
+      expect(AdminConfigurationPolicy.new(hmrc_admin, AdminConfiguration.new(name: "test")).index?).to be(false)
+    end
+
     it "denies access to XI services (hidden)", :aggregate_failures do
       expect(GreenLanes::CategoryAssessmentPolicy.new(hmrc_admin, double).index?).to be(false)
       expect(GreenLanes::ExemptionPolicy.new(hmrc_admin, double).index?).to be(false)
@@ -150,6 +154,12 @@ RSpec.describe "RBAC Comprehensive Rules" do
       expect(RollbackPolicy.new(auditor, Rollback.new).create?).to be(false)
     end
 
+    it "allows read-only access to admin configuration", :aggregate_failures do
+      expect(AdminConfigurationPolicy.new(auditor, AdminConfiguration.new(name: "test")).index?).to be(true)
+      expect(AdminConfigurationPolicy.new(auditor, AdminConfiguration.new(name: "test")).show?).to be(true)
+      expect(AdminConfigurationPolicy.new(auditor, AdminConfiguration.new(name: "test")).update?).to be(false)
+    end
+
     it "allows read-only access to XI services", :aggregate_failures do
       expect(GreenLanes::CategoryAssessmentPolicy.new(auditor, double).index?).to be(true)
       expect(GreenLanes::CategoryAssessmentPolicy.new(auditor, double).show?).to be(true)
@@ -199,13 +209,22 @@ RSpec.describe "RBAC Comprehensive Rules" do
       expect(QuotaPolicy.new(technical_operator, Quota.new).destroy?).to be(true)
     end
 
-    it "denies access to updates" do
-      expect(UpdatePolicy.new(technical_operator, Update.new).index?).to be(false)
+    it "allows read-only access to updates", :aggregate_failures do
+      expect(UpdatePolicy.new(technical_operator, Update.new).index?).to be(true)
+      expect(UpdatePolicy.new(technical_operator, Update.new).show?).to be(true)
+      expect(UpdatePolicy.new(technical_operator, Update.new).download?).to be(false)
     end
 
-    it "denies access to rollbacks", :aggregate_failures do
-      expect(RollbackPolicy.new(technical_operator, Rollback.new).index?).to be(false)
+    it "allows read-only access to rollbacks", :aggregate_failures do
+      expect(RollbackPolicy.new(technical_operator, Rollback.new).index?).to be(true)
+      expect(RollbackPolicy.new(technical_operator, Rollback.new).show?).to be(true)
       expect(RollbackPolicy.new(technical_operator, Rollback.new).create?).to be(false)
+    end
+
+    it "allows read-only access to admin configuration", :aggregate_failures do
+      expect(AdminConfigurationPolicy.new(technical_operator, AdminConfiguration.new(name: "test")).index?).to be(true)
+      expect(AdminConfigurationPolicy.new(technical_operator, AdminConfiguration.new(name: "test")).show?).to be(true)
+      expect(AdminConfigurationPolicy.new(technical_operator, AdminConfiguration.new(name: "test")).update?).to be(false)
     end
 
     it "allows full access to XI services", :aggregate_failures do
@@ -234,8 +253,14 @@ RSpec.describe "RBAC Comprehensive Rules" do
     it "inherits technical operator access for content management", :aggregate_failures do
       expect(SectionNotePolicy.new(superadmin, SectionNote.new).index?).to be(true)
       expect(SearchReferencePolicy.new(superadmin, SearchReference.new).create?).to be(true)
+      expect(AdminConfigurationPolicy.new(superadmin, AdminConfiguration.new(name: "test")).index?).to be(true)
+      expect(AdminConfigurationPolicy.new(superadmin, AdminConfiguration.new(name: "test")).show?).to be(true)
       expect(AdminConfigurationPolicy.new(superadmin, AdminConfiguration.new(name: "test")).update?).to be(true)
+      expect(UpdatePolicy.new(superadmin, Update.new).index?).to be(true)
+      expect(UpdatePolicy.new(superadmin, Update.new).show?).to be(true)
       expect(UpdatePolicy.new(superadmin, Update.new).apply_and_clear_cache?).to be(true)
+      expect(RollbackPolicy.new(superadmin, Rollback.new).index?).to be(true)
+      expect(RollbackPolicy.new(superadmin, Rollback.new).show?).to be(true)
       expect(RollbackPolicy.new(superadmin, Rollback.new).create?).to be(true)
     end
 

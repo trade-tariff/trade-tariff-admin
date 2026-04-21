@@ -37,6 +37,25 @@ RSpec.describe RollbacksController do
     let(:current_user) { create(:user, :technical_operator) }
     let(:make_request) { get rollbacks_path }
 
-    it { is_expected.to have_http_status :forbidden }
+    it { is_expected.to have_http_status :success }
+  end
+
+  context "when auditor" do
+    let(:current_user) { create(:user, :auditor) }
+    let(:make_request) { get rollbacks_path }
+
+    it { is_expected.to have_http_status :success }
+  end
+
+  describe "POST #create" do
+    let(:make_request) do
+      post rollbacks_path, params: { rollback: { date: Time.zone.today.to_s, keep: true, reason: "Test rollback" } }
+    end
+
+    context "when technical operator" do
+      let(:current_user) { create(:user, :technical_operator) }
+
+      it { is_expected.to have_http_status :forbidden }
+    end
   end
 end

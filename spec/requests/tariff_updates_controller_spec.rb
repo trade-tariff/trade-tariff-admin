@@ -37,7 +37,14 @@ RSpec.describe TariffUpdatesController do
     let(:current_user) { create(:user, :technical_operator) }
     let(:make_request) { get tariff_updates_path }
 
-    it { is_expected.to have_http_status :forbidden }
+    it { is_expected.to have_http_status :success }
+  end
+
+  context "when auditor" do
+    let(:current_user) { create(:user, :auditor) }
+    let(:make_request) { get tariff_updates_path }
+
+    it { is_expected.to have_http_status :success }
   end
 
   describe "POST #download" do
@@ -51,6 +58,16 @@ RSpec.describe TariffUpdatesController do
 
       expect(response).to redirect_to(tariff_updates_path) # it stays on the same page
       expect(flash[:notice]).to eq("Download was scheduled")
+    end
+
+    context "when technical operator" do
+      let(:current_user) { create(:user, :technical_operator) }
+
+      it "returns forbidden" do
+        post "/tariff_updates/download"
+
+        expect(response).to have_http_status(:forbidden)
+      end
     end
   end
 
@@ -66,6 +83,16 @@ RSpec.describe TariffUpdatesController do
       expect(response).to redirect_to(tariff_updates_path)
       expect(flash[:notice]).to eq("Apply & ClearCache was scheduled")
     end
+
+    context "when technical operator" do
+      let(:current_user) { create(:user, :technical_operator) }
+
+      it "returns forbidden" do
+        post "/tariff_updates/apply_and_clear_cache"
+
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
   end
 
   describe "POST #resend_cds_update_notification" do
@@ -80,6 +107,16 @@ RSpec.describe TariffUpdatesController do
     it "displays success message" do
       rendered_page
       expect(flash[:notice]).to eq("CDS Updates notification was scheduled")
+    end
+
+    context "when technical operator" do
+      let(:current_user) { create(:user, :technical_operator) }
+
+      it "returns forbidden" do
+        post "/tariff_updates/resend_cds_update_notification", params: { cds_update_notification: { filename: "filename" } }
+
+        expect(response).to have_http_status(:forbidden)
+      end
     end
   end
 end

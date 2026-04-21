@@ -354,6 +354,28 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
         expect(session.dig("flash", "flashes", "alert")).to eq("Configuration not found.")
       end
     end
+
+    context "when current user is technical operator" do
+      let(:current_user) { create(:user, :technical_operator) }
+
+      it "allows read-only access" do
+        rendered_page
+
+        expect(response).to have_http_status(:success)
+        expect(response.body).not_to include("Edit")
+      end
+    end
+
+    context "when current user is auditor" do
+      let(:current_user) { create(:user, :auditor) }
+
+      it "allows read-only access" do
+        rendered_page
+
+        expect(response).to have_http_status(:success)
+        expect(response.body).not_to include("Edit")
+      end
+    end
   end
 
   describe "GET #edit" do
@@ -866,11 +888,84 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
     end
   end
 
-  context "when user is auditor (unauthorized)" do
-    let(:current_user) { create(:user, :auditor) }
-    let(:make_request) { get classification_configurations_path }
+  context "when user is technical operator (read-only)" do
+    let(:current_user) { create(:user, :technical_operator) }
 
-    it { is_expected.to have_http_status :forbidden }
+    describe "GET #index" do
+      before do
+        stub_api_request("/admin_configurations")
+          .and_return(collection_response)
+      end
+
+      let(:make_request) { get classification_configurations_path }
+
+      it { is_expected.to have_http_status :success }
+    end
+
+    describe "GET #edit" do
+      before do
+        stub_api_request("/admin_configurations/#{config_name}")
+          .and_return(config_response)
+      end
+
+      let(:make_request) { get edit_classification_configuration_path(config_name) }
+
+      it { is_expected.to have_http_status :forbidden }
+    end
+
+    describe "PATCH #update" do
+      before do
+        stub_api_request("/admin_configurations/#{config_name}")
+          .and_return(config_response)
+      end
+
+      let(:make_request) do
+        patch classification_configuration_path(config_name),
+              params: { classification_configuration: { value: "Updated prompt text" } }
+      end
+
+      it { is_expected.to have_http_status :forbidden }
+    end
+  end
+
+  context "when user is auditor (read-only)" do
+    let(:current_user) { create(:user, :auditor) }
+
+    describe "GET #index" do
+      before do
+        stub_api_request("/admin_configurations")
+          .and_return(collection_response)
+      end
+
+      let(:make_request) { get classification_configurations_path }
+
+      it { is_expected.to have_http_status :success }
+    end
+
+    describe "GET #edit" do
+      before do
+        stub_api_request("/admin_configurations/#{config_name}")
+          .and_return(config_response)
+      end
+
+      let(:make_request) { get edit_classification_configuration_path(config_name) }
+
+      it { is_expected.to have_http_status :forbidden }
+    end
+
+    describe "PATCH #update" do
+      before do
+        stub_api_request("/admin_configurations/#{config_name}")
+          .and_return(config_response)
+      end
+
+      let(:make_request) do
+        patch classification_configuration_path(config_name),
+              params: { classification_configuration: { value: "Updated prompt text" } }
+      end
+
+      it { is_expected.to have_http_status :forbidden }
+    end
   end
 
   context "when user is guest (unauthorized)" do
