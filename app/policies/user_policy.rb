@@ -6,6 +6,10 @@ class UserPolicy < ApplicationPolicy
     basic_auth_override? || technical_operator?
   end
 
+  def assign_superadmin?
+    superadmin?
+  end
+
   def create?
     basic_auth_override? || superadmin?
   end

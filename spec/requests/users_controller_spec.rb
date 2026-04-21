@@ -37,14 +37,25 @@ RSpec.describe UsersController do
 
     it { is_expected.to have_http_status :success }
 
-    it "displays fields for name and role selection", :aggregate_failures do
+    it "displays fields for name and role selection without superadmin", :aggregate_failures do
       rendered_page
-      expect(response.body).to include("Name", "radio", User::SUPERADMIN, User::GUEST, User::TECHNICAL_OPERATOR, User::HMRC_ADMIN, User::AUDITOR)
+      expect(response.body).to include("Name", "radio", User::GUEST, User::TECHNICAL_OPERATOR, User::HMRC_ADMIN, User::AUDITOR)
+      expect(response.body).not_to include(User::SUPERADMIN)
     end
 
     it "preselects the current role" do
       rendered_page
       expect(response.body).to include("checked")
+    end
+
+    context "when current user is superadmin" do
+      let(:current_user) { create(:user, :superadmin) }
+
+      it "shows the superadmin role option" do
+        rendered_page
+
+        expect(response.body).to include(User::SUPERADMIN)
+      end
     end
   end
 
@@ -136,6 +147,18 @@ RSpec.describe UsersController do
         expect(response.body).to include("There is a problem", "Name can&#39;t be blank")
       end
     end
+
+    context "when creating a superadmin" do
+      let(:new_user_params) do
+        super().merge(role: User::SUPERADMIN)
+      end
+
+      it "creates the user with the superadmin role" do
+        make_request
+
+        expect(User.order(:created_at).last.current_role).to eq(User::SUPERADMIN)
+      end
+    end
   end
 
   describe "PATCH #update" do
@@ -187,6 +210,20 @@ RSpec.describe UsersController do
         update_request(name: target_user.name, role: User::AUDITOR)
 
         expect(target_user.reload).to have_attributes(current_role: User::AUDITOR, role: User::AUDITOR)
+      end
+    end
+
+    context "when technical operator tries to assign superadmin" do
+      it "returns forbidden" do
+        update_request(name: "Updated User", role: User::SUPERADMIN)
+
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it "does not update the user role" do
+        expect {
+          update_request(name: "Updated User", role: User::SUPERADMIN)
+        }.not_to change { target_user.reload.current_role }
       end
     end
 
@@ -296,7 +333,7 @@ RSpec.describe UsersController do
     describe "PATCH #update" do
       let(:make_request) do
         patch user_path(target_user),
-              params: { user: { role: User::HMRC_ADMIN } }
+              params: { user: { name: target_user.name, role: User::HMRC_ADMIN } }
       end
 
       it { is_expected.to redirect_to users_path }
@@ -306,6 +343,24 @@ RSpec.describe UsersController do
         target_user.reload
         expect(target_user.current_role).to eq(User::HMRC_ADMIN)
       end
+    end
+
+    describe "POST #create with superadmin role" do
+      let(:make_request) do
+        post users_path,
+             params: { user: new_user_params.merge(role: User::SUPERADMIN) }
+      end
+
+      it { is_expected.to have_http_status :forbidden }
+    end
+
+    describe "PATCH #update when assigning superadmin" do
+      let(:make_request) do
+        patch user_path(target_user),
+              params: { user: { name: target_user.name, role: User::SUPERADMIN } }
+      end
+
+      it { is_expected.to have_http_status :forbidden }
     end
 
     describe "POST #create" do
