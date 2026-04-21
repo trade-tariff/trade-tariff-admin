@@ -35,10 +35,11 @@ module GovukHelper
     end
   end
 
-  def govuk_markdown_area(form, field_name, **options)
+  def govuk_markdown_area(form, field_name, **options, &block)
     render "application/markdown_field",
            form:,
            field_name:,
-           field_options: options
+           field_options: options,
+           help_content: block_given? ? capture(&block) : nil
   end
 end

@@ -67,6 +67,11 @@ class DescriptionIntercept
     message.present?
   end
 
+  def preview(field_name = :message)
+    content = public_send(field_name)
+    GovspeakPreview.new(content).render if content.present?
+  end
+
   def filtering?
     filter_prefixes.present?
   end

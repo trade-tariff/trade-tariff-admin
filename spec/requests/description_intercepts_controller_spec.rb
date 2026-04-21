@@ -193,6 +193,34 @@ RSpec.describe DescriptionInterceptsController, type: :request do
       expect(rendered_page.body).to include("Selected short codes")
     end
 
+    it "renders the guidance message as a markdown editor with preview" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_css ".govuk-grid-row .govuk-grid-column-one-half", count: 2
+      expect(page).to have_css 'textarea.govuk-textarea[name="description_intercept[message]"]'
+      expect(page).to have_css '.hott-markdown-preview[data-preview="govspeak"][data-preview-for="#description-intercept-message-field"]'
+    end
+
+    it "explains markdown and automatic short code links in a details component" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_css ".govuk-details__summary-text", text: "Markdown and automatic short code links"
+      expect(page).to have_css ".govuk-details__text", text: "Short codes are automatically rendered as links", visible: :all
+      expect(page).to have_css ".govuk-details__text", text: "01", visible: :all
+      expect(page).to have_css ".govuk-details__text", text: "0101", visible: :all
+      expect(page).to have_css ".govuk-details__text", text: "010121", visible: :all
+      expect(page).to have_css ".govuk-details__text", text: "0101210000", visible: :all
+      expect(page).to have_link "Markdown guide", href: "https://govspeak-preview.publishing.service.gov.uk/guide", visible: :all
+    end
+
+    context "with a markdown guidance message" do
+      let(:intercept_attributes) { super().merge("message" => "Ask the **trader** to pick a more specific feed type.") }
+
+      it "renders the existing guidance message in the preview" do
+        expect(Capybara.string(rendered_page.body)).to have_css ".hott-markdown-preview strong", text: "trader"
+      end
+    end
+
     it "shows remove controls for selected short codes" do
       expect(rendered_page.body).to include('aria-label="Remove 1201900000"')
       expect(rendered_page.body).to include('aria-label="Remove 2309900000"')
