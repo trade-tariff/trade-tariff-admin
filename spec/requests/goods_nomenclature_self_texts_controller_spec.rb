@@ -85,6 +85,28 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
         expect(rendered_page.body).to include('class="label-table-container" data-label-table-target="table"')
       end
 
+      it "labels self-text and label state filters as tags" do
+        expect(rendered_page.body).to include('<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Tags</legend>')
+        expect(rendered_page.body).to include('id="st-tags-stale"')
+        expect(rendered_page.body).to include('data-action="change->self-text-table#changeTags" data-status="stale"')
+        expect(rendered_page.body).to include('id="lb-tags-stale"')
+        expect(rendered_page.body).to include('data-action="change->label-table#changeTags" data-status="stale"')
+      end
+
+      it "uses tags terminology in the self-text table controller" do
+        controller = Rails.root.join("app/webpacker/controllers/self_text_table_controller.js").read
+
+        expect(controller).to include(%(scope="col">Tags</th>))
+        expect(controller).to include("params.set('status', this.tagsValue);")
+      end
+
+      it "uses tags terminology in the label table controller" do
+        controller = Rails.root.join("app/webpacker/controllers/label_table_controller.js").read
+
+        expect(controller).to include(%(scope="col">Tags</th>))
+        expect(controller).to include("params.set('status', this.tagsValue);")
+      end
+
       it "defines a fixed layout for the self-text table styles" do
         stylesheet = Rails.root.join("app/webpacker/packs/application.scss").read
 
@@ -225,6 +247,10 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
 
     it "displays the View labels cross-link when has_label is true" do
       expect(rendered_page.body).to include("View labels")
+    end
+
+    it "labels the state summary as tags" do
+      expect(rendered_page.body).to include(%(<dt class="govuk-summary-list__key">Tags</dt>))
     end
 
     context "when has_label is false" do

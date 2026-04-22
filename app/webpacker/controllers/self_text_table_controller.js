@@ -12,7 +12,7 @@ export default class extends Controller {
       sort: { type: String, default: 'score' },
       direction: { type: String, default: 'asc' },
       type: { type: String, default: 'commodity' },
-      status: { type: String, default: '' },
+      tags: { type: String, default: '' },
       scoreCategory: { type: String, default: '' },
       page: { type: Number, default: 1 },
       q: { type: String, default: '' },
@@ -29,8 +29,8 @@ export default class extends Controller {
     this.fetchData();
   }
 
-  changeStatus(event) {
-    this.statusValue = event.currentTarget.dataset.status;
+  changeTags(event) {
+    this.tagsValue = event.currentTarget.dataset.status;
     this.pageValue = 1;
     this.fetchData();
   }
@@ -75,8 +75,8 @@ export default class extends Controller {
       page: this.pageValue,
     });
 
-    if (this.statusValue) {
-      params.set('status', this.statusValue);
+    if (this.tagsValue) {
+      params.set('status', this.tagsValue);
     }
     if (this.scoreCategoryValue) {
       params.set('score_category', this.scoreCategoryValue);
@@ -128,7 +128,7 @@ export default class extends Controller {
       '<thead class="govuk-table__head"><tr class="govuk-table__row">' +
       '<th class="govuk-table__header self-text-table__code" scope="col">' + sortHeader('goods_nomenclature_item_id', 'Commodity code') + '</th>' +
       '<th class="govuk-table__header self-text-table__score" scope="col">' + sortHeader('score', 'Score') + '</th>' +
-      '<th class="govuk-table__header self-text-table__status" scope="col">Status</th>' +
+      '<th class="govuk-table__header self-text-table__tags" scope="col">Tags</th>' +
       '<th class="govuk-table__header self-text-table__description" scope="col">Self-text</th>' +
       '</tr></thead><tbody class="govuk-table__body">';
 
@@ -139,7 +139,7 @@ export default class extends Controller {
       html += '<tr class="govuk-table__row" data-score="' + (st.score !== null && st.score !== undefined ? st.score : '') + '" data-score-category="' + sc.category + '">' +
         '<td class="govuk-table__cell self-text-table__code"><a href="' + showUrl + '" class="govuk-link">' + self.escapeHtml(st.goods_nomenclature_item_id) + '</a></td>' +
         '<td class="govuk-table__cell self-text-table__score">' + sc.tag + '</td>' +
-        '<td class="govuk-table__cell self-text-table__status">' + self.statusTags(st) + '</td>' +
+        '<td class="govuk-table__cell self-text-table__tags">' + self.buildTags(st) + '</td>' +
         '<td class="govuk-table__cell self-text-table__description">' + self.escapeHtml(st.self_text || '') + '</td>' +
         '</tr>';
     });
@@ -165,7 +165,7 @@ export default class extends Controller {
     };
   }
 
-  statusTags(st) {
+  buildTags(st) {
     var tags = [];
 
     if (st.needs_review) {

@@ -39,7 +39,7 @@
       <div class="govuk-details__text">
         <p class="govuk-body">Self-texts are self-contained descriptions of what each commodity code covers. They go into the search index so traders can find the right code. Non-'Other' nodes get a mechanical description built from their ancestor chain. 'Other' nodes get an AI-generated description that replaces the bare 'Other' with what the code actually covers, using sibling and parent context.</p>
 
-        <h3 class="govuk-heading-s">Statuses</h3>
+        <h3 class="govuk-heading-s">Tags</h3>
         <ul class="govuk-list govuk-list--bullet">
           <li><strong>Needs review</strong> - an admin has flagged this self-text for review</li>
           <li><strong>Stale</strong> - the commodity's hierarchy has changed since the self-text was generated, so it may no longer be accurate</li>
@@ -55,8 +55,8 @@
           <li><strong>Amazing</strong> - score 0.85 or above</li>
         </ul>
 
-        <h3 class="govuk-heading-s">Score and status are independent</h3>
-        <p class="govuk-body">A self-text can have a high score but still need review. The score measures how closely the text matches the EU reference, while the review flag is set manually by admins to mark self-texts that need attention.</p>
+        <h3 class="govuk-heading-s">Score and tags are independent</h3>
+        <p class="govuk-body">A self-text can have a high score but still need review. The score measures how closely the text matches the EU reference, while the review tag is set manually by admins to mark self-texts that need attention.</p>
       </div>
     </details>
 
@@ -134,27 +134,27 @@
 
         <div class="govuk-form-group">
           <fieldset class="govuk-fieldset">
-            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Status</legend>
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Tags</legend>
             <div class="govuk-radios govuk-radios--small">
               <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="st-status-all" name="st_status" type="radio" value="" checked
-                       data-action="change->self-text-table#changeStatus" data-status="">
-                <label class="govuk-label govuk-radios__label" for="st-status-all">All</label>
+                <input class="govuk-radios__input" id="st-tags-all" name="st_tags" type="radio" value="" checked
+                       data-action="change->self-text-table#changeTags" data-status="">
+                <label class="govuk-label govuk-radios__label" for="st-tags-all">All</label>
               </div>
               <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="st-status-needs-review" name="st_status" type="radio" value="needs_review"
-                       data-action="change->self-text-table#changeStatus" data-status="needs_review">
-                <label class="govuk-label govuk-radios__label" for="st-status-needs-review">Needs review</label>
+                <input class="govuk-radios__input" id="st-tags-needs-review" name="st_tags" type="radio" value="needs_review"
+                       data-action="change->self-text-table#changeTags" data-status="needs_review">
+                <label class="govuk-label govuk-radios__label" for="st-tags-needs-review">Needs review</label>
               </div>
               <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="st-status-stale" name="st_status" type="radio" value="stale"
-                       data-action="change->self-text-table#changeStatus" data-status="stale">
-                <label class="govuk-label govuk-radios__label" for="st-status-stale">Stale</label>
+                <input class="govuk-radios__input" id="st-tags-stale" name="st_tags" type="radio" value="stale"
+                       data-action="change->self-text-table#changeTags" data-status="stale">
+                <label class="govuk-label govuk-radios__label" for="st-tags-stale">Stale</label>
               </div>
               <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="st-status-edited" name="st_status" type="radio" value="manually_edited"
-                       data-action="change->self-text-table#changeStatus" data-status="manually_edited">
-                <label class="govuk-label govuk-radios__label" for="st-status-edited">Manually edited</label>
+                <input class="govuk-radios__input" id="st-tags-edited" name="st_tags" type="radio" value="manually_edited"
+                       data-action="change->self-text-table#changeTags" data-status="manually_edited">
+                <label class="govuk-label govuk-radios__label" for="st-tags-edited">Manually edited</label>
               </div>
             </div>
           </fieldset>
@@ -280,22 +280,22 @@
 
         <div class="govuk-form-group">
           <fieldset class="govuk-fieldset">
-            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Status</legend>
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Tags</legend>
             <div class="govuk-radios govuk-radios--small">
               <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="lb-status-all" name="lb_status" type="radio" value="" checked
-                       data-action="change->label-table#changeStatus" data-status="">
-                <label class="govuk-label govuk-radios__label" for="lb-status-all">All</label>
+                <input class="govuk-radios__input" id="lb-tags-all" name="lb_tags" type="radio" value="" checked
+                       data-action="change->label-table#changeTags" data-status="">
+                <label class="govuk-label govuk-radios__label" for="lb-tags-all">All</label>
               </div>
               <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="lb-status-stale" name="lb_status" type="radio" value="stale"
-                       data-action="change->label-table#changeStatus" data-status="stale">
-                <label class="govuk-label govuk-radios__label" for="lb-status-stale">Stale</label>
+                <input class="govuk-radios__input" id="lb-tags-stale" name="lb_tags" type="radio" value="stale"
+                       data-action="change->label-table#changeTags" data-status="stale">
+                <label class="govuk-label govuk-radios__label" for="lb-tags-stale">Stale</label>
               </div>
               <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="lb-status-edited" name="lb_status" type="radio" value="manually_edited"
-                       data-action="change->label-table#changeStatus" data-status="manually_edited">
-                <label class="govuk-label govuk-radios__label" for="lb-status-edited">Manually edited</label>
+                <input class="govuk-radios__input" id="lb-tags-edited" name="lb_tags" type="radio" value="manually_edited"
+                       data-action="change->label-table#changeTags" data-status="manually_edited">
+                <label class="govuk-label govuk-radios__label" for="lb-tags-edited">Manually edited</label>
               </div>
             </div>
           </fieldset>
