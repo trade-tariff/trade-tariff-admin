@@ -93,20 +93,20 @@ class GoodsNomenclatureSelfText
 
   def score_label(value = combined_score)
     return "No score" if value.nil?
-    return "Amazing" if value >= 0.85
-    return "Good" if value >= 0.5
-    return "Okay" if value >= 0.3
+    return "Very High" if value >= 0.85
+    return "High" if value >= 0.5
+    return "Medium" if value >= 0.3
 
-    "Bad"
+    "Low"
   end
 
   def score_tag_colour(value = combined_score)
     return "grey" if value.nil?
-    return "blue" if value >= 0.85
-    return "green" if value >= 0.5
+    return "green" if value >= 0.85
+    return "blue" if value >= 0.5
     return "yellow" if value >= 0.3
 
-    "red"
+    "grey"
   end
 
   def formatted_generated_at

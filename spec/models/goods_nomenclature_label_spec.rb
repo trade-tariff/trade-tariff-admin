@@ -116,28 +116,28 @@ RSpec.describe GoodsNomenclatureLabel do
   end
 
   describe "#score_label" do
-    it "returns Amazing for score >= 0.85" do
+    it "returns Very High for score >= 0.85" do
       record = described_class.new(description_score: 0.90)
 
-      expect(record.score_label).to eq("Amazing")
+      expect(record.score_label).to eq("Very High")
     end
 
-    it "returns Good for score >= 0.5" do
+    it "returns High for score >= 0.5" do
       record = described_class.new(description_score: 0.72)
 
-      expect(record.score_label).to eq("Good")
+      expect(record.score_label).to eq("High")
     end
 
-    it "returns Okay for score >= 0.3" do
+    it "returns Medium for score >= 0.3" do
       record = described_class.new(description_score: 0.35)
 
-      expect(record.score_label).to eq("Okay")
+      expect(record.score_label).to eq("Medium")
     end
 
-    it "returns Bad for score < 0.3" do
+    it "returns Low for score < 0.3" do
       record = described_class.new(description_score: 0.1)
 
-      expect(record.score_label).to eq("Bad")
+      expect(record.score_label).to eq("Low")
     end
 
     it "returns No score when nil" do
@@ -148,28 +148,28 @@ RSpec.describe GoodsNomenclatureLabel do
   end
 
   describe "#score_tag_colour" do
-    it "returns blue for Amazing scores" do
+    it "returns green for Very High scores" do
       record = described_class.new(description_score: 0.90)
-
-      expect(record.score_tag_colour).to eq("blue")
-    end
-
-    it "returns green for Good scores" do
-      record = described_class.new(description_score: 0.60)
 
       expect(record.score_tag_colour).to eq("green")
     end
 
-    it "returns yellow for Okay scores" do
+    it "returns blue for High scores" do
+      record = described_class.new(description_score: 0.60)
+
+      expect(record.score_tag_colour).to eq("blue")
+    end
+
+    it "returns yellow for Medium scores" do
       record = described_class.new(description_score: 0.35)
 
       expect(record.score_tag_colour).to eq("yellow")
     end
 
-    it "returns red for Bad scores" do
+    it "returns grey for Low scores" do
       record = described_class.new(description_score: 0.1)
 
-      expect(record.score_tag_colour).to eq("red")
+      expect(record.score_tag_colour).to eq("grey")
     end
 
     it "returns grey when nil" do

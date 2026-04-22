@@ -79,29 +79,29 @@ RSpec.describe GoodsNomenclatureSelfText do
   end
 
   describe "#score_label" do
-    it "returns Amazing for combined score >= 0.85" do
+    it "returns Very High for combined score >= 0.85" do
       self_text.similarity_score = 0.90
       self_text.coherence_score = 0.90
 
-      expect(self_text.score_label).to eq("Amazing")
+      expect(self_text.score_label).to eq("Very High")
     end
 
-    it "returns Good for combined score >= 0.5" do
-      expect(self_text.score_label).to eq("Good")
+    it "returns High for combined score >= 0.5" do
+      expect(self_text.score_label).to eq("High")
     end
 
-    it "returns Okay for combined score >= 0.3" do
+    it "returns Medium for combined score >= 0.3" do
       self_text.similarity_score = 0.35
       self_text.coherence_score = 0.25
 
-      expect(self_text.score_label).to eq("Okay")
+      expect(self_text.score_label).to eq("Medium")
     end
 
-    it "returns Bad for combined score < 0.3" do
+    it "returns Low for combined score < 0.3" do
       self_text.similarity_score = 0.1
       self_text.coherence_score = 0.1
 
-      expect(self_text.score_label).to eq("Bad")
+      expect(self_text.score_label).to eq("Low")
     end
 
     it "returns No score when combined score is nil" do
@@ -113,15 +113,29 @@ RSpec.describe GoodsNomenclatureSelfText do
   end
 
   describe "#score_tag_colour" do
-    it "returns blue for Amazing" do
+    it "returns green for Very High" do
       self_text.similarity_score = 0.90
       self_text.coherence_score = 0.90
 
+      expect(self_text.score_tag_colour).to eq("green")
+    end
+
+    it "returns blue for High" do
       expect(self_text.score_tag_colour).to eq("blue")
     end
 
-    it "returns green for Good" do
-      expect(self_text.score_tag_colour).to eq("green")
+    it "returns yellow for Medium" do
+      self_text.similarity_score = 0.35
+      self_text.coherence_score = 0.25
+
+      expect(self_text.score_tag_colour).to eq("yellow")
+    end
+
+    it "returns grey for Low" do
+      self_text.similarity_score = 0.1
+      self_text.coherence_score = 0.1
+
+      expect(self_text.score_tag_colour).to eq("grey")
     end
 
     it "returns grey for no score" do
