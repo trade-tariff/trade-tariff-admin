@@ -162,10 +162,10 @@ export default class extends Controller {
     }
 
     var label, colour;
-    if (score >= 0.85) { label = 'Amazing'; colour = 'blue'; }
-    else if (score >= 0.5) { label = 'Good'; colour = 'green'; }
-    else if (score >= 0.3) { label = 'Okay'; colour = 'yellow'; }
-    else { label = 'Bad'; colour = 'red'; }
+    if (score >= 0.85) { label = 'Very High'; colour = 'green'; }
+    else if (score >= 0.5) { label = 'High'; colour = 'blue'; }
+    else if (score >= 0.3) { label = 'Medium'; colour = 'yellow'; }
+    else { label = 'Low'; colour = 'grey'; }
 
     return {
       tag: '<strong class="govuk-tag govuk-tag--' + colour + '">' + label + '</strong>',

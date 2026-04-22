@@ -68,10 +68,10 @@ export default class extends Controller {
 
   tagColour(score) {
     if (score === null || score === undefined) return 'grey';
-    if (score >= 0.85) return 'blue';
-    if (score >= 0.5) return 'green';
+    if (score >= 0.85) return 'green';
+    if (score >= 0.5) return 'blue';
     if (score >= 0.3) return 'yellow';
-    return 'red';
+    return 'grey';
   }
 
   escapeHtml(text) {

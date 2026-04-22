@@ -93,6 +93,13 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
         expect(rendered_page.body).to include('data-action="change->label-table#changeTags" data-status="stale"')
       end
 
+      it "uses the updated visible score labels while preserving backend filter values" do
+        expect(rendered_page.body).to include('for="st-score-bad">Low</label>')
+        expect(rendered_page.body).to include('for="st-score-amazing">Very High</label>')
+        expect(rendered_page.body).to include('for="lb-score-bad">Low</label>')
+        expect(rendered_page.body).to include('for="lb-score-amazing">Very High</label>')
+      end
+
       it "uses tags terminology in the self-text table controller" do
         controller = Rails.root.join("app/webpacker/controllers/self_text_table_controller.js").read
 
@@ -105,6 +112,20 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
 
         expect(controller).to include(%(scope="col">Tags</th>))
         expect(controller).to include("params.set('status', this.tagsValue);")
+      end
+
+      it "uses the updated score labels in the self-text table controller" do
+        controller = Rails.root.join("app/webpacker/controllers/self_text_table_controller.js").read
+
+        expect(controller).to include("label = 'Very High'; colour = 'green'")
+        expect(controller).to include("label = 'Low'; colour = 'grey'")
+      end
+
+      it "uses the updated score labels in the label table controller" do
+        controller = Rails.root.join("app/webpacker/controllers/label_table_controller.js").read
+
+        expect(controller).to include("label = 'Very High'; colour = 'green'")
+        expect(controller).to include("label = 'Low'; colour = 'grey'")
       end
 
       it "defines a fixed layout for the self-text table styles" do
