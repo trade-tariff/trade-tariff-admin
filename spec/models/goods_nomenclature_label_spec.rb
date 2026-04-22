@@ -9,7 +9,12 @@ RSpec.describe GoodsNomenclatureLabel do
       producline_suffix: "80",
       stale: false,
       manually_edited: false,
+      needs_review: false,
+      approved: false,
+      expired: false,
       context_hash: "abc123",
+      created_at: "2025-06-15T10:00:00Z",
+      updated_at: "#{Time.zone.today.iso8601}T10:00:00Z",
       labels: {
         "original_description" => "Live horses",
         "description" => "Horses (live)",
@@ -179,6 +184,22 @@ RSpec.describe GoodsNomenclatureLabel do
     end
   end
 
+  describe "record date formatting" do
+    it "formats created_at" do
+      expect(label.formatted_created_at).to eq("15 June 2025")
+    end
+
+    it "returns Today when updated_at is today" do
+      expect(label.formatted_updated_at).to eq("Today")
+    end
+
+    it "returns dash when a date is blank" do
+      label.updated_at = nil
+
+      expect(label.formatted_updated_at).to eq("-")
+    end
+  end
+
   describe "#to_param" do
     it "returns goods_nomenclature_id when set" do
       label.goods_nomenclature_id = "0101210000"
@@ -188,6 +209,62 @@ RSpec.describe GoodsNomenclatureLabel do
 
     it "falls back to goods_nomenclature_item_id" do
       expect(label.to_param).to eq("0101210000")
+    end
+  end
+
+  describe "#as_listing_json" do
+    it "includes lifecycle tag fields" do
+      record = described_class.new(attributes.merge(lifecycle_tag_attributes))
+
+      expect(record.as_listing_json).to include(lifecycle_tag_attributes)
+    end
+  end
+
+  def lifecycle_tag_attributes
+    { needs_review: true, manually_edited: true, stale: true, approved: true, expired: true }
+  end
+
+  describe "#generate_score" do
+    it "posts to the label score endpoint" do
+      stub_api_request("/goods_nomenclatures/0101210000/goods_nomenclature_label/score", :post)
+        .and_return(status: 200, body: {}.to_json)
+
+      label.generate_score
+
+      expect(WebMock).to have_requested(:post, /goods_nomenclatures\/0101210000\/goods_nomenclature_label\/score/)
+    end
+  end
+
+  describe "#regenerate" do
+    it "posts to the label regenerate endpoint" do
+      stub_api_request("/goods_nomenclatures/0101210000/goods_nomenclature_label/regenerate", :post)
+        .and_return(status: 200, body: {}.to_json)
+
+      label.regenerate
+
+      expect(WebMock).to have_requested(:post, /goods_nomenclatures\/0101210000\/goods_nomenclature_label\/regenerate/)
+    end
+  end
+
+  describe "#approve" do
+    it "posts to the label approve endpoint" do
+      stub_api_request("/goods_nomenclatures/0101210000/goods_nomenclature_label/approve", :post)
+        .and_return(status: 200, body: {}.to_json)
+
+      label.approve
+
+      expect(WebMock).to have_requested(:post, /goods_nomenclatures\/0101210000\/goods_nomenclature_label\/approve/)
+    end
+  end
+
+  describe "#reject" do
+    it "posts to the label reject endpoint" do
+      stub_api_request("/goods_nomenclatures/0101210000/goods_nomenclature_label/reject", :post)
+        .and_return(status: 200, body: {}.to_json)
+
+      label.reject
+
+      expect(WebMock).to have_requested(:post, /goods_nomenclatures\/0101210000\/goods_nomenclature_label\/reject/)
     end
   end
 end

@@ -71,6 +71,26 @@ Rails.application.routes.draw do
         to: "goods_nomenclature_labels#update",
         constraints: { goods_nomenclature_id: /\d+/ }
 
+  post "goods_nomenclature_labels/:goods_nomenclature_id/score",
+       to: "goods_nomenclature_labels#score",
+       as: :score_goods_nomenclature_label,
+       constraints: { goods_nomenclature_id: /\d+/ }
+
+  post "goods_nomenclature_labels/:goods_nomenclature_id/regenerate",
+       to: "goods_nomenclature_labels#regenerate",
+       as: :regenerate_goods_nomenclature_label,
+       constraints: { goods_nomenclature_id: /\d+/ }
+
+  post "goods_nomenclature_labels/:goods_nomenclature_id/approve",
+       to: "goods_nomenclature_labels#approve",
+       as: :approve_goods_nomenclature_label,
+       constraints: { goods_nomenclature_id: /\d+/ }
+
+  post "goods_nomenclature_labels/:goods_nomenclature_id/reject",
+       to: "goods_nomenclature_labels#reject",
+       as: :reject_goods_nomenclature_label,
+       constraints: { goods_nomenclature_id: /\d+/ }
+
   resources :goods_nomenclature_self_texts, only: %i[index] do
     collection do
       get :search

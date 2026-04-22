@@ -25,6 +25,10 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
       "needs_review" => false,
       "manually_edited" => false,
       "stale" => false,
+      "approved" => false,
+      "expired" => false,
+      "created_at" => "2025-06-15T10:00:00Z",
+      "updated_at" => "#{Time.zone.today.iso8601}T10:00:00Z",
       "generated_at" => "2025-06-15T10:00:00Z",
       "eu_self_text" => "Horses, live, for breeding",
       "similarity_score" => 0.72,
@@ -105,6 +109,8 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
 
         expect(controller).to include(%(scope="col">Tags</th>))
         expect(controller).to include("params.set('status', this.tagsValue);")
+        expect(controller).to include("st.approved")
+        expect(controller).to include("st.expired")
       end
 
       it "uses tags terminology in the label table controller" do
@@ -112,6 +118,7 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
 
         expect(controller).to include(%(scope="col">Tags</th>))
         expect(controller).to include("params.set('status', this.tagsValue);")
+        expect(controller).to include("label.needs_review", "label.approved", "label.expired")
       end
 
       it "uses the updated score labels in the self-text table controller" do
@@ -270,8 +277,23 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
       expect(rendered_page.body).to include("View labels")
     end
 
+    it "displays the record dates" do # rubocop:disable RSpec/MultipleExpectations
+      expect(rendered_page.body).to include("Record dates")
+      expect(rendered_page.body).to include("Created: 15 June 2025")
+      expect(rendered_page.body).to include("Updated: Today")
+    end
+
     it "labels the state summary as tags" do
       expect(rendered_page.body).to include(%(<dt class="govuk-summary-list__key">Tags</dt>))
+    end
+
+    context "when the self-text has approved and expired tags" do
+      let(:self_text_attributes) { super().merge("approved" => true, "expired" => true) }
+
+      it "displays the approved and expired tags" do # rubocop:disable RSpec/MultipleExpectations
+        expect(rendered_page.body).to include("Approved")
+        expect(rendered_page.body).to include("Expired")
+      end
     end
 
     context "when has_label is false" do

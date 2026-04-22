@@ -176,11 +176,20 @@ export default class extends Controller {
   buildTags(label) {
     var tags = [];
 
+    if (label.needs_review) {
+      tags.push('<strong class="govuk-tag govuk-tag--orange">Needs review</strong>');
+    }
     if (label.stale) {
       tags.push('<strong class="govuk-tag govuk-tag--pink">Stale</strong>');
     }
     if (label.manually_edited) {
       tags.push('<strong class="govuk-tag govuk-tag--purple">Edited</strong>');
+    }
+    if (label.approved) {
+      tags.push('<strong class="govuk-tag govuk-tag--green">Approved</strong>');
+    }
+    if (label.expired) {
+      tags.push('<strong class="govuk-tag govuk-tag--grey">Expired</strong>');
     }
 
     return tags.length > 0 ? tags.join(' ') : '<strong class="govuk-tag govuk-tag--turquoise">Active</strong>';

@@ -19,6 +19,10 @@ RSpec.describe GoodsNomenclatureSelfText do
       needs_review: false,
       manually_edited: false,
       stale: false,
+      approved: false,
+      expired: false,
+      created_at: "2025-06-15T10:00:00Z",
+      updated_at: "#{Time.zone.today.iso8601}T10:00:00Z",
       generated_at: "2025-06-15T10:00:00Z",
       eu_self_text: "Horses, live, for breeding",
       similarity_score: 0.72,
@@ -146,17 +150,19 @@ RSpec.describe GoodsNomenclatureSelfText do
     end
   end
 
-  describe "#formatted_generated_at" do
-    it "returns the formatted date" do
-      self_text.generated_at = "2025-06-15T10:00:00Z"
-
-      expect(self_text.formatted_generated_at).not_to eq("-")
+  describe "record date formatting" do
+    it "formats created_at" do
+      expect(self_text.formatted_created_at).to eq("15 June 2025")
     end
 
-    it "returns dash when generated_at is blank" do
-      self_text.generated_at = nil
+    it "returns Today when updated_at is today" do
+      expect(self_text.formatted_updated_at).to eq("Today")
+    end
 
-      expect(self_text.formatted_generated_at).to eq("-")
+    it "returns dash when a date is blank" do
+      self_text.created_at = nil
+
+      expect(self_text.formatted_created_at).to eq("-")
     end
   end
 
@@ -224,6 +230,18 @@ RSpec.describe GoodsNomenclatureSelfText do
 
       expect(record.to_param).to eq("99999")
     end
+  end
+
+  describe "#as_listing_json" do
+    it "includes lifecycle tag fields" do
+      record = described_class.new(attributes.merge(lifecycle_tag_attributes))
+
+      expect(record.as_listing_json).to include(lifecycle_tag_attributes)
+    end
+  end
+
+  def lifecycle_tag_attributes
+    { needs_review: true, manually_edited: true, stale: true, approved: true, expired: true }
   end
 
   describe ".find" do
