@@ -2,13 +2,19 @@ import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
   static get targets() {
-    return ['table', 'pagination', 'loading'];
+    return ['table', 'pagination', 'loading', 'searchInput'];
   }
 
   static get values() {
     return {
       url: String,
       showUrl: String,
+      showIdField: String,
+      descriptionField: String,
+      descriptionHeading: String,
+      emptyMessage: String,
+      errorMessage: String,
+      tableClass: String,
       sort: { type: String, default: 'score' },
       direction: { type: String, default: 'asc' },
       type: { type: String, default: 'commodity' },
@@ -20,6 +26,14 @@ export default class extends Controller {
   }
 
   connect() {
+    this.fetchData();
+  }
+
+  search(event) {
+    if (event) event.preventDefault();
+    var q = this.hasSearchInputTarget ? this.searchInputTarget.value.trim() : '';
+    this.qValue = q;
+    this.pageValue = 1;
     this.fetchData();
   }
 
@@ -51,6 +65,7 @@ export default class extends Controller {
       this.sortValue = column;
       this.directionValue = 'asc';
     }
+
     this.pageValue = 1;
     this.fetchData();
   }
@@ -75,15 +90,9 @@ export default class extends Controller {
       page: this.pageValue,
     });
 
-    if (this.tagsValue) {
-      params.set('status', this.tagsValue);
-    }
-    if (this.scoreCategoryValue) {
-      params.set('score_category', this.scoreCategoryValue);
-    }
-    if (this.qValue) {
-      params.set('q', this.qValue);
-    }
+    if (this.tagsValue) params.set('status', this.tagsValue);
+    if (this.scoreCategoryValue) params.set('score_category', this.scoreCategoryValue);
+    if (this.qValue) params.set('q', this.qValue);
 
     fetch(this.urlValue + '?' + params.toString(), {
       headers: { 'Accept': 'application/json' },
@@ -104,13 +113,13 @@ export default class extends Controller {
     this.loadingTarget.style.display = 'none';
     this.tableTarget.style.opacity = '1';
     this.tableTarget.innerHTML =
-      '<div class="govuk-inset-text"><p class="govuk-body">Failed to load self-texts.</p></div>';
+      '<div class="govuk-inset-text"><p class="govuk-body">' + this.escapeHtml(this.errorMessageValue) + '</p></div>';
     this.paginationTarget.innerHTML = '';
   }
 
   buildTable(data) {
     if (!data || data.length === 0) {
-      return '<div class="govuk-inset-text"><p class="govuk-body">No self-texts found.</p></div>';
+      return '<div class="govuk-inset-text"><p class="govuk-body">' + this.escapeHtml(this.emptyMessageValue) + '</p></div>';
     }
 
     var self = this;
@@ -120,27 +129,28 @@ export default class extends Controller {
     };
 
     var sortHeader = function(col, label) {
-      return '<a href="#" class="govuk-link" data-action="click->self-text-table#changeSort" data-column="' +
+      return '<a href="#" class="govuk-link" data-action="click->generated-content-table#changeSort" data-column="' +
         col + '">' + label + arrow(col) + '</a>';
     };
 
-    var html = '<table class="govuk-table self-text-table">' +
+    var html = '<table class="govuk-table ' + this.tableClassValue + '">' +
       '<thead class="govuk-table__head"><tr class="govuk-table__row">' +
-      '<th class="govuk-table__header self-text-table__code" scope="col">' + sortHeader('goods_nomenclature_item_id', 'Commodity code') + '</th>' +
-      '<th class="govuk-table__header self-text-table__score" scope="col">' + sortHeader('score', 'Score') + '</th>' +
-      '<th class="govuk-table__header self-text-table__tags" scope="col">Tags</th>' +
-      '<th class="govuk-table__header self-text-table__description" scope="col">Self-text</th>' +
+      '<th class="govuk-table__header ' + this.tableClassValue + '__code" scope="col">' + sortHeader('goods_nomenclature_item_id', 'Commodity code') + '</th>' +
+      '<th class="govuk-table__header ' + this.tableClassValue + '__score" scope="col">' + sortHeader('score', 'Score') + '</th>' +
+      '<th class="govuk-table__header ' + this.tableClassValue + '__tags" scope="col">Tags</th>' +
+      '<th class="govuk-table__header ' + this.tableClassValue + '__description" scope="col">' + this.escapeHtml(this.descriptionHeadingValue) + '</th>' +
       '</tr></thead><tbody class="govuk-table__body">';
 
-    data.forEach(function(st) {
-      var showUrl = self.showUrlValue.replace('__ID__', st.goods_nomenclature_sid);
-      var sc = self.scoreMeta(st.score);
+    data.forEach(function(record) {
+      var showUrl = self.showUrlValue.replace('__ID__', record[self.showIdFieldValue]);
+      var description = record[self.descriptionFieldValue] || '';
+      var scoreMeta = self.scoreMeta(record.score);
 
-      html += '<tr class="govuk-table__row" data-score="' + (st.score !== null && st.score !== undefined ? st.score : '') + '" data-score-category="' + sc.category + '">' +
-        '<td class="govuk-table__cell self-text-table__code"><a href="' + showUrl + '" class="govuk-link">' + self.escapeHtml(st.goods_nomenclature_item_id) + '</a></td>' +
-        '<td class="govuk-table__cell self-text-table__score">' + sc.tag + '</td>' +
-        '<td class="govuk-table__cell self-text-table__tags">' + self.buildTags(st) + '</td>' +
-        '<td class="govuk-table__cell self-text-table__description">' + self.escapeHtml(st.self_text || '') + '</td>' +
+      html += '<tr class="govuk-table__row">' +
+        '<td class="govuk-table__cell ' + self.tableClassValue + '__code"><a href="' + showUrl + '" class="govuk-link">' + self.escapeHtml(record.goods_nomenclature_item_id) + '</a></td>' +
+        '<td class="govuk-table__cell ' + self.tableClassValue + '__score">' + scoreMeta.tag + '</td>' +
+        '<td class="govuk-table__cell ' + self.tableClassValue + '__tags">' + self.buildTags(record) + '</td>' +
+        '<td class="govuk-table__cell ' + self.tableClassValue + '__description">' + self.escapeHtml(description) + '</td>' +
         '</tr>';
     });
 
@@ -150,7 +160,7 @@ export default class extends Controller {
 
   scoreMeta(score) {
     if (score === null || score === undefined) {
-      return { tag: '<strong class="govuk-tag govuk-tag--grey">No score</strong>', category: '' };
+      return { tag: '<strong class="govuk-tag govuk-tag--grey">No score</strong>' };
     }
 
     var label, colour;
@@ -159,30 +169,17 @@ export default class extends Controller {
     else if (score >= 0.3) { label = 'Medium'; colour = 'yellow'; }
     else { label = 'Low'; colour = 'grey'; }
 
-    return {
-      tag: '<strong class="govuk-tag govuk-tag--' + colour + '">' + label + '</strong>',
-      category: label.toLowerCase(),
-    };
+    return { tag: '<strong class="govuk-tag govuk-tag--' + colour + '">' + label + '</strong>' };
   }
 
-  buildTags(st) {
+  buildTags(record) {
     var tags = [];
 
-    if (st.needs_review) {
-      tags.push('<strong class="govuk-tag govuk-tag--orange">Needs review</strong>');
-    }
-    if (st.stale) {
-      tags.push('<strong class="govuk-tag govuk-tag--pink">Stale</strong>');
-    }
-    if (st.manually_edited) {
-      tags.push('<strong class="govuk-tag govuk-tag--purple">Edited</strong>');
-    }
-    if (st.approved) {
-      tags.push('<strong class="govuk-tag govuk-tag--green">Approved</strong>');
-    }
-    if (st.expired) {
-      tags.push('<strong class="govuk-tag govuk-tag--grey">Expired</strong>');
-    }
+    if (record.needs_review) tags.push('<strong class="govuk-tag govuk-tag--orange">Needs review</strong>');
+    if (record.stale) tags.push('<strong class="govuk-tag govuk-tag--pink">Stale</strong>');
+    if (record.manually_edited) tags.push('<strong class="govuk-tag govuk-tag--purple">Edited</strong>');
+    if (record.approved) tags.push('<strong class="govuk-tag govuk-tag--green">Approved</strong>');
+    if (record.expired) tags.push('<strong class="govuk-tag govuk-tag--grey">Expired</strong>');
 
     return tags.length > 0 ? tags.join(' ') : '<strong class="govuk-tag govuk-tag--turquoise">Active</strong>';
   }
@@ -196,7 +193,7 @@ export default class extends Controller {
 
     if (page > 1) {
       html += '<div class="govuk-pagination__prev">' +
-        '<a class="govuk-link govuk-pagination__link" href="#" data-action="click->self-text-table#changePage" data-page="' + (page - 1) + '" rel="prev">' +
+        '<a class="govuk-link govuk-pagination__link" href="#" data-action="click->generated-content-table#changePage" data-page="' + (page - 1) + '" rel="prev">' +
         '<svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">' +
         '<path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path></svg>' +
         '<span class="govuk-pagination__link-title">Previous</span></a></div>';
@@ -213,14 +210,14 @@ export default class extends Controller {
           '<a class="govuk-link govuk-pagination__link" href="#" aria-label="Page ' + p + '" aria-current="page">' + p + '</a></li>';
       } else {
         html += '<li class="govuk-pagination__item">' +
-          '<a class="govuk-link govuk-pagination__link" href="#" data-action="click->self-text-table#changePage" data-page="' + p + '" aria-label="Page ' + p + '">' + p + '</a></li>';
+          '<a class="govuk-link govuk-pagination__link" href="#" data-action="click->generated-content-table#changePage" data-page="' + p + '" aria-label="Page ' + p + '">' + p + '</a></li>';
       }
     }
     html += '</ul>';
 
     if (page < total) {
       html += '<div class="govuk-pagination__next">' +
-        '<a class="govuk-link govuk-pagination__link" href="#" data-action="click->self-text-table#changePage" data-page="' + (page + 1) + '" rel="next">' +
+        '<a class="govuk-link govuk-pagination__link" href="#" data-action="click->generated-content-table#changePage" data-page="' + (page + 1) + '" rel="next">' +
         '<span class="govuk-pagination__link-title">Next</span>' +
         '<svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">' +
         '<path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path></svg></a></div>';
