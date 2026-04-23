@@ -1,5 +1,6 @@
 class GoodsNomenclatureSelfText
   include ApiEntity
+  include RecordDateFormatting
 
   set_singular_path "admin/goods_nomenclatures/:goods_nomenclature_id/goods_nomenclature_self_text"
 
@@ -11,7 +12,10 @@ class GoodsNomenclatureSelfText
              :needs_review,
              :manually_edited,
              :stale,
-             :generated_at,
+             :approved,
+             :expired,
+             :created_at,
+             :updated_at,
              :eu_self_text,
              :similarity_score,
              :coherence_score,
@@ -49,6 +53,8 @@ class GoodsNomenclatureSelfText
       needs_review: needs_review,
       stale: stale,
       manually_edited: manually_edited,
+      approved: approved,
+      expired: expired,
       self_text: self_text.to_s.truncate(80),
     }
   end
@@ -107,15 +113,6 @@ class GoodsNomenclatureSelfText
     return "yellow" if value >= 0.3
 
     "grey"
-  end
-
-  def formatted_generated_at
-    return "-" if generated_at.blank?
-
-    date = Date.parse(generated_at.to_s)
-    date == Date.current ? "Today" : date.to_formatted_s(:govuk)
-  rescue ArgumentError
-    generated_at.to_s
   end
 
   def ancestor_chain

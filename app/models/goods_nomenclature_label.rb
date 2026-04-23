@@ -1,5 +1,6 @@
 class GoodsNomenclatureLabel
   include ApiEntity
+  include RecordDateFormatting
 
   set_singular_path "admin/goods_nomenclatures/:goods_nomenclature_id/goods_nomenclature_label"
 
@@ -17,7 +18,12 @@ class GoodsNomenclatureLabel
              :score,
              :nomenclature_type,
              :original_description,
-             :has_self_text
+             :has_self_text,
+             :needs_review,
+             :approved,
+             :expired,
+             :created_at,
+             :updated_at
 
   # Label field accessors - fall back to labels JSONB for singular (show) responses
   def original_description
@@ -123,10 +129,29 @@ class GoodsNomenclatureLabel
       goods_nomenclature_sid: goods_nomenclature_sid,
       goods_nomenclature_item_id: goods_nomenclature_item_id,
       score: score,
+      needs_review: needs_review,
       stale: stale,
       manually_edited: manually_edited,
+      approved: approved,
+      expired: expired,
       description: original_description.to_s.truncate(80),
     }
+  end
+
+  def generate_score
+    api.post("admin/goods_nomenclatures/#{to_param}/goods_nomenclature_label/score")
+  end
+
+  def regenerate
+    api.post("admin/goods_nomenclatures/#{to_param}/goods_nomenclature_label/regenerate")
+  end
+
+  def approve
+    api.post("admin/goods_nomenclatures/#{to_param}/goods_nomenclature_label/approve")
+  end
+
+  def reject
+    api.post("admin/goods_nomenclatures/#{to_param}/goods_nomenclature_label/reject")
   end
 
   def self.text_to_array(text)

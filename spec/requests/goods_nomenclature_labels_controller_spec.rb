@@ -13,7 +13,12 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
       "producline_suffix" => "80",
       "stale" => false,
       "manually_edited" => false,
+      "needs_review" => false,
+      "approved" => false,
+      "expired" => false,
       "context_hash" => "abc123",
+      "created_at" => "2025-06-15T10:00:00Z",
+      "updated_at" => "#{Time.zone.today.iso8601}T10:00:00Z",
       "labels" => {
         "original_description" => "Live horses",
         "description" => "Horses (live)",
@@ -170,8 +175,49 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
     end
     # rubocop:enable RSpec/MultipleExpectations
 
+    it "displays the record dates" do # rubocop:disable RSpec/MultipleExpectations
+      expect(rendered_page.body).to include("Created", "15 June 2025", "Last updated", "Today")
+      expect(rendered_page.body).not_to include("Record dates")
+      expect(rendered_page.body).not_to include("Created:")
+      expect(rendered_page.body).not_to include("Updated:")
+    end
+
     it "displays the View self-text cross-link when has_self_text is true" do
       expect(rendered_page.body).to include("View self-text")
+    end
+
+    it "displays the lifecycle action buttons" do # rubocop:disable RSpec/MultipleExpectations
+      expect(rendered_page.body).to include("Needs review")
+      expect(rendered_page.body).to include("Generate score")
+      expect(rendered_page.body).to include("Regenerate label")
+    end
+
+    context "when the label needs review" do
+      let(:label_attributes) { super().merge("needs_review" => true) }
+
+      it "displays the approve action" do
+        expect(rendered_page.body).to include("Approve")
+      end
+    end
+
+    context "when the label has lifecycle tags" do
+      let(:label_attributes) do
+        super().merge(
+          "needs_review" => true,
+          "manually_edited" => true,
+          "stale" => true,
+          "approved" => true,
+          "expired" => true,
+        )
+      end
+
+      it "displays all lifecycle tags" do # rubocop:disable RSpec/MultipleExpectations
+        expect(rendered_page.body).to include("Needs review")
+        expect(rendered_page.body).to include("Manually edited")
+        expect(rendered_page.body).to include("Stale")
+        expect(rendered_page.body).to include("Approved")
+        expect(rendered_page.body).to include("Expired")
+      end
     end
 
     context "when has_self_text is false" do
@@ -215,6 +261,11 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
       it "does not display the save button" do
         expect(rendered_page.body).not_to include("Save changes")
       end
+
+      it "hides the action buttons" do # rubocop:disable RSpec/MultipleExpectations
+        expect(rendered_page.body).not_to include("Generate score")
+        expect(rendered_page.body).not_to include("Regenerate label")
+      end
     end
 
     context "when label not found" do
@@ -228,6 +279,154 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
       it "shows an error message" do
         rendered_page
         expect(session.dig("flash", "flashes", "alert")).to include("Label not found")
+      end
+    end
+  end
+
+  describe "POST #score" do
+    before do
+      stub_api_request("/goods_nomenclatures/#{commodity_code}/goods_nomenclature_label", backend: "uk")
+        .and_return(label_response)
+    end
+
+    let(:make_request) { post score_goods_nomenclature_label_path(commodity_code) }
+
+    context "when successful" do
+      before do
+        stub_api_request("/goods_nomenclatures/#{commodity_code}/goods_nomenclature_label/score", :post, backend: "uk")
+          .and_return(status: 200, body: {}.to_json)
+      end
+
+      it { is_expected.to redirect_to(goods_nomenclature_label_path(commodity_code)) }
+
+      it "shows a success message" do
+        rendered_page
+        expect(session.dig("flash", "flashes", "notice")).to eq("Label score generated successfully.")
+      end
+    end
+
+    context "when API fails" do
+      before do
+        stub_api_request("/goods_nomenclatures/#{commodity_code}/goods_nomenclature_label/score", :post, backend: "uk")
+          .and_return(status: 500, body: { error: "Server error" }.to_json)
+      end
+
+      it { is_expected.to redirect_to(goods_nomenclature_label_path(commodity_code)) }
+
+      it "shows an error message" do
+        rendered_page
+        expect(session.dig("flash", "flashes", "alert")).to include("Failed to generate label score")
+      end
+    end
+  end
+
+  describe "POST #regenerate" do
+    before do
+      stub_api_request("/goods_nomenclatures/#{commodity_code}/goods_nomenclature_label", backend: "uk")
+        .and_return(label_response)
+    end
+
+    let(:make_request) { post regenerate_goods_nomenclature_label_path(commodity_code) }
+
+    context "when successful" do
+      before do
+        stub_api_request("/goods_nomenclatures/#{commodity_code}/goods_nomenclature_label/regenerate", :post, backend: "uk")
+          .and_return(status: 200, body: {}.to_json)
+      end
+
+      it { is_expected.to redirect_to(goods_nomenclature_label_path(commodity_code)) }
+
+      it "shows a success message" do
+        rendered_page
+        expect(session.dig("flash", "flashes", "notice")).to eq("Label regenerated successfully.")
+      end
+    end
+
+    context "when API fails" do
+      before do
+        stub_api_request("/goods_nomenclatures/#{commodity_code}/goods_nomenclature_label/regenerate", :post, backend: "uk")
+          .and_return(status: 500, body: { error: "Server error" }.to_json)
+      end
+
+      it { is_expected.to redirect_to(goods_nomenclature_label_path(commodity_code)) }
+
+      it "shows an error message" do
+        rendered_page
+        expect(session.dig("flash", "flashes", "alert")).to eq("Failed to regenerate label.")
+      end
+    end
+  end
+
+  describe "POST #approve" do
+    before do
+      stub_api_request("/goods_nomenclatures/#{commodity_code}/goods_nomenclature_label", backend: "uk")
+        .and_return(label_response)
+    end
+
+    let(:make_request) { post approve_goods_nomenclature_label_path(commodity_code) }
+
+    context "when successful" do
+      before do
+        stub_api_request("/goods_nomenclatures/#{commodity_code}/goods_nomenclature_label/approve", :post, backend: "uk")
+          .and_return(status: 200, body: {}.to_json)
+      end
+
+      it { is_expected.to redirect_to(goods_nomenclature_label_path(commodity_code)) }
+
+      it "shows a success message" do
+        rendered_page
+        expect(session.dig("flash", "flashes", "notice")).to eq("Label approved.")
+      end
+    end
+
+    context "when API fails" do
+      before do
+        stub_api_request("/goods_nomenclatures/#{commodity_code}/goods_nomenclature_label/approve", :post, backend: "uk")
+          .and_return(status: 500, body: { error: "Server error" }.to_json)
+      end
+
+      it { is_expected.to redirect_to(goods_nomenclature_label_path(commodity_code)) }
+
+      it "shows an error message" do
+        rendered_page
+        expect(session.dig("flash", "flashes", "alert")).to eq("Failed to approve label.")
+      end
+    end
+  end
+
+  describe "POST #reject" do
+    before do
+      stub_api_request("/goods_nomenclatures/#{commodity_code}/goods_nomenclature_label", backend: "uk")
+        .and_return(label_response)
+    end
+
+    let(:make_request) { post reject_goods_nomenclature_label_path(commodity_code) }
+
+    context "when successful" do
+      before do
+        stub_api_request("/goods_nomenclatures/#{commodity_code}/goods_nomenclature_label/reject", :post, backend: "uk")
+          .and_return(status: 200, body: {}.to_json)
+      end
+
+      it { is_expected.to redirect_to(goods_nomenclature_label_path(commodity_code)) }
+
+      it "shows a success message" do
+        rendered_page
+        expect(session.dig("flash", "flashes", "notice")).to eq("Label marked for review.")
+      end
+    end
+
+    context "when API fails" do
+      before do
+        stub_api_request("/goods_nomenclatures/#{commodity_code}/goods_nomenclature_label/reject", :post, backend: "uk")
+          .and_return(status: 500, body: { error: "Server error" }.to_json)
+      end
+
+      it { is_expected.to redirect_to(goods_nomenclature_label_path(commodity_code)) }
+
+      it "shows an error message" do
+        rendered_page
+        expect(session.dig("flash", "flashes", "alert")).to eq("Failed to reject label.")
       end
     end
   end

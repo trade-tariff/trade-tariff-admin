@@ -1,5 +1,6 @@
 class DescriptionIntercept
   include ApiEntity
+  include RecordDateFormatting
 
   GUIDANCE_LEVELS = %w[info warning error].freeze
   GUIDANCE_LOCATIONS = %w[interstitial results question].freeze
@@ -74,15 +75,6 @@ class DescriptionIntercept
 
   def filtering?
     filter_prefixes.present?
-  end
-
-  def formatted_created_at
-    return "-" if created_at.blank?
-
-    date = Date.parse(created_at.to_s)
-    date == Date.current ? "Today" : date.to_formatted_s(:govuk)
-  rescue ArgumentError
-    created_at.to_s
   end
 
   def behaviour_summary

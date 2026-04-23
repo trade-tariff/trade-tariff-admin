@@ -1,4 +1,6 @@
 class GoodsNomenclatureLabelsController < AuthenticatedController
+  before_action :load_label, only: %i[score regenerate approve reject]
+
   def index
     authorize GoodsNomenclatureLabel, :index?
 
@@ -53,7 +55,62 @@ class GoodsNomenclatureLabelsController < AuthenticatedController
     redirect_to goods_nomenclature_labels_path, alert: "Label not found for commodity code #{goods_nomenclature_id}."
   end
 
+  def score
+    authorize GoodsNomenclatureLabel, :update?
+
+    @goods_nomenclature_label.generate_score
+
+    redirect_to goods_nomenclature_label_path(goods_nomenclature_id),
+                notice: "Label score generated successfully."
+  rescue Faraday::Error => e
+    Rails.logger.error("Failed to generate label score for #{goods_nomenclature_id}: #{e.class} #{e.message}")
+    redirect_to goods_nomenclature_label_path(goods_nomenclature_id),
+                alert: "Failed to generate label score: #{e.message.truncate(200)}"
+  end
+
+  def regenerate
+    authorize GoodsNomenclatureLabel, :update?
+
+    @goods_nomenclature_label.regenerate
+
+    redirect_to goods_nomenclature_label_path(goods_nomenclature_id),
+                notice: "Label regenerated successfully."
+  rescue Faraday::Error
+    redirect_to goods_nomenclature_label_path(goods_nomenclature_id),
+                alert: "Failed to regenerate label."
+  end
+
+  def approve
+    authorize GoodsNomenclatureLabel, :update?
+
+    @goods_nomenclature_label.approve
+
+    redirect_to goods_nomenclature_label_path(goods_nomenclature_id),
+                notice: "Label approved."
+  rescue Faraday::Error
+    redirect_to goods_nomenclature_label_path(goods_nomenclature_id),
+                alert: "Failed to approve label."
+  end
+
+  def reject
+    authorize GoodsNomenclatureLabel, :update?
+
+    @goods_nomenclature_label.reject
+
+    redirect_to goods_nomenclature_label_path(goods_nomenclature_id),
+                notice: "Label marked for review."
+  rescue Faraday::Error
+    redirect_to goods_nomenclature_label_path(goods_nomenclature_id),
+                alert: "Failed to reject label."
+  end
+
 private
+
+  def load_label
+    @goods_nomenclature_label = find_label(skip_oid: true)
+  rescue Faraday::ResourceNotFound
+    redirect_to goods_nomenclature_labels_path, alert: "Label not found for commodity code #{goods_nomenclature_id}."
+  end
 
   def find_label(skip_oid: false)
     opts = {}

@@ -177,6 +177,12 @@ export default class extends Controller {
     if (st.manually_edited) {
       tags.push('<strong class="govuk-tag govuk-tag--purple">Edited</strong>');
     }
+    if (st.approved) {
+      tags.push('<strong class="govuk-tag govuk-tag--green">Approved</strong>');
+    }
+    if (st.expired) {
+      tags.push('<strong class="govuk-tag govuk-tag--grey">Expired</strong>');
+    }
 
     return tags.length > 0 ? tags.join(' ') : '<strong class="govuk-tag govuk-tag--turquoise">Active</strong>';
   }

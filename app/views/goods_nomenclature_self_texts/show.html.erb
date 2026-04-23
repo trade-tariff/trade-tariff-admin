@@ -69,8 +69,13 @@
     </div>
 
     <div class="govuk-summary-list__row">
-      <dt class="govuk-summary-list__key">Generated at</dt>
-      <dd class="govuk-summary-list__value"><%= @self_text.formatted_generated_at %></dd>
+      <dt class="govuk-summary-list__key">Created</dt>
+      <dd class="govuk-summary-list__value"><%= @self_text.formatted_created_at %></dd>
+    </div>
+
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Last updated</dt>
+      <dd class="govuk-summary-list__value"><%= @self_text.formatted_updated_at %></dd>
     </div>
 
     <% if @self_text.kind.present? %>
@@ -92,7 +97,13 @@
         <% if @self_text.stale %>
           <strong class="govuk-tag govuk-tag--pink">Stale</strong>
         <% end %>
-        <% unless @self_text.needs_review || @self_text.manually_edited || @self_text.stale %>
+        <% if @self_text.approved %>
+          <strong class="govuk-tag govuk-tag--green">Approved</strong>
+        <% end %>
+        <% if @self_text.expired %>
+          <strong class="govuk-tag govuk-tag--grey">Expired</strong>
+        <% end %>
+        <% unless @self_text.needs_review || @self_text.manually_edited || @self_text.stale || @self_text.approved || @self_text.expired %>
           <strong class="govuk-tag govuk-tag--turquoise">Active</strong>
         <% end %>
       </dd>
