@@ -305,9 +305,9 @@ RSpec.describe User do
         }.to change(described_class, :count).by(1)
       end
 
-      it "sets TECHNICAL_OPERATOR role" do
+      it "sets SUPERADMIN role" do
         user = described_class.basic_auth_user!
-        expect(user.role).to eq(User::TECHNICAL_OPERATOR)
+        expect(user.role).to eq(User::SUPERADMIN)
       end
 
       it "sets correct uid, email and name", :aggregate_failures do
@@ -341,11 +341,11 @@ RSpec.describe User do
         }.not_to change(described_class, :count)
       end
 
-      it "preserves existing name and role", :aggregate_failures do
+      it "preserves existing name and promotes the role to superadmin", :aggregate_failures do
         described_class.basic_auth_user!
         existing_user.reload
         expect(existing_user.name).to eq("Existing Name")
-        expect(existing_user.role).to eq(User::GUEST)
+        expect(existing_user.role).to eq(User::SUPERADMIN)
       end
 
       it "preserves existing disabled and remotely_signed_out flags", :aggregate_failures do
