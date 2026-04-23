@@ -37,15 +37,30 @@ RSpec.describe UsersController do
 
     it { is_expected.to have_http_status :success }
 
-    it "displays fields for name and role selection without superadmin", :aggregate_failures do
+    it "displays all roles and disables superadmin", :aggregate_failures do
       rendered_page
-      expect(response.body).to include("Name", "radio", User::GUEST, User::TECHNICAL_OPERATOR, User::HMRC_ADMIN, User::AUDITOR)
-      expect(response.body).not_to include(User::SUPERADMIN)
+      document = Nokogiri::HTML(response.body)
+
+      expect(response.body).to include("Name", "radio", User::SUPERADMIN, User::GUEST, User::TECHNICAL_OPERATOR, User::HMRC_ADMIN, User::AUDITOR)
+      expect(document.at_css("input[type='radio'][value='SUPERADMIN']")["disabled"]).to eq("disabled")
+      expect(document.at_css("input[type='radio'][value='HMRC_ADMIN']")["disabled"]).to be_nil
     end
 
     it "preselects the current role" do
       rendered_page
       expect(response.body).to include("checked")
+    end
+
+    context "when editing a superadmin" do
+      let(:target_user) { create(:user, :superadmin) }
+
+      it "disables every role option and preserves the current role", :aggregate_failures do
+        rendered_page
+        document = Nokogiri::HTML(response.body)
+
+        expect(document.css("input[type='radio'][name='user[role]']")).to all(satisfy { |input| input["disabled"] == "disabled" })
+        expect(document.at_css("input[type='hidden'][name='user[role]'][value='SUPERADMIN']")).not_to be_nil
+      end
     end
 
     context "when current user is superadmin" do
@@ -55,6 +70,13 @@ RSpec.describe UsersController do
         rendered_page
 
         expect(response.body).to include(User::SUPERADMIN)
+      end
+
+      it "enables the superadmin role option" do
+        rendered_page
+        document = Nokogiri::HTML(response.body)
+
+        expect(document.at_css("input[type='radio'][value='SUPERADMIN']")["disabled"]).to be_nil
       end
     end
   end
@@ -227,6 +249,29 @@ RSpec.describe UsersController do
       end
     end
 
+    context "when editing an existing superadmin" do
+      let(:target_user) { create(:user, :superadmin) }
+
+      it "allows updating the name while preserving the role", :aggregate_failures do
+        update_request(name: "Updated User", role: User::SUPERADMIN)
+
+        expect(response).to redirect_to(users_path)
+        expect(target_user.reload).to have_attributes(name: "Updated User", current_role: User::SUPERADMIN, role: User::SUPERADMIN)
+      end
+
+      it "forbids changing the superadmin role" do
+        update_request(name: "Updated User", role: User::HMRC_ADMIN)
+
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it "does not change the superadmin role" do
+        expect {
+          update_request(name: "Updated User", role: User::HMRC_ADMIN)
+        }.not_to(change { target_user.reload.current_role })
+      end
+    end
+
     context "with a blank name" do
       it "returns unprocessable content" do
         update_request(name: "", role: User::HMRC_ADMIN)
@@ -338,7 +383,7 @@ RSpec.describe UsersController do
 
       it { is_expected.to redirect_to users_path }
 
-      it "allows role update regardless of user role" do
+      it "allows role update within the user's ceiling" do
         make_request
         target_user.reload
         expect(target_user.current_role).to eq(User::HMRC_ADMIN)
@@ -363,6 +408,15 @@ RSpec.describe UsersController do
       it { is_expected.to have_http_status :forbidden }
     end
 
+    describe "PATCH #update when assigning technical operator" do
+      let(:make_request) do
+        patch user_path(target_user),
+              params: { user: { name: target_user.name, role: User::TECHNICAL_OPERATOR } }
+      end
+
+      it { is_expected.to have_http_status :forbidden }
+    end
+
     describe "POST #create" do
       let(:make_request) do
         post users_path,
@@ -370,6 +424,15 @@ RSpec.describe UsersController do
       end
 
       it { is_expected.to redirect_to users_path }
+    end
+
+    describe "POST #create with technical operator role" do
+      let(:make_request) do
+        post users_path,
+             params: { user: new_user_params.merge(role: User::TECHNICAL_OPERATOR) }
+      end
+
+      it { is_expected.to have_http_status :forbidden }
     end
 
     describe "DELETE #destroy" do

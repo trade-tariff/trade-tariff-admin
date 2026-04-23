@@ -17,6 +17,24 @@ RSpec.describe RollbacksController do
     it { is_expected.to have_http_status :success }
   end
 
+  describe "GET #new" do
+    let(:make_request) { get new_rollback_path }
+
+    it { is_expected.to have_http_status :success }
+
+    context "when technical operator" do
+      let(:current_user) { create(:user, :technical_operator) }
+
+      it { is_expected.to have_http_status :forbidden }
+    end
+
+    context "when auditor" do
+      let(:current_user) { create(:user, :auditor) }
+
+      it { is_expected.to have_http_status :forbidden }
+    end
+  end
+
   context "when unauthenticated" do
     let(:authenticate_user) { false }
     let(:extra_session) { {} }
@@ -56,12 +74,24 @@ RSpec.describe RollbacksController do
   end
 
   describe "POST #create" do
+    before do
+      stub_api_request("/rollbacks", :post).to_return(api_created_response)
+    end
+
     let(:make_request) do
       post rollbacks_path, params: { rollback: { date: Time.zone.today.to_s, keep: true, reason: "Test rollback" } }
     end
 
+    it { is_expected.to redirect_to(rollbacks_path) }
+
     context "when technical operator" do
       let(:current_user) { create(:user, :technical_operator) }
+
+      it { is_expected.to have_http_status :forbidden }
+    end
+
+    context "when auditor" do
+      let(:current_user) { create(:user, :auditor) }
 
       it { is_expected.to have_http_status :forbidden }
     end

@@ -1,8 +1,9 @@
 <% submit_text = user.persisted? ? "Update user" : "Add user" %>
 
 <%= govuk_form_for user, error_summary: { presenter: FullMessageErrorSummaryPresenter.new(user) } do |f| %>
-  <% assignable_roles = policy(user).assign_superadmin? ? User::VALID_ROLES : User::VALID_ROLES - [User::SUPERADMIN] %>
-  <% role_options = assignable_roles.index_with { |role| format_role_name(role) } %>
+  <% user_policy = policy(user) %>
+  <% selected_role = user.role.presence || User::GUEST %>
+  <% preserve_locked_role = user.persisted? && user_policy.locked_higher_role? && user_policy.role_submittable?(selected_role) %>
 
   <%= f.govuk_text_field :name,
                          label: { text: "Name" },
@@ -20,12 +21,20 @@
                            width: "two-thirds" %>
   <% end %>
 
-  <%= f.govuk_collection_radio_buttons :role,
-                                       role_options,
-                                       :first,
-                                       :last,
-                                       legend: { text: "Role" },
-                                       hint: { text: "Select a role for this user. Only one role can be assigned at a time." } %>
+  <%= f.hidden_field :role, value: selected_role if preserve_locked_role %>
+
+  <%= f.govuk_radio_buttons_fieldset :role,
+                                     legend: { text: "Role" },
+                                     hint: { text: "Select a role for this user. Only one role can be assigned at a time." } do %>
+    <% User::VALID_ROLES.each_with_index do |role, index| %>
+      <%= f.govuk_radio_button :role,
+                               role,
+                               label: { text: format_role_name(role) },
+                               checked: selected_role == role,
+                               disabled: !user_policy.role_option_enabled?(role),
+                               link_errors: index.zero? %>
+    <% end %>
+  <% end %>
 
   <%= submit_and_back_buttons f, users_path, submit: submit_text %>
 <% end %>
