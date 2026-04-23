@@ -69,11 +69,13 @@
     </div>
 
     <div class="govuk-summary-list__row">
-      <dt class="govuk-summary-list__key">Record dates</dt>
-      <dd class="govuk-summary-list__value">
-        <p class="govuk-body govuk-!-margin-bottom-1">Created: <%= @goods_nomenclature_label.formatted_created_at %></p>
-        <p class="govuk-body govuk-!-margin-bottom-0">Updated: <%= @goods_nomenclature_label.formatted_updated_at %></p>
-      </dd>
+      <dt class="govuk-summary-list__key">Created</dt>
+      <dd class="govuk-summary-list__value"><%= @goods_nomenclature_label.formatted_created_at %></dd>
+    </div>
+
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Last updated</dt>
+      <dd class="govuk-summary-list__value"><%= @goods_nomenclature_label.formatted_updated_at %></dd>
     </div>
 
     <div class="govuk-summary-list__row">

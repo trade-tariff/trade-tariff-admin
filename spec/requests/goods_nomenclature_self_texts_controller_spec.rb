@@ -277,9 +277,10 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
     end
 
     it "displays the record dates" do # rubocop:disable RSpec/MultipleExpectations
-      expect(rendered_page.body).to include("Record dates")
-      expect(rendered_page.body).to include("Created: 15 June 2025")
-      expect(rendered_page.body).to include("Updated: Today")
+      expect(rendered_page.body).to include("Created", "15 June 2025", "Last updated", "Today")
+      expect(rendered_page.body).not_to include("Record dates")
+      expect(rendered_page.body).not_to include("Created:")
+      expect(rendered_page.body).not_to include("Updated:")
     end
 
     it "labels the state summary as tags" do

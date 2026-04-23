@@ -69,11 +69,13 @@
     </div>
 
     <div class="govuk-summary-list__row">
-      <dt class="govuk-summary-list__key">Record dates</dt>
-      <dd class="govuk-summary-list__value">
-        <p class="govuk-body govuk-!-margin-bottom-1">Created: <%= @self_text.formatted_created_at %></p>
-        <p class="govuk-body govuk-!-margin-bottom-0">Updated: <%= @self_text.formatted_updated_at %></p>
-      </dd>
+      <dt class="govuk-summary-list__key">Created</dt>
+      <dd class="govuk-summary-list__value"><%= @self_text.formatted_created_at %></dd>
+    </div>
+
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Last updated</dt>
+      <dd class="govuk-summary-list__value"><%= @self_text.formatted_updated_at %></dd>
     </div>
 
     <% if @self_text.kind.present? %>
