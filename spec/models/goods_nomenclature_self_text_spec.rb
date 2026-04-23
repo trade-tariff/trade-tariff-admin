@@ -23,13 +23,18 @@ RSpec.describe GoodsNomenclatureSelfText do
       expired: false,
       created_at: "2025-06-15T10:00:00Z",
       updated_at: "#{Time.zone.today.iso8601}T10:00:00Z",
-      generated_at: "2025-06-15T10:00:00Z",
       eu_self_text: "Horses, live, for breeding",
       similarity_score: 0.72,
       coherence_score: 0.68,
       nomenclature_type: "commodity",
       score: 0.70,
     }
+  end
+
+  describe "attributes" do
+    it "does not expose generated_at separately from created_at" do
+      expect(self_text).not_to respond_to(:generated_at)
+    end
   end
 
   describe "#combined_score" do

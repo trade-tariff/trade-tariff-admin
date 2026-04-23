@@ -29,7 +29,6 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
       "expired" => false,
       "created_at" => "2025-06-15T10:00:00Z",
       "updated_at" => "#{Time.zone.today.iso8601}T10:00:00Z",
-      "generated_at" => "2025-06-15T10:00:00Z",
       "eu_self_text" => "Horses, live, for breeding",
       "similarity_score" => 0.72,
       "coherence_score" => 0.68,
