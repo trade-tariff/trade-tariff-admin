@@ -7,8 +7,9 @@ class User < ApplicationRecord
   AUDITOR = "AUDITOR".freeze
   GUEST = "GUEST".freeze
 
+  ROLE_ASSIGNMENT_ORDER = [SUPERADMIN, TECHNICAL_OPERATOR, HMRC_ADMIN, AUDITOR, GUEST].freeze
   PRIVILEGED_OPERATOR_ROLES = [SUPERADMIN, TECHNICAL_OPERATOR].freeze
-  VALID_ROLES = [SUPERADMIN, TECHNICAL_OPERATOR, HMRC_ADMIN, AUDITOR, GUEST].freeze
+  VALID_ROLES = ROLE_ASSIGNMENT_ORDER
 
   validates :role, inclusion: { in: VALID_ROLES }
   validates :name, presence: true
@@ -19,6 +20,10 @@ class User < ApplicationRecord
   before_validation :ensure_default_role
 
   class << self
+    def role_assignment_index(role)
+      ROLE_ASSIGNMENT_ORDER.index(role.to_s)
+    end
+
     def from_passwordless_payload!(token)
       return if token.blank?
 

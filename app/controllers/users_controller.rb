@@ -69,8 +69,11 @@ private
 
   def assign_role!(user)
     requested_role = role_param
-    authorize user, :assign_superadmin? if requested_role == User::SUPERADMIN
+    user_policy = policy(user)
 
-    user.role = requested_role
+    return user.role = requested_role unless User::VALID_ROLES.include?(requested_role)
+    return user.role = requested_role if user_policy.role_submittable?(requested_role)
+
+    raise Pundit::NotAuthorizedError.new(query: :update?, record: user, policy: user_policy)
   end
 end

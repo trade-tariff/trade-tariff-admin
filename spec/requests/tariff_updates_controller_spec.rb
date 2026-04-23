@@ -3,10 +3,24 @@ RSpec.describe TariffUpdatesController do
 
   include_context "with authenticated user"
   let(:current_user) { create(:user, :superadmin) }
+  let(:rollbackable_update) do
+    attributes_for(
+      :update,
+      state: "A",
+      issue_date: "2026-04-01",
+      filename: "2026-04-01_TGB22037.xml",
+      file_presigned_url: "https://example.com/2026-04-01_TGB22037.xml",
+    )
+  end
 
-  def stub_tariff_updates_index
+  def stub_tariff_updates_index(updates = attributes_for_list(:update, 3))
     stub_api_request("/updates?page=1").and_return \
-      jsonapi_response :tariff_updates, attributes_for_list(:update, 3)
+      jsonapi_response(:tariff_updates, updates)
+  end
+
+  def stub_tariff_update_show(update_id, update_attributes)
+    stub_api_request("/updates/#{update_id}").and_return \
+      jsonapi_response(:update, update_attributes)
   end
 
   describe "GET #index" do
@@ -15,6 +29,14 @@ RSpec.describe TariffUpdatesController do
     let(:make_request) { get tariff_updates_path }
 
     it { is_expected.to have_http_status :success }
+
+    it "shows the rollback link to superadmin when applicable" do
+      stub_tariff_updates_index([rollbackable_update])
+
+      get tariff_updates_path
+
+      expect(response.body).to include("Rollback to 2026-04-01")
+    end
   end
 
   context "when unauthenticated" do
@@ -42,6 +64,14 @@ RSpec.describe TariffUpdatesController do
     before { stub_tariff_updates_index }
 
     it { is_expected.to have_http_status :success }
+
+    it "does not show the rollback link on the updates page" do
+      stub_tariff_updates_index([rollbackable_update])
+
+      get tariff_updates_path
+
+      expect(response.body).not_to include("Rollback to 2026-04-01")
+    end
   end
 
   context "when auditor" do
@@ -51,6 +81,51 @@ RSpec.describe TariffUpdatesController do
     before { stub_tariff_updates_index }
 
     it { is_expected.to have_http_status :success }
+
+    it "does not show the rollback link on the updates page" do
+      stub_tariff_updates_index([rollbackable_update])
+
+      get tariff_updates_path
+
+      expect(response.body).not_to include("Rollback to 2026-04-01")
+    end
+  end
+
+  describe "GET #show" do
+    let(:update_id) { "2026-04-01_TGB22037" }
+    let(:make_request) { get tariff_update_path(update_id) }
+
+    before do
+      stub_tariff_update_show(update_id, rollbackable_update)
+    end
+
+    it { is_expected.to have_http_status :success }
+
+    it "shows the download link to superadmin" do
+      make_request
+
+      expect(response.body).to include("https://example.com/2026-04-01_TGB22037.xml")
+    end
+
+    context "when technical operator" do
+      let(:current_user) { create(:user, :technical_operator) }
+
+      it "hides the download link" do
+        make_request
+
+        expect(response.body).not_to include("https://example.com/2026-04-01_TGB22037.xml")
+      end
+    end
+
+    context "when auditor" do
+      let(:current_user) { create(:user, :auditor) }
+
+      it "hides the download link" do
+        make_request
+
+        expect(response.body).not_to include("https://example.com/2026-04-01_TGB22037.xml")
+      end
+    end
   end
 
   describe "POST #download" do
