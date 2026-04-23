@@ -52,9 +52,9 @@ class User < ApplicationRecord
         user.name = "basic_auth_user"
         user.disabled = false
         user.remotely_signed_out = false
-        user.role = TECHNICAL_OPERATOR
       end
       user.name ||= "basic_auth_user"
+      user.role = SUPERADMIN
       user.save!
       user
     end
