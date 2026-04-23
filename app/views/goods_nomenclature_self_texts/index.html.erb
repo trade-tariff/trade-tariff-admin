@@ -147,6 +147,11 @@
                 <label class="govuk-label govuk-radios__label" for="st-tags-needs-review">Needs review</label>
               </div>
               <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="st-tags-approved" name="st_tags" type="radio" value="approved"
+                       data-action="change->self-text-table#changeTags" data-status="approved">
+                <label class="govuk-label govuk-radios__label" for="st-tags-approved">Approved</label>
+              </div>
+              <div class="govuk-radios__item">
                 <input class="govuk-radios__input" id="st-tags-stale" name="st_tags" type="radio" value="stale"
                        data-action="change->self-text-table#changeTags" data-status="stale">
                 <label class="govuk-label govuk-radios__label" for="st-tags-stale">Stale</label>
@@ -286,6 +291,11 @@
                 <input class="govuk-radios__input" id="lb-tags-all" name="lb_tags" type="radio" value="" checked
                        data-action="change->label-table#changeTags" data-status="">
                 <label class="govuk-label govuk-radios__label" for="lb-tags-all">All</label>
+              </div>
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="lb-tags-approved" name="lb_tags" type="radio" value="approved"
+                       data-action="change->label-table#changeTags" data-status="approved">
+                <label class="govuk-label govuk-radios__label" for="lb-tags-approved">Approved</label>
               </div>
               <div class="govuk-radios__item">
                 <input class="govuk-radios__input" id="lb-tags-stale" name="lb_tags" type="radio" value="stale"

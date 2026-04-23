@@ -90,10 +90,10 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
 
       it "labels self-text and label state filters as tags" do
         expect(rendered_page.body).to include('<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Tags</legend>')
-        expect(rendered_page.body).to include('id="st-tags-stale"')
-        expect(rendered_page.body).to include('data-action="change->self-text-table#changeTags" data-status="stale"')
-        expect(rendered_page.body).to include('id="lb-tags-stale"')
-        expect(rendered_page.body).to include('data-action="change->label-table#changeTags" data-status="stale"')
+        expect(rendered_page.body).to include('id="st-tags-approved"')
+        expect(rendered_page.body).to include('data-action="change->self-text-table#changeTags" data-status="approved"')
+        expect(rendered_page.body).to include('id="lb-tags-approved"')
+        expect(rendered_page.body).to include('data-action="change->label-table#changeTags" data-status="approved"')
       end
 
       it "uses the updated visible score labels while preserving backend filter values" do
