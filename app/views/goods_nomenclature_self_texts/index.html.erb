@@ -63,122 +63,67 @@
     <h2 class="govuk-heading-m">Self-texts</h2>
 
     <div class="govuk-grid-row"
-         data-controller="self-text-table"
-         data-self-text-table-url-value="<%= goods_nomenclature_self_texts_path(format: :json) %>"
-         data-self-text-table-show-url-value="<%= goods_nomenclature_self_texts_path %>/__ID__"
-         data-self-text-table-q-value="<%= params[:q] %>">
+         data-controller="generated-content-table"
+         data-generated-content-table-url-value="<%= goods_nomenclature_self_texts_path(format: :json) %>"
+         data-generated-content-table-show-url-value="<%= goods_nomenclature_self_texts_path %>/__ID__"
+         data-generated-content-table-show-id-field-value="goods_nomenclature_sid"
+         data-generated-content-table-description-field-value="self_text"
+         data-generated-content-table-description-heading-value="Self-text"
+         data-generated-content-table-empty-message-value="No self-texts found."
+         data-generated-content-table-error-message-value="Failed to load self-texts."
+         data-generated-content-table-table-class-value="self-text-table"
+         data-generated-content-table-q-value="<%= params[:q] %>">
 
       <div class="govuk-grid-column-one-quarter">
         <h3 class="govuk-heading-s">Filters</h3>
 
-        <div class="govuk-form-group">
-          <fieldset class="govuk-fieldset">
-            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Type</legend>
-            <div class="govuk-radios govuk-radios--small">
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="st-type-commodity" name="st_type" type="radio" value="commodity" checked
-                       data-action="change->self-text-table#changeType" data-type="commodity">
-                <label class="govuk-label govuk-radios__label" for="st-type-commodity">Commodity</label>
-              </div>
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="st-type-subheading" name="st_type" type="radio" value="subheading"
-                       data-action="change->self-text-table#changeType" data-type="subheading">
-                <label class="govuk-label govuk-radios__label" for="st-type-subheading">Subheading</label>
-              </div>
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="st-type-all" name="st_type" type="radio" value="all"
-                       data-action="change->self-text-table#changeType" data-type="all">
-                <label class="govuk-label govuk-radios__label" for="st-type-all">All</label>
-              </div>
-            </div>
-          </fieldset>
-        </div>
+        <%= render "shared/generated_content_filter_group",
+                   legend: "Type",
+                   options: generated_content_type_options(:self_text),
+                   prefix: "st",
+                   input_name: "st_type",
+                   action_name: "changeType",
+                   data_attribute: "type",
+                   default_value: "commodity" %>
 
-        <div class="govuk-form-group">
-          <fieldset class="govuk-fieldset">
-            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Score</legend>
-            <div class="govuk-radios govuk-radios--small">
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="st-score-all" name="st_score_category" type="radio" value="" checked
-                       data-action="change->self-text-table#changeScoreCategory" data-score-category="">
-                <label class="govuk-label govuk-radios__label" for="st-score-all">All</label>
-              </div>
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="st-score-bad" name="st_score_category" type="radio" value="bad"
-                       data-action="change->self-text-table#changeScoreCategory" data-score-category="bad">
-                <label class="govuk-label govuk-radios__label" for="st-score-bad">Low</label>
-              </div>
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="st-score-okay" name="st_score_category" type="radio" value="okay"
-                       data-action="change->self-text-table#changeScoreCategory" data-score-category="okay">
-                <label class="govuk-label govuk-radios__label" for="st-score-okay">Medium</label>
-              </div>
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="st-score-good" name="st_score_category" type="radio" value="good"
-                       data-action="change->self-text-table#changeScoreCategory" data-score-category="good">
-                <label class="govuk-label govuk-radios__label" for="st-score-good">High</label>
-              </div>
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="st-score-amazing" name="st_score_category" type="radio" value="amazing"
-                       data-action="change->self-text-table#changeScoreCategory" data-score-category="amazing">
-                <label class="govuk-label govuk-radios__label" for="st-score-amazing">Very High</label>
-              </div>
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="st-score-none" name="st_score_category" type="radio" value="no_score"
-                       data-action="change->self-text-table#changeScoreCategory" data-score-category="no_score">
-                <label class="govuk-label govuk-radios__label" for="st-score-none">No score</label>
-              </div>
-            </div>
-          </fieldset>
-        </div>
+        <%= render "shared/generated_content_filter_group",
+                   legend: "Score",
+                   options: generated_content_score_options,
+                   prefix: "st",
+                   input_name: "st_score_category",
+                   action_name: "changeScoreCategory",
+                   data_attribute: "score-category",
+                   default_value: "" %>
 
-        <div class="govuk-form-group">
-          <fieldset class="govuk-fieldset">
-            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Tags</legend>
-            <div class="govuk-radios govuk-radios--small">
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="st-tags-all" name="st_tags" type="radio" value="" checked
-                       data-action="change->self-text-table#changeTags" data-status="">
-                <label class="govuk-label govuk-radios__label" for="st-tags-all">All</label>
-              </div>
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="st-tags-needs-review" name="st_tags" type="radio" value="needs_review"
-                       data-action="change->self-text-table#changeTags" data-status="needs_review">
-                <label class="govuk-label govuk-radios__label" for="st-tags-needs-review">Needs review</label>
-              </div>
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="st-tags-approved" name="st_tags" type="radio" value="approved"
-                       data-action="change->self-text-table#changeTags" data-status="approved">
-                <label class="govuk-label govuk-radios__label" for="st-tags-approved">Approved</label>
-              </div>
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="st-tags-stale" name="st_tags" type="radio" value="stale"
-                       data-action="change->self-text-table#changeTags" data-status="stale">
-                <label class="govuk-label govuk-radios__label" for="st-tags-stale">Stale</label>
-              </div>
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="st-tags-edited" name="st_tags" type="radio" value="manually_edited"
-                       data-action="change->self-text-table#changeTags" data-status="manually_edited">
-                <label class="govuk-label govuk-radios__label" for="st-tags-edited">Manually edited</label>
-              </div>
-            </div>
-          </fieldset>
-        </div>
+        <%= render "shared/generated_content_filter_group",
+                   legend: "Tags",
+                   options: generated_content_tag_options,
+                   prefix: "st",
+                   input_name: "st_tags",
+                   action_name: "changeTags",
+                   data_attribute: "status",
+                   default_value: "" %>
       </div>
 
       <div class="govuk-grid-column-three-quarters">
-        <p class="govuk-body" data-self-text-table-target="loading">Loading...</p>
-        <div class="self-text-table-container" data-self-text-table-target="table"></div>
-        <div data-self-text-table-target="pagination"></div>
+        <p class="govuk-body" data-generated-content-table-target="loading">Loading...</p>
+        <div class="self-text-table-container" data-generated-content-table-target="table"></div>
+        <div data-generated-content-table-target="pagination"></div>
       </div>
     </div>
   </div>
 
   <%# ===== Labels tab ===== %>
   <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="labels"
-       data-controller="label-table"
-       data-label-table-url-value="<%= goods_nomenclature_labels_path(format: :json) %>"
-       data-label-table-show-url-value="<%= goods_nomenclature_labels_path %>/__ID__">
+       data-controller="generated-content-table"
+       data-generated-content-table-url-value="<%= goods_nomenclature_labels_path(format: :json) %>"
+       data-generated-content-table-show-url-value="<%= goods_nomenclature_labels_path %>/__ID__"
+       data-generated-content-table-show-id-field-value="goods_nomenclature_item_id"
+       data-generated-content-table-description-field-value="description"
+       data-generated-content-table-description-heading-value="Description"
+       data-generated-content-table-empty-message-value="No labels found."
+       data-generated-content-table-error-message-value="Failed to load labels."
+       data-generated-content-table-table-class-value="label-table">
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-two-thirds">
         <div class="govuk-form-group">
@@ -187,11 +132,11 @@
             Search by commodity code, description, synonyms, or colloquial terms.
           </div>
           <input class="govuk-input govuk-input--width-20" id="label-search-q" type="text"
-                 data-label-table-target="searchInput"
-                 data-action="keydown.enter->label-table#search">
+                 data-generated-content-table-target="searchInput"
+                 data-action="keydown.enter->generated-content-table#search">
         </div>
         <button class="govuk-button" data-module="govuk-button"
-                data-action="click->label-table#search">Search</button>
+                data-action="click->generated-content-table#search">Search</button>
       </div>
     </div>
 
@@ -222,100 +167,38 @@
       <div class="govuk-grid-column-one-quarter">
         <h3 class="govuk-heading-s">Filters</h3>
 
-        <div class="govuk-form-group">
-          <fieldset class="govuk-fieldset">
-            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Type</legend>
-            <div class="govuk-radios govuk-radios--small">
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="lb-type-commodity" name="lb_type" type="radio" value="commodity" checked
-                       data-action="change->label-table#changeType" data-type="commodity">
-                <label class="govuk-label govuk-radios__label" for="lb-type-commodity">Commodity</label>
-              </div>
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="lb-type-heading" name="lb_type" type="radio" value="heading"
-                       data-action="change->label-table#changeType" data-type="heading">
-                <label class="govuk-label govuk-radios__label" for="lb-type-heading">Heading</label>
-              </div>
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="lb-type-all" name="lb_type" type="radio" value="all"
-                       data-action="change->label-table#changeType" data-type="all">
-                <label class="govuk-label govuk-radios__label" for="lb-type-all">All</label>
-              </div>
-            </div>
-          </fieldset>
-        </div>
+        <%= render "shared/generated_content_filter_group",
+                   legend: "Type",
+                   options: generated_content_type_options(:label),
+                   prefix: "lb",
+                   input_name: "lb_type",
+                   action_name: "changeType",
+                   data_attribute: "type",
+                   default_value: "commodity" %>
 
-        <div class="govuk-form-group">
-          <fieldset class="govuk-fieldset">
-            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Score</legend>
-            <div class="govuk-radios govuk-radios--small">
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="lb-score-all" name="lb_score_category" type="radio" value="" checked
-                       data-action="change->label-table#changeScoreCategory" data-score-category="">
-                <label class="govuk-label govuk-radios__label" for="lb-score-all">All</label>
-              </div>
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="lb-score-bad" name="lb_score_category" type="radio" value="bad"
-                       data-action="change->label-table#changeScoreCategory" data-score-category="bad">
-                <label class="govuk-label govuk-radios__label" for="lb-score-bad">Low</label>
-              </div>
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="lb-score-okay" name="lb_score_category" type="radio" value="okay"
-                       data-action="change->label-table#changeScoreCategory" data-score-category="okay">
-                <label class="govuk-label govuk-radios__label" for="lb-score-okay">Medium</label>
-              </div>
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="lb-score-good" name="lb_score_category" type="radio" value="good"
-                       data-action="change->label-table#changeScoreCategory" data-score-category="good">
-                <label class="govuk-label govuk-radios__label" for="lb-score-good">High</label>
-              </div>
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="lb-score-amazing" name="lb_score_category" type="radio" value="amazing"
-                       data-action="change->label-table#changeScoreCategory" data-score-category="amazing">
-                <label class="govuk-label govuk-radios__label" for="lb-score-amazing">Very High</label>
-              </div>
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="lb-score-none" name="lb_score_category" type="radio" value="no_score"
-                       data-action="change->label-table#changeScoreCategory" data-score-category="no_score">
-                <label class="govuk-label govuk-radios__label" for="lb-score-none">No score</label>
-              </div>
-            </div>
-          </fieldset>
-        </div>
+        <%= render "shared/generated_content_filter_group",
+                   legend: "Score",
+                   options: generated_content_score_options,
+                   prefix: "lb",
+                   input_name: "lb_score_category",
+                   action_name: "changeScoreCategory",
+                   data_attribute: "score-category",
+                   default_value: "" %>
 
-        <div class="govuk-form-group">
-          <fieldset class="govuk-fieldset">
-            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Tags</legend>
-            <div class="govuk-radios govuk-radios--small">
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="lb-tags-all" name="lb_tags" type="radio" value="" checked
-                       data-action="change->label-table#changeTags" data-status="">
-                <label class="govuk-label govuk-radios__label" for="lb-tags-all">All</label>
-              </div>
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="lb-tags-approved" name="lb_tags" type="radio" value="approved"
-                       data-action="change->label-table#changeTags" data-status="approved">
-                <label class="govuk-label govuk-radios__label" for="lb-tags-approved">Approved</label>
-              </div>
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="lb-tags-stale" name="lb_tags" type="radio" value="stale"
-                       data-action="change->label-table#changeTags" data-status="stale">
-                <label class="govuk-label govuk-radios__label" for="lb-tags-stale">Stale</label>
-              </div>
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="lb-tags-edited" name="lb_tags" type="radio" value="manually_edited"
-                       data-action="change->label-table#changeTags" data-status="manually_edited">
-                <label class="govuk-label govuk-radios__label" for="lb-tags-edited">Manually edited</label>
-              </div>
-            </div>
-          </fieldset>
-        </div>
+        <%= render "shared/generated_content_filter_group",
+                   legend: "Tags",
+                   options: generated_content_tag_options,
+                   prefix: "lb",
+                   input_name: "lb_tags",
+                   action_name: "changeTags",
+                   data_attribute: "status",
+                   default_value: "" %>
       </div>
 
       <div class="govuk-grid-column-three-quarters">
-        <p class="govuk-body" data-label-table-target="loading">Loading...</p>
-        <div class="label-table-container" data-label-table-target="table"></div>
-        <div data-label-table-target="pagination"></div>
+        <p class="govuk-body" data-generated-content-table-target="loading">Loading...</p>
+        <div class="label-table-container" data-generated-content-table-target="table"></div>
+        <div data-generated-content-table-target="pagination"></div>
       </div>
     </div>
   </div>

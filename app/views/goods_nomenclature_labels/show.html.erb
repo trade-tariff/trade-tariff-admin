@@ -9,33 +9,14 @@
   Commodity Label <%= @goods_nomenclature_label.goods_nomenclature_item_id %>
 </h1>
 
-<% if @goods_nomenclature_label.current? && policy(@goods_nomenclature_label).update? %>
-  <div class="govuk-button-group govuk-!-margin-bottom-6">
-    <% if @goods_nomenclature_label.needs_review %>
-      <%= button_to "Approve",
-                    approve_goods_nomenclature_label_path(@goods_nomenclature_label.goods_nomenclature_item_id),
-                    method: :post,
-                    class: "govuk-button",
-                    data: { module: "govuk-button" } %>
-    <% else %>
-      <%= button_to "Needs review",
-                    reject_goods_nomenclature_label_path(@goods_nomenclature_label.goods_nomenclature_item_id),
-                    method: :post,
-                    class: "govuk-button govuk-button--secondary",
-                    data: { module: "govuk-button" } %>
-    <% end %>
-    <%= button_to "Generate score",
-                  score_goods_nomenclature_label_path(@goods_nomenclature_label.goods_nomenclature_item_id),
-                  method: :post,
-                  class: "govuk-button govuk-button--secondary",
-                  data: { module: "govuk-button" } %>
-    <%= button_to "Regenerate label",
-                  regenerate_goods_nomenclature_label_path(@goods_nomenclature_label.goods_nomenclature_item_id),
-                  method: :post,
-                  class: "govuk-button govuk-button--warning",
-                  data: { module: "govuk-button", confirm: "This will regenerate the labels using the AI model. The current labels will be overwritten. Continue?" } %>
-  </div>
-<% end %>
+<%= render "shared/generated_content_action_buttons",
+           record: @goods_nomenclature_label,
+           approve_path: approve_goods_nomenclature_label_path(@goods_nomenclature_label.goods_nomenclature_item_id),
+           reject_path: reject_goods_nomenclature_label_path(@goods_nomenclature_label.goods_nomenclature_item_id),
+           score_path: score_goods_nomenclature_label_path(@goods_nomenclature_label.goods_nomenclature_item_id),
+           regenerate_path: regenerate_goods_nomenclature_label_path(@goods_nomenclature_label.goods_nomenclature_item_id),
+           regenerate_label: "Regenerate label",
+           regenerate_confirm: "This will regenerate the labels using the AI model. The current labels will be overwritten. Continue?" %>
 
 <%= form_with model: @goods_nomenclature_label,
               url: goods_nomenclature_label_path(@goods_nomenclature_label.goods_nomenclature_item_id),
@@ -86,24 +67,7 @@
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">Tags</dt>
       <dd class="govuk-summary-list__value">
-        <% if @goods_nomenclature_label.needs_review %>
-          <strong class="govuk-tag govuk-tag--orange">Needs review</strong>
-        <% end %>
-        <% if @goods_nomenclature_label.manually_edited %>
-          <strong class="govuk-tag govuk-tag--purple">Manually edited</strong>
-        <% end %>
-        <% if @goods_nomenclature_label.stale %>
-          <strong class="govuk-tag govuk-tag--pink">Stale</strong>
-        <% end %>
-        <% if @goods_nomenclature_label.approved %>
-          <strong class="govuk-tag govuk-tag--green">Approved</strong>
-        <% end %>
-        <% if @goods_nomenclature_label.expired %>
-          <strong class="govuk-tag govuk-tag--grey">Expired</strong>
-        <% end %>
-        <% unless @goods_nomenclature_label.needs_review || @goods_nomenclature_label.manually_edited || @goods_nomenclature_label.stale || @goods_nomenclature_label.approved || @goods_nomenclature_label.expired %>
-          <strong class="govuk-tag govuk-tag--turquoise">Active</strong>
-        <% end %>
+        <%= render "shared/generated_content_tags", record: @goods_nomenclature_label %>
       </dd>
     </div>
 

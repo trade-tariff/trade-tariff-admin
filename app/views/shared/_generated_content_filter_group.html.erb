@@ -1,0 +1,23 @@
+<div class="govuk-form-group">
+  <fieldset class="govuk-fieldset">
+    <legend class="govuk-fieldset__legend govuk-fieldset__legend--s"><%= legend %></legend>
+    <div class="govuk-radios govuk-radios--small">
+      <% options.each_with_index do |(label, value), index| %>
+        <% id_suffix = value.present? ? value.to_s.parameterize : label.to_s.parameterize %>
+        <% input_id = "#{prefix}-#{legend.parameterize}-#{id_suffix}" %>
+        <% checked = value == default_value || (default_value.blank? && value.blank? && index.zero?) %>
+        <div class="govuk-radios__item">
+          <input class="govuk-radios__input"
+                 id="<%= input_id %>"
+                 name="<%= input_name %>"
+                 type="radio"
+                 value="<%= value %>"
+                 <%= "checked" if checked %>
+                 data-action="change->generated-content-table#<%= action_name %>"
+                 data-<%= data_attribute %>="<%= value %>">
+          <label class="govuk-label govuk-radios__label" for="<%= input_id %>"><%= label %></label>
+        </div>
+      <% end %>
+    </div>
+  </fieldset>
+</div>

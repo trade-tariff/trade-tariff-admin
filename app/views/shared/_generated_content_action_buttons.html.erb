@@ -1,0 +1,29 @@
+<% if record.current? && policy(record).update? %>
+  <div class="govuk-button-group govuk-!-margin-bottom-6">
+    <% if record.needs_review %>
+      <%= button_to "Approve",
+                    approve_path,
+                    method: :post,
+                    class: "govuk-button",
+                    data: { module: "govuk-button" } %>
+    <% else %>
+      <%= button_to "Needs review",
+                    reject_path,
+                    method: :post,
+                    class: "govuk-button govuk-button--secondary",
+                    data: { module: "govuk-button" } %>
+    <% end %>
+
+    <%= button_to "Generate score",
+                  score_path,
+                  method: :post,
+                  class: "govuk-button govuk-button--secondary",
+                  data: { module: "govuk-button" } %>
+
+    <%= button_to regenerate_label,
+                  regenerate_path,
+                  method: :post,
+                  class: "govuk-button govuk-button--warning",
+                  data: { module: "govuk-button", confirm: regenerate_confirm } %>
+  </div>
+<% end %>

@@ -81,20 +81,25 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
       end
 
       it "renders the self-text table inside a bounded container" do
-        expect(rendered_page.body).to include('class="self-text-table-container" data-self-text-table-target="table"')
+        expect(rendered_page.body).to include('class="self-text-table-container" data-generated-content-table-target="table"')
       end
 
       it "renders the labels table inside a bounded container" do
-        expect(rendered_page.body).to include('class="label-table-container" data-label-table-target="table"')
+        expect(rendered_page.body).to include('class="label-table-container" data-generated-content-table-target="table"')
       end
 
+      # rubocop:disable RSpec/ExampleLength
       it "labels self-text and label state filters as tags" do
         expect(rendered_page.body).to include('<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Tags</legend>')
         expect(rendered_page.body).to include('id="st-tags-approved"')
-        expect(rendered_page.body).to include('data-action="change->self-text-table#changeTags" data-status="approved"')
+        expect(rendered_page.body).to include('data-action="change->generated-content-table#changeTags"')
+        expect(rendered_page.body).to include('data-status="approved"')
         expect(rendered_page.body).to include('id="lb-tags-approved"')
-        expect(rendered_page.body).to include('data-action="change->label-table#changeTags" data-status="approved"')
+        expect(rendered_page.body).to include('data-status="approved"')
+        expect(rendered_page.body).to include('id="lb-tags-needs_review"')
+        expect(rendered_page.body).to include('id="lb-tags-expired"')
       end
+      # rubocop:enable RSpec/ExampleLength
 
       it "uses the updated visible score labels while preserving backend filter values" do
         expect(rendered_page.body).to include('for="st-score-bad">Low</label>')
@@ -103,36 +108,18 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
         expect(rendered_page.body).to include('for="lb-score-amazing">Very High</label>')
       end
 
-      it "uses tags terminology in the self-text table controller" do
-        controller = Rails.root.join("app/webpacker/controllers/self_text_table_controller.js").read
+      # rubocop:disable RSpec/ExampleLength
+      it "uses the shared generated content table controller" do
+        controller = Rails.root.join("app/webpacker/controllers/generated_content_table_controller.js").read
 
         expect(controller).to include(%(scope="col">Tags</th>))
         expect(controller).to include("params.set('status', this.tagsValue);")
-        expect(controller).to include("st.approved")
-        expect(controller).to include("st.expired")
-      end
-
-      it "uses tags terminology in the label table controller" do
-        controller = Rails.root.join("app/webpacker/controllers/label_table_controller.js").read
-
-        expect(controller).to include(%(scope="col">Tags</th>))
-        expect(controller).to include("params.set('status', this.tagsValue);")
-        expect(controller).to include("label.needs_review", "label.approved", "label.expired")
-      end
-
-      it "uses the updated score labels in the self-text table controller" do
-        controller = Rails.root.join("app/webpacker/controllers/self_text_table_controller.js").read
-
+        expect(controller).to include("record.needs_review")
+        expect(controller).to include("record.expired")
         expect(controller).to include("label = 'Very High'; colour = 'green'")
         expect(controller).to include("label = 'Low'; colour = 'grey'")
       end
-
-      it "uses the updated score labels in the label table controller" do
-        controller = Rails.root.join("app/webpacker/controllers/label_table_controller.js").read
-
-        expect(controller).to include("label = 'Very High'; colour = 'green'")
-        expect(controller).to include("label = 'Low'; colour = 'grey'")
-      end
+      # rubocop:enable RSpec/ExampleLength
 
       it "defines a fixed layout for the self-text table styles" do
         stylesheet = Rails.root.join("app/webpacker/packs/application.scss").read

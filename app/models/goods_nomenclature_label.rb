@@ -1,6 +1,6 @@
 class GoodsNomenclatureLabel
   include ApiEntity
-  include RecordDateFormatting
+  include GeneratedContentResource
 
   set_singular_path "admin/goods_nomenclatures/:goods_nomenclature_id/goods_nomenclature_label"
 
@@ -79,79 +79,8 @@ class GoodsNomenclatureLabel
     labels["description"] = value
   end
 
-  def score_label(value = description_score)
-    return "No score" if value.nil?
-    return "Very High" if value >= 0.85
-    return "High" if value >= 0.5
-    return "Medium" if value >= 0.3
-
-    "Low"
-  end
-
-  def score_tag_colour(value = description_score)
-    return "grey" if value.nil?
-    return "green" if value >= 0.85
-    return "blue" if value >= 0.5
-    return "yellow" if value >= 0.3
-
-    "grey"
-  end
-
-  # Store goods_nomenclature_id for path building
-  attr_accessor :goods_nomenclature_id
-
   def to_param
     goods_nomenclature_id || goods_nomenclature_item_id
-  end
-
-  def self.listing(params)
-    records = all(
-      page: params[:page] || 1,
-      type: params[:type] || "commodity",
-      sort: params[:sort] || "score",
-      direction: params[:direction] || "asc",
-      status: params[:status],
-      score_category: params[:score_category],
-      q: params[:q],
-    )
-
-    {
-      data: records.map(&:as_listing_json),
-      pagination: pagination_for(records),
-    }
-  rescue Faraday::Error => e
-    Rails.logger.error("Failed to fetch labels: #{e.message}")
-    { data: [], pagination: { page: 1, per_page: 20, total_count: 0, total_pages: 0 } }
-  end
-
-  def as_listing_json
-    {
-      goods_nomenclature_sid: goods_nomenclature_sid,
-      goods_nomenclature_item_id: goods_nomenclature_item_id,
-      score: score,
-      needs_review: needs_review,
-      stale: stale,
-      manually_edited: manually_edited,
-      approved: approved,
-      expired: expired,
-      description: original_description.to_s.truncate(80),
-    }
-  end
-
-  def generate_score
-    api.post("admin/goods_nomenclatures/#{to_param}/goods_nomenclature_label/score")
-  end
-
-  def regenerate
-    api.post("admin/goods_nomenclatures/#{to_param}/goods_nomenclature_label/regenerate")
-  end
-
-  def approve
-    api.post("admin/goods_nomenclatures/#{to_param}/goods_nomenclature_label/approve")
-  end
-
-  def reject
-    api.post("admin/goods_nomenclatures/#{to_param}/goods_nomenclature_label/reject")
   end
 
   def self.text_to_array(text)
@@ -161,6 +90,22 @@ class GoodsNomenclatureLabel
   end
 
 private
+
+  def generated_content_member_path
+    "admin/goods_nomenclatures/#{to_param}/goods_nomenclature_label"
+  end
+
+  def listing_description
+    original_description
+  end
+
+  def listing_description_key
+    :description
+  end
+
+  def score_value_for_tags
+    description_score
+  end
 
   def text_to_array(text)
     self.class.text_to_array(text)

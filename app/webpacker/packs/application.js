@@ -18,8 +18,7 @@ import Rails from 'rails-ujs';
 import { initAll } from 'govuk-frontend';
 
 import { Application } from '@hotwired/stimulus';
-import SelfTextTableController from '../controllers/self_text_table_controller';
-import LabelTableController from '../controllers/label_table_controller';
+import GeneratedContentTableController from '../controllers/generated_content_table_controller';
 import ScoredTagListController from '../controllers/scored_tag_list_controller';
 import ConfigTableController from '../controllers/config_table_controller';
 import ConfigFormController from '../controllers/config_form_controller';
@@ -32,8 +31,7 @@ Rails.start();
 initAll();
 
 const application = Application.start();
-application.register('self-text-table', SelfTextTableController);
-application.register('label-table', LabelTableController);
+application.register('generated-content-table', GeneratedContentTableController);
 application.register('scored-tag-list', ScoredTagListController);
 application.register('config-table', ConfigTableController);
 application.register('config-form', ConfigFormController);
