@@ -104,6 +104,8 @@ RSpec.describe DescriptionInterceptsController, type: :request do
     it "shows the new form" do
       expect(rendered_page.body).to include("New description intercept")
       expect(rendered_page.body).to include("Create description intercept")
+      expect(rendered_page.body).not_to include("Guidance level")
+      expect(rendered_page.body).not_to include("Guidance location")
     end
 
     it "defaults guided search to selected" do
@@ -140,13 +142,13 @@ RSpec.describe DescriptionInterceptsController, type: :request do
 
     it "shows the full intercept summary" do
       expect(rendered_page.body).to include("Filters to selected short codes")
-      expect(rendered_page.body).to include("Warning")
-      expect(rendered_page.body).to include("Results")
       expect(rendered_page.body).to include("Guided search")
       expect(rendered_page.body).to include("Soya bean flour and meal")
       expect(rendered_page.body).to include("Preparations of a kind used in animal feeding")
       expect(rendered_page.body).to include("Enabled")
       expect(rendered_page.body).to include("Not excluded")
+      expect(rendered_page.body).not_to include("Guidance level")
+      expect(rendered_page.body).not_to include("Guidance location")
     end
 
     context "when the intercept has no guidance" do
@@ -191,6 +193,8 @@ RSpec.describe DescriptionInterceptsController, type: :request do
       expect(rendered_page.body).to include("Allow HMRC support escalation")
       expect(rendered_page.body).to include("Guidance message")
       expect(rendered_page.body).to include("Selected short codes")
+      expect(rendered_page.body).not_to include("Guidance level")
+      expect(rendered_page.body).not_to include("Guidance location")
     end
 
     it "renders the guidance message as a markdown editor with preview" do
@@ -261,6 +265,12 @@ RSpec.describe DescriptionInterceptsController, type: :request do
     context "with valid create" do
       before do
         stub_api_request("/description_intercepts", :post)
+          .with { |request|
+            attrs = Rack::Utils.parse_nested_query(request.body).dig("data", "attributes")
+            attrs["message"] == "New guidance" &&
+              attrs["guidance_level"] == "info" &&
+              attrs["guidance_location"] == "interstitial"
+          }
           .and_return(
             status: 200,
             headers: { "content-type" => "application/json; charset=utf-8" },
@@ -475,6 +485,12 @@ RSpec.describe DescriptionInterceptsController, type: :request do
     context "with valid update" do
       before do
         stub_api_request("/description_intercepts/#{intercept_id}", :patch)
+          .with { |request|
+            attrs = Rack::Utils.parse_nested_query(request.body).dig("data", "attributes")
+            attrs["message"] == "Updated guidance" &&
+              attrs["guidance_level"] == "info" &&
+              attrs["guidance_location"] == "interstitial"
+          }
           .and_return(intercept_response)
       end
 

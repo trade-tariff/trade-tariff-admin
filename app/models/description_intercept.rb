@@ -29,6 +29,9 @@ class DescriptionIntercept
       attrs[:message] = nil
       attrs[:guidance_level] = nil
       attrs[:guidance_location] = nil
+    else
+      attrs[:guidance_level] = "info"
+      attrs[:guidance_location] = "interstitial"
     end
 
     # Faraday URL-encodes API payloads, which drops empty arrays entirely.
@@ -90,14 +93,6 @@ class DescriptionIntercept
 
   def escalation_tag_colour
     escalate_to_webchat? ? "blue" : "grey"
-  end
-
-  def location_label
-    guidance_location.to_s.humanize.presence || "-"
-  end
-
-  def level_label
-    guidance_level.to_s.humanize.presence || "-"
   end
 
   def sources_label
