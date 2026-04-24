@@ -90,8 +90,6 @@ private
       :term,
       :excluded,
       :message,
-      :guidance_level,
-      :guidance_location,
       :escalate_to_webchat,
       sources: [],
       filter_prefixes: [],
@@ -100,15 +98,8 @@ private
     permitted[:excluded] = ActiveModel::Type::Boolean.new.cast(permitted[:excluded]) if permitted.key?(:excluded)
     permitted[:escalate_to_webchat] = ActiveModel::Type::Boolean.new.cast(permitted[:escalate_to_webchat]) if permitted.key?(:escalate_to_webchat)
     permitted[:message] = permitted[:message].presence if permitted.key?(:message)
-    permitted[:guidance_level] = permitted[:guidance_level].presence if permitted.key?(:guidance_level)
-    permitted[:guidance_location] = permitted[:guidance_location].presence if permitted.key?(:guidance_location)
     permitted[:sources] = Array(permitted[:sources]).reject(&:blank?)
     permitted[:filter_prefixes] = Array(permitted[:filter_prefixes]).reject(&:blank?)
-
-    if permitted[:message].blank?
-      permitted.delete(:guidance_level)
-      permitted.delete(:guidance_location)
-    end
 
     if permitted[:excluded]
       permitted.delete(:filter_prefixes)
@@ -123,6 +114,9 @@ private
     if @description_intercept.message.blank?
       @description_intercept.guidance_level = nil
       @description_intercept.guidance_location = nil
+    else
+      @description_intercept.guidance_level = "info"
+      @description_intercept.guidance_location = "interstitial"
     end
 
     @description_intercept.filter_prefixes = [] if @description_intercept.excluded?

@@ -117,8 +117,7 @@
                           :message,
                           label: { text: "Guidance message" },
                           hint: { text: "Shown to the trader-facing frontend when this intercept matches." },
-                          rows: 5,
-                          data: { action: "input->description-intercept-form#toggleGuidance", description_intercept_form_target: "messageInput" } do %>
+                          rows: 5 do %>
     <%= govuk_details(summary_text: "Markdown and automatic short code links") do %>
       <p class="govuk-body">
         Short codes are automatically rendered as links in the frontend. You do not need to add markdown links for
@@ -137,21 +136,6 @@
       </p>
     <% end %>
   <% end %>
-
-  <div data-description-intercept-form-target="guidanceFields">
-    <%= f.govuk_select :guidance_level,
-                       DescriptionIntercept::GUIDANCE_LEVELS,
-                       label: { text: "Guidance level" },
-                       hint: { text: "Controls how strongly the frontend should present the guidance." },
-                       include_blank: true,
-                       data: { description_intercept_form_target: "guidanceLevelInput" } %>
-    <%= f.govuk_select :guidance_location,
-                       DescriptionIntercept::GUIDANCE_LOCATIONS,
-                       label: { text: "Guidance location" },
-                       hint: { text: "Choose where the guidance message is intended to appear." },
-                       include_blank: true,
-                       data: { description_intercept_form_target: "guidanceLocationInput" } %>
-  </div>
 
   <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Support</h2>
   <div class="govuk-form-group">

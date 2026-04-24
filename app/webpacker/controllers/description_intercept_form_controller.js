@@ -5,10 +5,6 @@ import accessibleAutocomplete from 'accessible-autocomplete';
 export default class extends Controller {
   static get targets() {
     return [
-      "messageInput",
-      "guidanceFields",
-      "guidanceLevelInput",
-      "guidanceLocationInput",
       "excludedInput",
       "filteringToggle",
       "filteringFields",
@@ -26,20 +22,7 @@ export default class extends Controller {
 
   connect() {
     this.initializeAutocomplete();
-    this.toggleGuidance();
     this.toggleFiltering();
-  }
-
-  toggleGuidance() {
-    const visible = this.messageInputTarget.value.trim().length > 0;
-    this.guidanceFieldsTarget.style.display = visible ? "" : "none";
-    this.guidanceLevelInputTarget.disabled = !visible;
-    this.guidanceLocationInputTarget.disabled = !visible;
-
-    if (!visible) {
-      this.guidanceLevelInputTarget.value = "";
-      this.guidanceLocationInputTarget.value = "";
-    }
   }
 
   toggleExcluded() {

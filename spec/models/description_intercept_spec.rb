@@ -57,6 +57,43 @@ RSpec.describe DescriptionIntercept do
     end
   end
 
+  describe "#normalize_serialized_attributes" do
+    it "defaults guidance metadata when a message is present" do
+      attrs = {
+        message: "Show this guidance message to the trader.",
+        guidance_level: "warning",
+        guidance_location: "results",
+        filter_prefixes: %w[1201],
+        sources: %w[guided_search],
+      }
+
+      intercept.normalize_serialized_attributes(attrs)
+
+      expect(attrs).to include(
+        guidance_level: "info",
+        guidance_location: "interstitial",
+      )
+    end
+
+    it "clears guidance metadata when the message is blank" do
+      attrs = {
+        message: "",
+        guidance_level: "warning",
+        guidance_location: "results",
+        filter_prefixes: %w[1201],
+        sources: %w[guided_search],
+      }
+
+      intercept.normalize_serialized_attributes(attrs)
+
+      expect(attrs).to include(
+        message: nil,
+        guidance_level: nil,
+        guidance_location: nil,
+      )
+    end
+  end
+
   describe "#formatted_created_at" do
     it "formats the timestamp as a GOV.UK date" do
       expect(intercept.formatted_created_at).to eq("15 April 2026")
