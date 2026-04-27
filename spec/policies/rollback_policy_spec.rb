@@ -5,6 +5,11 @@ RSpec.describe RollbackPolicy do
   let(:rollback) { Rollback.new }
 
   permissions :index?, :show? do
+    it "grants access to superadmin" do
+      user = create(:user, :superadmin)
+      expect(rollback_policy).to permit(user, rollback)
+    end
+
     it "grants access to technical operator" do
       user = create(:user, :technical_operator)
       expect(rollback_policy).to permit(user, rollback)
@@ -27,13 +32,18 @@ RSpec.describe RollbackPolicy do
   end
 
   permissions :create? do
-    it "grants access to technical operator" do
-      user = create(:user, :technical_operator)
+    it "grants access to superadmin" do
+      user = create(:user, :superadmin)
       expect(rollback_policy).to permit(user, rollback)
     end
 
     it "denies access to auditor" do
       user = create(:user, :auditor)
+      expect(rollback_policy).not_to permit(user, rollback)
+    end
+
+    it "denies access to technical operator" do
+      user = create(:user, :technical_operator)
       expect(rollback_policy).not_to permit(user, rollback)
     end
 

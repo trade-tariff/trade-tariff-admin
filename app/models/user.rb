@@ -1,12 +1,15 @@
 class User < ApplicationRecord
   has_many :sessions, dependent: :destroy
 
+  SUPERADMIN = "SUPERADMIN".freeze
   TECHNICAL_OPERATOR = "TECHNICAL_OPERATOR".freeze
   HMRC_ADMIN = "HMRC_ADMIN".freeze
   AUDITOR = "AUDITOR".freeze
   GUEST = "GUEST".freeze
 
-  VALID_ROLES = [TECHNICAL_OPERATOR, HMRC_ADMIN, AUDITOR, GUEST].freeze
+  ROLE_ASSIGNMENT_ORDER = [SUPERADMIN, TECHNICAL_OPERATOR, HMRC_ADMIN, AUDITOR, GUEST].freeze
+  PRIVILEGED_OPERATOR_ROLES = [SUPERADMIN, TECHNICAL_OPERATOR].freeze
+  VALID_ROLES = ROLE_ASSIGNMENT_ORDER
 
   validates :role, inclusion: { in: VALID_ROLES }
   validates :name, presence: true
@@ -17,6 +20,10 @@ class User < ApplicationRecord
   before_validation :ensure_default_role
 
   class << self
+    def role_assignment_index(role)
+      ROLE_ASSIGNMENT_ORDER.index(role.to_s)
+    end
+
     def from_passwordless_payload!(token)
       return if token.blank?
 
@@ -45,9 +52,9 @@ class User < ApplicationRecord
         user.name = "basic_auth_user"
         user.disabled = false
         user.remotely_signed_out = false
-        user.role = TECHNICAL_OPERATOR
       end
       user.name ||= "basic_auth_user"
+      user.role = SUPERADMIN
       user.save!
       user
     end
@@ -55,7 +62,11 @@ class User < ApplicationRecord
 
   # Role helper methods - assume single role exclusivity
   def technical_operator?
-    current_role == TECHNICAL_OPERATOR
+    PRIVILEGED_OPERATOR_ROLES.include?(current_role)
+  end
+
+  def superadmin?
+    current_role == SUPERADMIN
   end
 
   def hmrc_admin?

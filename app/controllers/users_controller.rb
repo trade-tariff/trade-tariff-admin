@@ -15,7 +15,7 @@ class UsersController < AuthenticatedController
     authorize User, :create?
 
     @user = User.new(create_user_params)
-    @user.role = role_param
+    assign_role!(@user)
 
     if @user.save
       redirect_to users_path, notice: "User added successfully"
@@ -32,7 +32,7 @@ class UsersController < AuthenticatedController
     authorize @user, :update?
 
     @user.assign_attributes(update_user_params)
-    @user.role = role_param
+    assign_role!(@user)
 
     if @user.save
       redirect_to users_path, notice: "User updated successfully"
@@ -65,5 +65,15 @@ private
 
   def role_param
     params.require(:user).require(:role)
+  end
+
+  def assign_role!(user)
+    requested_role = role_param
+    user_policy = policy(user)
+
+    return user.role = requested_role unless User::VALID_ROLES.include?(requested_role)
+    return user.role = requested_role if user_policy.role_submittable?(requested_role)
+
+    raise Pundit::NotAuthorizedError.new(query: :update?, record: user, policy: user_policy)
   end
 end

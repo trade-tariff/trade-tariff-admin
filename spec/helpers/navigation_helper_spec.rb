@@ -109,7 +109,7 @@ RSpec.describe NavigationHelper, type: :helper do
                          "Updates",
                          "Rollbacks",
                        ],
-                       classification: ["Search References"]
+                       classification: ["Search References", "Configuration"]
     end
 
     context "with UK service and guest role" do
@@ -251,7 +251,7 @@ RSpec.describe NavigationHelper, type: :helper do
     include_context "with UK service"
 
     let(:user) { build(:user, :technical_operator) }
-    let(:request_path) { "/tariff_updates" }
+    let(:request_path) { "/notes/1" }
 
     it "returns true for OTT Admin when path matches" do
       section = helper.visible_navigation_sections.find { |s| s.key == :ott_admin }
