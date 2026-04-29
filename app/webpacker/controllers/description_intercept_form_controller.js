@@ -11,6 +11,10 @@ export default class extends Controller {
       "filteringHint",
       "autocompleteContainer",
       "selectedShortCodes",
+      "sourceInput",
+      "guidanceFields",
+      "aliasInput",
+      "selectedAliases",
     ];
   }
 
@@ -23,6 +27,7 @@ export default class extends Controller {
   connect() {
     this.initializeAutocomplete();
     this.toggleFiltering();
+    this.toggleGuidance();
   }
 
   toggleExcluded() {
@@ -43,6 +48,18 @@ export default class extends Controller {
     this.filteringFieldsTarget.style.display = visible ? '' : 'none';
     this.toggleSelectedShortCodeInputs(visible);
     this.toggleAutocompleteAvailability();
+  }
+
+  toggleGuidance() {
+    if (!this.hasGuidanceFieldsTarget) {
+      return;
+    }
+
+    this.guidanceFieldsTarget.style.display = this.guidedSearchSelected() ? '' : 'none';
+  }
+
+  guidedSearchSelected() {
+    return this.sourceInputTargets.some((input) => input.value === 'guided_search' && input.checked);
   }
 
   initializeAutocomplete() {
@@ -120,6 +137,26 @@ export default class extends Controller {
     event.currentTarget.closest("[data-short-code-item]").remove();
   }
 
+  addAlias(event) {
+    event.preventDefault();
+
+    const alias = this.aliasInputTarget.value.trim();
+    if (!alias || this.aliasValues().includes(alias)) return;
+
+    this.selectedAliasesTarget.appendChild(this.buildSelectedAlias(alias));
+    this.aliasInputTarget.value = '';
+    this.aliasInputTarget.focus();
+  }
+
+  removeAlias(event) {
+    event.preventDefault();
+    event.currentTarget.closest("[data-alias-item]").remove();
+  }
+
+  aliasValues() {
+    return Array.from(this.selectedAliasesTarget.querySelectorAll('input[type="hidden"]')).map((input) => input.value);
+  }
+
   toggleAutocompleteAvailability() {
     if (!this.autocompleteInput) {
       return;
@@ -194,6 +231,39 @@ export default class extends Controller {
     input.type = "hidden";
     input.name = "description_intercept[filter_prefixes][]";
     input.value = code;
+
+    wrapper.appendChild(content);
+    wrapper.appendChild(removeButton);
+    wrapper.appendChild(input);
+
+    return wrapper;
+  }
+
+  buildSelectedAlias(alias) {
+    const wrapper = document.createElement("div");
+    wrapper.setAttribute("data-alias-item", "true");
+    wrapper.className = "description-intercept-short-code-pill";
+
+    const content = document.createElement("div");
+    content.className = "description-intercept-short-code-pill__content";
+
+    const tag = document.createElement("strong");
+    tag.className = "govuk-tag govuk-tag--grey";
+    tag.textContent = alias;
+
+    content.appendChild(tag);
+
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className = "description-intercept-short-code-pill__remove";
+    removeButton.textContent = "Remove";
+    removeButton.setAttribute("aria-label", "Remove " + alias);
+    removeButton.addEventListener("click", (event) => this.removeAlias(event));
+
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = "description_intercept[aliases][]";
+    input.value = alias;
 
     wrapper.appendChild(content);
     wrapper.appendChild(removeButton);

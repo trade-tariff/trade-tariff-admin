@@ -16,6 +16,7 @@ RSpec.describe DescriptionInterceptsController, type: :request do
       "escalate_to_webchat" => true,
       "filter_prefixes" => %w[1201 2309],
       "sources" => %w[guided_search],
+      "aliases" => ["pet food", "animal nutrition"],
       "created_at" => "2026-04-15T10:30:00Z",
     }
   end
@@ -104,6 +105,7 @@ RSpec.describe DescriptionInterceptsController, type: :request do
     it "shows the new form" do
       expect(rendered_page.body).to include("New description intercept")
       expect(rendered_page.body).to include("Create description intercept")
+      expect(rendered_page.body).to include("Relevant Products")
       expect(rendered_page.body).not_to include("Guidance level")
       expect(rendered_page.body).not_to include("Guidance location")
     end
@@ -142,7 +144,9 @@ RSpec.describe DescriptionInterceptsController, type: :request do
 
     it "shows the full intercept summary" do
       expect(rendered_page.body).to include("Filters to selected short codes")
+      expect(rendered_page.body).to include("Relevant Products")
       expect(rendered_page.body).to include("Guided search")
+      expect(rendered_page.body).to include("pet food, animal nutrition")
       expect(rendered_page.body).to include("Soya bean flour and meal")
       expect(rendered_page.body).to include("Preparations of a kind used in animal feeding")
       expect(rendered_page.body).to include("Enabled")
@@ -192,6 +196,11 @@ RSpec.describe DescriptionInterceptsController, type: :request do
       expect(rendered_page.body).to include("Save changes")
       expect(rendered_page.body).to include("Allow HMRC support escalation")
       expect(rendered_page.body).to include("Guidance message")
+      expect(rendered_page.body).to include("Add alias")
+      expect(rendered_page.body).to include("pet food")
+      expect(rendered_page.body).to include("animal nutrition")
+      expect(rendered_page.body).to include('name="description_intercept[aliases][]" value="pet food"')
+      expect(rendered_page.body).to include('aria-label="Remove pet food"')
       expect(rendered_page.body).to include("Selected short codes")
       expect(rendered_page.body).not_to include("Guidance level")
       expect(rendered_page.body).not_to include("Guidance location")
@@ -244,6 +253,17 @@ RSpec.describe DescriptionInterceptsController, type: :request do
         expect(rendered_page.body).to include("Filtering is unavailable while exclude search results is selected.")
       end
     end
+
+    context "when guided search is not selected" do
+      let(:intercept_attributes) { super().merge("sources" => %w[fpo_search]) }
+
+      it "hides guidance fields without clearing the existing value" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css '[data-description-intercept-form-target="guidanceFields"][style="display:none"]', visible: :all
+        expect(page).to have_css 'textarea[name="description_intercept[message]"]', text: "Ask the trader to pick a more specific feed type.", visible: :all
+      end
+    end
   end
 
   describe "POST #create" do
@@ -252,6 +272,7 @@ RSpec.describe DescriptionInterceptsController, type: :request do
         description_intercept: {
           term: "new animal feed",
           excluded: "0",
+          aliases: ["pet food", "animal nutrition"],
           message: "New guidance",
           guidance_level: "info",
           guidance_location: "results",
@@ -268,6 +289,7 @@ RSpec.describe DescriptionInterceptsController, type: :request do
           .with { |request|
             attrs = Rack::Utils.parse_nested_query(request.body).dig("data", "attributes")
             attrs["message"] == "New guidance" &&
+              attrs["aliases"] == ["pet food", "animal nutrition"] &&
               attrs["guidance_level"] == "info" &&
               attrs["guidance_location"] == "interstitial"
           }
@@ -298,6 +320,7 @@ RSpec.describe DescriptionInterceptsController, type: :request do
           description_intercept: {
             term: "parked intercept",
             excluded: "0",
+            aliases: [""],
             message: "",
             escalate_to_webchat: "0",
             sources: [""],
@@ -472,6 +495,7 @@ RSpec.describe DescriptionInterceptsController, type: :request do
         description_intercept: {
           term: "animal feed",
           excluded: "0",
+          aliases: ["updated feed", "livestock feed"],
           message: "Updated guidance",
           guidance_level: "info",
           guidance_location: "question",
@@ -488,6 +512,7 @@ RSpec.describe DescriptionInterceptsController, type: :request do
           .with { |request|
             attrs = Rack::Utils.parse_nested_query(request.body).dig("data", "attributes")
             attrs["message"] == "Updated guidance" &&
+              attrs["aliases"] == ["updated feed", "livestock feed"] &&
               attrs["guidance_level"] == "info" &&
               attrs["guidance_location"] == "interstitial"
           }

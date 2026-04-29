@@ -13,6 +13,7 @@ RSpec.describe DescriptionIntercept do
       escalate_to_webchat: true,
       filter_prefixes: %w[1201 2309],
       sources: %w[guided_search fpo_search],
+      aliases: ["pet food", "animal nutrition"],
       created_at: "2026-04-15T10:30:00Z",
     }
   end
@@ -54,6 +55,18 @@ RSpec.describe DescriptionIntercept do
       intercept.filter_prefixes = []
 
       expect(intercept.filtering?).to be(false)
+    end
+  end
+
+  describe "#aliases_label" do
+    it "returns a comma separated label" do
+      expect(intercept.aliases_label).to eq("pet food, animal nutrition")
+    end
+
+    it "returns a dash when no aliases are present" do
+      intercept.aliases = []
+
+      expect(intercept.aliases_label).to eq("-")
     end
   end
 
