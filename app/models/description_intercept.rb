@@ -16,6 +16,7 @@ class DescriptionIntercept
              :guidance_location,
              :filter_prefixes,
              :sources,
+             :aliases,
              :created_at
 
   boolean_attributes :excluded,
@@ -101,5 +102,13 @@ class DescriptionIntercept
 
   def filter_prefixes_label
     Array(filter_prefixes).join(", ").presence || "-"
+  end
+
+  def aliases_label
+    aliases_array.join(", ").presence || "-"
+  end
+
+  def aliases_array
+    Array(aliases).reject(&:blank?)
   end
 end

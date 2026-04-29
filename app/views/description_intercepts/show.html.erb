@@ -10,7 +10,7 @@
 
 <div class="govuk-inset-text govuk-!-margin-bottom-6">
   <p class="govuk-body govuk-!-margin-bottom-2"><strong>Behaviour:</strong> <%= @description_intercept.behaviour_summary %></p>
-  <p class="govuk-body govuk-!-margin-bottom-0"><strong>Sources:</strong> <%= @description_intercept.sources_label %></p>
+  <p class="govuk-body govuk-!-margin-bottom-0"><strong>Relevant Products:</strong> <%= @description_intercept.sources_label %></p>
 </div>
 
 <dl class="govuk-summary-list govuk-!-margin-bottom-6">
@@ -21,8 +21,12 @@
     </dd>
   </div>
   <div class="govuk-summary-list__row">
-    <dt class="govuk-summary-list__key">Sources</dt>
+    <dt class="govuk-summary-list__key">Relevant Products</dt>
     <dd class="govuk-summary-list__value"><%= @description_intercept.sources_label %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Aliases</dt>
+    <dd class="govuk-summary-list__value"><%= @description_intercept.aliases_label %></dd>
   </div>
   <div class="govuk-summary-list__row">
     <dt class="govuk-summary-list__key">Search behaviour</dt>

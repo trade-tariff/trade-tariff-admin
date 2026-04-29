@@ -91,6 +91,7 @@ private
       :excluded,
       :message,
       :escalate_to_webchat,
+      aliases: [],
       sources: [],
       filter_prefixes: [],
     )
@@ -98,6 +99,7 @@ private
     permitted[:excluded] = ActiveModel::Type::Boolean.new.cast(permitted[:excluded]) if permitted.key?(:excluded)
     permitted[:escalate_to_webchat] = ActiveModel::Type::Boolean.new.cast(permitted[:escalate_to_webchat]) if permitted.key?(:escalate_to_webchat)
     permitted[:message] = permitted[:message].presence if permitted.key?(:message)
+    permitted[:aliases] = Array(permitted[:aliases]).reject(&:blank?)
     permitted[:sources] = Array(permitted[:sources]).reject(&:blank?)
     permitted[:filter_prefixes] = Array(permitted[:filter_prefixes]).reject(&:blank?)
 
