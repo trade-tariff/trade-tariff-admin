@@ -48,6 +48,55 @@ RSpec.describe TariffUpdatesController do
     end
   end
 
+  context "when using no-auth synthetic user" do
+    include_context "with no-auth synthetic user"
+
+    it "shows the rollback link on the updates page", :aggregate_failures do
+      stub_tariff_updates_index([rollbackable_update])
+
+      get tariff_updates_path
+
+      expect(response).to have_http_status(:success)
+      expect(response.body).to include("Rollback to 2026-04-01")
+    end
+
+    it "shows the direct update download link", :aggregate_failures do
+      update_id = "2026-04-01_TGB22037"
+      stub_tariff_update_show(update_id, rollbackable_update)
+
+      get tariff_update_path(update_id)
+
+      expect(response).to have_http_status(:success)
+      expect(response.body).to include("https://example.com/2026-04-01_TGB22037.xml")
+    end
+
+    it "can schedule a download" do
+      TradeTariffAdmin::ServiceChooser.service_choice = "uk"
+      stub_api_request("/admin/downloads", :post).to_return(status: 200, body: "", headers: {})
+
+      post "/tariff_updates/download"
+
+      expect(response).to redirect_to(tariff_updates_path)
+    end
+
+    it "can apply updates and clear cache" do
+      TradeTariffAdmin::ServiceChooser.service_choice = "uk"
+      stub_api_request("/admin/applies", :post).to_return(status: 200, body: "", headers: {})
+
+      post "/tariff_updates/apply_and_clear_cache"
+
+      expect(response).to redirect_to(tariff_updates_path)
+    end
+
+    it "can resend CDS update notifications" do
+      stub_api_request("/admin/cds_update_notifications", :post).to_return(status: 200, body: "", headers: {})
+
+      post "/tariff_updates/resend_cds_update_notification", params: { cds_update_notification: { filename: "filename" } }
+
+      expect(response).to redirect_to(tariff_updates_path)
+    end
+  end
+
   context "when unauthorised" do
     let(:current_user) { create(:user, :guest) }
 

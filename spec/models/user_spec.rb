@@ -312,9 +312,10 @@ RSpec.describe User do
 
       it "sets correct uid, email and name", :aggregate_failures do
         user = described_class.basic_auth_user!
-        expect(user.uid).to eq("basic_auth_user")
-        expect(user.email).to eq("basic_auth@trade-tariff-admin.local")
-        expect(user.name).to eq("basic_auth_user")
+        expect(user.uid).to eq(User::BASIC_AUTH_UID)
+        expect(user.email).to eq(User::BASIC_AUTH_EMAIL)
+        expect(user.name).to eq(User::BASIC_AUTH_NAME)
+        expect(user).to be_basic_auth_user
       end
 
       it "sets disabled and remotely_signed_out to false", :aggregate_failures do
@@ -327,8 +328,8 @@ RSpec.describe User do
     context "when user already exists" do
       let!(:existing_user) do
         create(:user,
-               uid: "basic_auth_user",
-               email: "basic_auth@trade-tariff-admin.local",
+               uid: User::BASIC_AUTH_UID,
+               email: User::BASIC_AUTH_EMAIL,
                name: "Existing Name",
                disabled: true,
                remotely_signed_out: true,

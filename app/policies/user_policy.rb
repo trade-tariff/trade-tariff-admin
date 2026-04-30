@@ -1,6 +1,5 @@
 # User Management: SUPERADMIN can create/delete users, TECHNICAL_OPERATOR can view/update users
-# Exception: Basic auth allows user management regardless of role (testing mode)
-# Basic auth override only works when basic auth is enabled and for non-guest users
+# Exception: Basic auth allows user management through the synthetic SUPERADMIN user
 class UserPolicy < ApplicationPolicy
   def index?
     basic_auth_override? || technical_operator?
@@ -84,8 +83,8 @@ private
 
   def basic_auth_override?
     return false unless TradeTariffAdmin.basic_session_authentication?
-    return false if user&.guest?
+    return false unless user&.basic_auth_user?
 
-    true
+    superadmin?
   end
 end

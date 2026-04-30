@@ -44,6 +44,24 @@ RSpec.describe RollbacksController do
     end
   end
 
+  context "when using no-auth synthetic user" do
+    include_context "with no-auth synthetic user"
+
+    it "can access rollback creation" do
+      get new_rollback_path
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it "can create rollbacks" do
+      stub_api_request("/rollbacks", :post).to_return(api_created_response)
+
+      post rollbacks_path, params: { rollback: { date: Time.zone.today.to_s, keep: true, reason: "Test rollback" } }
+
+      expect(response).to redirect_to(rollbacks_path)
+    end
+  end
+
   context "when unauthorised" do
     let(:current_user) { create(:user, :guest) }
 

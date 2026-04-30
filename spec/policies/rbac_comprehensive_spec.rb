@@ -297,10 +297,18 @@ RSpec.describe "RBAC Comprehensive Rules" do
       allow(TradeTariffAdmin).to receive(:basic_session_authentication?).and_return(true)
     end
 
-    it "allows user management for non-guest users", :aggregate_failures do
+    it "allows user management for the synthetic basic-auth user", :aggregate_failures do
+      basic_auth_user = User.basic_auth_user!
+      expect(UserPolicy.new(basic_auth_user, User.new).index?).to be(true)
+      expect(UserPolicy.new(basic_auth_user, User.new).update?).to be(true)
+      expect(UserPolicy.new(basic_auth_user, User.new).create?).to be(true)
+      expect(UserPolicy.new(basic_auth_user, User.new).destroy?).to be(true)
+    end
+
+    it "does not grant user management to other non-guest users", :aggregate_failures do
       hmrc_admin = create(:user, :hmrc_admin)
-      expect(UserPolicy.new(hmrc_admin, User.new).index?).to be(true)
-      expect(UserPolicy.new(hmrc_admin, User.new).update?).to be(true)
+      expect(UserPolicy.new(hmrc_admin, User.new).index?).to be(false)
+      expect(UserPolicy.new(hmrc_admin, User.new).update?).to be(false)
     end
 
     it "denies user management for guest users even with basic auth", :aggregate_failures do

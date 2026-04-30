@@ -28,19 +28,14 @@ RSpec.describe UserPolicy do
         allow(TradeTariffAdmin).to receive(:basic_session_authentication?).and_return(true)
       end
 
-      it "grants access to non-guest users" do
-        user = create(:user, :technical_operator)
+      it "grants access to the synthetic basic-auth user" do
+        user = User.basic_auth_user!
         expect(user_policy).to permit(user, target_user)
       end
 
-      it "grants access to hmrc admin users" do
+      it "does not grant access to other non-guest users" do
         user = create(:user, :hmrc_admin)
-        expect(user_policy).to permit(user, target_user)
-      end
-
-      it "grants access to auditor users" do
-        user = create(:user, :auditor)
-        expect(user_policy).to permit(user, target_user)
+        expect(user_policy).not_to permit(user, target_user)
       end
 
       it "denies access to guest users even with basic auth" do
@@ -104,12 +99,12 @@ RSpec.describe UserPolicy do
       end
     end
 
-    context "when the current user is hmrc admin using basic auth" do
+    context "when the current user is the synthetic basic-auth user" do
       let(:basic_auth_enabled) { true }
-      let(:current_user) { create(:user, :hmrc_admin) }
+      let(:current_user) { User.basic_auth_user! }
 
-      it "returns hmrc admin and lower roles" do
-        expect(policy.assignable_roles).to eq([User::HMRC_ADMIN, User::AUDITOR, User::GUEST])
+      it "returns all roles" do
+        expect(policy.assignable_roles).to eq(User::VALID_ROLES)
       end
     end
   end
@@ -176,16 +171,16 @@ RSpec.describe UserPolicy do
       end
     end
 
-    context "when the current user is hmrc admin using basic auth" do
+    context "when the current user is the synthetic basic-auth user" do
       let(:basic_auth_enabled) { true }
-      let(:current_user) { create(:user, :hmrc_admin) }
+      let(:current_user) { User.basic_auth_user! }
 
-      it "allows assigning hmrc admin" do
-        expect(policy.role_submittable?(User::HMRC_ADMIN)).to be(true)
+      it "allows assigning superadmin" do
+        expect(policy.role_submittable?(User::SUPERADMIN)).to be(true)
       end
 
-      it "denies assigning technical operator" do
-        expect(policy.role_submittable?(User::TECHNICAL_OPERATOR)).to be(false)
+      it "allows assigning technical operator" do
+        expect(policy.role_submittable?(User::TECHNICAL_OPERATOR)).to be(true)
       end
     end
   end

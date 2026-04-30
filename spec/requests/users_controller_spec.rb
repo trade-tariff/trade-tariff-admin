@@ -355,7 +355,7 @@ RSpec.describe UsersController do
       allow(Rails.env).to receive(:production?).and_return(false)
     end
 
-    let(:current_user) { create(:user, :hmrc_admin) }
+    let(:current_user) { User.basic_auth_user! }
 
     describe "GET #index" do
       let(:make_request) { get users_path }
@@ -396,7 +396,7 @@ RSpec.describe UsersController do
              params: { user: new_user_params.merge(role: User::SUPERADMIN) }
       end
 
-      it { is_expected.to have_http_status :forbidden }
+      it { is_expected.to redirect_to users_path }
     end
 
     describe "PATCH #update when assigning superadmin" do
@@ -405,7 +405,12 @@ RSpec.describe UsersController do
               params: { user: { name: target_user.name, role: User::SUPERADMIN } }
       end
 
-      it { is_expected.to have_http_status :forbidden }
+      it { is_expected.to redirect_to users_path }
+
+      it "updates the role" do
+        make_request
+        expect(target_user.reload.current_role).to eq(User::SUPERADMIN)
+      end
     end
 
     describe "PATCH #update when assigning technical operator" do
@@ -414,7 +419,7 @@ RSpec.describe UsersController do
               params: { user: { name: target_user.name, role: User::TECHNICAL_OPERATOR } }
       end
 
-      it { is_expected.to have_http_status :forbidden }
+      it { is_expected.to redirect_to users_path }
     end
 
     describe "POST #create" do
@@ -432,7 +437,45 @@ RSpec.describe UsersController do
              params: { user: new_user_params.merge(role: User::TECHNICAL_OPERATOR) }
       end
 
-      it { is_expected.to have_http_status :forbidden }
+      it { is_expected.to redirect_to users_path }
+    end
+
+    describe "DELETE #destroy" do
+      let(:make_request) { delete user_path(target_user) }
+
+      it { is_expected.to redirect_to users_path }
+    end
+  end
+
+  context "when using no-auth synthetic user" do
+    include_context "with no-auth synthetic user"
+
+    describe "POST #create with superadmin role" do
+      let(:make_request) do
+        post users_path,
+             params: { user: new_user_params.merge(role: User::SUPERADMIN) }
+      end
+
+      it { is_expected.to redirect_to users_path }
+
+      it "creates a superadmin user", :aggregate_failures do
+        expect { make_request }.to change(User, :count).by(1)
+        expect(User.order(:created_at).last.current_role).to eq(User::SUPERADMIN)
+      end
+    end
+
+    describe "PATCH #update when assigning superadmin" do
+      let(:make_request) do
+        patch user_path(target_user),
+              params: { user: { name: target_user.name, role: User::SUPERADMIN } }
+      end
+
+      it { is_expected.to redirect_to users_path }
+
+      it "updates the role" do
+        make_request
+        expect(target_user.reload.current_role).to eq(User::SUPERADMIN)
+      end
     end
 
     describe "DELETE #destroy" do

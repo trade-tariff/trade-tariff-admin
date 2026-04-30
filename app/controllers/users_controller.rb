@@ -74,6 +74,6 @@ private
     return user.role = requested_role unless User::VALID_ROLES.include?(requested_role)
     return user.role = requested_role if user_policy.role_submittable?(requested_role)
 
-    raise Pundit::NotAuthorizedError.new(query: :update?, record: user, policy: user_policy)
+    raise Pundit::NotAuthorizedError.new(query: :"#{action_name}?", record: user, policy: user_policy)
   end
 end
