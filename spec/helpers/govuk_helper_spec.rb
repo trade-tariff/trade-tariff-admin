@@ -97,9 +97,11 @@ RSpec.describe GovukHelper do
   describe "govuk_markdown_area" do
     subject do
       govuk_form_for(model.new, url: "/") do |form|
-        govuk_markdown_area form, :name
+        govuk_markdown_area form, :name, **markdown_options
       end
     end
+
+    let(:markdown_options) { {} }
 
     it { is_expected.to have_css ".govuk-grid-row .govuk-grid-column-one-half", count: 2 }
     it { is_expected.to have_css ".govuk-grid-column-one-half textarea.govuk-textarea" }
@@ -108,5 +110,11 @@ RSpec.describe GovukHelper do
     it { is_expected.to have_css ".hott-markdown-preview p", text: "preview content" }
     it { is_expected.to have_css '.hott-markdown-preview[data-preview="govspeak"]' }
     it { is_expected.to have_css '.hott-markdown-preview[data-preview-for="#person-name-field"]' }
+
+    context "when code reference linkification is enabled" do
+      let(:markdown_options) { { linkify_code_references: true } }
+
+      it { is_expected.to have_css '.hott-markdown-preview[data-preview-linkify-code-references="true"]' }
+    end
   end
 end

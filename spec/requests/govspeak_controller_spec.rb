@@ -14,6 +14,18 @@ RSpec.describe GovspeakController do
     it "converts markdown to html" do
       expect(rendered_page).to have_attributes body: /h1/
     end
+
+    context "when code reference linkification is requested" do
+      before do
+        post govspeak_path(format: :json), params: { govspeak: "Chapter 01", linkify_code_references: true }
+      end
+
+      it "returns html with goods nomenclature code links" do
+        json = JSON.parse(rendered_page.body)
+
+        expect(Capybara.string(json.fetch("govspeak"))).to have_link "Chapter 01", href: "#{TradeTariffAdmin.frontend_host}/search?q=01"
+      end
+    end
   end
 
   context "when unauthorised" do

@@ -8,7 +8,10 @@ document.addEventListener("DOMContentLoaded", function() {
           "Content-Type": "application/json",
           "X-CSRF-Token": this.fetchCSRFToken(),
         },
-        body: JSON.stringify({ govspeak: content.value }),
+        body: JSON.stringify({
+          govspeak: content.value,
+          linkify_code_references: output.dataset.previewLinkifyCodeReferences === "true",
+        }),
       })
         .then(function(response) {
           return response.json();
