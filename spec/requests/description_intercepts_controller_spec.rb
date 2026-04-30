@@ -211,7 +211,7 @@ RSpec.describe DescriptionInterceptsController, type: :request do
 
       expect(page).to have_css ".govuk-grid-row .govuk-grid-column-one-half", count: 2
       expect(page).to have_css 'textarea.govuk-textarea[name="description_intercept[message]"]'
-      expect(page).to have_css '.hott-markdown-preview[data-preview="govspeak"][data-preview-for="#description-intercept-message-field"]'
+      expect(page).to have_css '.hott-markdown-preview[data-preview="govspeak"][data-preview-for="#description-intercept-message-field"][data-preview-linkify-code-references="true"]'
     end
 
     it "explains markdown and automatic short code links in a details component" do

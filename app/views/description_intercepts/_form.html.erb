@@ -148,7 +148,8 @@
                             :message,
                             label: { text: "Guidance message" },
                             hint: { text: "Shown to the trader-facing frontend when this intercept matches." },
-                            rows: 5 do %>
+                            rows: 5,
+                            linkify_code_references: true do %>
       <%= govuk_details(summary_text: "Markdown and automatic short code links") do %>
         <p class="govuk-body">
           Short codes are automatically rendered as links in the frontend. You do not need to add markdown links for

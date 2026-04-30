@@ -19,8 +19,9 @@
 
       <div class="hott-markdown-preview"
         data-preview="govspeak"
-        data-preview-for="#<%= "#{form.object_name}-#{field_name}-field".gsub('_', '-') %>">
-        <%= form.object.preview(field_name) if form.object.respond_to?(:preview) %>
+        data-preview-for="#<%= "#{form.object_name}-#{field_name}-field".gsub('_', '-') %>"
+        <%= %(data-preview-linkify-code-references="true").html_safe if linkify_code_references %>>
+        <%= form.object.preview(field_name, linkify_code_references:) if form.object.respond_to?(:preview) %>
       </div>
     </div>
   </div>

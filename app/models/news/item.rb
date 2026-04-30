@@ -32,10 +32,10 @@ module News
       @collection_ids = Array(ids).map(&:presence).compact.uniq.map(&:to_i)
     end
 
-    def preview(field_name = nil)
+    def preview(field_name = nil, **options)
       markdown = field_name.to_s == "precis" ? precis : content
 
-      GovspeakPreview.new(markdown).render
+      GovspeakPreview.new(markdown, **options).render
     end
 
     def generate_or_normalise_slug!

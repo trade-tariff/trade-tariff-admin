@@ -18,11 +18,11 @@ class AdminConfiguration
     name&.titleize
   end
 
-  def preview(field_name = :value)
+  def preview(field_name = :value, **options)
     return unless config_type == "markdown"
 
     content = public_send(field_name)
-    GovspeakPreview.new(content).render if content.present?
+    GovspeakPreview.new(content, **options).render if content.present?
   end
 
   def selected_option_label

@@ -7,7 +7,7 @@ class GovspeakController < AuthenticatedController
     flash.keep
 
     if params[:govspeak]
-      @preview = GovspeakPreview.new(params[:govspeak])
+      @preview = GovspeakPreview.new(params[:govspeak], linkify_code_references: ActiveModel::Type::Boolean.new.cast(params[:linkify_code_references]))
 
       respond_to do |format|
         format.json { render json: { govspeak: @preview.render } }
