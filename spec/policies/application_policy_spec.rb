@@ -27,6 +27,21 @@ RSpec.describe ApplicationPolicy do
   end
 
   describe "role helper methods" do
+    context "with superadmin" do
+      let(:user) { create(:user, :superadmin) }
+
+      it "returns true for elevated role checks", :aggregate_failures do
+        expect(policy.superadmin?).to be(true)
+        expect(policy.technical_operator?).to be(true)
+      end
+
+      it "returns false for other roles", :aggregate_failures do
+        expect(policy.hmrc_admin?).to be(false)
+        expect(policy.auditor?).to be(false)
+        expect(policy.guest?).to be(false)
+      end
+    end
+
     context "with technical operator" do
       let(:user) { create(:user, :technical_operator) }
 
@@ -69,6 +84,7 @@ RSpec.describe ApplicationPolicy do
       let(:user) { nil }
 
       it "returns false for all role checks", :aggregate_failures do
+        expect(policy.superadmin?).to be(false)
         expect(policy.technical_operator?).to be(false)
         expect(policy.hmrc_admin?).to be(false)
         expect(policy.auditor?).to be(false)
@@ -78,6 +94,12 @@ RSpec.describe ApplicationPolicy do
   end
 
   describe "#can_access_xi?" do
+    it "returns true for superadmin" do
+      user = create(:user, :superadmin)
+      policy = described_class.new(user, record)
+      expect(policy.can_access_xi?).to be(true)
+    end
+
     it "returns true for technical operator" do
       user = create(:user, :technical_operator)
       policy = described_class.new(user, record)

@@ -1,8 +1,17 @@
 <h2>Manage Users</h2>
 
 <p>
-  Use this page to manage users and roles.
+  Use this page to manage user roles.
+  <% unless policy(User.new).update? %>
+    Only technical operators and superadmins can change user roles.
+  <% end %>
 </p>
+
+<% if policy(User.new).update? && !policy(User.new).create? %>
+  <p>
+    Only superadmins can add or remove users.
+  </p>
+<% end %>
 
 <% if policy(User.new).create? %>
   <p>

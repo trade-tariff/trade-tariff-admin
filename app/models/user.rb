@@ -1,12 +1,19 @@
 class User < ApplicationRecord
   has_many :sessions, dependent: :destroy
 
+  SUPERADMIN = "SUPERADMIN".freeze
   TECHNICAL_OPERATOR = "TECHNICAL_OPERATOR".freeze
   HMRC_ADMIN = "HMRC_ADMIN".freeze
   AUDITOR = "AUDITOR".freeze
   GUEST = "GUEST".freeze
 
-  VALID_ROLES = [TECHNICAL_OPERATOR, HMRC_ADMIN, AUDITOR, GUEST].freeze
+  BASIC_AUTH_UID = "basic_auth_user".freeze
+  BASIC_AUTH_EMAIL = "basic_auth@trade-tariff-admin.local".freeze
+  BASIC_AUTH_NAME = "basic_auth_user".freeze
+
+  ROLE_ASSIGNMENT_ORDER = [SUPERADMIN, TECHNICAL_OPERATOR, HMRC_ADMIN, AUDITOR, GUEST].freeze
+  PRIVILEGED_OPERATOR_ROLES = [SUPERADMIN, TECHNICAL_OPERATOR].freeze
+  VALID_ROLES = ROLE_ASSIGNMENT_ORDER
 
   validates :role, inclusion: { in: VALID_ROLES }
   validates :name, presence: true
@@ -17,6 +24,10 @@ class User < ApplicationRecord
   before_validation :ensure_default_role
 
   class << self
+    def role_assignment_index(role)
+      ROLE_ASSIGNMENT_ORDER.index(role.to_s)
+    end
+
     def from_passwordless_payload!(token)
       return if token.blank?
 
@@ -40,14 +51,14 @@ class User < ApplicationRecord
     end
 
     def basic_auth_user!
-      user = find_or_initialize_by(uid: "basic_auth_user", email: "basic_auth@trade-tariff-admin.local")
+      user = find_or_initialize_by(uid: BASIC_AUTH_UID, email: BASIC_AUTH_EMAIL)
       if user.new_record?
-        user.name = "basic_auth_user"
+        user.name = BASIC_AUTH_NAME
         user.disabled = false
         user.remotely_signed_out = false
-        user.role = TECHNICAL_OPERATOR
       end
-      user.name ||= "basic_auth_user"
+      user.name ||= BASIC_AUTH_NAME
+      user.role = SUPERADMIN
       user.save!
       user
     end
@@ -55,7 +66,11 @@ class User < ApplicationRecord
 
   # Role helper methods - assume single role exclusivity
   def technical_operator?
-    current_role == TECHNICAL_OPERATOR
+    PRIVILEGED_OPERATOR_ROLES.include?(current_role)
+  end
+
+  def superadmin?
+    current_role == SUPERADMIN
   end
 
   def hmrc_admin?
@@ -68,6 +83,10 @@ class User < ApplicationRecord
 
   def guest?
     current_role == GUEST
+  end
+
+  def basic_auth_user?
+    uid == BASIC_AUTH_UID && email == BASIC_AUTH_EMAIL
   end
 
   def current_role

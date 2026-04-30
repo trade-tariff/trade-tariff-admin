@@ -2,6 +2,12 @@ RSpec.describe User do
   describe "#technical_operator?" do
     subject(:user) { create(:user, *traits) }
 
+    context "when user has superadmin role" do
+      let(:traits) { [:superadmin] }
+
+      it { is_expected.to be_technical_operator }
+    end
+
     context "when user has technical operator role" do
       let(:traits) { [:technical_operator] }
 
@@ -12,6 +18,22 @@ RSpec.describe User do
       let(:traits) { [] }
 
       it { is_expected.not_to be_technical_operator }
+    end
+  end
+
+  describe "#superadmin?" do
+    subject(:user) { create(:user, *traits) }
+
+    context "when user has superadmin role" do
+      let(:traits) { [:superadmin] }
+
+      it { is_expected.to be_superadmin }
+    end
+
+    context "when user does not have superadmin role" do
+      let(:traits) { [:technical_operator] }
+
+      it { is_expected.not_to be_superadmin }
     end
   end
 
@@ -130,6 +152,7 @@ RSpec.describe User do
 
     describe "role constants" do
       it "defines all required role constants", :aggregate_failures do
+        expect(User::SUPERADMIN).to eq("SUPERADMIN")
         expect(User::TECHNICAL_OPERATOR).to eq("TECHNICAL_OPERATOR")
         expect(User::HMRC_ADMIN).to eq("HMRC_ADMIN")
         expect(User::AUDITOR).to eq("AUDITOR")
@@ -137,7 +160,7 @@ RSpec.describe User do
       end
 
       it "includes all roles in VALID_ROLES" do
-        expect(User::VALID_ROLES).to contain_exactly(User::TECHNICAL_OPERATOR, User::HMRC_ADMIN, User::AUDITOR, User::GUEST)
+        expect(User::VALID_ROLES).to contain_exactly(User::SUPERADMIN, User::TECHNICAL_OPERATOR, User::HMRC_ADMIN, User::AUDITOR, User::GUEST)
       end
     end
 
@@ -282,16 +305,17 @@ RSpec.describe User do
         }.to change(described_class, :count).by(1)
       end
 
-      it "sets TECHNICAL_OPERATOR role" do
+      it "sets SUPERADMIN role" do
         user = described_class.basic_auth_user!
-        expect(user.role).to eq(User::TECHNICAL_OPERATOR)
+        expect(user.role).to eq(User::SUPERADMIN)
       end
 
       it "sets correct uid, email and name", :aggregate_failures do
         user = described_class.basic_auth_user!
-        expect(user.uid).to eq("basic_auth_user")
-        expect(user.email).to eq("basic_auth@trade-tariff-admin.local")
-        expect(user.name).to eq("basic_auth_user")
+        expect(user.uid).to eq(User::BASIC_AUTH_UID)
+        expect(user.email).to eq(User::BASIC_AUTH_EMAIL)
+        expect(user.name).to eq(User::BASIC_AUTH_NAME)
+        expect(user).to be_basic_auth_user
       end
 
       it "sets disabled and remotely_signed_out to false", :aggregate_failures do
@@ -304,8 +328,8 @@ RSpec.describe User do
     context "when user already exists" do
       let!(:existing_user) do
         create(:user,
-               uid: "basic_auth_user",
-               email: "basic_auth@trade-tariff-admin.local",
+               uid: User::BASIC_AUTH_UID,
+               email: User::BASIC_AUTH_EMAIL,
                name: "Existing Name",
                disabled: true,
                remotely_signed_out: true,
@@ -318,11 +342,11 @@ RSpec.describe User do
         }.not_to change(described_class, :count)
       end
 
-      it "preserves existing name and role", :aggregate_failures do
+      it "preserves existing name and promotes the role to superadmin", :aggregate_failures do
         described_class.basic_auth_user!
         existing_user.reload
         expect(existing_user.name).to eq("Existing Name")
-        expect(existing_user.role).to eq(User::GUEST)
+        expect(existing_user.role).to eq(User::SUPERADMIN)
       end
 
       it "preserves existing disabled and remotely_signed_out flags", :aggregate_failures do
