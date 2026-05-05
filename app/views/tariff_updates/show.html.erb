@@ -10,10 +10,8 @@
       <p class="govuk-body"><%= number_to_human_size(@tariff_update.filesize) %></p>
     </dd>
     <dd class="govuk-summary-list__actions">
-      <% if policy(Update).download? %>
-        <a class="govuk-link" href="#">
-          <%= link_to "Download", @tariff_update.file_presigned_url, target: "_blank", title: @tariff_update.filename %>
-        </a>
+      <% if @tariff_update.filename.present? && policy(Update).download_file? %>
+        <%= link_to "Download", @tariff_update.file_presigned_url, class: "govuk-link", target: "_blank", title: @tariff_update.filename %>
       <% end %>
     </dd>
   </div>

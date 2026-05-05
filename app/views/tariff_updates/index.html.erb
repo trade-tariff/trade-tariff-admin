@@ -2,10 +2,10 @@
   <h2>Tariff Updates - <%= service_update_type %></h2>
 </div>
 
-<% if policy(Update).download? || policy(Update).apply_and_clear_cache? %>
+<% if policy(Update).schedule_download? || policy(Update).apply_and_clear_cache? %>
   <div class="govuk-grid-row">
     <div class="govuk-button-group">
-      <% if policy(Update).download? %>
+      <% if policy(Update).schedule_download? %>
         <%= button_to 'Download', download_tariff_updates_path, method: :post, class: 'govuk-button' %>
       <% end %>
       <% if policy(Update).apply_and_clear_cache? %>

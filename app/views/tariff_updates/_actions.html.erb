@@ -6,7 +6,7 @@
   <br>
 <% end %>
 
-<% if tariff_update.filename.present? && policy(Update).download? %>
+<% if tariff_update.filename.present? && policy(Update).download_file? %>
   <%= link_to "Download #{tariff_update.filename}", tariff_update.file_presigned_url, target: "_blank", title: tariff_update.filename %>
 <% end %>
 

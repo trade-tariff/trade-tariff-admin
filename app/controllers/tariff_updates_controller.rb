@@ -10,7 +10,7 @@ class TariffUpdatesController < AuthenticatedController
   end
 
   def download
-    authorize Update, :download?
+    authorize Update, :schedule_download?
     @download = Download.build
     @download.save
 
