@@ -11,7 +11,8 @@ class SectionNote
 
   def section_title; end
 
-  def preview(...)
-    Govspeak::Document.new(content, sanitize: true).to_html.html_safe
+  def preview(field_name = :content, **options)
+    content = public_send(field_name)
+    GovspeakPreview.new(content, **options).render if content.present?
   end
 end
