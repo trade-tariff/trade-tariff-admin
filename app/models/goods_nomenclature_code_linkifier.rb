@@ -3,6 +3,7 @@ class GoodsNomenclatureCodeLinkifier
 
   SPACED_TERMINATORS = /(?=\s|;|,|$|\.|\)|\z)/
   PUNCTUATION_TERMINATORS = /(?=;|,|$|\)|\z|<br>|<\/br>)/
+  COMBINED_TERMINATORS = /(?=\s|;|,|$|\.|\)|\z|<br>|<\/br>)/
   CODE_BOUNDARY_START = /(?<![A-Za-z0-9.\/-])/
   CODE_BOUNDARY_END = /(?![A-Za-z0-9.\/-])/
   HEADING_CODE = /(?:0[1-9]|[1-9]\d)(?:0[1-9]|[1-9]\d)/
@@ -13,8 +14,9 @@ class GoodsNomenclatureCodeLinkifier
     Pattern.new(/#{CODE_BOUNDARY_START}(\d{4})\s(\d{2})\s(\d{2})#{SPACED_TERMINATORS}/, ->(match) { "#{match[1]}#{match[2]}#{match[3]}" }),
     Pattern.new(/#{CODE_BOUNDARY_START}(\d{4})\s(\d{2})#{SPACED_TERMINATORS}/, ->(match) { "#{match[1]}#{match[2]}" }),
     Pattern.new(/#{CODE_BOUNDARY_START}(\d{10}|\d{8}|\d{6}|\d{2})#{CODE_BOUNDARY_END}/, ->(match) { match[1] }),
+    Pattern.new(/#{CODE_BOUNDARY_START}(\d{2})(?=\.\s|\.\z)/, ->(match) { match[1] }),
     Pattern.new(/\A(#{HEADING_CODE})#{SPACED_TERMINATORS}/, ->(match) { match[1] }),
-    Pattern.new(/#{CODE_BOUNDARY_START}(#{HEADING_CODE})#{PUNCTUATION_TERMINATORS}/, ->(match) { match[1] }),
+    Pattern.new(/#{CODE_BOUNDARY_START}(#{HEADING_CODE})#{COMBINED_TERMINATORS}/, ->(match) { match[1] }),
   ].freeze
 
   def initialize(html, frontend_host: TradeTariffAdmin.frontend_host, service_path: nil)
@@ -74,7 +76,7 @@ private
 
   def link_for(text, code)
     href = "#{@frontend_host}#{@service_path}/search?#{Rack::Utils.build_query(q: code)}"
-    link_text = %(#{CGI.escapeHTML(text)} <span class="govuk-visually-hidden">(opens in new tab)</span>)
+    link_text = %(#{CGI.escapeHTML(text)}<span class="govuk-visually-hidden"> (opens in new tab)</span>)
 
     %(<a class="govuk-link" href="#{CGI.escapeHTML(href)}" rel="noreferrer noopener" target="_blank">#{link_text}</a>)
   end
