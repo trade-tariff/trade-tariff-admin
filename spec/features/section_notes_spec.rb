@@ -20,6 +20,8 @@ RSpec.describe "Section Note management" do
 
     specify do
       ensure_on new_notes_section_section_note_path(section)
+      expect(page).to have_css '.hott-markdown-preview[data-preview-linkify-code-references="true"]'
+
       fill_in "Content", with: section_note.content
       click_button "Create Section note"
       verify current_path == dashboard_path
@@ -44,6 +46,8 @@ RSpec.describe "Section Note management" do
 
     specify do
       ensure_on edit_notes_section_section_note_path(section)
+      expect(page).to have_css '.hott-markdown-preview[data-preview-linkify-code-references="true"]'
+
       fill_in "Content", with: "new content"
       click_button "Update Section note"
       verify current_path == dashboard_path
