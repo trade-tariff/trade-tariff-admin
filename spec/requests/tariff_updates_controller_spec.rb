@@ -121,6 +121,15 @@ RSpec.describe TariffUpdatesController do
 
       expect(response.body).not_to include("Rollback to 2026-04-01")
     end
+
+    it "shows review inserts and direct update download links without destructive actions", :aggregate_failures do
+      stub_tariff_updates_index([rollbackable_update])
+
+      get tariff_updates_path
+
+      expect(response.body).to include("Review inserts", "Download 2026-04-01_TGB22037.xml")
+      expect(response.body).not_to include("Apply & Clear Caches", "Resend CDS Update email")
+    end
   end
 
   context "when auditor" do
@@ -159,20 +168,20 @@ RSpec.describe TariffUpdatesController do
     context "when technical operator" do
       let(:current_user) { create(:user, :technical_operator) }
 
-      it "hides the download link" do
+      it "shows the download link" do
         make_request
 
-        expect(response.body).not_to include("https://example.com/2026-04-01_TGB22037.xml")
+        expect(response.body).to include("https://example.com/2026-04-01_TGB22037.xml")
       end
     end
 
     context "when auditor" do
       let(:current_user) { create(:user, :auditor) }
 
-      it "hides the download link" do
+      it "shows the download link" do
         make_request
 
-        expect(response.body).not_to include("https://example.com/2026-04-01_TGB22037.xml")
+        expect(response.body).to include("https://example.com/2026-04-01_TGB22037.xml")
       end
     end
   end

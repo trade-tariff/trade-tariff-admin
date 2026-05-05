@@ -145,7 +145,8 @@ RSpec.describe "RBAC Comprehensive Rules" do
     it "allows read-only access to updates", :aggregate_failures do
       expect(UpdatePolicy.new(auditor, Update.new).index?).to be(true)
       expect(UpdatePolicy.new(auditor, Update.new).show?).to be(true)
-      expect(UpdatePolicy.new(auditor, Update.new).download?).to be(false)
+      expect(UpdatePolicy.new(auditor, Update.new).download_file?).to be(true)
+      expect(UpdatePolicy.new(auditor, Update.new).schedule_download?).to be(false)
     end
 
     it "allows read-only access to rollbacks", :aggregate_failures do
@@ -212,7 +213,13 @@ RSpec.describe "RBAC Comprehensive Rules" do
     it "allows read-only access to updates", :aggregate_failures do
       expect(UpdatePolicy.new(technical_operator, Update.new).index?).to be(true)
       expect(UpdatePolicy.new(technical_operator, Update.new).show?).to be(true)
-      expect(UpdatePolicy.new(technical_operator, Update.new).download?).to be(false)
+      expect(UpdatePolicy.new(technical_operator, Update.new).download_file?).to be(true)
+    end
+
+    it "denies dangerous update actions", :aggregate_failures do
+      expect(UpdatePolicy.new(technical_operator, Update.new).schedule_download?).to be(false)
+      expect(UpdatePolicy.new(technical_operator, Update.new).apply_and_clear_cache?).to be(false)
+      expect(UpdatePolicy.new(technical_operator, Update.new).resend_cds_update_notification?).to be(false)
     end
 
     it "allows read-only access to rollbacks", :aggregate_failures do
@@ -261,11 +268,10 @@ RSpec.describe "RBAC Comprehensive Rules" do
     end
 
     it "allows full access to updates" do
-      expect([
-        UpdatePolicy.new(superadmin, Update.new).index?,
-        UpdatePolicy.new(superadmin, Update.new).show?,
-        UpdatePolicy.new(superadmin, Update.new).apply_and_clear_cache?,
-      ]).to all(be(true))
+      permissions = %i[index? show? download_file? schedule_download? apply_and_clear_cache?]
+      policy = UpdatePolicy.new(superadmin, Update.new)
+
+      expect(permissions.map { |permission| policy.public_send(permission) }).to all(be(true))
     end
 
     it "allows full access to rollbacks" do
