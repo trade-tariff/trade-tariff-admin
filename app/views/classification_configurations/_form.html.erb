@@ -101,6 +101,12 @@
     </div>
 
     <div data-config-form-target="nestedSubOptionsContainer" data-sub-values="<%= sub_values.to_json %>"></div>
+  <% when "object_template" %>
+    <%= f.govuk_text_area :value,
+                          value: configuration.value.is_a?(Hash) ? JSON.pretty_generate(configuration.value) : configuration.value,
+                          label: { text: "Template configuration" },
+                          hint: { text: "Enter a JSON object keyed by template name. Each template needs label, description and attributes." },
+                          rows: 20 %>
   <% else %>
     <%= f.govuk_text_area :value,
                           label: { text: "Value" },

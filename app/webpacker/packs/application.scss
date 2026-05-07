@@ -89,6 +89,20 @@ $govuk-image-url-function: frontend-image-url;
   }
 }
 
+.placeholder {
+  display: inline;
+  background: govuk-functional-colour(focus);
+  color: govuk-functional-colour(text);
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  border-radius: 11px;
+  box-shadow:
+    inset 0.47em 0 0 0 govuk-colour("white"),
+    inset -0.47em 0 0 0 govuk-colour("white"),
+    inset 0 -0.05em 0 0 govuk-colour("white"),
+    inset 0 0.26em 0 0 govuk-colour("white");
+}
+
 .table {
   .align-right {
     text-align: right;

@@ -110,6 +110,7 @@ GEM
       bigdecimal
       rexml
     crass (1.0.6)
+    csv (3.3.5)
     database_cleaner (2.1.0)
       database_cleaner-active_record (>= 2, < 3)
     database_cleaner-active_record (2.2.2)
@@ -430,6 +431,7 @@ GEM
     ruby-lsp-rails (0.4.8)
       ruby-lsp (>= 0.26.0, < 0.27.0)
     ruby-progressbar (1.13.0)
+    rubyzip (3.3.0)
     sanitize (7.0.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.16.8)
@@ -504,6 +506,7 @@ DEPENDENCIES
   bootsnap
   brakeman
   capybara
+  csv (~> 3.3)
   database_cleaner
   dotenv-rails
   factory_bot_rails
@@ -530,6 +533,7 @@ DEPENDENCIES
   rspec_junit_formatter
   rubocop-govuk
   ruby-lsp-rails
+  rubyzip
   shoulda-matchers
   simplecov
   webmock

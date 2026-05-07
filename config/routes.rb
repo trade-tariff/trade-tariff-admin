@@ -134,7 +134,12 @@ Rails.application.routes.draw do
 
   resources :classification_configurations, param: :name, only: %i[index show edit update]
 
-  resources :description_intercepts, only: %i[index new create show edit update]
+  resources :description_intercepts, only: %i[index new create show edit update] do
+    collection do
+      get :example_import
+      post :bulk_import
+    end
+  end
   resources :goods_nomenclature_autocomplete_results, only: %i[index]
 
   namespace :green_lanes, path: "green_lanes" do

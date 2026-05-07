@@ -19,14 +19,21 @@
                          hint: { text: "The term or phrase that should trigger this intercept." } %>
 
   <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Aliases</h2>
-  <div class="govuk-form-group">
+  <% aliases_error = description_intercept.errors[:aliases].first %>
+  <div class="govuk-form-group <%= 'govuk-form-group--error' if aliases_error.present? %>">
     <label class="govuk-label govuk-label--s" for="description-intercept-alias-field">Add an alias</label>
     <div id="description-intercept-alias-hint" class="govuk-hint">Optional alternative terms that should trigger this intercept.</div>
+    <% if aliases_error.present? %>
+      <p id="description-intercept-aliases-field-error" class="govuk-error-message">
+        <span class="govuk-visually-hidden">Error:</span>
+        <%= aliases_error %>
+      </p>
+    <% end %>
     <div class="govuk-button-group">
-      <input class="govuk-input govuk-!-width-one-half"
+      <input class="govuk-input govuk-!-width-one-half <%= 'govuk-input--error' if aliases_error.present? %>"
              id="description-intercept-alias-field"
              type="text"
-             aria-describedby="description-intercept-alias-hint"
+             aria-describedby="<%= aliases_error.present? ? 'description-intercept-aliases-field-error description-intercept-alias-hint' : 'description-intercept-alias-hint' %>"
              data-description-intercept-form-target="aliasInput"
              data-action="keydown.enter->description-intercept-form#addAlias">
       <button type="button" class="govuk-button govuk-button--secondary" data-action="click->description-intercept-form#addAlias">Add alias</button>
@@ -144,6 +151,10 @@
   <div data-description-intercept-form-target="guidanceFields"
        <%= 'style="display:none"'.html_safe unless Array(description_intercept.sources).include?("guided_search") %>>
     <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Guidance</h2>
+    <%= f.govuk_text_field :message_header,
+                           label: { text: "Guidance message header" },
+                           hint: { text: "Optional heading shown with the guidance message." } %>
+
     <%= govuk_markdown_area f,
                             :message,
                             label: { text: "Guidance message" },

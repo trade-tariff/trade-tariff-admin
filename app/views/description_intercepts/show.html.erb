@@ -34,8 +34,16 @@
   </div>
   <% if @description_intercept.guidance? %>
     <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Guidance message header</dt>
+      <dd class="govuk-summary-list__value"><%= @description_intercept.message_header.presence || "None" %></dd>
+    </div>
+    <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">Guidance</dt>
-      <dd class="govuk-summary-list__value"><%= @description_intercept.message %></dd>
+      <dd class="govuk-summary-list__value">
+        <div class="hott-markdown-preview">
+          <%= @description_intercept.preview(linkify_code_references: true) %>
+        </div>
+      </dd>
     </div>
   <% else %>
     <div class="govuk-summary-list__row">

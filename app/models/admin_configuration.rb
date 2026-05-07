@@ -1,6 +1,17 @@
 class AdminConfiguration
   include ApiEntity
 
+  OBJECT_TEMPLATE_ATTRIBUTE_ORDER = %w[
+    message_header
+    message
+    sources
+    excluded
+    escalate_to_webchat
+    guidance_level
+    guidance_location
+    filter_prefixes
+  ].freeze
+
   uk_only
 
   attributes :name,
@@ -64,6 +75,20 @@ class AdminConfiguration
     sub_values[key]
   end
 
+  def object_templates
+    return {} unless config_type == "object_template" && value.is_a?(Hash)
+
+    value
+  end
+
+  def ordered_object_template_attributes(template)
+    attributes = template["attributes"] || {}
+    ordered_keys = OBJECT_TEMPLATE_ATTRIBUTE_ORDER & attributes.keys
+    remaining_keys = attributes.keys - ordered_keys
+
+    attributes.slice(*(ordered_keys + remaining_keys.sort))
+  end
+
   def display_value
     case config_type
     when "boolean"
@@ -83,6 +108,8 @@ class AdminConfiguration
       else
         label
       end
+    when "object_template"
+      object_templates.keys.join(", ")
     when "markdown"
       preview
     else

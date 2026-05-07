@@ -28,6 +28,24 @@ RSpec.describe GovspeakPreview do
       expect(rendered).to match '<a href="/" target="_blank">link</a>'
     end
 
+    context "when content includes template placeholders" do
+      let(:content) { "Contact HMRC and quote reference {{request_id}}" }
+      let(:page) { Capybara.string(rendered) }
+
+      it "highlights placeholders" do
+        expect(page).to have_css(".placeholder", text: "{{request_id}}")
+      end
+    end
+
+    context "when link text includes template placeholders" do
+      let(:content) { "Email: [{{enquiries_email}}](mailto:{{enquiries_email}})" }
+      let(:page) { Capybara.string(rendered) }
+
+      it "highlights placeholders in link text" do
+        expect(page).to have_css("a .placeholder", text: "{{enquiries_email}}")
+      end
+    end
+
     context "when code reference linkification is enabled" do
       subject(:preview) { described_class.new content, linkify_code_references: true }
 

@@ -52,6 +52,11 @@
                 <label class="govuk-label govuk-radios__label" for="ct-type-options">Options</label>
               </div>
               <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="ct-type-object-template" name="ct_type" type="radio" value="object_template"
+                       data-action="change->config-table#changeType" data-config-type="object_template">
+                <label class="govuk-label govuk-radios__label" for="ct-type-object-template">Object template</label>
+              </div>
+              <div class="govuk-radios__item">
                 <input class="govuk-radios__input" id="ct-type-string" name="ct_type" type="radio" value="string"
                        data-action="change->config-table#changeType" data-config-type="string">
                 <label class="govuk-label govuk-radios__label" for="ct-type-string">String</label>
@@ -97,6 +102,11 @@
                     <% sub_values = config.value.is_a?(Hash) ? (config.value["sub_values"] || {}) : {} %>
                     <% if sub_values.values.any?(&:present?) %>
                       <span class="govuk-body-s govuk-!-margin-0">(<%= sub_values.filter_map { |k, v| "#{k.tr('_', ' ')}: #{v}" if v.present? }.join(", ") %>)</span>
+                    <% end %>
+                  <% when "object_template" %>
+                    <%= pluralize(config.object_templates.size, "template") %>
+                    <% if config.object_templates.any? %>
+                      <span class="govuk-body-s govuk-!-margin-0">(<%= truncate(config.object_templates.keys.join(", "), length: 50) %>)</span>
                     <% end %>
                   <% else %>
                     <span class="govuk-body-s govuk-!-margin-0"><%= truncate(config.value.to_s, length: 50) %></span>

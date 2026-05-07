@@ -40,7 +40,9 @@ gem "logstash-event"
 
 # Misc
 gem "bootsnap", require: false
+gem "csv", "~> 3.3"
 gem "nokogiri"
+gem "rubyzip"
 
 group :development, :test do
   gem "brakeman"

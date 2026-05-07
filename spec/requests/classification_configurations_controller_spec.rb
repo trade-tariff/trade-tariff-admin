@@ -109,6 +109,24 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
               "deleted" => false,
             },
           },
+          {
+            type: "admin_configuration",
+            id: "description_intercept_templates",
+            attributes: {
+              "name" => "description_intercept_templates",
+              "value" => {
+                "vague" => {
+                  "label" => "Vague term",
+                  "description" => "Use when the term is too broad to classify safely.",
+                  "attributes" => { "excluded" => true },
+                },
+              },
+              "config_type" => "object_template",
+              "area" => "classification",
+              "description" => "Named templates used by the description intercept bulk import",
+              "deleted" => false,
+            },
+          },
         ],
       }.to_json,
     }
@@ -133,6 +151,8 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
       expect(rendered_page.body).to include("Classification Configurations")
       expect(rendered_page.body).to include("Expansion Prompt")
       expect(rendered_page.body).to include("Qa Enabled")
+      expect(rendered_page.body).to include("Object template")
+      expect(rendered_page.body).to include("1 template")
     end
 
     it "does not display a new configuration button" do
@@ -270,6 +290,44 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
 
       it "displays the string value in a pre block" do
         expect(rendered_page.body).to include("<pre>sk-abc...xyz</pre>")
+      end
+    end
+
+    context "with an object template config" do
+      let(:config_name) { "description_intercept_templates" }
+      let(:config_attributes) do
+        {
+          "name" => "description_intercept_templates",
+          "value" => {
+            "vague" => {
+              "label" => "Vague term",
+              "description" => "Use when the term is too broad to classify safely.",
+              "attributes" => {
+                "escalate_to_webchat" => false,
+                "excluded" => true,
+                "sources" => %w[guided_search fpo_search],
+              },
+            },
+          },
+          "config_type" => "object_template",
+          "area" => "classification",
+          "description" => "Named templates used by the description intercept bulk import",
+          "deleted" => false,
+        }
+      end
+
+      it "displays templates as a structured table", :aggregate_failures do
+        expect(rendered_page.body).to include("Object templates")
+        expect(rendered_page.body).to include("vague")
+        expect(rendered_page.body).to include("Vague term")
+        expect(rendered_page.body).to include("Description")
+        expect(rendered_page.body).to include("Escalate to webchat")
+        expect(rendered_page.body).to include("Excluded")
+        expect(rendered_page.body).to include("Yes")
+        expect(rendered_page.body).to include("No")
+        expect(rendered_page.body).to include("guided_search")
+        expect(rendered_page.body).not_to include(">escalate_to_webchat<")
+        expect(rendered_page.body).not_to include("<pre>{&quot;vague&quot;")
       end
     end
 
@@ -474,6 +532,32 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
 
       it "renders a text area" do
         expect(rendered_page.body).to include("sk-abc...xyz")
+      end
+    end
+
+    context "with a description intercept templates config" do
+      let(:config_name) { "description_intercept_templates" }
+      let(:config_attributes) do
+        {
+          "name" => "description_intercept_templates",
+          "value" => {
+            "vague" => {
+              "label" => "Vague term",
+              "description" => "Use when the term is too broad to classify safely.",
+              "attributes" => { "excluded" => true },
+            },
+          },
+          "config_type" => "object_template",
+          "area" => "classification",
+          "description" => "Named templates used by the description intercept bulk import",
+          "deleted" => false,
+        }
+      end
+
+      it "renders the template registry as editable JSON" do
+        expect(rendered_page.body).to include("Template configuration")
+        expect(rendered_page.body).to include("&quot;vague&quot;")
+        expect(rendered_page.body).to include("&quot;label&quot;")
       end
     end
 
