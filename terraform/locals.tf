@@ -8,6 +8,8 @@ locals {
     }
   ]
 
+  ecr_repo = "382373577178.dkr.ecr.eu-west-2.amazonaws.com/tariff-admin-production"
+
   database_env_vars = [
     {
       name  = "DATABASE_URL"

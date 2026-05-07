@@ -3,15 +3,9 @@ module "service" {
 
   region = var.region
 
+  service_name              = "admin"
   container_definition_kind = "db-backed"
-  init_container_command = [
-    "/bin/sh",
-    "-c",
-    "bundle exec rails db:migrate",
-  ]
-
-  service_name  = "admin"
-  service_count = var.service_count
+  service_count             = var.service_count
 
   cluster_name    = "trade-tariff-cluster-${var.environment}"
   subnet_ids      = data.aws_subnets.private.ids
@@ -26,7 +20,7 @@ module "service" {
   max_capacity        = var.max_capacity
   autoscaling_metrics = var.autoscaling_metrics
 
-  docker_image = "382373577178.dkr.ecr.eu-west-2.amazonaws.com/tariff-admin-production"
+  docker_image = local.ecr_repo
   docker_tag   = var.docker_tag
   skip_destroy = true
 
