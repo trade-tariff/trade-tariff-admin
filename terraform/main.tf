@@ -1,11 +1,10 @@
 module "service" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.21.0"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.0.1"
 
   region = var.region
 
-  service_name              = "admin"
-  container_definition_kind = "db-backed"
-  service_count             = var.service_count
+  service_name  = "admin"
+  service_count = var.service_count
 
   cluster_name    = "trade-tariff-cluster-${var.environment}"
   subnet_ids      = data.aws_subnets.private.ids
@@ -24,8 +23,10 @@ module "service" {
   docker_tag   = var.docker_tag
   skip_destroy = true
 
-  cpu    = var.cpu
-  memory = var.memory
+  cpu                 = var.cpu
+  memory              = var.memory
+  enable_alarms       = var.enable_alarms
+  cpu_alarm_threshold = 75
 
   task_role_policy_arns = [aws_iam_policy.task.arn]
   enable_ecs_exec       = true
