@@ -55,3 +55,8 @@ variable "autoscaling_metrics" {
     }
   }
 }
+
+variable "enable_alarms" {
+  description = "Whether to enable CPU alarms for the ECS service"
+  type        = bool
+}

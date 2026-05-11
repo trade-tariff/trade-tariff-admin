@@ -24,6 +24,7 @@ jobs:
       app-name: tariff-admin
       environment: development
       test-flavour: none
+      migrate: true
     secrets:
       basic-password: ${{ secrets.BASIC_PASSWORD }}
       slack-webhook: ${{ secrets.SLACK_WEBHOOK }}

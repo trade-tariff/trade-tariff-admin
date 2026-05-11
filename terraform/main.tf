@@ -1,14 +1,7 @@
 module "service" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.21.0"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.0.1"
 
   region = var.region
-
-  container_definition_kind = "db-backed"
-  init_container_command = [
-    "/bin/sh",
-    "-c",
-    "bundle exec rails db:migrate",
-  ]
 
   service_name  = "admin"
   service_count = var.service_count
@@ -26,12 +19,14 @@ module "service" {
   max_capacity        = var.max_capacity
   autoscaling_metrics = var.autoscaling_metrics
 
-  docker_image = "382373577178.dkr.ecr.eu-west-2.amazonaws.com/tariff-admin-production"
+  docker_image = local.ecr_repo
   docker_tag   = var.docker_tag
   skip_destroy = true
 
-  cpu    = var.cpu
-  memory = var.memory
+  cpu                 = var.cpu
+  memory              = var.memory
+  enable_alarms       = var.enable_alarms
+  cpu_alarm_threshold = 75
 
   task_role_policy_arns = [aws_iam_policy.task.arn]
   enable_ecs_exec       = true

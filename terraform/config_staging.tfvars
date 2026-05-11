@@ -5,3 +5,4 @@ memory        = 2048
 service_count = 2
 min_capacity  = 1
 max_capacity  = 5
+enable_alarms = false
