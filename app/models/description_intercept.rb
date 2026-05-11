@@ -11,6 +11,7 @@ class DescriptionIntercept
   }.freeze
 
   attributes :term,
+             :message_header,
              :message,
              :guidance_level,
              :guidance_location,
@@ -27,6 +28,7 @@ class DescriptionIntercept
     # search behaviour. Send one canonical payload for new and existing records:
     # blank guidance is explicit nils, and disabled filtering is an empty array.
     if attrs[:message].blank?
+      attrs[:message_header] = nil
       attrs[:message] = nil
       attrs[:guidance_level] = nil
       attrs[:guidance_location] = nil
@@ -52,6 +54,33 @@ class DescriptionIntercept
   rescue Faraday::Error => e
     Rails.logger.error("Failed to fetch description intercepts: #{e.message}")
     { data: [], pagination: { page: 1, per_page: 20, total_count: 0, total_pages: 0 } }
+  end
+
+  def self.bulk_import(csv_content)
+    response = api.post("admin/description_intercepts/bulk_import", bulk_import_payload(csv_content))
+    body = handle_body(response)
+    attributes = body.dig("data", "attributes") || {}
+
+    BulkImportResult.new(
+      created: attributes["created"].to_i,
+      updated: attributes["updated"].to_i,
+      total: attributes["total"].to_i,
+    )
+  rescue Faraday::UnprocessableEntityError => e
+    body = handle_body(e.response)
+
+    BulkImportResult.new(errors: Array(body["errors"]))
+  end
+
+  def self.bulk_import_payload(csv_content)
+    {
+      data: {
+        type: "description_intercept_bulk_import",
+        attributes: {
+          csv: csv_content,
+        },
+      },
+    }
   end
 
   def as_listing_json
@@ -110,5 +139,24 @@ class DescriptionIntercept
 
   def aliases_array
     Array(aliases).reject(&:blank?)
+  end
+
+  class BulkImportResult
+    attr_reader :created, :updated, :total, :errors
+
+    def initialize(created: 0, updated: 0, total: 0, errors: [])
+      @created = created
+      @updated = updated
+      @total = total
+      @errors = errors
+    end
+
+    def success?
+      errors.blank?
+    end
+
+    def message
+      "Imported #{total} #{'description intercept'.pluralize(total)}: #{created} created, #{updated} updated."
+    end
   end
 end

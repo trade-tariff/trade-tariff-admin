@@ -1,4 +1,5 @@
-# rubocop:disable RSpec/ExampleLength, RSpec/MultipleExpectations
+# rubocop:disable RSpec/ExampleLength, RSpec/MultipleExpectations, RSpec/MultipleMemoizedHelpers
+require "zip"
 RSpec.describe DescriptionInterceptsController, type: :request do
   subject(:rendered_page) { make_request && response }
 
@@ -11,6 +12,7 @@ RSpec.describe DescriptionInterceptsController, type: :request do
       "term" => "animal feed",
       "excluded" => false,
       "message" => "Ask the trader to pick a more specific feed type.",
+      "message_header" => "Check the feed type",
       "guidance_level" => "warning",
       "guidance_location" => "results",
       "escalate_to_webchat" => true,
@@ -35,8 +37,56 @@ RSpec.describe DescriptionInterceptsController, type: :request do
     }
   end
 
+  let(:template_config_attributes) do
+    {
+      "name" => "description_intercept_templates",
+      "config_type" => "object_template",
+      "area" => "classification",
+      "description" => "Named templates used by the description intercept bulk import.",
+      "value" => {
+        "generic" => {
+          "label" => "Generic guidance",
+          "description" => "Use when more detail is needed before a commodity code can be suggested.",
+          "attributes" => {
+            "excluded" => true,
+            "escalate_to_webchat" => false,
+            "filter_prefixes" => [],
+            "guidance_level" => "info",
+            "guidance_location" => "interstitial",
+            "message_header" => "We can't suggest a tariff code yet",
+            "message" => "To find the relevant commodity code, we need more information about the product.",
+            "sources" => %w[guided_search fpo_search],
+          },
+        },
+        "escalation" => {
+          "label" => "Escalation guidance",
+          "description" => "Use when HMRC support is needed to classify the product.",
+          "attributes" => {
+            "excluded" => true,
+            "escalate_to_webchat" => true,
+            "filter_prefixes" => [],
+            "guidance_level" => "info",
+            "guidance_location" => "interstitial",
+            "message_header" => "Contact HMRC for help",
+            "message" => "Contact HMRC and quote reference {{request_id}}",
+            "sources" => %w[guided_search fpo_search],
+          },
+        },
+      },
+    }
+  end
+
+  let(:template_config_response) do
+    jsonapi_response("admin_configuration", template_config_attributes.merge("resource_id" => "description_intercept_templates"))
+  end
+
   describe "GET #index" do
     let(:make_request) { get description_intercepts_path }
+
+    before do
+      stub_api_request("/admin_configurations/description_intercept_templates")
+        .and_return(template_config_response)
+    end
 
     it { is_expected.to have_http_status :success }
 
@@ -50,6 +100,44 @@ RSpec.describe DescriptionInterceptsController, type: :request do
       expect(rendered_page.body).to include("Excluded")
       expect(rendered_page.body).to include("Commodity Intercepts (coming soon)")
       expect(rendered_page.body).to include("New description intercept")
+      expect(rendered_page.body).to include("Import description intercepts from a file")
+      expect(rendered_page.body).to include("Bulk import description intercepts")
+      expect(rendered_page.body).to include("Available templates")
+      expect(rendered_page.body).to include("Prepare your file")
+      expect(rendered_page.body).to include("Download example CSV")
+      expect(rendered_page.body).to include("gift")
+      expect(rendered_page.body).to include("present")
+      expect(rendered_page.body).to include("generic")
+      expect(rendered_page.body).to include("escalation")
+    end
+
+    context "when no templates are configured" do
+      let(:template_config_response) do
+        jsonapi_response(
+          "admin_configuration",
+          template_config_attributes.merge("resource_id" => "description_intercept_templates", "value" => {}),
+        )
+      end
+
+      it "shows an actionable warning and disables upload" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_text("No templates are currently configured.")
+        expect(rendered_page.body).to include("Classification configurations")
+        expect(rendered_page.body).to include(classification_configuration_path("description_intercept_templates"))
+        expect(rendered_page.body).to include('disabled="disabled"')
+        expect(rendered_page.body).to include('value="Import description intercepts"')
+      end
+    end
+  end
+
+  describe "GET #example_import" do
+    let(:make_request) { get example_import_description_intercepts_path }
+
+    it "downloads an example CSV" do
+      expect(rendered_page).to have_http_status(:success)
+      expect(rendered_page.headers["Content-Type"]).to include("text/csv")
+      expect(rendered_page.body).to eq("term,aliases,template\ngift,\"present,gifts\",generic\n")
     end
   end
 
@@ -116,6 +204,67 @@ RSpec.describe DescriptionInterceptsController, type: :request do
     end
   end
 
+  describe "POST #bulk_import" do
+    let(:csv_upload) do
+      Rack::Test::UploadedFile.new(StringIO.new("term,aliases,template\ngift,\"present,gifts\",generic\n"), "text/csv", original_filename: "intercepts.csv")
+    end
+
+    let(:make_request) do
+      post bulk_import_description_intercepts_path, params: { description_intercept_import: { file: csv_upload } }
+    end
+
+    before do
+      stub_api_request("/admin_configurations/description_intercept_templates")
+        .and_return(template_config_response)
+      stub_api_request("/description_intercepts/bulk_import", :post)
+        .with { |request|
+          Rack::Utils.parse_nested_query(request.body).dig("data", "attributes", "csv") == "term,aliases,template\ngift,\"present,gifts\",generic\n"
+        }
+        .and_return(
+          status: 201,
+          headers: { "content-type" => "application/json; charset=utf-8" },
+          body: { data: { type: "description_intercept_bulk_import", attributes: { created: 1, updated: 0, total: 1 } } }.to_json,
+        )
+    end
+
+    it { is_expected.to redirect_to(description_intercepts_path) }
+
+    it "shows the import counts" do
+      rendered_page
+      expect(session.dig("flash", "flashes", "notice")).to eq("Imported 1 description intercept: 1 created, 0 updated.")
+    end
+
+    context "when the backend rejects templates" do
+      before do
+        stub_api_request("/description_intercepts/bulk_import", :post)
+          .and_return(
+            status: 422,
+            headers: { "content-type" => "application/json; charset=utf-8" },
+            body: { errors: [{ detail: "foo and baz are not valid templates", meta: { code: "invalid_templates", values: %w[foo baz] } }] }.to_json,
+          )
+      end
+
+      it "renders the grouped errors" do
+        expect(rendered_page).to have_http_status(:unprocessable_content)
+        expect(rendered_page.body).to include("foo and baz are not valid templates")
+      end
+    end
+
+    context "with an XLSX upload" do
+      let(:csv_upload) do
+        Rack::Test::UploadedFile.new(StringIO.new(xlsx_content), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", original_filename: "intercepts.xlsx")
+      end
+
+      it "converts the single worksheet to CSV" do
+        rendered_page
+
+        expect(WebMock).to(have_requested(:post, /description_intercepts\/bulk_import/).with do |request|
+          Rack::Utils.parse_nested_query(request.body).dig("data", "attributes", "csv") == "term,aliases,template\ngift,\"present,gifts\",generic\n"
+        end)
+      end
+    end
+  end
+
   describe "GET #show" do
     before do
       stub_api_request("/description_intercepts/#{intercept_id}")
@@ -139,6 +288,7 @@ RSpec.describe DescriptionInterceptsController, type: :request do
       expect(rendered_page.body).to include("Description intercept")
       expect(rendered_page.body).to include("animal feed")
       expect(rendered_page.body).to include("Ask the trader to pick a more specific feed type.")
+      expect(rendered_page.body).to include("Check the feed type")
       expect(rendered_page.body).to include("Edit")
     end
 
@@ -153,6 +303,20 @@ RSpec.describe DescriptionInterceptsController, type: :request do
       expect(rendered_page.body).to include("Not excluded")
       expect(rendered_page.body).not_to include("Guidance level")
       expect(rendered_page.body).not_to include("Guidance location")
+    end
+
+    context "with markdown and placeholder guidance" do
+      let(:intercept_attributes) do
+        super().merge("message" => "{{search_term}} needs **more detail**.\n\nBrowse chapter 64.")
+      end
+
+      it "renders guidance using the markdown previewer" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css(".hott-markdown-preview .placeholder", text: "{{search_term}}")
+        expect(page).to have_css(".hott-markdown-preview strong", text: "more detail")
+        expect(page).to have_no_text("{{search_term}} needs **more detail**")
+      end
     end
 
     context "when the intercept has no guidance" do
@@ -195,6 +359,7 @@ RSpec.describe DescriptionInterceptsController, type: :request do
     it "shows the edit form" do
       expect(rendered_page.body).to include("Save changes")
       expect(rendered_page.body).to include("Allow HMRC support escalation")
+      expect(rendered_page.body).to include("Guidance message header")
       expect(rendered_page.body).to include("Guidance message")
       expect(rendered_page.body).to include("Add alias")
       expect(rendered_page.body).to include("pet food")
@@ -528,9 +693,11 @@ RSpec.describe DescriptionInterceptsController, type: :request do
     end
 
     context "with invalid update" do
+      let(:description_intercept_error_response) { webmock_response(:error, { filter_prefixes: "cannot be combined with excluded" }) }
+
       before do
         stub_api_request("/description_intercepts/#{intercept_id}", :patch)
-          .and_return(webmock_response(:error, filter_prefixes: "cannot be combined with excluded"))
+          .and_return(description_intercept_error_response)
         stub_api_request("/versions")
           .with(query: hash_including("item_type" => "DescriptionIntercept", "item_id" => intercept_id))
           .and_return(status: 200, headers: { "content-type" => "application/json; charset=utf-8" }, body: { data: [] }.to_json)
@@ -542,6 +709,36 @@ RSpec.describe DescriptionInterceptsController, type: :request do
       it "links the error summary to the filter prefixes input" do
         expect(rendered_page.body).to include('href="#description-intercept-filter-prefixes-field-error"')
         expect(rendered_page.body).to include('id="description-intercept-filter-prefixes-error"')
+      end
+    end
+
+    context "with an aliases uniqueness error on update" do
+      before do
+        stub_api_request("/description_intercepts/#{intercept_id}", :patch)
+          .and_return(
+            status: 422,
+            headers: { "content-type" => "application/json; charset=utf-8" },
+            body: {
+              errors: [
+                {
+                  status: 422,
+                  title: "include values already used by another description intercept (present, gift)",
+                  detail: "Aliases include values already used by another description intercept (present, gift)",
+                  source: { pointer: "/data/attributes/aliases" },
+                },
+              ],
+            }.to_json,
+          )
+        stub_api_request("/versions")
+          .with(query: hash_including("item_type" => "DescriptionIntercept", "item_id" => intercept_id))
+          .and_return(status: 200, headers: { "content-type" => "application/json; charset=utf-8" }, body: { data: [] }.to_json)
+      end
+
+      it "shows a grammatical aliases validation message" do
+        expect(rendered_page.body).to include("Aliases include values already used by another description intercept (present, gift)")
+        expect(rendered_page.body).to include('href="#description-intercept-aliases-field-error"')
+        expect(rendered_page.body).to include('id="description-intercept-aliases-field-error"')
+        expect(rendered_page.body).not_to include("Aliases Aliases include")
       end
     end
 
@@ -669,5 +866,38 @@ RSpec.describe DescriptionInterceptsController, type: :request do
       end
     end
   end
+
+  def xlsx_content
+    buffer = Zip::OutputStream.write_buffer do |zip|
+      zip.put_next_entry("[Content_Types].xml")
+      zip.write <<~XML
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+          <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+          <Default Extension="xml" ContentType="application/xml"/>
+          <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+          <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+        </Types>
+      XML
+      zip.put_next_entry("xl/workbook.xml")
+      zip.write <<~XML
+        <?xml version="1.0" encoding="UTF-8"?>
+        <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+          <sheets><sheet name="Sheet1" sheetId="1" r:id="rId1"/></sheets>
+        </workbook>
+      XML
+      zip.put_next_entry("xl/worksheets/sheet1.xml")
+      zip.write <<~XML
+        <?xml version="1.0" encoding="UTF-8"?>
+        <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+          <sheetData>
+            <row r="1"><c r="A1" t="inlineStr"><is><t>term</t></is></c><c r="B1" t="inlineStr"><is><t>aliases</t></is></c><c r="C1" t="inlineStr"><is><t>template</t></is></c></row>
+            <row r="2"><c r="A2" t="inlineStr"><is><t>gift</t></is></c><c r="B2" t="inlineStr"><is><t>present,gifts</t></is></c><c r="C2" t="inlineStr"><is><t>generic</t></is></c></row>
+          </sheetData>
+        </worksheet>
+      XML
+    end
+    buffer.string
+  end
 end
-# rubocop:enable RSpec/ExampleLength, RSpec/MultipleExpectations
+# rubocop:enable RSpec/ExampleLength, RSpec/MultipleExpectations, RSpec/MultipleMemoizedHelpers

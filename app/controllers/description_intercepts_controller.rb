@@ -5,7 +5,9 @@ class DescriptionInterceptsController < AuthenticatedController
     authorize DescriptionIntercept, :index?
 
     respond_to do |format|
-      format.html
+      format.html do
+        load_description_intercept_templates
+      end
       format.json { render json: DescriptionIntercept.listing(params) }
     end
   end
@@ -63,6 +65,31 @@ class DescriptionInterceptsController < AuthenticatedController
     redirect_to description_intercepts_path, alert: "Description intercept not found."
   end
 
+  def bulk_import
+    authorize DescriptionIntercept, :update?
+
+    file_result = DescriptionInterceptImportFile.new(description_intercept_import_file).call
+    if file_result.success?
+      import_result = DescriptionIntercept.bulk_import(file_result.csv_content)
+      return redirect_to description_intercepts_path, notice: import_result.message if import_result.success?
+
+      @bulk_import_errors = import_result.errors
+    else
+      @bulk_import_errors = file_result.errors
+    end
+
+    load_description_intercept_templates
+    render :index, status: :unprocessable_content
+  end
+
+  def example_import
+    authorize DescriptionIntercept, :index?
+
+    send_data "term,aliases,template\ngift,\"present,gifts\",generic\n",
+              filename: "description-intercepts-example.csv",
+              type: "text/csv"
+  end
+
 private
 
   def load_description_intercept
@@ -85,10 +112,22 @@ private
     end
   end
 
+  def load_description_intercept_templates
+    @description_intercept_templates = AdminConfiguration.find("description_intercept_templates").value
+  rescue Faraday::Error => e
+    Rails.logger.error("Failed to fetch description intercept templates: #{e.message}")
+    @description_intercept_templates = {}
+  end
+
+  def description_intercept_import_file
+    params.dig(:description_intercept_import, :file)
+  end
+
   def description_intercept_params
     permitted = params.require(:description_intercept).permit(
       :term,
       :excluded,
+      :message_header,
       :message,
       :escalate_to_webchat,
       aliases: [],
@@ -98,6 +137,7 @@ private
 
     permitted[:excluded] = ActiveModel::Type::Boolean.new.cast(permitted[:excluded]) if permitted.key?(:excluded)
     permitted[:escalate_to_webchat] = ActiveModel::Type::Boolean.new.cast(permitted[:escalate_to_webchat]) if permitted.key?(:escalate_to_webchat)
+    permitted[:message_header] = permitted[:message_header].presence if permitted.key?(:message_header)
     permitted[:message] = permitted[:message].presence if permitted.key?(:message)
     permitted[:aliases] = Array(permitted[:aliases]).reject(&:blank?)
     permitted[:sources] = Array(permitted[:sources]).reject(&:blank?)
@@ -114,6 +154,7 @@ private
     return if @description_intercept.blank?
 
     if @description_intercept.message.blank?
+      @description_intercept.message_header = nil
       @description_intercept.guidance_level = nil
       @description_intercept.guidance_location = nil
     else

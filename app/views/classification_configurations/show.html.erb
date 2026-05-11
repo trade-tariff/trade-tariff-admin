@@ -157,6 +157,56 @@
             </div>
           </details>
         <% end %>
+      <% when "object_template" %>
+        <% if @configuration.object_templates.any? %>
+          <h2 class="govuk-heading-s">Object templates</h2>
+
+          <% @configuration.object_templates.each do |key, template| %>
+            <div class="govuk-summary-card govuk-!-margin-bottom-4">
+              <div class="govuk-summary-card__title-wrapper">
+                <h3 class="govuk-summary-card__title">
+                  <%= template["label"] %>
+                  <strong class="govuk-tag govuk-tag--grey"><%= key %></strong>
+                </h3>
+              </div>
+              <div class="govuk-summary-card__content">
+                <dl class="govuk-summary-list govuk-summary-list--no-border govuk-!-margin-bottom-0">
+                  <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Description</dt>
+                    <dd class="govuk-summary-list__value"><%= template["description"] %></dd>
+                  </div>
+                  <% @configuration.ordered_object_template_attributes(template).each do |attribute, value| %>
+                    <div class="govuk-summary-list__row">
+                      <dt class="govuk-summary-list__key" title="<%= attribute %>"><%= attribute.humanize %></dt>
+                      <dd class="govuk-summary-list__value">
+                        <% case value %>
+                        <% when Array %>
+                          <% if value.any? %>
+                            <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+                              <% value.each do |item| %>
+                                <li><%= item %></li>
+                              <% end %>
+                            </ul>
+                          <% else %>
+                            None
+                          <% end %>
+                        <% when TrueClass, FalseClass %>
+                          <strong class="govuk-tag govuk-tag--<%= value ? 'green' : 'grey' %>"><%= value ? "Yes" : "No" %></strong>
+                        <% when NilClass %>
+                          None
+                        <% else %>
+                          <%= value %>
+                        <% end %>
+                      </dd>
+                    </div>
+                  <% end %>
+                </dl>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="govuk-body">No templates configured.</p>
+        <% end %>
       <% else %>
         <pre><%= @configuration.value %></pre>
       <% end %>

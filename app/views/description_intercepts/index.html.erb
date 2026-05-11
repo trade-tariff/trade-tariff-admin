@@ -22,6 +22,126 @@
       <%= link_to "New description intercept", new_description_intercept_path, class: "govuk-button" %>
     </div>
 
+    <details class="govuk-details govuk-!-margin-bottom-6" <%= "open" if @bulk_import_errors.present? %>>
+      <summary class="govuk-details__summary">
+        <span class="govuk-details__summary-text">Import description intercepts from a file</span>
+      </summary>
+
+      <div class="govuk-details__text">
+        <h2 class="govuk-heading-m">Bulk import description intercepts</h2>
+
+        <% if @bulk_import_errors.present? %>
+          <div class="govuk-error-summary" data-module="govuk-error-summary">
+            <div role="alert">
+              <h2 class="govuk-error-summary__title">There is a problem with the import</h2>
+              <div class="govuk-error-summary__body">
+                <ul class="govuk-list govuk-error-summary__list">
+                  <% @bulk_import_errors.each do |error| %>
+                    <li><%= error["detail"] || error[:detail] || error.to_s %></li>
+                  <% end %>
+                </ul>
+              </div>
+            </div>
+          </div>
+        <% end %>
+
+        <% if @description_intercept_templates.present? %>
+          <h3 class="govuk-heading-s">Available templates</h3>
+          <p class="govuk-body">Review the list of available templates before preparing your file.</p>
+
+          <table class="govuk-table govuk-!-margin-bottom-6">
+            <caption class="govuk-table__caption govuk-table__caption--s">Description intercept templates</caption>
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th class="govuk-table__header" scope="col">Template</th>
+                <th class="govuk-table__header" scope="col">Description</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              <% @description_intercept_templates.each do |name, template| %>
+                <tr class="govuk-table__row">
+                  <th class="govuk-table__header" scope="row"><code><%= name %></code></th>
+                  <td class="govuk-table__cell"><%= template["description"] || template[:description] %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% else %>
+          <div class="govuk-warning-text">
+            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+            <strong class="govuk-warning-text__text">
+              <span class="govuk-visually-hidden">Warning</span>
+              No templates are currently configured.
+            </strong>
+          </div>
+          <p class="govuk-body">
+            Add templates in
+            <%= link_to "Classification configurations", classification_configuration_path("description_intercept_templates"), class: "govuk-link" %>
+            before importing description intercepts.
+          </p>
+        <% end %>
+
+        <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+        <div class="govuk-grid-row">
+          <div class="govuk-grid-column-one-half">
+            <h3 class="govuk-heading-s">Prepare your file</h3>
+            <p class="govuk-body">
+              Upload a CSV file, or an XLSX file with a single worksheet. The first row must contain
+              <code>term</code>, <code>aliases</code> and <code>template</code> columns.
+            </p>
+
+            <table class="govuk-table govuk-table--small-text-until-tablet">
+              <caption class="govuk-table__caption govuk-table__caption--s">Example CSV</caption>
+              <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                  <th class="govuk-table__header" scope="col">term</th>
+                  <th class="govuk-table__header" scope="col">aliases</th>
+                  <th class="govuk-table__header" scope="col">template</th>
+                </tr>
+              </thead>
+              <tbody class="govuk-table__body">
+                <tr class="govuk-table__row">
+                  <td class="govuk-table__cell">gift</td>
+                  <td class="govuk-table__cell">present, gifts</td>
+                  <td class="govuk-table__cell">generic</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <p class="govuk-body">
+              <%= link_to "Download example CSV", example_import_description_intercepts_path, class: "govuk-link" %>
+            </p>
+          </div>
+
+          <div class="govuk-grid-column-one-half">
+            <h3 class="govuk-heading-s">Upload file</h3>
+
+            <%= form_with url: bulk_import_description_intercepts_path,
+                          scope: :description_intercept_import,
+                          multipart: true,
+                          method: :post do |f| %>
+              <div class="govuk-form-group">
+                <%= f.label :file, "Import file", class: "govuk-label" %>
+                <div id="description-intercept-import-file-hint" class="govuk-hint">
+                  Use CSV or single-sheet XLSX with columns: term, aliases, template. Separate multiple aliases with commas in the aliases cell.
+                </div>
+                <%= f.file_field :file,
+                                 class: "govuk-file-upload",
+                                 disabled: @description_intercept_templates.blank?,
+                                 aria: { describedby: "description-intercept-import-file-hint" },
+                                 accept: ".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" %>
+              </div>
+
+              <%= f.submit "Import description intercepts",
+                           class: "govuk-button",
+                           disabled: @description_intercept_templates.blank? %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </details>
+
     <div class="govuk-grid-row"
          data-controller="description-intercept-table"
          data-description-intercept-table-url-value="<%= description_intercepts_path(format: :json) %>"

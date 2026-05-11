@@ -208,6 +208,72 @@ RSpec.describe AdminConfiguration do
         expect(configuration.display_value).to eq("GPT-4.1 mini")
       end
     end
+
+    context "with object_template type" do
+      let(:attributes) do
+        {
+          name: "description_intercept_templates",
+          config_type: "object_template",
+          value: {
+            "vague" => {
+              "label" => "Vague term",
+              "description" => "Use when the term is too broad to classify safely.",
+              "attributes" => { "message_header" => "Placeholder guidance heading", "excluded" => true },
+            },
+          },
+        }
+      end
+
+      it "returns the template keys" do
+        expect(configuration.display_value).to eq("vague")
+      end
+    end
+  end
+
+  describe "#object_templates" do
+    context "with object_template type" do
+      let(:attributes) do
+        {
+          name: "description_intercept_templates",
+          config_type: "object_template",
+          value: {
+            "vague" => {
+              "label" => "Vague term",
+              "description" => "Use when the term is too broad to classify safely.",
+              "attributes" => { "message_header" => "Placeholder guidance heading", "excluded" => true },
+            },
+          },
+        }
+      end
+
+      it "returns the template map" do
+        expect(configuration.object_templates.keys).to eq(%w[vague])
+      end
+    end
+
+    context "with another type" do
+      it "returns an empty map" do
+        expect(configuration.object_templates).to eq({})
+      end
+    end
+  end
+
+  describe "#ordered_object_template_attributes" do
+    let(:template) do
+      {
+        "attributes" => {
+          "guidance_location" => "interstitial",
+          "custom" => "value",
+          "message" => "Message",
+          "excluded" => true,
+          "sources" => %w[guided_search],
+        },
+      }
+    end
+
+    it "uses the preferred domain order before unknown attributes" do
+      expect(configuration.ordered_object_template_attributes(template).keys).to eq(%w[message sources excluded guidance_location custom])
+    end
   end
 
   describe "#nested_selected_label" do

@@ -1,4 +1,4 @@
-# rubocop:disable RSpec/ExampleLength
+# rubocop:disable RSpec/ExampleLength, RSpec/MultipleExpectations
 RSpec.describe DescriptionIntercept do
   subject(:intercept) { described_class.new(attributes) }
 
@@ -8,6 +8,7 @@ RSpec.describe DescriptionIntercept do
       term: "animal feed",
       excluded: false,
       message: "Show this guidance message to the trader.",
+      message_header: "Check the term",
       guidance_level: "warning",
       guidance_location: "results",
       escalate_to_webchat: true,
@@ -74,6 +75,7 @@ RSpec.describe DescriptionIntercept do
     it "defaults guidance metadata when a message is present" do
       attrs = {
         message: "Show this guidance message to the trader.",
+        message_header: "Check the term",
         guidance_level: "warning",
         guidance_location: "results",
         filter_prefixes: %w[1201],
@@ -91,6 +93,7 @@ RSpec.describe DescriptionIntercept do
     it "clears guidance metadata when the message is blank" do
       attrs = {
         message: "",
+        message_header: "Stale header",
         guidance_level: "warning",
         guidance_location: "results",
         filter_prefixes: %w[1201],
@@ -101,6 +104,7 @@ RSpec.describe DescriptionIntercept do
 
       expect(attrs).to include(
         message: nil,
+        message_header: nil,
         guidance_level: nil,
         guidance_location: nil,
       )
@@ -157,6 +161,39 @@ RSpec.describe DescriptionIntercept do
     end
   end
 
+  describe ".bulk_import" do
+    it "posts CSV content to the backend and returns import counts" do
+      stub_api_request("/description_intercepts/bulk_import", :post)
+        .with { |request|
+          Rack::Utils.parse_nested_query(request.body).dig("data", "attributes", "csv") == "term,aliases,template\ngift,\"present,gifts\",generic\n"
+        }
+        .and_return(
+          status: 201,
+          headers: { "content-type" => "application/json; charset=utf-8" },
+          body: { data: { type: "description_intercept_bulk_import", attributes: { created: 1, updated: 2, total: 3 } } }.to_json,
+        )
+
+      result = described_class.bulk_import("term,aliases,template\ngift,\"present,gifts\",generic\n")
+
+      expect(result).to be_success
+      expect(result.message).to eq("Imported 3 description intercepts: 1 created, 2 updated.")
+    end
+
+    it "returns grouped backend validation errors" do
+      stub_api_request("/description_intercepts/bulk_import", :post)
+        .and_return(
+          status: 422,
+          headers: { "content-type" => "application/json; charset=utf-8" },
+          body: { errors: [{ detail: "foo and baz are not valid templates" }] }.to_json,
+        )
+
+      result = described_class.bulk_import("term,aliases,template\ngift,\"present,gifts\",foo\n")
+
+      expect(result).not_to be_success
+      expect(result.errors).to eq([{ "detail" => "foo and baz are not valid templates" }])
+    end
+  end
+
   describe ".find" do
     before do
       stub_api_request("/description_intercepts/123")
@@ -194,4 +231,4 @@ RSpec.describe DescriptionIntercept do
   end
 end
 
-# rubocop:enable RSpec/ExampleLength
+# rubocop:enable RSpec/ExampleLength, RSpec/MultipleExpectations
