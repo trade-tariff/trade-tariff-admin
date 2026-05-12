@@ -116,6 +116,7 @@
             pkgs.python3
             pkgs.rufo
             pkgs.socat
+            pkgs.terraform-docs
             pkgs.yarn
             pkgs.zlib
             postgresql
