@@ -1,7 +1,7 @@
 class DescriptionInterceptsController < AuthenticatedController
   rescue_from Faraday::ResourceNotFound, with: :redirect_description_intercept_not_found
 
-  before_action :load_description_intercept, only: %i[show edit update destroy]
+  before_action :load_description_intercept, only: %i[show edit update confirm_destroy destroy]
 
   def index
     authorize DescriptionIntercept, :index?
@@ -65,6 +65,10 @@ class DescriptionInterceptsController < AuthenticatedController
     end
   rescue Faraday::ResourceNotFound
     redirect_to description_intercepts_path, alert: "Description intercept not found."
+  end
+
+  def confirm_destroy
+    authorize @description_intercept, :destroy?
   end
 
   def destroy

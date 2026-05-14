@@ -1,0 +1,23 @@
+<%= govuk_breadcrumbs 'Intercepts': description_intercepts_path,
+                      @description_intercept.term => description_intercept_path(@description_intercept) %>
+
+<span class="govuk-caption-l">Description intercept</span>
+<h1 class="govuk-heading-l">Are you sure you want to delete this description intercept?</h1>
+
+<%= govuk_warning_text(text: "This will delete the current description intercept. Previous versions will remain available in version history.") %>
+
+<%= govuk_summary_list(rows: [
+  { key: { text: "Term" }, value: { text: @description_intercept.term } },
+  { key: { text: "Search behaviour" }, value: { text: @description_intercept.behaviour_summary } },
+  { key: { text: "Relevant Products" }, value: { text: @description_intercept.sources_label } },
+]) %>
+
+<div class="govuk-button-group description-intercept-actions">
+  <%= govuk_button_to 'Delete description intercept',
+                      description_intercept_path(@description_intercept),
+                      method: :delete,
+                      warning: true,
+                      prevent_double_click: true,
+                      form_class: 'description-intercept-actions__delete-form' %>
+  <%= govuk_link_to 'Cancel', description_intercept_path(@description_intercept) %>
+</div>

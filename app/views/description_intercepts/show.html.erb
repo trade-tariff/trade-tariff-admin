@@ -86,15 +86,9 @@
       <%= govuk_button_link_to 'Edit', edit_description_intercept_path(@description_intercept) %>
     <% end %>
     <% if policy(@description_intercept).destroy? %>
-      <%= govuk_button_to 'Delete description intercept',
-                          description_intercept_path(@description_intercept),
-                          method: :delete,
-                          warning: true,
-                          form_class: 'description-intercept-actions__delete-form',
-                          data: {
-                            confirm: "Are you sure you want to delete the description intercept for #{@description_intercept.term}?",
-                            disable: 'Working ...',
-                          } %>
+      <%= govuk_button_link_to 'Delete description intercept',
+                               delete_description_intercept_path(@description_intercept),
+                               warning: true %>
     <% end %>
   </div>
 <% end %>

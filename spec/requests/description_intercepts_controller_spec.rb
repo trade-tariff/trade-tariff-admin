@@ -297,9 +297,8 @@ RSpec.describe DescriptionInterceptsController, type: :request do
 
       expect(page).to have_link("Edit", class: "govuk-button")
       expect(page).to have_css(".govuk-button-group.description-intercept-actions")
-      expect(page).to have_button("Delete description intercept", class: "govuk-button--warning")
-      expect(page).to have_css("form.description-intercept-actions__delete-form[action='#{description_intercept_path(intercept_id)}'][method='post']")
-      expect(page).to have_css("input[name='_method'][value='delete']", visible: :hidden)
+      expect(page).to have_link("Delete description intercept", href: delete_description_intercept_path(intercept_id), class: "govuk-button--warning")
+      expect(page).to have_no_css("[data-confirm]")
     end
 
     it "shows the full intercept summary" do
@@ -677,6 +676,51 @@ RSpec.describe DescriptionInterceptsController, type: :request do
       it "sends empty filter prefixes in the payload" do
         expect(rendered_page).to redirect_to(description_intercept_path("999"))
       end
+    end
+  end
+
+  describe "GET #confirm_destroy" do
+    before do
+      stub_api_request("/description_intercepts/#{intercept_id}")
+        .and_return(intercept_response)
+    end
+
+    let(:make_request) { get delete_description_intercept_path(intercept_id) }
+
+    it { is_expected.to have_http_status :success }
+
+    it "asks for delete confirmation" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_css("h1", text: "Are you sure you want to delete this description intercept?")
+      expect(page).to have_text("animal feed")
+      expect(page).to have_text("Filters to selected short codes")
+      expect(page).to have_button("Delete description intercept", class: "govuk-button--warning")
+      expect(page).to have_css("form[action='#{description_intercept_path(intercept_id)}'][method='post']")
+      expect(page).to have_css("input[name='_method'][value='delete']", visible: :hidden)
+      expect(page).to have_link("Cancel", href: description_intercept_path(intercept_id))
+      expect(page).to have_no_css("[data-confirm]")
+    end
+
+    context "when the intercept does not exist" do
+      before do
+        stub_api_request("/description_intercepts/#{intercept_id}")
+          .and_return(status: 404, headers: { "content-type" => "application/json; charset=utf-8" }, body: "{}")
+      end
+
+      it { is_expected.to redirect_to(description_intercepts_path) }
+
+      it "shows a not found message" do
+        rendered_page
+
+        expect(session.dig("flash", "flashes", "alert")).to eq("Description intercept not found.")
+      end
+    end
+
+    context "when the user cannot delete intercepts" do
+      let(:current_user) { create(:user, :hmrc_admin) }
+
+      it { is_expected.to have_http_status :forbidden }
     end
   end
 
