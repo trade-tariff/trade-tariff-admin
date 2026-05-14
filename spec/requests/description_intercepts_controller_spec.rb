@@ -295,8 +295,10 @@ RSpec.describe DescriptionInterceptsController, type: :request do
     it "shows the delete action after the intercept details" do
       page = Capybara.string(rendered_page.body)
 
+      expect(page).to have_link("Edit", class: "govuk-button")
+      expect(page).to have_css(".govuk-button-group.description-intercept-actions")
       expect(page).to have_button("Delete description intercept", class: "govuk-button--warning")
-      expect(page).to have_css("form[action='#{description_intercept_path(intercept_id)}'][method='post']")
+      expect(page).to have_css("form.description-intercept-actions__delete-form[action='#{description_intercept_path(intercept_id)}'][method='post']")
       expect(page).to have_css("input[name='_method'][value='delete']", visible: :hidden)
     end
 

@@ -81,20 +81,20 @@
 </dl>
 
 <% if @description_intercept.current? && (policy(@description_intercept).update? || policy(@description_intercept).destroy?) %>
-  <div class="govuk-button-group">
+  <div class="govuk-button-group description-intercept-actions">
     <% if policy(@description_intercept).update? %>
-      <%= link_to 'Edit', edit_description_intercept_path(@description_intercept), class: 'govuk-button' %>
+      <%= govuk_button_link_to 'Edit', edit_description_intercept_path(@description_intercept) %>
     <% end %>
     <% if policy(@description_intercept).destroy? %>
-      <%= button_to 'Delete description intercept',
-                    description_intercept_path(@description_intercept),
-                    method: :delete,
-                    class: 'govuk-button govuk-button--warning',
-                    form_class: 'govuk-!-display-inline-block',
-                    data: {
-                      confirm: "Are you sure you want to delete the description intercept for #{@description_intercept.term}?",
-                      disable: 'Working ...',
-                    } %>
+      <%= govuk_button_to 'Delete description intercept',
+                          description_intercept_path(@description_intercept),
+                          method: :delete,
+                          warning: true,
+                          form_class: 'description-intercept-actions__delete-form',
+                          data: {
+                            confirm: "Are you sure you want to delete the description intercept for #{@description_intercept.term}?",
+                            disable: 'Working ...',
+                          } %>
     <% end %>
   </div>
 <% end %>
