@@ -13,6 +13,8 @@ class SectionNote
 
   def preview(field_name = :content, **options)
     content = public_send(field_name)
-    GovspeakPreview.new(content, **options).render if content.present?
+    return if content.blank?
+
+    GovspeakPreview.new(TariffNoteFormatter.new(content).format, **options).render
   end
 end
