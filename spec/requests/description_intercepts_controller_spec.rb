@@ -292,6 +292,14 @@ RSpec.describe DescriptionInterceptsController, type: :request do
       expect(rendered_page.body).to include("Edit")
     end
 
+    it "shows the delete action after the intercept details" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_button("Delete description intercept", class: "govuk-button--warning")
+      expect(page).to have_css("form[action='#{description_intercept_path(intercept_id)}'][method='post']")
+      expect(page).to have_css("input[name='_method'][value='delete']", visible: :hidden)
+    end
+
     it "shows the full intercept summary" do
       expect(rendered_page.body).to include("Filters to selected short codes")
       expect(rendered_page.body).to include("Relevant Products")
@@ -336,6 +344,33 @@ RSpec.describe DescriptionInterceptsController, type: :request do
         expect(rendered_page.body).to include("None")
         expect(rendered_page.body).not_to include("Guidance level")
         expect(rendered_page.body).not_to include("Guidance location")
+      end
+    end
+
+    context "when viewing a previous version" do
+      let(:intercept_response) do
+        super().deep_merge(
+          body: {
+            data: {
+              type: "description_intercept",
+              id: intercept_id,
+              attributes: intercept_attributes,
+            },
+            meta: {
+              version: {
+                current: false,
+                oid: "2",
+                previous_oid: "1",
+                has_previous_version: true,
+                latest_event: "update",
+              },
+            },
+          }.to_json,
+        )
+      end
+
+      it "does not show destructive actions" do
+        expect(Capybara.string(rendered_page.body)).to have_no_button("Delete description intercept")
       end
     end
   end
@@ -640,6 +675,52 @@ RSpec.describe DescriptionInterceptsController, type: :request do
       it "sends empty filter prefixes in the payload" do
         expect(rendered_page).to redirect_to(description_intercept_path("999"))
       end
+    end
+  end
+
+  describe "DELETE #destroy" do
+    before do
+      stub_api_request("/description_intercepts/#{intercept_id}")
+        .and_return(intercept_response)
+      stub_api_request("/description_intercepts/#{intercept_id}", :delete)
+        .and_return(webmock_response(:no_content))
+    end
+
+    let(:make_request) { delete description_intercept_path(intercept_id) }
+
+    it { is_expected.to redirect_to(description_intercepts_path) }
+
+    it "deletes the intercept through the backend API" do
+      rendered_page
+
+      expect(WebMock).to have_requested(:delete, /description_intercepts\/#{intercept_id}/)
+    end
+
+    it "shows a success message" do
+      rendered_page
+
+      expect(session.dig("flash", "flashes", "notice")).to eq("Description intercept deleted successfully.")
+    end
+
+    context "when the intercept does not exist" do
+      before do
+        stub_api_request("/description_intercepts/#{intercept_id}")
+          .and_return(status: 404, headers: { "content-type" => "application/json; charset=utf-8" }, body: "{}")
+      end
+
+      it { is_expected.to redirect_to(description_intercepts_path) }
+
+      it "shows a not found message" do
+        rendered_page
+
+        expect(session.dig("flash", "flashes", "alert")).to eq("Description intercept not found.")
+      end
+    end
+
+    context "when the user cannot delete intercepts" do
+      let(:current_user) { create(:user, :hmrc_admin) }
+
+      it { is_expected.to have_http_status :forbidden }
     end
   end
 

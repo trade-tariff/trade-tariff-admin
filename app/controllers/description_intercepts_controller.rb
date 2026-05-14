@@ -1,5 +1,7 @@
 class DescriptionInterceptsController < AuthenticatedController
-  before_action :load_description_intercept, only: %i[show edit update]
+  rescue_from Faraday::ResourceNotFound, with: :redirect_description_intercept_not_found
+
+  before_action :load_description_intercept, only: %i[show edit update destroy]
 
   def index
     authorize DescriptionIntercept, :index?
@@ -65,6 +67,15 @@ class DescriptionInterceptsController < AuthenticatedController
     redirect_to description_intercepts_path, alert: "Description intercept not found."
   end
 
+  def destroy
+    authorize @description_intercept, :destroy?
+
+    @description_intercept.destroy
+    redirect_to description_intercepts_path, notice: "Description intercept deleted successfully."
+  rescue Faraday::ResourceNotFound
+    redirect_to description_intercepts_path, alert: "Description intercept not found."
+  end
+
   def bulk_import
     authorize DescriptionIntercept, :update?
 
@@ -94,6 +105,10 @@ private
 
   def load_description_intercept
     @description_intercept = DescriptionIntercept.find(params[:id], params[:oid].present? ? { oid: params[:oid] } : {})
+  end
+
+  def redirect_description_intercept_not_found
+    redirect_to description_intercepts_path, alert: "Description intercept not found."
   end
 
   def fetch_versions
