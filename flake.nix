@@ -48,25 +48,95 @@
           "--with-zlib-lib=${zlib.out}/lib"
         ];
         postgresql = pkgs.postgresql_18;
+
+        # Worktree isolation hook (same pattern as backend)
+        worktree = rec {
+          isWorktree = ''
+            if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+              if [ "$(git rev-parse --git-dir 2>/dev/null)" != "$(git rev-parse --git-common-dir 2>/dev/null)" ]; then
+                echo "true"
+              else
+                echo "false"
+              fi
+            else
+              echo "false"
+            fi
+          '';
+
+          id = ''
+            if [ "$(${isWorktree})" = "true" ]; then
+              git rev-parse --show-toplevel | md5sum | cut -c1-8
+            else
+              echo "main"
+            fi
+          '';
+        };
+
         pg-environment-variables = ''
-          export PGDATA=$PWD/.nix/postgres/data
-          export PGHOST=$PWD/.nix/postgres
-          export PGPORT=5432
+          if [ "$(${worktree.isWorktree})" = "true" ]; then
+            WT_ID=$(${worktree.id})
+            export PGHOST="/tmp/pg-$WT_ID"
+            export PGDATA="$HOME/.local/share/postgres/worktrees/$WT_ID"
+            mkdir -p "$PGHOST" "$PGDATA"
+          else
+            export PGDATA=$PWD/.nix/postgres/data
+            export PGHOST=$PWD/.nix/postgres
+            export PGPORT=5432
+          fi
           export DB_USER=""
         '';
 
         postgresql-start = pkgs.writeShellScriptBin "pg-start" ''
           ${pg-environment-variables}
 
-          mkdir -p $PGHOST
-
           if [ ! -d $PGDATA ]; then
             mkdir -p $PGDATA
-
             ${postgresql}/bin/initdb $PGDATA --auth=trust
           fi
 
           ${postgresql}/bin/postgres -k $PGHOST -c listen_addresses=''' -c unix_socket_directories=$PGHOST
+        '';
+
+        worktree-info = pkgs.writeShellScriptBin "worktree-info" ''
+          if [ "$(${worktree.isWorktree})" = "true" ]; then
+            WT_ID=$(${worktree.id})
+            echo "Worktree mode enabled"
+            echo "  ID:          $WT_ID"
+            echo "  PGHOST:      /tmp/pg-$WT_ID"
+            echo "  PGDATA:      $HOME/.local/share/postgres/worktrees/$WT_ID"
+          else
+            echo "Normal checkout (not a worktree)"
+          fi
+        '';
+
+        worktree-clean = pkgs.writeShellScriptBin "worktree-clean" ''
+          set -euo pipefail
+          if [ "$(${worktree.isWorktree})" != "true" ]; then
+            echo "Not inside a worktree. Nothing to clean."
+            exit 0
+          fi
+
+          WT_ID=$(${worktree.id})
+          echo "Cleaning worktree $WT_ID..."
+
+          if command -v dropdb >/dev/null 2>&1; then
+            dropdb --if-exists "tariff_admin_development" || true
+            dropdb --if-exists "tariff_admin_test" || true
+          fi
+
+          rm -rf "/tmp/pg-$WT_ID"
+          rm -rf "$HOME/.local/share/postgres/worktrees/$WT_ID"
+          rm -rf ".bundle"
+          rm -rf "$HOME/.local/share/gem/worktrees/$WT_ID" 2>/dev/null || true
+          rm -rf "$HOME/.cache/bundle/worktrees/$WT_ID" 2>/dev/null || true
+
+          # Per-worktree Yarn cache + generated webpack packs (for bin/webpack)
+          rm -rf "$HOME/.local/share/yarn/worktrees/$WT_ID"
+          rm -rf public/packs public/packs-test 2>/dev/null || true
+
+          rm -f "$HOME/.local/share/postgres/worktrees/$WT_ID/.worktree-initialized" 2>/dev/null || true
+
+          echo "Worktree $WT_ID cleaned (Postgres + bundle + yarn + packs)."
         '';
 
         lint = pkgs.writeShellScriptBin "lint" ''
@@ -94,8 +164,23 @@
             export CPATH="${pkgs.zlib.dev}/include:$CPATH"
             export LIBRARY_PATH="${pkgs.zlib.out}/lib:$LIBRARY_PATH"
 
-            export GEM_HOME=$PWD/.nix/ruby/$(${ruby}/bin/ruby -e "puts RUBY_VERSION")
-            mkdir -p $GEM_HOME
+            # Worktree-aware Bundler/Ruby isolation
+            if [ "$(${worktree.isWorktree})" = "true" ]; then
+              WT_ID=$(${worktree.id})
+              export GEM_HOME="$HOME/.local/share/gem/worktrees/$WT_ID"
+              export BUNDLE_PATH=".bundle"
+              mkdir -p "$GEM_HOME" ".bundle"
+              echo "Worktree Bundler isolation enabled (ID: $WT_ID)"
+            else
+              export GEM_HOME=$PWD/.nix/ruby/$(${ruby}/bin/ruby -e "puts RUBY_VERSION")
+              mkdir -p $GEM_HOME
+            fi
+
+            # Per-worktree Yarn cache (for bin/webpack after yarn)
+            if [ "$(${worktree.isWorktree})" = "true" ]; then
+              export YARN_CACHE_FOLDER="$HOME/.local/share/yarn/worktrees/$WT_ID"
+              mkdir -p "$YARN_CACHE_FOLDER"
+            fi
 
             export BUNDLE_BUILD__PG="${builtins.concatStringsSep " " postgresqlBuildFlags}"
             export GEM_PATH=$GEM_HOME
@@ -105,6 +190,43 @@
             export BUNDLE_BUILD__ZLIB="${builtins.concatStringsSep " " zlibBuildFlags}"
 
             ${pg-environment-variables}
+
+            # === Automatic per-worktree database initialization ===
+            if [ "$(${worktree.isWorktree})" = "true" ]; then
+              WT_ID=$(${worktree.id})
+              MARKER="$PGDATA/.worktree-initialized"
+
+              if [ ! -f "$MARKER" ]; then
+                echo ""
+                echo "==> First time in this worktree (ID: $WT_ID)"
+                echo "    Initializing databases (db:create + db:structure:load + db:test:prepare)..."
+                echo ""
+
+                bundle exec rails db:create 2>&1 | tail -3 || true
+                bundle exec rails db:structure:load 2>&1 | tail -5 || true
+
+                echo ""
+                echo "    Preparing test database..."
+                RAILS_ENV=test bundle exec rails db:test:prepare 2>&1 | tail -5 || true
+
+                echo ""
+                echo "    Installing JS dependencies and compiling webpack packs..."
+                yarn install --frozen-lockfile 2>&1 | tail -5 || true
+                bin/webpack 2>&1 | tail -8 || true
+
+                touch "$MARKER"
+                echo ""
+                echo "==> Worktree databases + assets ready."
+                echo ""
+              fi
+            fi
+
+            ${worktree-info}/bin/worktree-info
+
+            # Ensure pre-commit hooks are installed (so they actually run on commit)
+            if command -v pre-commit >/dev/null 2>&1; then
+              pre-commit install --install-hooks 2>/dev/null || true
+            fi
           '';
 
           buildInputs = [
@@ -112,6 +234,7 @@
             init
             lint
             lint-all
+            pkgs.pre-commit
             pkgs.circleci-cli
             pkgs.python3
             pkgs.rufo
@@ -123,6 +246,8 @@
             postgresql-start
             ruby
             update-providers
+            worktree-info
+            worktree-clean
           ];
         };
       }
