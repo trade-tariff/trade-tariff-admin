@@ -199,9 +199,11 @@
               if [ ! -f "$MARKER" ]; then
                 echo ""
                 echo "==> First time in this worktree (ID: $WT_ID)"
-                echo "    Initializing databases (db:create + db:structure:load + db:test:prepare)..."
+                echo "    Installing gems + initializing databases + assets..."
                 echo ""
 
+                rm -rf .bundle
+                bundle install --jobs=4 --retry=3 2>&1 | tail -8 || true
                 bundle exec rails db:create 2>&1 | tail -3 || true
                 bundle exec rails db:structure:load 2>&1 | tail -5 || true
 
@@ -212,7 +214,7 @@
                 echo ""
                 echo "    Installing JS dependencies and compiling webpack packs..."
                 yarn install --frozen-lockfile 2>&1 | tail -5 || true
-                bin/webpack 2>&1 | tail -8 || true
+                bundle exec bin/webpack 2>&1 | tail -8 || true
 
                 touch "$MARKER"
                 echo ""
