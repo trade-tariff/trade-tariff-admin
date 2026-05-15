@@ -205,14 +205,20 @@
                 echo "    Installing gems + initializing databases + assets..."
                 echo ""
 
+                # Start Postgres as a proper daemon on the short socket if not already running
+                if ! pg_isready -h "$PGHOST" -p "${PGPORT:-5432}" >/dev/null 2>&1; then
+                  echo "    Starting Postgres as daemon on short socket..."
+                  pg_ctl start -D "$PGDATA" -l "/tmp/pg-$WT_ID.log" \
+                    -o "-k $PGHOST -c listen_addresses=''" -w -t 30 || true
+                fi
+
                 rm -rf .bundle
                 bundle install --jobs=4 --retry=3 2>&1 | tail -8 || true
-                bundle exec rails db:create 2>&1 | tail -3 || true
-                bundle exec rails db:structure:load 2>&1 | tail -5 || true
+                bundle exec rails db:prepare 2>&1 | tail -8 || true
 
                 echo ""
                 echo "    Preparing test database..."
-                RAILS_ENV=test bundle exec rails db:test:prepare 2>&1 | tail -5 || true
+                RAILS_ENV=test bundle exec rails db:prepare 2>&1 | tail -5 || true
 
                 echo ""
                 echo "    Installing JS dependencies and compiling webpack packs..."
