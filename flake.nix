@@ -169,6 +169,9 @@
               WT_ID=$(${worktree.id})
               export GEM_HOME="$HOME/.local/share/gem/worktrees/$WT_ID"
               export BUNDLE_PATH=".bundle"
+              export BUNDLE_APP_CONFIG=".bundle"
+              export BUNDLE_IGNORE_CONFIG=1
+              export BUNDLE_FORCE_RUBY_PLATFORM=1
               mkdir -p "$GEM_HOME" ".bundle"
               echo "Worktree Bundler isolation enabled (ID: $WT_ID)"
             else
