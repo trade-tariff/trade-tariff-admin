@@ -371,6 +371,14 @@ $govuk-image-url-function: frontend-image-url;
   gap: govuk-spacing(2);
 }
 
+.description-intercept-actions {
+  align-items: flex-start;
+
+  &__delete-form {
+    margin: 0;
+  }
+}
+
 .description-intercept-short-code-pill {
   display: inline-flex;
   align-items: flex-start;

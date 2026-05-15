@@ -80,9 +80,16 @@
   </div>
 </dl>
 
-<% if @description_intercept.current? && policy(@description_intercept).update? %>
-  <div class="govuk-button-group">
-    <%= link_to 'Edit', edit_description_intercept_path(@description_intercept), class: 'govuk-button' %>
+<% if @description_intercept.current? && (policy(@description_intercept).update? || policy(@description_intercept).destroy?) %>
+  <div class="govuk-button-group description-intercept-actions">
+    <% if policy(@description_intercept).update? %>
+      <%= govuk_button_link_to 'Edit', edit_description_intercept_path(@description_intercept) %>
+    <% end %>
+    <% if policy(@description_intercept).destroy? %>
+      <%= govuk_button_link_to 'Delete description intercept',
+                               delete_description_intercept_path(@description_intercept),
+                               warning: true %>
+    <% end %>
   </div>
 <% end %>
 
