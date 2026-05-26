@@ -15,7 +15,7 @@ gem "pg", require: false
 gem "webpacker"
 
 # GovUK
-gem "govuk-components", "6.1.0"
+gem "govuk-components", "6.2.0"
 gem "govuk_design_system_formbuilder"
 
 # Markdown
