@@ -12,10 +12,17 @@ module NavigationHelper
         items: [
           NavigationItem.new(
             text: "Section & chapter notes",
+            href: customs_tariff_updates_path,
+            policy_class: CustomsTariff::Update,
+            active_when: /\/customs_tariff/,
+            service: :uk,
+          ),
+          NavigationItem.new(
+            text: "Section & chapter notes",
             href: notes_sections_path,
             policy_class: SectionNote,
             active_when: /\/notes/,
-            service: nil,
+            service: :xi,
           ),
           NavigationItem.new(
             text: "News",

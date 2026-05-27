@@ -24,7 +24,7 @@ RSpec.describe "Section Note management" do
 
       fill_in "Content", with: section_note.content
       click_button "Create Section note"
-      verify current_path == dashboard_path
+      verify current_path == customs_tariff_updates_path
     end
   end
 
@@ -50,7 +50,7 @@ RSpec.describe "Section Note management" do
 
       fill_in "Content", with: "new content"
       click_button "Update Section note"
-      verify current_path == dashboard_path
+      verify current_path == customs_tariff_updates_path
     end
   end
 
@@ -71,7 +71,7 @@ RSpec.describe "Section Note management" do
     it "can be removed" do
       ensure_on edit_notes_section_section_note_path(section)
       click_link "Remove"
-      verify current_path == dashboard_path
+      verify current_path == customs_tariff_updates_path
     end
   end
 end

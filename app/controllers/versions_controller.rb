@@ -31,7 +31,7 @@ private
     filter = { page: params[:page] || 1 }
     filter[:item_type] = params[:item_type] if params[:item_type].present?
     filter[:event] = event_filter if event_filter.present?
-    filter[:exclude_item_type] = %w[ChapterNote SectionNote] if params[:item_type].blank?
+    filter[:exclude_item_type] = %w[ChapterNote SectionNote CustomsTariffSectionNote] if params[:item_type].blank?
     filter
   end
 

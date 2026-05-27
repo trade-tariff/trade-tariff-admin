@@ -1,0 +1,27 @@
+module CustomsTariff
+  class SectionNote
+    include ApiEntity
+
+    attributes :section_id, :content, :customs_tariff_update_version, :file_diff, :versions
+
+    set_singular_path   "admin/customs_tariff_updates/:customs_tariff_update_version/section_notes/:id"
+    set_collection_path "admin/customs_tariff_updates/:customs_tariff_update_version/section_notes"
+
+    def file_diff_status
+      return :new       if file_diff.nil?
+      return :unchanged if file_diff.respond_to?(:empty?) && file_diff.empty?
+
+      :changed
+    end
+
+    def preview
+      return if content.blank?
+
+      GovspeakPreview.new(TariffNoteFormatter.new(content).format).render
+    end
+
+    def version_objects
+      @version_objects ||= (versions || []).map { |v| Version.new(v.merge("resource_id" => v["id"])) }
+    end
+  end
+end

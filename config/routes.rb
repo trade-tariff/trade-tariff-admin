@@ -163,6 +163,22 @@ Rails.application.routes.draw do
     resources :measure_type_mappings, only: %i[index new create destroy]
   end
 
+  scope path: "customs_tariff", module: "customs_tariff" do
+    get  "updates", to: "updates#index", as: :customs_tariff_updates
+    post "updates/section_notes/preview", to: "updates/section_notes#preview", as: :customs_tariff_section_note_preview
+
+    constraints(version: /[^\/]+/) do
+      get   "updates/:version",               to: "updates#show",          as: :customs_tariff_update
+      patch "updates/:version/update_status", to: "updates#update_status", as: :update_status_customs_tariff_update
+    end
+
+    constraints(update_version: /[^\/]+/) do
+      get   "updates/:update_version/section_notes/:id/edit", to: "updates/section_notes#edit",   as: :edit_customs_tariff_update_section_note
+      patch "updates/:update_version/section_notes/:id",      to: "updates/section_notes#update", as: :customs_tariff_update_section_note
+      put   "updates/:update_version/section_notes/:id",      to: "updates/section_notes#update"
+    end
+  end
+
   resources :tariff_updates, only: %i[index show] do
     collection do
       post "/download", to: "tariff_updates#download"
