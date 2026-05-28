@@ -32,6 +32,22 @@ RSpec.describe CustomsTariff::UpdatesController, type: :request do
     }
   end
 
+  let(:updates_list_response) do
+    {
+      status: 200,
+      headers: { "content-type" => "application/json; charset=utf-8" },
+      body: {
+        data: [
+          {
+            type: "customs_tariff_update",
+            id: update_version,
+            attributes: update_attributes,
+          },
+        ],
+      }.to_json,
+    }
+  end
+
   describe "GET #index" do
     let(:make_request) { get customs_tariff_updates_path }
 
@@ -62,10 +78,16 @@ RSpec.describe CustomsTariff::UpdatesController, type: :request do
           headers: { "content-type" => "application/json; charset=utf-8" },
           body: { data: [] }.to_json,
         )
+      stub_api_request("/customs_tariff_updates").and_return(updates_list_response)
     end
 
     it { is_expected.to have_http_status(:ok) }
     it { is_expected.to render_template(:show) }
+
+    it "renders the compare form" do
+      make_request
+      expect(response.body).to include(customs_tariff_update_comparison_path(update_version))
+    end
   end
 
   describe "PATCH #update_status" do

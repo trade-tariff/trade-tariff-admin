@@ -8,6 +8,7 @@ module CustomsTariff
     def show
       @update = CustomsTariff::Update.find(params[:version])
       authorize @update, :show?
+      @updates = CustomsTariff::Update.all
       @section_notes = CustomsTariff::SectionNote.all(customs_tariff_update_version: params[:version])
     end
 

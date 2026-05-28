@@ -32,6 +32,14 @@ module VersionsHelper
     safe_join(version.changes.map { |field, change| render_field_change(field, change) })
   end
 
+  def side_by_side_diff_html(version, from_version:, to_version:)
+    return nil unless version.has_changeset?
+
+    safe_join(version.changes.map do |field, change|
+      render_side_by_side_field(field, change, from_version:, to_version:)
+    end)
+  end
+
 private
 
   def version_oid(version)
@@ -82,6 +90,43 @@ private
       content_tag(:del, change["old"].to_s, class: "diff-delete") +
         content_tag(:span, " -> ", class: "diff-unchanged") +
         content_tag(:ins, change["new"].to_s, class: "diff-insert")
+    end
+  end
+
+  def render_side_by_side_field(field, change, from_version:, to_version:)
+    # Text diffs use version labels as panel headings rather than the field name,
+    # since this helper is called in contexts where version identity is more meaningful.
+    if change["type"] == "text"
+      render_side_by_side_text(change, from_version:, to_version:)
+    else
+      render_field_change(field, change)
+    end
+  end
+
+  def render_side_by_side_text(change, from_version:, to_version:)
+    ops = Array(change["diff"])
+
+    old_content = safe_join(
+      ops.reject { |op| op["op"] == "insert" }.map do |op|
+        op["op"] == "delete" ? content_tag(:del, op["text"], class: "diff-delete") : op["text"]
+      end,
+    )
+
+    new_content = safe_join(
+      ops.reject { |op| op["op"] == "delete" }.map do |op|
+        op["op"] == "insert" ? content_tag(:ins, op["text"], class: "diff-insert") : op["text"]
+      end,
+    )
+
+    content_tag(:div, class: "diff-side-by-side") do
+      diff_panel(from_version, old_content) + diff_panel(to_version, new_content)
+    end
+  end
+
+  def diff_panel(label, content)
+    content_tag(:div, class: "diff-side-by-side__panel") do
+      content_tag(:strong, label, class: "diff-side-by-side__label") +
+        content_tag(:div, content, class: "diff-side-by-side__content")
     end
   end
 end

@@ -14,6 +14,16 @@ module CustomsTariff
       :changed
     end
 
+    def has_changeset?
+      file_diff_status == :changed
+    end
+
+    def changes
+      return {} unless file_diff.is_a?(Hash)
+
+      file_diff["changes"] || {}
+    end
+
     def preview
       return if content.blank?
 

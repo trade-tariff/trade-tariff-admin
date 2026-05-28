@@ -38,6 +38,17 @@
   <% end %>
 <% end %>
 
+<h2 class="govuk-heading-m">Compare with another version</h2>
+
+<%= form_with url: customs_tariff_update_comparison_path(@update.version), method: :get do |f| %>
+  <%= f.select :compare_version,
+        @updates.reject { |u| u.version == @update.version }
+                .map { |u| ["#{u.version} (#{u.status})", u.version] },
+        { include_blank: "Select a version..." },
+        { class: "govuk-select" } %>
+  <%= f.submit "Compare", class: "govuk-button govuk-button--secondary" %>
+<% end %>
+
 <h2 class="govuk-heading-m">Section Notes</h2>
 
 <%= govuk_table do |table|

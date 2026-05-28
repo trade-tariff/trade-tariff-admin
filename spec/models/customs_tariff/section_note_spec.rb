@@ -57,4 +57,34 @@ RSpec.describe CustomsTariff::SectionNote do
       expect(version.resource_id).to eq(42)
     end
   end
+
+  describe "#has_changeset?" do
+    it "returns false when file_diff is nil" do
+      expect(section_note.has_changeset?).to be false
+    end
+
+    it "returns false when file_diff is empty" do
+      section_note.file_diff = []
+      expect(section_note.has_changeset?).to be false
+    end
+
+    it "returns true when file_diff has changed_fields" do
+      section_note.file_diff = { "changed_fields" => %w[content], "changes" => {} }
+      expect(section_note.has_changeset?).to be true
+    end
+  end
+
+  describe "#changes" do
+    it "returns empty hash when file_diff is nil" do
+      expect(section_note.changes).to eq({})
+    end
+
+    it "returns the changes hash from file_diff" do
+      section_note.file_diff = {
+        "changed_fields" => %w[content],
+        "changes" => { "content" => { "type" => "simple", "old" => "a", "new" => "b" } },
+      }
+      expect(section_note.changes).to eq("content" => { "type" => "simple", "old" => "a", "new" => "b" })
+    end
+  end
 end
