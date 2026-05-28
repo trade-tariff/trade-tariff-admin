@@ -170,12 +170,14 @@ Rails.application.routes.draw do
     constraints(version: /[^\/]+/) do
       get   "updates/:version",               to: "updates#show",          as: :customs_tariff_update
       patch "updates/:version/update_status", to: "updates#update_status", as: :update_status_customs_tariff_update
+      get   "updates/:version/compare",       to: "updates/comparisons#index", as: :customs_tariff_update_comparison
     end
 
     constraints(update_version: /[^\/]+/) do
       get   "updates/:update_version/section_notes/:id/edit", to: "updates/section_notes#edit",   as: :edit_customs_tariff_update_section_note
       patch "updates/:update_version/section_notes/:id",      to: "updates/section_notes#update", as: :customs_tariff_update_section_note
       put   "updates/:update_version/section_notes/:id",      to: "updates/section_notes#update"
+      get   "updates/:update_version/compare/section_notes/:id", to: "updates/comparisons#show", as: :customs_tariff_update_comparison_section_note
     end
   end
 
