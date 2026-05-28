@@ -1,10 +1,11 @@
-<h2>Section <%= @section_note.section_id %> &mdash; <%= @update.version %> compared against <%= @compare_version %></h2>
-
-<%= govuk_back_link(
-  text: "Back to comparison",
+<p class="govuk-body">
+  <%= govuk_back_link(
+  text: "Back to comparison summary",
   href: customs_tariff_update_comparison_path(@update.version, compare_version: @compare_version)
 ) %>
+<p>
 
+<h2>Section <%= @section_note.section_id %> &mdash; <%= @update.version %> compared against <%= @compare_version %></h2>
 <% if @section_note.has_changeset? %>
   <%= side_by_side_diff_html(@section_note, from_version: @compare_version, to_version: @update.version) %>
 <% else %>

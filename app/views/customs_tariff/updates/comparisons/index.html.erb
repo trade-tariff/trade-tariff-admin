@@ -1,6 +1,8 @@
-<h2>Comparing update <%= @update.version %> against <%= @compare_version %></h2>
+<p class="govuk-body">
+  <%= govuk_back_link(text: "Back to update #{@update.version}", href: customs_tariff_update_path(@update.version)) %>
+</p>
 
-<%= govuk_back_link(text: "Back to update", href: customs_tariff_update_path(@update.version)) %>
+<h2>Comparing update <%= @update.version %> against <%= @compare_version %></h2>
 
 <%= govuk_table do |table|
   table.with_head do |head|
