@@ -60,3 +60,8 @@ variable "enable_alarms" {
   description = "Whether to enable CPU alarms for the ECS service"
   type        = bool
 }
+
+variable "enable_observability_alerts" {
+  type    = bool
+  default = false
+}

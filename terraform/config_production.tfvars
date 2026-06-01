@@ -6,3 +6,5 @@ service_count = 3
 min_capacity  = 2
 max_capacity  = 5
 enable_alarms = true
+
+enable_observability_alerts = true
