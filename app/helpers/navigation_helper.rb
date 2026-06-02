@@ -3,6 +3,7 @@ module NavigationHelper
   NavigationItem = Data.define(:text, :href, :policy_class, :active_when, :service)
 
   def navigation_sections
+    versioning = TradeTariffAdmin.enable_section_chapter_note_versioning?
     @navigation_sections ||= [
       NavigationSection.new(
         key: :ott_admin,
@@ -12,9 +13,9 @@ module NavigationHelper
         items: [
           NavigationItem.new(
             text: "Section & chapter notes",
-            href: customs_tariff_updates_path,
-            policy_class: CustomsTariff::Update,
-            active_when: /\/customs_tariff/,
+            href: versioning ? customs_tariff_updates_path : notes_sections_path,
+            policy_class: versioning ? CustomsTariff::Update : SectionNote,
+            active_when: versioning ? %r{/customs_tariff} : %r{/notes},
             service: :uk,
           ),
           NavigationItem.new(

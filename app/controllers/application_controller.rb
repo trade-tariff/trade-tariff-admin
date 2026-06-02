@@ -25,7 +25,7 @@ class ApplicationController < ActionController::Base
   def default_landing_path
     return references_sections_path if current_user&.hmrc_admin?
     # dashboard is routed to pages#index however to replicate behaviour reroute to customs_tariff_updates_path for UK
-    return customs_tariff_updates_path if TradeTariffAdmin::ServiceChooser.uk?
+    return customs_tariff_updates_path if TradeTariffAdmin::ServiceChooser.uk? && TradeTariffAdmin.enable_section_chapter_note_versioning?
 
     dashboard_path
   end
