@@ -176,5 +176,9 @@ module TradeTariffAdmin
         "#{environment}_#{base_name}"
       end.to_sym
     end
+
+    def enable_section_chapter_note_versioning?
+      ENV.fetch("ENABLE_SECTION_CHAPTER_NOTE_VERSIONING", "false") == "true"
+    end
   end
 end
