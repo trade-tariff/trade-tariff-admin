@@ -36,8 +36,11 @@
           exec $binary "$@"
         '';
 
-        postgresqlBuildFlags = with pkgs; [
-          "--with-pg-config=${lib.getDev postgresql_18.pg_config}/bin/pg_config"
+        postgresql = pkgs.postgresql_18;
+        pgConfig = postgresql.pg_config;
+
+        postgresqlBuildFlags = [
+          "--with-pg-config=${pgConfig}/bin/pg_config"
         ];
         psychBuildFlags = with pkgs; [
           "--with-libyaml-include=${libyaml.dev}/include"
@@ -47,7 +50,6 @@
           "--with-zlib-include=${zlib.dev}/include"
           "--with-zlib-lib=${zlib.out}/lib"
         ];
-        postgresql = pkgs.postgresql_18;
 
         # Worktree isolation hook (same pattern as backend)
         # Disable Git fsmonitor for hook-local probes. If these git commands start
@@ -320,6 +322,7 @@
             pkgs.yarn
             pkgs.zlib
             postgresql
+            pgConfig
             postgresql-start
             ruby
             update-providers
