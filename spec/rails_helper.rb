@@ -45,6 +45,10 @@ RSpec.configure do |config|
     DatabaseCleaner.clean_with(:deletion)
   end
 
+  config.before do
+    allow(TradeTariffAdmin).to receive(:enable_section_chapter_note_versioning?).and_return(true)
+  end
+
   config.around do |example|
     DatabaseCleaner.cleaning do
       example.run

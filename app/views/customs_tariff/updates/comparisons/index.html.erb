@@ -1,0 +1,38 @@
+<p class="govuk-body">
+  <%= govuk_back_link(text: "Back to update #{@update.version}", href: customs_tariff_update_path(@update.version)) %>
+</p>
+
+<h2>Comparing update <%= @update.version %> against <%= @compare_version %></h2>
+
+<%= govuk_table do |table|
+  table.with_head do |head|
+    head.with_row do |row|
+      row.with_cell(text: "Section")
+      row.with_cell(text: "Change")
+      row.with_cell(text: "Actions")
+    end
+  end
+
+  table.with_body do |body|
+    @section_notes.each do |note|
+      chip_colour = { new: "blue", changed: "orange", unchanged: "grey" }.fetch(note.file_diff_status, "grey")
+
+      body.with_row do |row|
+        row.with_cell(text: "Section #{note.section_id}")
+        row.with_cell do
+          tag.strong(note.file_diff_status.to_s.capitalize, class: "govuk-tag govuk-tag--#{chip_colour}")
+        end
+        row.with_cell do
+          unless note.file_diff_status == :new || note.file_diff_status == :unchanged
+            link_to "View diff",
+                    customs_tariff_update_comparison_section_note_path(
+                      @update.version, note.id,
+                      compare_version: @compare_version
+                    ),
+                    class: "govuk-link"
+          end
+        end
+      end
+    end
+  end
+end %>

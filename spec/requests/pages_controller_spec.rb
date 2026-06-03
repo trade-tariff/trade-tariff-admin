@@ -9,20 +9,20 @@ RSpec.describe PagesController do
 
   describe "GET #index" do
     context "when authorised" do
-      it "returns success" do
+      it "redirects to customs tariff updates" do
         get dashboard_path
 
-        expect(response).to have_http_status :ok
+        expect(response).to redirect_to(customs_tariff_updates_path)
       end
     end
 
     context "when user is an auditor" do
       let(:current_user) { create(:user, :auditor) }
 
-      it "returns success" do
+      it "redirects to customs tariff updates" do
         get dashboard_path
 
-        expect(response).to have_http_status :ok
+        expect(response).to redirect_to(customs_tariff_updates_path)
       end
     end
 
@@ -39,10 +39,10 @@ RSpec.describe PagesController do
     context "when user is a guest" do
       let(:current_user) { create(:user, :guest) }
 
-      it "is forbidden" do
+      it "redirects to customs tariff updates" do
         get dashboard_path
 
-        expect(response).to have_http_status :forbidden
+        expect(response).to redirect_to(customs_tariff_updates_path)
       end
     end
   end

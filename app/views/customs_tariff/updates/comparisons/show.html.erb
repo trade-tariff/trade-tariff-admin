@@ -1,0 +1,23 @@
+<p class="govuk-body">
+  <%= govuk_back_link(
+  text: "Back to comparison summary",
+  href: customs_tariff_update_comparison_path(@update.version, compare_version: @compare_version)
+) %>
+<p>
+
+<h2>Section <%= @section_note.section_id %> &mdash; <%= @update.version %> compared against <%= @compare_version %></h2>
+<% if @section_note.has_changeset? %>
+  <%= side_by_side_diff_html(@section_note, from_version: @compare_version, to_version: @update.version) %>
+<% else %>
+  <%= govuk_inset_text do %>
+    No changes in this section between <%= @update.version %> and <%= @compare_version %>.
+  <% end %>
+<% end %>
+
+<% if !@update.rejected? && policy(@section_note).edit? %>
+  <p class="govuk-body">
+    <%= link_to "Edit this note",
+          edit_customs_tariff_update_section_note_path(@update.version, @section_note.id),
+          class: "govuk-link" %>
+  </p>
+<% end %>

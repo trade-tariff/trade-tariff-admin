@@ -25,8 +25,8 @@ RSpec.describe ApplicationController do
         allow(controller).to receive(:current_user).and_return(user)
       end
 
-      it "returns dashboard_path" do
-        expect(controller.default_landing_path).to eq(dashboard_path)
+      it "returns customs_tariff_updates_path" do
+        expect(controller.default_landing_path).to eq(customs_tariff_updates_path)
       end
     end
 
@@ -37,8 +37,8 @@ RSpec.describe ApplicationController do
         allow(controller).to receive(:current_user).and_return(user)
       end
 
-      it "returns dashboard_path" do
-        expect(controller.default_landing_path).to eq(dashboard_path)
+      it "returns customs_tariff_updates_path" do
+        expect(controller.default_landing_path).to eq(customs_tariff_updates_path)
       end
     end
 
@@ -49,8 +49,8 @@ RSpec.describe ApplicationController do
         allow(controller).to receive(:current_user).and_return(user)
       end
 
-      it "returns dashboard_path" do
-        expect(controller.default_landing_path).to eq(dashboard_path)
+      it "returns customs_tariff_updates_path" do
+        expect(controller.default_landing_path).to eq(customs_tariff_updates_path)
       end
     end
 
@@ -59,8 +59,8 @@ RSpec.describe ApplicationController do
         allow(controller).to receive(:current_user).and_return(nil)
       end
 
-      it "returns dashboard_path" do
-        expect(controller.default_landing_path).to eq(dashboard_path)
+      it "returns customs_tariff_updates_path" do
+        expect(controller.default_landing_path).to eq(customs_tariff_updates_path)
       end
     end
   end

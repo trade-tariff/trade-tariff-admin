@@ -18,7 +18,7 @@ RSpec.describe "BasicSessionsController", type: :request do
 
     it "sets return_url to default_landing_path when not provided" do
       get "/basic_sessions/new"
-      expect(assigns(:basic_session).return_url).to eq("/dashboard")
+      expect(assigns(:basic_session).return_url).to eq("/customs_tariff/updates")
     end
   end
 

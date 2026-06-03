@@ -17,10 +17,10 @@ RSpec.describe NavigationHelper, type: :helper do
       expect(helper.navigation_sections.map(&:key)).to eq(%i[ott_admin classification spimm manage_users])
     end
 
-    it "defines OTT Admin with 6 items" do
+    it "defines OTT Admin with 8 items" do
       section = helper.navigation_sections.find { |s| s.key == :ott_admin }
       expect(section.items.map(&:text)).to eq(
-        ["Section & chapter notes", "News", "Live Issues", "Quotas", "Updates", "Reports", "Rollbacks"],
+        ["Section & chapter notes", "Section & chapter notes", "News", "Live Issues", "Quotas", "Updates", "Reports", "Rollbacks"],
       )
     end
 
@@ -184,8 +184,8 @@ RSpec.describe NavigationHelper, type: :helper do
 
     let(:user) { build(:user, :technical_operator) }
 
-    context "when on the notes page" do
-      let(:request_path) { "/notes/1" }
+    context "when on the customs tariff page" do
+      let(:request_path) { "/customs_tariff/updates" }
 
       it "returns OTT Admin section" do
         expect(helper.current_navigation_section.key).to eq(:ott_admin)
@@ -251,7 +251,7 @@ RSpec.describe NavigationHelper, type: :helper do
     include_context "with UK service"
 
     let(:user) { build(:user, :technical_operator) }
-    let(:request_path) { "/notes/1" }
+    let(:request_path) { "/customs_tariff/updates" }
 
     it "returns true for OTT Admin when path matches" do
       section = helper.visible_navigation_sections.find { |s| s.key == :ott_admin }
@@ -271,7 +271,7 @@ RSpec.describe NavigationHelper, type: :helper do
 
     it "returns first item href for sections with items" do
       section = helper.visible_navigation_sections.find { |s| s.key == :ott_admin }
-      expect(helper.section_href(section)).to eq(helper.notes_sections_path)
+      expect(helper.section_href(section)).to eq(helper.customs_tariff_updates_path)
     end
 
     it "returns standalone href for Manage Users" do

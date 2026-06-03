@@ -30,7 +30,7 @@ RSpec.describe SessionsController do
 
       it "redirects to the default landing page" do
         get :login
-        expect(response).to redirect_to(dashboard_path)
+        expect(response).to redirect_to(customs_tariff_updates_path)
       end
     end
   end
@@ -75,7 +75,7 @@ RSpec.describe SessionsController do
 
       it "creates a session and signs the user in", :aggregate_failures do
         expect { get :handle_redirect }.to change(Session, :count)
-        expect(response).to redirect_to(dashboard_path)
+        expect(response).to redirect_to(customs_tariff_updates_path)
         expect(Session.last.user.email).to eq("user@example.com")
         expect(Session.last.raw_info).to eq(token_payload)
         expect(Session.last.expires_at.to_i).to eq(Time.zone.at(token_payload["exp"]).to_i)

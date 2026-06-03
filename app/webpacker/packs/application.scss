@@ -347,6 +347,36 @@ $govuk-image-url-function: frontend-image-url;
   }
 }
 
+.diff-side-by-side {
+  display: flex;
+  gap: govuk-spacing(3);
+  margin-bottom: govuk-spacing(2);
+
+  @include govuk-media-query($until: tablet) {
+    flex-direction: column;
+  }
+
+  &__panel {
+    flex: 1;
+    background-color: govuk-colour("light-grey");
+    padding: govuk-spacing(2) govuk-spacing(3);
+    border-radius: 2px;
+    min-width: 0;
+  }
+
+  &__label {
+    display: block;
+    margin-bottom: govuk-spacing(1);
+    @include govuk-font($size: 16, $weight: bold);
+  }
+
+  &__content {
+    @include govuk-font($size: 16);
+    word-break: break-word;
+    white-space: pre-wrap;
+  }
+}
+
 
 
 
