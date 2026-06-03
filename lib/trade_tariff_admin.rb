@@ -134,7 +134,9 @@ module TradeTariffAdmin
     end
 
     def environment
-      ENV.fetch("ENVIRONMENT", "production")
+      env = ENV.fetch("ENVIRONMENT", "production")
+
+      ActiveSupport::StringInquirer.new(env)
     end
 
     def frontend_host
@@ -178,7 +180,10 @@ module TradeTariffAdmin
     end
 
     def enable_section_chapter_note_versioning?
-      ENV.fetch("ENABLE_SECTION_CHAPTER_NOTE_VERSIONING", "false") == "true"
+      return false if environment.production?
+      return false if TradeTariffAdmin::ServiceChooser.xi?
+
+      true
     end
   end
 end
