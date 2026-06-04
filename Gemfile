@@ -60,6 +60,7 @@ group :test do
   gem "capybara"
   gem "database_cleaner"
   gem "factory_bot_rails"
+  gem "parallel_tests"
   gem "rails-controller-testing"
   gem "rspec_junit_formatter"
   gem "rspec-rails"

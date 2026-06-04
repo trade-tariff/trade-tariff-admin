@@ -1,2 +1,3 @@
+--require ./spec/parallel_rspec
 --require rails_helper
 --color
