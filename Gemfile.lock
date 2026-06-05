@@ -274,6 +274,8 @@ GEM
     ostruct (0.6.3)
     pagy (9.4.0)
     parallel (1.28.0)
+    parallel_tests (5.7.0)
+      parallel
     parser (3.3.11.1)
       ast (~> 2.4.1)
       racc
@@ -521,6 +523,7 @@ DEPENDENCIES
   lograge
   logstash-event
   nokogiri
+  parallel_tests
   pg
   pry-rails
   puma
