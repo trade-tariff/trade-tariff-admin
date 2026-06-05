@@ -1,0 +1,23 @@
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <h1 class="govuk-heading-l">Search diagnostics</h1>
+
+    <%= form_with url: search_diagnostics_path, method: :get do |form| %>
+      <div class="govuk-form-group">
+        <%= form.label :request_id, "Request ID", class: "govuk-label" %>
+        <div id="request-id-hint" class="govuk-hint">
+          Enter the request ID from the trader search journey.
+        </div>
+        <%= form.text_field :request_id,
+              value: params[:request_id],
+              class: "govuk-input",
+              "aria-describedby": "request-id-hint",
+              autocomplete: "off" %>
+      </div>
+
+      <div class="govuk-button-group">
+        <%= form.submit "Find diagnostics", class: "govuk-button" %>
+      </div>
+    <% end %>
+  </div>
+</div>
