@@ -48,6 +48,105 @@ RSpec.describe SearchDiagnosticsController do
                   query: "horse",
                 },
               },
+              {
+                timestamp: "2026-06-05 09:59:01.000",
+                event: "exact_match_selected",
+                search_type: "classic",
+                fields: {
+                  request_id: "request-123",
+                  search_type: "classic",
+                  query: "horse",
+                  match_source: "search_reference",
+                  matched_value: "horse",
+                  target_id: "0101210000",
+                  goods_nomenclature_item_id: "0101210000",
+                  goods_nomenclature_sid: 123,
+                  goods_nomenclature_class: "Commodity",
+                  details: {
+                    goods_nomenclature_item_id: "0101210000",
+                    goods_nomenclature_sid: 123,
+                    goods_nomenclature_class: "Commodity",
+                    self_text_id: 123,
+                  },
+                },
+              },
+              {
+                timestamp: "2026-06-05 09:59:02.000",
+                event: "fuzzy_results_returned",
+                search_type: "classic",
+                fields: {
+                  request_id: "request-123",
+                  search_type: "classic",
+                  query: "shoe",
+                  result_count: 1,
+                  details: {
+                    goods_nomenclature_match: {
+                      commodities: [
+                        {
+                          goods_nomenclature_item_id: "6403990000",
+                          goods_nomenclature_sid: 456,
+                          goods_nomenclature_class: "Commodity",
+                          score: 14.2,
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+              {
+                timestamp: "2026-06-05 09:59:03.000",
+                event: "interactive_configuration_used",
+                search_type: "interactive",
+                fields: {
+                  request_id: "request-123",
+                  search_type: "interactive",
+                  query: "red leather shoes",
+                  details: {
+                    retrieval_method: "hybrid",
+                    rrf_k: 60,
+                    filter_prefixes: %w[64],
+                  },
+                },
+              },
+              {
+                timestamp: "2026-06-05 09:59:04.000",
+                event: "question_returned",
+                search_type: "interactive",
+                fields: {
+                  request_id: "request-123",
+                  question_count: 1,
+                  details: {
+                    questions: [
+                      { question: "What material are the shoes made from?" },
+                    ],
+                  },
+                },
+              },
+              {
+                timestamp: "2026-06-05 09:59:05.000",
+                event: "retrieval_results_returned",
+                search_type: "interactive",
+                fields: {
+                  request_id: "request-123",
+                  search_type: "interactive",
+                  query: "red leather shoes",
+                  retrieval_method: "hybrid",
+                  stage: "after_rrf",
+                  leg: nil,
+                  result_count: 1,
+                  details: {
+                    results: [
+                      {
+                        goods_nomenclature_item_id: "6403990000",
+                        goods_nomenclature_sid: 456,
+                        goods_nomenclature_class: "Commodity",
+                        score: 12.7,
+                        self_text_id: 456,
+                      },
+                    ],
+                  },
+                },
+              },
             ],
           },
         )
@@ -57,10 +156,22 @@ RSpec.describe SearchDiagnosticsController do
 
     it { is_expected.to have_http_status :success }
 
-    it "renders the diagnostics journey" do
+    it "renders the diagnostics journey shell" do
       rendered_page
 
       expect(response.body).to include("request-123", "platform-logs-test", "Search journey events", "search_completed", "classic", "horse")
+    end
+
+    it "renders classic exact and fuzzy event summaries" do
+      rendered_page
+
+      expect(response.body).to include("Exact match - search reference - horse - commodities/0101210000", "Fuzzy results returned - 1 result", "6403990000", "14.2")
+    end
+
+    it "renders internal interactive event summaries" do
+      rendered_page
+
+      expect(response.body).to include("Interactive configuration used", "Retrieval method", "hybrid", "Rrf k", "60", "Questions returned - 1 question", "What material are the shoes made from?", "Hybrid - After rrf - 1 result", "12.7", "View self-text", "View labels")
     end
 
     context "when no events are found" do
