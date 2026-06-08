@@ -166,9 +166,13 @@ RSpec.describe SearchDiagnosticsController do
                 search_type: "interactive",
                 fields: {
                   request_id: "request-123",
+                  base_query: "red leather footwear",
                   original_query: "red leather footwear",
                   refined_query: "red leather footwear womens",
+                  effective_query: "red leather footwear womens",
                   answer_count: 1,
+                  added_answers: %w[womens],
+                  iteration: 2,
                 },
               },
               {
@@ -217,9 +221,11 @@ RSpec.describe SearchDiagnosticsController do
                   request_id: "request-123",
                   search_type: "interactive",
                   query: "red leather shoes",
+                  effective_query: "red leather footwear womens",
                   retrieval_method: "hybrid",
                   stage: "after_rrf",
                   leg: nil,
+                  iteration: 2,
                   result_count: 1,
                   details: {
                     results: [
@@ -305,6 +311,14 @@ RSpec.describe SearchDiagnosticsController do
       expect(response.body).to include("Interactive configuration used", "Retrieval method", "hybrid", "Rrf k", "60", "Questions returned - 1 question", "What material are the shoes made from?", "Hybrid - After rrf - 1 result", "12.7", "View self-text", "View labels")
     end
 
+    it "renders internal search iterations" do
+      rendered_page
+
+      expect(Capybara.string(response.body).text).to include(
+        "Internal search iterations", "Iteration 2", "red leather footwear womens", "womens", "Hybrid after rrf - 1 result"
+      )
+    end
+
     it "renders the GOV.UK formatted log search window and event timeline chart" do
       rendered_page
 
@@ -386,8 +400,9 @@ RSpec.describe SearchDiagnosticsController do
       "Description intercept matched - shoes",
       "Query expansion used - low results",
       "Query expanded - red leather shoes to red leather footwear",
-      "Query refined - added 1 answer",
+      "Query refined - iteration 2 - added womens",
       "Model returned questions - attempt 1",
+      "Hybrid - After rrf - 1 result - iteration 2 - query: red leather footwear womens",
       "Vector retrieval succeeded - 1 result",
       "Answers returned - 1 answer",
       "Result selected - commodity 6403990000",

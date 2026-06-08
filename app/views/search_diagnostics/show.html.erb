@@ -94,6 +94,35 @@
         </section>
       <% end %>
 
+      <% iteration_summaries = search_diagnostic_iteration_summaries(contextual_events) %>
+      <% if iteration_summaries.any? %>
+        <section aria-labelledby="search-diagnostics-iterations-title">
+          <h2 class="govuk-heading-m" id="search-diagnostics-iterations-title">Internal search iterations</h2>
+          <table class="govuk-table search-diagnostics-iterations">
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">Iteration</th>
+                <th scope="col" class="govuk-table__header">Effective query</th>
+                <th scope="col" class="govuk-table__header">Added answers</th>
+                <th scope="col" class="govuk-table__header">Retrieval</th>
+                <th scope="col" class="govuk-table__header">Model</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              <% iteration_summaries.each do |summary| %>
+                <tr class="govuk-table__row">
+                  <td class="govuk-table__cell">Iteration <%= summary[:iteration] %></td>
+                  <td class="govuk-table__cell"><%= summary[:effective_query].presence || "-" %></td>
+                  <td class="govuk-table__cell"><%= Array(summary[:added_answers]).presence&.join(", ") || "-" %></td>
+                  <td class="govuk-table__cell"><%= summary[:retrieval].presence || "-" %></td>
+                  <td class="govuk-table__cell"><%= summary[:model].presence || "-" %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </section>
+      <% end %>
+
       <table class="govuk-table search-diagnostics-events">
         <caption class="govuk-table__caption govuk-table__caption--m">Search journey events</caption>
         <thead class="govuk-table__head">
