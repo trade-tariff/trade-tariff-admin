@@ -1,0 +1,61 @@
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <%= link_to "Back to search diagnostics", search_diagnostics_path, class: "govuk-back-link" %>
+
+    <h1 class="govuk-heading-l">Search diagnostics</h1>
+
+    <dl class="govuk-summary-list">
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Request ID</dt>
+        <dd class="govuk-summary-list__value"><%= @search_diagnostic.request_id %></dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Log group</dt>
+        <dd class="govuk-summary-list__value"><%= @search_diagnostic.log_group_name %></dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Time range</dt>
+        <dd class="govuk-summary-list__value">
+          <%= @search_diagnostic.start_time %> to <%= @search_diagnostic.end_time %>
+        </dd>
+      </div>
+    </dl>
+
+    <% if @search_diagnostic.events? %>
+      <table class="govuk-table">
+        <caption class="govuk-table__caption govuk-table__caption--m">Search journey events</caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Time</th>
+            <th scope="col" class="govuk-table__header">Event</th>
+            <th scope="col" class="govuk-table__header">Search type</th>
+            <th scope="col" class="govuk-table__header">Summary</th>
+            <th scope="col" class="govuk-table__header">Diagnostics</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          <% @search_diagnostic.events.each do |event| %>
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell"><%= event[:timestamp].presence || "-" %></td>
+              <td class="govuk-table__cell"><%= event[:event].presence || "-" %></td>
+              <td class="govuk-table__cell"><%= event[:search_type].presence || "-" %></td>
+              <td class="govuk-table__cell"><%= search_diagnostic_event_summary(event) %></td>
+              <td class="govuk-table__cell">
+                <details class="govuk-details">
+                  <summary class="govuk-details__summary">
+                    <span class="govuk-details__summary-text">View diagnostics</span>
+                  </summary>
+                  <div class="govuk-details__text">
+                    <%= search_diagnostic_event_details(event) %>
+                  </div>
+                </details>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="govuk-body">No search journey events were found for this request ID.</p>
+    <% end %>
+  </div>
+</div>

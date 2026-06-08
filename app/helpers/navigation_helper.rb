@@ -104,6 +104,13 @@ module NavigationHelper
             service: :uk,
           ),
           NavigationItem.new(
+            text: "Diagnostics",
+            href: search_diagnostics_path,
+            policy_class: SearchDiagnostic,
+            active_when: /\/search_diagnostics/,
+            service: nil,
+          ),
+          NavigationItem.new(
             text: "Recent changes",
             href: versions_path,
             policy_class: Version,
