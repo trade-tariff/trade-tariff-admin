@@ -287,6 +287,12 @@ RSpec.describe SearchDiagnosticsController do
       expect(response.body).to include("request-123", "platform-logs-test", "Search journey events", "Search completed", "Classic", "horse")
     end
 
+    it "renders an operator overview in the summary list" do
+      rendered_page
+
+      expect(response.body).to include(*operator_overview_fragments)
+    end
+
     it "renders classic exact and fuzzy event summaries" do
       rendered_page
 
@@ -386,6 +392,23 @@ RSpec.describe SearchDiagnosticsController do
       "Answers returned - 1 answer",
       "Result selected - commodity 6403990000",
       "Search failed - Faraday::TimeoutError",
+    ]
+  end
+
+  def operator_overview_fragments
+    [
+      "Query",
+      "red leather shoes",
+      "govuk-tag govuk-tag--green",
+      "Result selected",
+      "Results returned",
+      "govuk-tag govuk-tag--blue",
+      "Internal",
+      "Classic",
+      "govuk-tag govuk-tag--orange",
+      "Description intercept",
+      "1 fuzzy result",
+      "#{TradeTariffAdmin.frontend_host}/commodities/6403990000",
     ]
   end
 end

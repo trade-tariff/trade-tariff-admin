@@ -40,6 +40,18 @@ RSpec.describe SearchDiagnosticsHelper do
       expect(page).to have_css("a.govuk-link[href='#{TradeTariffAdmin.frontend_host}/commodities/6110301000']", exact_text: "6110301000")
     end
 
+    it "omits self-text and label columns from classic fuzzy result tables" do
+      page = Capybara.string(details("fuzzy_results_returned", fuzzy_results_fields))
+
+      expect(table_headings(page)).to eq(%w[Code Type Score])
+    end
+
+    it "keeps self-text and label columns in internal retrieval result tables" do
+      page = Capybara.string(details("retrieval_results_returned", retrieval_results_fields))
+
+      expect(table_headings(page)).to eq(%w[Code Type Score Self-text Labels])
+    end
+
     it "links selected result details to the frontend goods nomenclature path" do
       page = Capybara.string(details("result_selected", selected_heading_fields))
 
@@ -64,6 +76,16 @@ RSpec.describe SearchDiagnosticsHelper do
       contextual_events = helper.search_diagnostic_events_with_context(classic_selection_events)
 
       expect(contextual_events.pluck(:search_type)).to eq(%w[classic classic classic])
+    end
+  end
+
+  describe "#search_diagnostic_overview" do
+    it "summarises a selected fuzzy classic search for operator triage" do
+      expect(overview_summary(classic_overview_events)).to eq(classic_overview_summary)
+    end
+
+    it "summarises a zero-result search as needing attention" do
+      expect(overview_summary(zero_result_events)).to eq(zero_result_overview_summary)
     end
   end
 
@@ -119,6 +141,10 @@ RSpec.describe SearchDiagnosticsHelper do
 
   def details(event_name, fields)
     helper.search_diagnostic_event_details(event: event_name, fields: fields)
+  end
+
+  def table_headings(page)
+    page.all("table.app-diagnostics-table:first-of-type th").map(&:text)
   end
 
   def query_preparation_summaries
@@ -234,6 +260,24 @@ RSpec.describe SearchDiagnosticsHelper do
     }
   end
 
+  def retrieval_results_fields
+    {
+      retrieval_method: "hybrid",
+      stage: "after_rrf",
+      result_count: 1,
+      details: {
+        results: [
+          {
+            goods_nomenclature_item_id: "6110301000",
+            goods_nomenclature_class: "Commodity",
+            score: 8.09,
+            self_text_id: 123,
+          },
+        ],
+      },
+    }
+  end
+
   def selected_heading_fields
     {
       goods_nomenclature_item_id: "6110",
@@ -256,6 +300,41 @@ RSpec.describe SearchDiagnosticsHelper do
         event[:search_type],
       ]
     end
+  end
+
+  def overview_summary(events)
+    overview = helper.search_diagnostic_overview(events)
+
+    {
+      query: overview[:query],
+      outcome_tags: overview[:outcome_tags].pluck(:label, :colour),
+      route_tags: overview[:route_tags].pluck(:label, :colour),
+      results: overview[:results],
+      selected_results: overview[:selected_results],
+    }
+  end
+
+  def classic_overview_summary
+    {
+      query: "jumper",
+      outcome_tags: [["Result selected", "green"], ["Results returned", "green"]],
+      route_tags: [%w[Classic blue], %w[Fuzzy purple]],
+      results: "3 fuzzy results",
+      selected_results: [
+        { id: "6110", href: "#{TradeTariffAdmin.frontend_host}/headings/6110" },
+        { id: "6110309900", href: "#{TradeTariffAdmin.frontend_host}/commodities/6110309900" },
+      ],
+    }
+  end
+
+  def zero_result_overview_summary
+    {
+      query: "women's breif",
+      outcome_tags: [["Zero results", "yellow"]],
+      route_tags: [%w[Classic blue], %w[Fuzzy purple]],
+      results: "0 fuzzy results",
+      selected_results: [],
+    }
   end
 
   def timeline_events
@@ -305,6 +384,24 @@ RSpec.describe SearchDiagnosticsHelper do
       { timestamp: "2026-06-05 09:59:00.000", event: "search_started", search_type: "classic", fields: { query: "jumper" } },
       { timestamp: "2026-06-05 09:59:02.000", event: "fuzzy_results_returned", search_type: "classic", fields: { result_count: 3 } },
       { timestamp: "2026-06-05 09:59:04.000", event: "result_selected", search_type: nil, fields: { goods_nomenclature_item_id: "6110", goods_nomenclature_class: "Heading" } },
+    ]
+  end
+
+  def classic_overview_events
+    [
+      { timestamp: "2026-06-05 09:33:44.079", event: "search_started", search_type: "classic", fields: { query: "jumper" } },
+      { timestamp: "2026-06-05 09:33:44.114", event: "fuzzy_results_returned", search_type: "classic", fields: { result_count: 3 } },
+      { timestamp: "2026-06-05 09:33:44.114", event: "search_completed", search_type: "classic", fields: { query: "jumper", result_count: 3, results_type: "fuzzy_search" } },
+      { timestamp: "2026-06-05 09:33:52.989", event: "result_selected", search_type: "classic", fields: { goods_nomenclature_item_id: "6110", goods_nomenclature_class: "Heading" } },
+      { timestamp: "2026-06-05 09:34:03.893", event: "result_selected", search_type: "classic", fields: { goods_nomenclature_item_id: "6110309900", goods_nomenclature_class: "Commodity" } },
+    ]
+  end
+
+  def zero_result_events
+    [
+      { timestamp: "2026-06-05 09:33:44.079", event: "search_started", search_type: "classic", fields: { query: "women's breif" } },
+      { timestamp: "2026-06-05 09:33:44.114", event: "fuzzy_results_returned", search_type: "classic", fields: { result_count: 0 } },
+      { timestamp: "2026-06-05 09:33:44.114", event: "search_completed", search_type: "classic", fields: { query: "women's breif", result_count: 0, results_type: "fuzzy_search" } },
     ]
   end
 end
