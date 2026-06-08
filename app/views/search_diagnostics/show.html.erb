@@ -14,33 +14,73 @@
         <dd class="govuk-summary-list__value"><%= @search_diagnostic.log_group_name %></dd>
       </div>
       <div class="govuk-summary-list__row">
-        <dt class="govuk-summary-list__key">Time range</dt>
+        <dt class="govuk-summary-list__key">Log search window</dt>
         <dd class="govuk-summary-list__value">
-          <%= @search_diagnostic.start_time %> to <%= @search_diagnostic.end_time %>
+          <%= search_diagnostic_time_range(@search_diagnostic) %>
         </dd>
       </div>
     </dl>
 
     <% if @search_diagnostic.events? %>
-      <table class="govuk-table">
+      <% contextual_events = search_diagnostic_events_with_context(@search_diagnostic.events) %>
+      <% timeline_events = search_diagnostic_timeline_events(contextual_events) %>
+
+      <% if timeline_events.any? %>
+        <% highlighted_timeline_events = search_diagnostic_significant_timeline_events(timeline_events) %>
+
+        <section class="search-diagnostics-timeline" aria-labelledby="search-diagnostics-timeline-title">
+          <div class="search-diagnostics-timeline__header">
+            <h2 class="govuk-heading-m govuk-!-margin-bottom-0" id="search-diagnostics-timeline-title">Search event timeline</h2>
+            <p class="govuk-body-s govuk-!-margin-bottom-0">Key events are listed below. Significant events are shown with larger markers.</p>
+          </div>
+
+          <div class="search-diagnostics-timeline__track" aria-hidden="true">
+            <ol class="search-diagnostics-timeline__events">
+              <% timeline_events.each do |event| %>
+                <li class="search-diagnostics-timeline__event <%= 'search-diagnostics-timeline__event--significant' if event[:significant] %>" style="--position: <%= event[:position] %>%;">
+                  <a class="search-diagnostics-timeline__marker-link" href="#<%= event[:id] %>">
+                    <span class="search-diagnostics-timeline__marker"></span>
+                    <span class="search-diagnostics-timeline__label">
+                    <span class="search-diagnostics-timeline__time"><%= event[:time] %></span>
+                    <span class="search-diagnostics-timeline__name"><%= event[:name] %></span>
+                    </span>
+                  </a>
+                </li>
+              <% end %>
+            </ol>
+          </div>
+
+          <ol class="search-diagnostics-timeline__list govuk-list">
+            <% highlighted_timeline_events.each do |event| %>
+              <li>
+                <span class="search-diagnostics-timeline__list-time"><%= event[:time] %></span>
+                <span class="search-diagnostics-timeline__list-name"><%= event[:name] %></span>
+                <span class="search-diagnostics-timeline__list-type"><%= event[:search_type] %></span>
+              </li>
+            <% end %>
+          </ol>
+        </section>
+      <% end %>
+
+      <table class="govuk-table search-diagnostics-events">
         <caption class="govuk-table__caption govuk-table__caption--m">Search journey events</caption>
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
-            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Time</th>
-            <th scope="col" class="govuk-table__header">Event</th>
-            <th scope="col" class="govuk-table__header">Search type</th>
-            <th scope="col" class="govuk-table__header">Summary</th>
-            <th scope="col" class="govuk-table__header">Diagnostics</th>
+            <th scope="col" class="govuk-table__header">Time</th>
+            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Event</th>
+            <th scope="col" class="govuk-table__header">Type</th>
+            <th scope="col" class="govuk-table__header govuk-!-width-one-third">Summary</th>
+            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Diagnostics</th>
           </tr>
         </thead>
         <tbody class="govuk-table__body">
-          <% @search_diagnostic.events.each do |event| %>
-            <tr class="govuk-table__row">
-              <td class="govuk-table__cell"><%= event[:timestamp].presence || "-" %></td>
-              <td class="govuk-table__cell"><%= event[:event].presence || "-" %></td>
-              <td class="govuk-table__cell"><%= event[:search_type].presence || "-" %></td>
-              <td class="govuk-table__cell"><%= search_diagnostic_event_summary(event) %></td>
-              <td class="govuk-table__cell">
+          <% contextual_events.each_with_index do |event, index| %>
+            <tr class="govuk-table__row" id="<%= search_diagnostic_event_dom_id(index) %>">
+              <td class="govuk-table__cell" data-label="Time"><%= search_diagnostic_event_time(event) %></td>
+              <td class="govuk-table__cell" data-label="Event"><%= search_diagnostic_event_name(event) %></td>
+              <td class="govuk-table__cell" data-label="Type"><%= search_diagnostic_search_type(event) %></td>
+              <td class="govuk-table__cell" data-label="Summary"><%= search_diagnostic_event_summary(event) %></td>
+              <td class="govuk-table__cell" data-label="Diagnostics">
                 <details class="govuk-details">
                   <summary class="govuk-details__summary">
                     <span class="govuk-details__summary-text">View diagnostics</span>
