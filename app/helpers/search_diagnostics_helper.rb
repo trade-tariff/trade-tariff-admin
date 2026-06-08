@@ -112,6 +112,26 @@ module SearchDiagnosticsHelper
     end
   end
 
+  def search_diagnostic_overview(events)
+    events = Array(events).map { |event| normalise_search_diagnostic_hash(event) }
+
+    {
+      query: overview_query(events),
+      outcome_tags: overview_outcome_tags(events),
+      route_tags: overview_route_tags(events),
+      results: overview_results(events),
+      selected_results: overview_selected_results(events),
+    }
+  end
+
+  def search_diagnostic_overview_tag(tag)
+    content_tag(:strong, tag[:label], class: "govuk-tag govuk-tag--#{tag[:colour]} govuk-!-margin-right-1")
+  end
+
+  def search_diagnostic_overview_selected_result_link(result)
+    link_to(result[:id], result[:href], class: "govuk-link", target: "_blank", rel: "noopener noreferrer")
+  end
+
   def search_diagnostic_event_time(event)
     timestamp = event[:timestamp].to_s
     return "-" if timestamp.blank?
@@ -237,7 +257,7 @@ private
       content_tag(:div, class: "govuk-!-margin-bottom-3") do
         safe_join([
           content_tag(:h4, match_type.to_s.humanize, class: "govuk-heading-s govuk-!-margin-bottom-2"),
-          safe_join(groups.map { |level, results| result_group(level, results) }),
+          safe_join(groups.map { |level, results| result_group(level, results, include_admin_links: false) }),
         ])
       end
     end
@@ -277,39 +297,51 @@ private
     ])
   end
 
-  def result_group(level, results)
+  def result_group(level, results, include_admin_links: true)
     safe_join([
       content_tag(:h5, level.to_s.humanize, class: "govuk-heading-s govuk-!-margin-bottom-1"),
-      result_table(Array(results)),
+      result_table(Array(results), include_admin_links:),
     ])
   end
 
-  def result_table(results)
+  def result_table(results, include_admin_links: true)
     return content_tag(:p, "No results were logged.", class: "govuk-body-s") if results.blank?
 
     content_tag(:table, class: "govuk-table govuk-!-margin-bottom-4 app-diagnostics-table") do
       safe_join([
         content_tag(:thead, class: "govuk-table__head") do
           content_tag(:tr, class: "govuk-table__row") do
-            safe_join(%w[Code Type Score Self-text Labels].map { |heading| content_tag(:th, heading, class: "govuk-table__header", scope: "col") })
+            safe_join(result_table_headings(include_admin_links).map { |heading| content_tag(:th, heading, class: "govuk-table__header", scope: "col") })
           end
         end,
         content_tag(:tbody, class: "govuk-table__body") do
-          safe_join(results.map { |result| result_row(normalise_search_diagnostic_hash(result)) })
+          safe_join(results.map { |result| result_row(normalise_search_diagnostic_hash(result), include_admin_links:) })
         end,
       ])
     end
   end
 
-  def result_row(result)
+  def result_table_headings(include_admin_links)
+    headings = %w[Code Type Score]
+    return headings unless include_admin_links
+
+    headings + %w[Self-text Labels]
+  end
+
+  def result_row(result, include_admin_links: true)
+    cells = [
+      content_tag(:td, goods_nomenclature_link(result), class: "govuk-table__cell"),
+      content_tag(:td, result[:goods_nomenclature_class].presence || "-", class: "govuk-table__cell"),
+      content_tag(:td, result[:score].presence || result[:confidence].presence || "-", class: "govuk-table__cell"),
+    ]
+
+    if include_admin_links
+      cells << content_tag(:td, self_text_link(result), class: "govuk-table__cell")
+      cells << content_tag(:td, label_link(result), class: "govuk-table__cell")
+    end
+
     content_tag(:tr, class: "govuk-table__row") do
-      safe_join([
-        content_tag(:td, goods_nomenclature_link(result), class: "govuk-table__cell"),
-        content_tag(:td, result[:goods_nomenclature_class].presence || "-", class: "govuk-table__cell"),
-        content_tag(:td, result[:score].presence || result[:confidence].presence || "-", class: "govuk-table__cell"),
-        content_tag(:td, self_text_link(result), class: "govuk-table__cell"),
-        content_tag(:td, label_link(result), class: "govuk-table__cell"),
-      ])
+      safe_join(cells)
     end
   end
 
@@ -386,15 +418,124 @@ private
     normalise_search_diagnostic_hash(fields[:details] || {})
   end
 
+  def overview_query(events)
+    events.filter_map { |event| search_diagnostic_fields(event)[:query].presence }.first
+  end
+
+  def overview_outcome_tags(events)
+    tags = []
+    result_count = overview_result_count(events)
+
+    tags << { label: "Failed", colour: "red" } if events.any? { |event| event[:event].to_s == "search_failed" }
+    tags << { label: "Zero results", colour: "yellow" } if result_count&.zero?
+    tags << { label: "Result selected", colour: "green" } if events.any? { |event| event[:event].to_s == "result_selected" }
+    tags << { label: "Results returned", colour: "green" } if result_count.to_i.positive?
+
+    tags
+  end
+
+  def overview_route_tags(events)
+    type_tags = events.pluck(:search_type).compact_blank.uniq.filter_map do |search_type|
+      case search_type
+      when "classic" then { label: "Classic", colour: "blue" }
+      when "interactive" then { label: "Internal", colour: "blue" }
+      end
+    end
+
+    behaviour_tags = [
+      ({ label: "Exact match", colour: "turquoise" } if events.any? { |event| event[:event].to_s == "exact_match_selected" }),
+      ({ label: "Fuzzy", colour: "purple" } if fuzzy_search?(events)),
+      ({ label: "Description intercept", colour: "orange" } if description_intercept_matched?(events)),
+      ({ label: "Query expanded", colour: "grey" } if events.any? { |event| event[:event].to_s == "query_expanded" }),
+      ({ label: "Questions returned", colour: "grey" } if events.any? { |event| event[:event].to_s == "question_returned" }),
+      ({ label: "Answers returned", colour: "grey" } if events.any? { |event| event[:event].to_s == "answer_returned" }),
+    ].compact
+
+    type_tags + behaviour_tags
+  end
+
+  def overview_results(events)
+    count = overview_result_count(events)
+    return if count.blank? && count != 0
+
+    pluralize(count, "#{overview_result_type(events)} result")
+  end
+
+  def overview_selected_results(events)
+    events.select { |event| event[:event].to_s == "result_selected" }.filter_map do |event|
+      fields = search_diagnostic_fields(event)
+      id = target_id(fields)
+      href = goods_nomenclature_href(fields)
+      next if id.blank? || href.blank?
+
+      { id:, href: }
+    end
+  end
+
   def endpoint_for_class(goods_nomenclature_class)
     goods_nomenclature_class.to_s.underscore.pluralize.presence
   end
 
+  def goods_nomenclature_href(result)
+    endpoint = result[:target_endpoint].presence || endpoint_for_class(result[:goods_nomenclature_class])
+    id = target_id(result)
+    return if endpoint.blank? || id.blank?
+
+    "#{TradeTariffAdmin.frontend_host}/#{endpoint}/#{id}"
+  end
+
+  def target_id(result)
+    result[:target_id].presence || result[:goods_nomenclature_item_id].presence || result[:commodity_code]
+  end
+
   def target_label(result)
     endpoint = result[:target_endpoint].presence || endpoint_for_class(result[:goods_nomenclature_class])
-    id = result[:target_id].presence || result[:goods_nomenclature_item_id].presence || result[:commodity_code]
+    id = target_id(result)
 
     [endpoint, id].compact_blank.join("/")
+  end
+
+  def overview_result_count(events)
+    completed_count = overview_result_count_for(events, "search_completed")
+    return completed_count.to_i if logged_value?(completed_count)
+
+    fuzzy_count = overview_result_count_for(events, "fuzzy_results_returned")
+    fuzzy_count.to_i if logged_value?(fuzzy_count)
+  end
+
+  def overview_result_count_for(events, event_name)
+    event = events.reverse_each.find do |item|
+      item[:event].to_s == event_name && logged_value?(search_diagnostic_fields(item)[:result_count])
+    end
+
+    search_diagnostic_fields(event)[:result_count] if event
+  end
+
+  def logged_value?(value)
+    value.present? || (value.respond_to?(:zero?) && value.zero?)
+  end
+
+  def overview_result_type(events)
+    results_type = events.reverse_each.filter_map { |event| search_diagnostic_fields(event)[:results_type].presence }.first
+
+    case results_type.to_s
+    when "fuzzy_search" then "fuzzy"
+    when "exact_search" then "exact"
+    else
+      fuzzy_search?(events) ? "fuzzy" : "search"
+    end
+  end
+
+  def fuzzy_search?(events)
+    events.any? { |event| event[:event].to_s == "fuzzy_results_returned" } ||
+      events.any? { |event| search_diagnostic_fields(event)[:results_type].to_s == "fuzzy_search" }
+  end
+
+  def description_intercept_matched?(events)
+    events.any? do |event|
+      event[:event].to_s == "description_intercept_checked" &&
+        truthy?(search_diagnostic_fields(event)[:matched])
+    end
   end
 
   def generic_event_details(event_name, fields)

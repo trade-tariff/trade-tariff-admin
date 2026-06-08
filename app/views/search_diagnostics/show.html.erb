@@ -4,6 +4,9 @@
 
     <h1 class="govuk-heading-l">Search diagnostics</h1>
 
+    <% contextual_events = @search_diagnostic.events? ? search_diagnostic_events_with_context(@search_diagnostic.events) : [] %>
+    <% overview = search_diagnostic_overview(contextual_events) if contextual_events.any? %>
+
     <dl class="govuk-summary-list">
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">Request ID</dt>
@@ -19,10 +22,39 @@
           <%= search_diagnostic_time_range(@search_diagnostic) %>
         </dd>
       </div>
+      <% if overview&.dig(:query).present? %>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Query</dt>
+          <dd class="govuk-summary-list__value"><%= overview[:query] %></dd>
+        </div>
+      <% end %>
+      <% if overview&.dig(:outcome_tags).present? %>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Outcome</dt>
+          <dd class="govuk-summary-list__value"><%= safe_join(overview[:outcome_tags].map { |tag| search_diagnostic_overview_tag(tag) }, " ") %></dd>
+        </div>
+      <% end %>
+      <% if overview&.dig(:route_tags).present? %>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Route</dt>
+          <dd class="govuk-summary-list__value"><%= safe_join(overview[:route_tags].map { |tag| search_diagnostic_overview_tag(tag) }, " ") %></dd>
+        </div>
+      <% end %>
+      <% if overview&.dig(:results).present? %>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Results</dt>
+          <dd class="govuk-summary-list__value"><%= overview[:results] %></dd>
+        </div>
+      <% end %>
+      <% if overview&.dig(:selected_results).present? %>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Selected</dt>
+          <dd class="govuk-summary-list__value"><%= safe_join(overview[:selected_results].map { |result| search_diagnostic_overview_selected_result_link(result) }, ", ") %></dd>
+        </div>
+      <% end %>
     </dl>
 
     <% if @search_diagnostic.events? %>
-      <% contextual_events = search_diagnostic_events_with_context(@search_diagnostic.events) %>
       <% timeline_events = search_diagnostic_timeline_events(contextual_events) %>
 
       <% if timeline_events.any? %>
