@@ -1,8 +1,54 @@
 module SearchDiagnosticsHelper
+  EVENT_DETAIL_KEYS = {
+    "search_started" => %i[query search_type],
+    "query_expanded" => %i[original_query expanded_query reason duration_ms],
+    "query_refined" => %i[original_query refined_query answer_count],
+    "query_expansion_decided" => %i[query expand reason result_count max_score],
+    "api_call_completed" => %i[model response_type attempt_number duration_ms error_message error_message_truncated],
+    "description_intercept_checked" => %i[matched term excluded filtering filter_prefix_count guidance_level guidance_location escalate_to_webchat],
+    "question_returned" => %i[question_count attempt_number],
+    "answer_returned" => %i[answer_count confidence_levels attempt_number],
+    "search_completed" => %i[query search_type results_type final_result_type total_attempts total_questions result_count max_score total_duration_ms description_intercept_matched description_intercept_term description_intercept_excluded description_intercept_filtering description_intercept_filter_prefix_count description_intercept_guidance_level description_intercept_guidance_location description_intercept_escalate_to_webchat error_message error_message_truncated],
+    "retrieval_leg_completed" => %i[leg status result_count duration_ms error_message error_message_truncated],
+    "result_selected" => %i[goods_nomenclature_item_id goods_nomenclature_class],
+    "search_failed" => %i[search_type error_type error_message error_message_truncated],
+  }.freeze
+
+  FIELD_LABELS = {
+    attempt_number: "Attempt",
+    duration_ms: "Duration",
+    total_duration_ms: "Total duration",
+    final_result_type: "Final result",
+    expand: "Expand query",
+  }.freeze
+
+  SIGNIFICANT_TIMELINE_EVENTS = %w[
+    exact_match_selected
+    fuzzy_results_returned
+    api_call_completed
+    retrieval_leg_completed
+    retrieval_results_returned
+    question_returned
+    answer_returned
+    search_completed
+    search_failed
+  ].freeze
+
   def search_diagnostic_event_summary(event)
     fields = search_diagnostic_fields(event)
 
     case event[:event].to_s
+    when "search_started"
+      ["Search started", fields[:query]].compact_blank.join(" - ")
+    when "query_expanded"
+      query_change_summary("Query expanded", fields[:original_query], fields[:expanded_query])
+    when "query_refined"
+      "Query refined - added #{pluralize(fields[:answer_count].to_i, 'answer')}"
+    when "query_expansion_decided"
+      decision = truthy?(fields[:expand]) ? "used" : "skipped"
+      ["Query expansion #{decision}", readable_value(fields[:reason])].compact_blank.join(" - ")
+    when "api_call_completed"
+      ["Model returned #{readable_value(fields[:response_type]) || 'response'}", attempt_label(fields)].compact_blank.join(" - ")
     when "exact_match_selected"
       code = target_label(fields)
       source = fields[:match_source].to_s.humanize.downcase.presence || "source"
@@ -22,11 +68,94 @@ module SearchDiagnosticsHelper
       "Questions returned - #{pluralize(fields[:question_count].to_i, 'question')}"
     when "answer_returned"
       "Answers returned - #{pluralize(fields[:answer_count].to_i, 'answer')}"
+    when "description_intercept_checked"
+      description_intercept_summary(fields)
     when "search_completed"
-      "Search completed - #{fields[:results_type].presence || fields[:final_result_type].presence || pluralize(fields[:result_count].to_i, 'result')}"
+      result_type = fields[:results_type].presence || fields[:final_result_type].presence
+      ["Search completed", readable_value(result_type) || pluralize(fields[:result_count].to_i, "result")].compact_blank.join(" - ")
+    when "retrieval_leg_completed"
+      ["#{readable_value(fields[:leg]).to_s.capitalize} retrieval #{status_label(fields[:status])}", pluralize(fields[:result_count].to_i, "result")].compact_blank.join(" - ")
+    when "result_selected"
+      ["Result selected", [readable_value(fields[:goods_nomenclature_class]).to_s.downcase.presence, fields[:goods_nomenclature_item_id]].compact_blank.join(" ")].compact_blank.join(" - ")
+    when "search_failed"
+      ["Search failed", fields[:error_type]].compact_blank.join(" - ")
     else
-      event[:event].presence || "Event"
+      search_diagnostic_event_name(event)
     end
+  end
+
+  def search_diagnostic_event_name(event)
+    event[:event].to_s.humanize.presence || "Event"
+  end
+
+  def search_diagnostic_search_type(event)
+    case event[:search_type].presence
+    when "interactive" then "Internal"
+    when "classic" then "Classic"
+    else
+      event[:search_type].to_s.humanize.presence || "-"
+    end
+  end
+
+  def search_diagnostic_events_with_context(events)
+    current_search_type = nil
+
+    Array(events).map do |event|
+      event = normalise_search_diagnostic_hash(event).dup
+      current_search_type = event[:search_type].presence || current_search_type
+
+      if event[:event].to_s == "result_selected" && event[:search_type].blank?
+        event[:search_type] = current_search_type
+      end
+
+      event
+    end
+  end
+
+  def search_diagnostic_event_time(event)
+    timestamp = event[:timestamp].to_s
+    return "-" if timestamp.blank?
+
+    Time.zone.parse(timestamp).strftime("%H:%M:%S.%L")
+  rescue ArgumentError
+    timestamp
+  end
+
+  def search_diagnostic_time_range(diagnostic)
+    [diagnostic.start_time, diagnostic.end_time].filter_map { |timestamp| diagnostic_datetime(timestamp) }.join(" to ")
+  end
+
+  def search_diagnostic_timeline_events(events)
+    timed_events = Array(events).filter_map do |event|
+      timestamp = diagnostic_timestamp(event[:timestamp])
+      next if timestamp.blank?
+
+      {
+        name: search_diagnostic_event_name(event),
+        summary: search_diagnostic_event_summary(event),
+        search_type: search_diagnostic_search_type(event),
+        timestamp: timestamp,
+        time: search_diagnostic_event_time(event),
+        significant: SIGNIFICANT_TIMELINE_EVENTS.include?(event[:event].to_s),
+      }
+    end
+    return [] if timed_events.blank?
+
+    sorted_events = timed_events.sort_by { |event| event[:timestamp] }.each_with_index.map do |event, index|
+      event.merge(id: search_diagnostic_event_dom_id(index))
+    end
+
+    timeline_events_by_order(sorted_events)
+  end
+
+  def search_diagnostic_event_dom_id(index)
+    "search-event-#{index}"
+  end
+
+  def search_diagnostic_significant_timeline_events(events)
+    significant_events = events.select { |event| event[:significant] }
+
+    significant_events.presence || events
   end
 
   def search_diagnostic_event_details(event)
@@ -45,6 +174,8 @@ module SearchDiagnosticsHelper
                 questions_details(fields)
               when "answer_returned"
                 answers_details(fields)
+              when *EVENT_DETAIL_KEYS.keys
+                generic_event_details(event[:event].to_s, fields)
               end
 
     safe_join([
@@ -58,6 +189,31 @@ module SearchDiagnosticsHelper
   end
 
 private
+
+  def diagnostic_datetime(timestamp)
+    parsed = diagnostic_timestamp(timestamp)
+    return if parsed.blank?
+
+    "#{parsed.to_date.to_formatted_s(:govuk)} at #{parsed.strftime('%H:%M')}"
+  end
+
+  def diagnostic_timestamp(timestamp)
+    return if timestamp.blank?
+
+    Time.zone.parse(timestamp.to_s)
+  rescue ArgumentError
+    nil
+  end
+
+  def timeline_events_by_order(events)
+    return events.map { |event| event.merge(position: 0) } if events.one?
+
+    event_count = events.size - 1
+
+    events.each_with_index.map do |event, index|
+      event.merge(position: ((index.to_f / event_count) * 100).round)
+    end
+  end
 
   def exact_match_details(fields)
     rows = {
@@ -114,9 +270,11 @@ private
 
   def answers_details(fields)
     answers = Array(search_diagnostic_details(fields)[:answers])
-    return content_tag(:p, "No answer details were logged.", class: "govuk-body-s") if answers.blank?
 
-    result_table(answers)
+    safe_join([
+      key_value_list(fields.slice(:answer_count, :confidence_levels, :attempt_number)),
+      answers.blank? ? content_tag(:p, "No answer details were logged.", class: "govuk-body-s") : result_table(answers),
+    ])
   end
 
   def result_group(level, results)
@@ -129,7 +287,7 @@ private
   def result_table(results)
     return content_tag(:p, "No results were logged.", class: "govuk-body-s") if results.blank?
 
-    content_tag(:table, class: "govuk-table govuk-!-margin-bottom-4") do
+    content_tag(:table, class: "govuk-table govuk-!-margin-bottom-4 app-diagnostics-table") do
       safe_join([
         content_tag(:thead, class: "govuk-table__head") do
           content_tag(:tr, class: "govuk-table__row") do
@@ -161,8 +319,8 @@ private
 
       content_tag(:div, class: "govuk-summary-list__row") do
         safe_join([
-          content_tag(:dt, key.to_s.humanize, class: "govuk-summary-list__key"),
-          content_tag(:dd, diagnostic_value(value), class: "govuk-summary-list__value"),
+          content_tag(:dt, field_label(key), class: "govuk-summary-list__key"),
+          content_tag(:dd, diagnostic_value(key, value), class: "govuk-summary-list__value"),
         ])
       end
     end
@@ -178,12 +336,14 @@ private
     end
   end
 
-  def diagnostic_value(value)
+  def diagnostic_value(key, value)
     return value if value.is_a?(ActiveSupport::SafeBuffer)
-    return value.join(", ") if value.is_a?(Array)
-    return JSON.pretty_generate(value) if value.is_a?(Hash)
+    return value.map { |item| readable_value(item) }.join(", ") if value.is_a?(Array)
+    return value.map { |key, item| "#{readable_value(key)}: #{readable_value(item)}" }.join(", ") if value.is_a?(Hash)
+    return "#{number_with_delimiter(value)} ms" if key.to_s.end_with?("_ms")
+    return value if key.to_sym == :description_intercept
 
-    value
+    readable_value(value)
   end
 
   def raw_event_details(event)
@@ -201,10 +361,11 @@ private
 
   def goods_nomenclature_link(result)
     endpoint = result[:target_endpoint].presence || endpoint_for_class(result[:goods_nomenclature_class])
-    id = result[:target_id].presence || result[:goods_nomenclature_item_id]
+    id = result[:target_id].presence || result[:goods_nomenclature_item_id].presence || result[:commodity_code]
+    return id if endpoint.blank? && id.present?
     return "-" if endpoint.blank? || id.blank?
 
-    link_to(target_label(result), "#{TradeTariffAdmin.frontend_host}/#{endpoint}/#{id}", class: "govuk-link", target: "_blank", rel: "noopener noreferrer")
+    link_to(id, "#{TradeTariffAdmin.frontend_host}/#{endpoint}/#{id}", class: "govuk-link", target: "_blank", rel: "noopener noreferrer")
   end
 
   def self_text_link(result)
@@ -215,7 +376,7 @@ private
   end
 
   def label_link(result)
-    id = result[:goods_nomenclature_item_id] || result[:target_id]
+    id = result[:goods_nomenclature_item_id] || result[:target_id] || result[:commodity_code]
     return "-" if id.blank?
 
     link_to("View labels", goods_nomenclature_label_path(id), class: "govuk-link")
@@ -231,9 +392,81 @@ private
 
   def target_label(result)
     endpoint = result[:target_endpoint].presence || endpoint_for_class(result[:goods_nomenclature_class])
-    id = result[:target_id].presence || result[:goods_nomenclature_item_id]
+    id = result[:target_id].presence || result[:goods_nomenclature_item_id].presence || result[:commodity_code]
 
     [endpoint, id].compact_blank.join("/")
+  end
+
+  def generic_event_details(event_name, fields)
+    key_value_list(detail_rows(event_name, fields))
+  end
+
+  def detail_rows(event_name, fields)
+    rows = fields.slice(*EVENT_DETAIL_KEYS.fetch(event_name, []))
+    return rows.merge(goods_nomenclature_item_id: goods_nomenclature_link(fields)) if event_name == "result_selected"
+    return rows unless event_name == "search_completed"
+
+    rows[:description_intercept] = description_intercept_value(fields) if fields.key?(:description_intercept_matched)
+    rows.except(
+      :description_intercept_matched,
+      :description_intercept_term,
+      :description_intercept_excluded,
+      :description_intercept_filtering,
+      :description_intercept_filter_prefix_count,
+      :description_intercept_guidance_level,
+      :description_intercept_guidance_location,
+      :description_intercept_escalate_to_webchat,
+    )
+  end
+
+  def field_label(key)
+    FIELD_LABELS.fetch(key.to_sym, key.to_s.humanize)
+  end
+
+  def attempt_label(fields)
+    return if fields[:attempt_number].blank?
+
+    "attempt #{fields[:attempt_number]}"
+  end
+
+  def query_change_summary(label, original_query, changed_query)
+    return label if original_query.blank? && changed_query.blank?
+    return [label, original_query].compact_blank.join(" - ") if changed_query.blank?
+    return [label, changed_query].compact_blank.join(" - ") if original_query.blank?
+
+    "#{label} - #{original_query} to #{changed_query}"
+  end
+
+  def description_intercept_summary(fields)
+    return "Description intercept not matched" unless truthy?(fields[:matched])
+
+    ["Description intercept matched", fields[:term]].compact_blank.join(" - ")
+  end
+
+  def description_intercept_value(fields)
+    return "Not matched" unless truthy?(fields[:description_intercept_matched])
+
+    [
+      "Matched",
+      fields[:description_intercept_term],
+      fields[:description_intercept_excluded].present? ? "excluded" : nil,
+      fields[:description_intercept_filtering].present? ? "filtering" : nil,
+    ].compact_blank.join(" ")
+  end
+
+  def status_label(value)
+    value.to_s == "success" ? "succeeded" : readable_value(value)
+  end
+
+  def readable_value(value)
+    return value if value.is_a?(ActiveSupport::SafeBuffer)
+    return if value.nil?
+
+    value.to_s.humanize.downcase
+  end
+
+  def truthy?(value)
+    value == true || value.to_s == "true"
   end
 
   def normalise_search_diagnostic_hash(value)

@@ -40,6 +40,33 @@ RSpec.describe SearchDiagnosticsController do
             end_time: "2026-06-05T10:00:00Z",
             events: [
               {
+                timestamp: "2026-06-05 09:58:58.000",
+                event: "search_started",
+                search_type: "interactive",
+                fields: {
+                  request_id: "request-123",
+                  search_type: "interactive",
+                  query: "red leather shoes",
+                },
+              },
+              {
+                timestamp: "2026-06-05 09:58:59.000",
+                event: "description_intercept_checked",
+                search_type: "interactive",
+                fields: {
+                  request_id: "request-123",
+                  query: "red leather shoes",
+                  matched: true,
+                  term: "shoes",
+                  excluded: false,
+                  filtering: true,
+                  filter_prefix_count: 1,
+                  guidance_level: "info",
+                  guidance_location: "results",
+                  escalate_to_webchat: false,
+                },
+              },
+              {
                 timestamp: "2026-06-05 09:59:00.000",
                 event: "search_completed",
                 search_type: "classic",
@@ -109,6 +136,42 @@ RSpec.describe SearchDiagnosticsController do
                 },
               },
               {
+                timestamp: "2026-06-05 09:59:03.500",
+                event: "query_expansion_decided",
+                search_type: "interactive",
+                fields: {
+                  request_id: "request-123",
+                  query: "red leather shoes",
+                  expand: true,
+                  reason: "low_results",
+                  result_count: 2,
+                  max_score: 4.5,
+                },
+              },
+              {
+                timestamp: "2026-06-05 09:59:03.750",
+                event: "query_expanded",
+                search_type: "interactive",
+                fields: {
+                  request_id: "request-123",
+                  original_query: "red leather shoes",
+                  expanded_query: "red leather footwear",
+                  reason: "colloquial",
+                  duration_ms: 120.25,
+                },
+              },
+              {
+                timestamp: "2026-06-05 09:59:03.900",
+                event: "query_refined",
+                search_type: "interactive",
+                fields: {
+                  request_id: "request-123",
+                  original_query: "red leather footwear",
+                  refined_query: "red leather footwear womens",
+                  answer_count: 1,
+                },
+              },
+              {
                 timestamp: "2026-06-05 09:59:04.000",
                 event: "question_returned",
                 search_type: "interactive",
@@ -120,6 +183,30 @@ RSpec.describe SearchDiagnosticsController do
                       { question: "What material are the shoes made from?" },
                     ],
                   },
+                },
+              },
+              {
+                timestamp: "2026-06-05 09:59:04.500",
+                event: "api_call_completed",
+                search_type: "interactive",
+                fields: {
+                  request_id: "request-123",
+                  model: "gpt-4.1-mini",
+                  response_type: "questions",
+                  attempt_number: 1,
+                  duration_ms: 450.1,
+                },
+              },
+              {
+                timestamp: "2026-06-05 09:59:04.750",
+                event: "retrieval_leg_completed",
+                search_type: "interactive",
+                fields: {
+                  request_id: "request-123",
+                  leg: "vector",
+                  status: "success",
+                  result_count: 1,
+                  duration_ms: 50.4,
                 },
               },
               {
@@ -147,6 +234,44 @@ RSpec.describe SearchDiagnosticsController do
                   },
                 },
               },
+              {
+                timestamp: "2026-06-05 09:59:06.000",
+                event: "answer_returned",
+                search_type: "interactive",
+                fields: {
+                  request_id: "request-123",
+                  answer_count: 1,
+                  confidence_levels: { strong: 1 },
+                  attempt_number: 2,
+                  details: {
+                    answers: [
+                      { commodity_code: "6403990000", confidence: "strong" },
+                    ],
+                  },
+                },
+              },
+              {
+                timestamp: "2026-06-05 09:59:07.000",
+                event: "result_selected",
+                search_type: nil,
+                fields: {
+                  request_id: "request-123",
+                  goods_nomenclature_item_id: "6403990000",
+                  goods_nomenclature_class: "Commodity",
+                },
+              },
+              {
+                timestamp: "2026-06-05 09:59:08.000",
+                event: "search_failed",
+                search_type: "interactive",
+                fields: {
+                  request_id: "request-123",
+                  search_type: "interactive",
+                  error_type: "Faraday::TimeoutError",
+                  error_message: "connection timed out",
+                  error_message_truncated: false,
+                },
+              },
             ],
           },
         )
@@ -159,7 +284,7 @@ RSpec.describe SearchDiagnosticsController do
     it "renders the diagnostics journey shell" do
       rendered_page
 
-      expect(response.body).to include("request-123", "platform-logs-test", "Search journey events", "search_completed", "classic", "horse")
+      expect(response.body).to include("request-123", "platform-logs-test", "Search journey events", "Search completed", "Classic", "horse")
     end
 
     it "renders classic exact and fuzzy event summaries" do
@@ -172,6 +297,35 @@ RSpec.describe SearchDiagnosticsController do
       rendered_page
 
       expect(response.body).to include("Interactive configuration used", "Retrieval method", "hybrid", "Rrf k", "60", "Questions returned - 1 question", "What material are the shoes made from?", "Hybrid - After rrf - 1 result", "12.7", "View self-text", "View labels")
+    end
+
+    it "renders the GOV.UK formatted log search window and event timeline chart" do
+      rendered_page
+
+      expect(response.body).to include("Log search window", "2 June 2026 at 10:00 to 5 June 2026 at 10:00", "Search event timeline", "Exact match selected", "Search failed")
+    end
+
+    it "links timeline markers to their matching event rows" do
+      rendered_page
+
+      page = Capybara.string(response.body)
+
+      expect(page).to have_css(".search-diagnostics-timeline__marker-link[href='#search-event-0']", text: "09:58:58.000 Search started", normalize_ws: true)
+        .and have_css("tr#search-event-0", text: "Search started")
+    end
+
+    it "renders query preparation, model, selection and failure events with readable copy" do
+      rendered_page
+
+      expect(response.body).to include(*readable_event_summaries)
+    end
+
+    it "shows the original search type for selected-result events with no logged type" do
+      rendered_page
+
+      selected_result_row = Capybara.string(response.body).find("tr", text: "Result selected")
+
+      expect(selected_result_row).to have_css("td[data-label='Type']", text: "Internal")
     end
 
     context "when no events are found" do
@@ -218,5 +372,20 @@ RSpec.describe SearchDiagnosticsController do
 
       it { is_expected.to have_http_status :forbidden }
     end
+  end
+
+  def readable_event_summaries
+    [
+      "Search started - red leather shoes",
+      "Description intercept matched - shoes",
+      "Query expansion used - low results",
+      "Query expanded - red leather shoes to red leather footwear",
+      "Query refined - added 1 answer",
+      "Model returned questions - attempt 1",
+      "Vector retrieval succeeded - 1 result",
+      "Answers returned - 1 answer",
+      "Result selected - commodity 6403990000",
+      "Search failed - Faraday::TimeoutError",
+    ]
   end
 end
