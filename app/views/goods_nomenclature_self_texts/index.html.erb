@@ -10,6 +10,9 @@
     <li class="govuk-tabs__list-item">
       <a class="govuk-tabs__tab" href="#labels">Labels</a>
     </li>
+    <li class="govuk-tabs__list-item">
+      <a class="govuk-tabs__tab" href="#compressed-notes">Compressed notes</a>
+    </li>
   </ul>
 
   <%# ===== Self-texts tab ===== %>
@@ -198,6 +201,77 @@
       <div class="govuk-grid-column-three-quarters">
         <p class="govuk-body" data-generated-content-table-target="loading">Loading...</p>
         <div class="label-table-container" data-generated-content-table-target="table"></div>
+        <div data-generated-content-table-target="pagination"></div>
+      </div>
+    </div>
+  </div>
+
+  <%# ===== Compressed notes tab ===== %>
+  <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="compressed-notes"
+       data-controller="generated-content-table"
+       data-generated-content-table-url-value="<%= tariff_knowledge_compressed_notes_path(format: :json) %>"
+       data-generated-content-table-show-url-value="<%= tariff_knowledge_compressed_notes_path %>/__ID__"
+       data-generated-content-table-show-id-field-value="goods_nomenclature_sid"
+       data-generated-content-table-description-field-value="content"
+       data-generated-content-table-description-heading-value="Compressed note"
+       data-generated-content-table-empty-message-value="No compressed notes found."
+       data-generated-content-table-error-message-value="Failed to load compressed notes."
+       data-generated-content-table-table-class-value="compressed-note-table"
+       data-generated-content-table-q-value="<%= params[:q] %>">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <%= form_with url: search_tariff_knowledge_compressed_notes_path, method: :get, local: true do |f| %>
+          <div class="govuk-form-group">
+            <%= f.label :q, "Search", class: "govuk-label govuk-label--m" %>
+            <div class="govuk-hint">
+              Search by commodity code or compressed note content.
+            </div>
+            <%= f.text_field :q,
+                             value: params[:q],
+                             class: "govuk-input govuk-input--width-20" %>
+          </div>
+
+          <%= f.submit "Search", class: "govuk-button", data: { module: "govuk-button" } %>
+        <% end %>
+      </div>
+    </div>
+
+    <details class="govuk-details">
+      <summary class="govuk-details__summary">
+        <span class="govuk-details__summary-text">About compressed notes</span>
+      </summary>
+      <div class="govuk-details__text">
+        <p class="govuk-body">Compressed notes are short summaries generated from tariff knowledge graph evidence. The note keeps source and referenced range keys so reviewers can compare the generated output with the underlying archive-backed evidence.</p>
+
+        <h3 class="govuk-heading-s">Tags</h3>
+        <ul class="govuk-list govuk-list--bullet">
+          <li><strong>Needs review</strong> - an admin has flagged this compressed note for review</li>
+          <li><strong>Stale</strong> - the commodity or evidence context has changed since generation</li>
+          <li><strong>Manually edited</strong> - a human has edited the generated note</li>
+          <li><strong>Expired</strong> - the note no longer applies to the current commodity set</li>
+        </ul>
+      </div>
+    </details>
+
+    <h2 class="govuk-heading-m">Compressed notes</h2>
+
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-one-quarter">
+        <h3 class="govuk-heading-s">Filters</h3>
+
+        <%= render "shared/generated_content_filter_group",
+                   legend: "Tags",
+                   options: generated_content_tag_options,
+                   prefix: "cn",
+                   input_name: "cn_tags",
+                   action_name: "changeTags",
+                   data_attribute: "status",
+                   default_value: "" %>
+      </div>
+
+      <div class="govuk-grid-column-three-quarters">
+        <p class="govuk-body" data-generated-content-table-target="loading">Loading...</p>
+        <div class="compressed-note-table-container" data-generated-content-table-target="table"></div>
         <div data-generated-content-table-target="pagination"></div>
       </div>
     </div>

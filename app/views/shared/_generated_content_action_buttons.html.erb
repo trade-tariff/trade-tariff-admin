@@ -14,11 +14,13 @@
                     data: { module: "govuk-button" } %>
     <% end %>
 
-    <%= button_to "Generate score",
-                  score_path,
-                  method: :post,
-                  class: "govuk-button govuk-button--secondary",
-                  data: { module: "govuk-button" } %>
+    <% if local_assigns[:score_path].present? %>
+      <%= button_to "Generate score",
+                    score_path,
+                    method: :post,
+                    class: "govuk-button govuk-button--secondary",
+                    data: { module: "govuk-button" } %>
+    <% end %>
 
     <%= button_to regenerate_label,
                   regenerate_path,

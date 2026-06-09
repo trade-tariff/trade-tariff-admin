@@ -126,6 +126,36 @@ Rails.application.routes.draw do
        as: :reject_goods_nomenclature_self_text,
        constraints: { goods_nomenclature_id: /\d+/ }
 
+  resources :tariff_knowledge_compressed_notes, only: %i[index] do
+    collection do
+      get :search
+    end
+  end
+
+  get "tariff_knowledge_compressed_notes/:goods_nomenclature_id",
+      to: "tariff_knowledge_compressed_notes#show",
+      as: :tariff_knowledge_compressed_note,
+      constraints: { goods_nomenclature_id: /\d+/ }
+
+  patch "tariff_knowledge_compressed_notes/:goods_nomenclature_id",
+        to: "tariff_knowledge_compressed_notes#update",
+        constraints: { goods_nomenclature_id: /\d+/ }
+
+  post "tariff_knowledge_compressed_notes/:goods_nomenclature_id/regenerate",
+       to: "tariff_knowledge_compressed_notes#regenerate",
+       as: :regenerate_tariff_knowledge_compressed_note,
+       constraints: { goods_nomenclature_id: /\d+/ }
+
+  post "tariff_knowledge_compressed_notes/:goods_nomenclature_id/approve",
+       to: "tariff_knowledge_compressed_notes#approve",
+       as: :approve_tariff_knowledge_compressed_note,
+       constraints: { goods_nomenclature_id: /\d+/ }
+
+  post "tariff_knowledge_compressed_notes/:goods_nomenclature_id/reject",
+       to: "tariff_knowledge_compressed_notes#reject",
+       as: :reject_tariff_knowledge_compressed_note,
+       constraints: { goods_nomenclature_id: /\d+/ }
+
   resources :versions, only: %i[index] do
     member do
       post :restore

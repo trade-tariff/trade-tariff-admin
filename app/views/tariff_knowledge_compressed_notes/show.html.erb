@@ -1,0 +1,127 @@
+<%= govuk_breadcrumbs 'Descriptions': "#{goods_nomenclature_self_texts_path}#compressed-notes" %>
+
+<%= render "versions/version_banner",
+           record: @compressed_note,
+           current_path: tariff_knowledge_compressed_note_path(@compressed_note.to_param),
+           type_name: "compressed note" %>
+
+<h1 class="govuk-heading-l">
+  Compressed note <%= @compressed_note.goods_nomenclature_item_id %>
+</h1>
+
+<%= render "shared/generated_content_action_buttons",
+           record: @compressed_note,
+           approve_path: approve_tariff_knowledge_compressed_note_path(@compressed_note.to_param),
+           reject_path: reject_tariff_knowledge_compressed_note_path(@compressed_note.to_param),
+           regenerate_path: regenerate_tariff_knowledge_compressed_note_path(@compressed_note.to_param),
+           regenerate_label: "Regenerate compressed note",
+           regenerate_confirm: "This will regenerate the compressed note from tariff knowledge graph evidence. The current note will be overwritten. Continue?" %>
+
+<%= form_with model: @compressed_note,
+              url: tariff_knowledge_compressed_note_path(@compressed_note.to_param),
+              method: :patch,
+              local: true do |f| %>
+
+  <% if @compressed_note.errors.any? %>
+    <div class="govuk-error-summary" data-module="govuk-error-summary">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">There is a problem</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <% @compressed_note.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <dl class="govuk-summary-list govuk-!-margin-bottom-6">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Commodity code</dt>
+      <dd class="govuk-summary-list__value"><%= link_to @compressed_note.goods_nomenclature_item_id, "#{TradeTariffAdmin.frontend_host}/commodities/#{@compressed_note.goods_nomenclature_item_id}", class: "govuk-link", target: "_blank", rel: "noopener noreferrer" %></dd>
+    </div>
+
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">SID</dt>
+      <dd class="govuk-summary-list__value"><%= @compressed_note.goods_nomenclature_sid %></dd>
+    </div>
+
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Created</dt>
+      <dd class="govuk-summary-list__value"><%= @compressed_note.formatted_created_at %></dd>
+    </div>
+
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Last updated</dt>
+      <dd class="govuk-summary-list__value"><%= @compressed_note.formatted_updated_at %></dd>
+    </div>
+
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Tags</dt>
+      <dd class="govuk-summary-list__value">
+        <%= render "shared/generated_content_tags", record: @compressed_note %>
+      </dd>
+    </div>
+  </dl>
+
+  <div class="govuk-form-group">
+    <%= f.label :content, "Compressed note", class: "govuk-label govuk-label--m" %>
+    <div class="govuk-hint">
+      A short reviewable summary generated from tariff knowledge graph evidence.
+    </div>
+    <%= f.text_area :content,
+                    class: "govuk-textarea",
+                    rows: 8,
+                    value: @compressed_note.content %>
+  </div>
+
+  <details class="govuk-details">
+    <summary class="govuk-details__summary">
+      <span class="govuk-details__summary-text">Knowledge graph evidence</span>
+    </summary>
+    <div class="govuk-details__text">
+      <h2 class="govuk-heading-s">Source nodes</h2>
+      <% if @compressed_note.source_node_keys.any? %>
+        <ul class="govuk-list govuk-list--bullet">
+          <% @compressed_note.source_node_keys.each do |key| %>
+            <li><code><%= key %></code></li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="govuk-body">No source nodes recorded.</p>
+      <% end %>
+
+      <h2 class="govuk-heading-s">Referenced ranges</h2>
+      <% if @compressed_note.range_node_keys.any? %>
+        <ul class="govuk-list govuk-list--bullet">
+          <% @compressed_note.range_node_keys.each do |key| %>
+            <li><code><%= key %></code></li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="govuk-body">No referenced ranges recorded.</p>
+      <% end %>
+    </div>
+  </details>
+
+  <% if @compressed_note.current? && policy(@compressed_note).update? %>
+    <div class="govuk-button-group">
+      <%= f.submit "Save changes", class: "govuk-button", data: { module: "govuk-button" } %>
+    </div>
+  <% end %>
+<% end %>
+
+<% if @versions.present? %>
+  <%= render "versions/history_section",
+             versions: @versions,
+             view_path_helper: ->(v) { tariff_knowledge_compressed_note_path(@compressed_note.to_param, oid: v.resource_id) },
+             restore_path_helper: ->(v) { restore_version_path(v.resource_id) },
+             can_restore: policy(@compressed_note).update?,
+             current_oid: @compressed_note.version_oid %>
+<% end %>
+
+<%= render "versions/version_navigation",
+           record: @compressed_note,
+           version_path_helper: ->(oid) { tariff_knowledge_compressed_note_path(@compressed_note.to_param, oid: oid) } %>
