@@ -2,12 +2,12 @@ module SearchDiagnosticsHelper
   EVENT_DETAIL_KEYS = {
     "search_started" => %i[query search_type],
     "query_expanded" => %i[original_query expanded_query reason duration_ms],
-    "query_refined" => %i[original_query refined_query answer_count],
+    "query_refined" => %i[base_query original_query refined_query effective_query added_answers answer_count iteration],
     "query_expansion_decided" => %i[query expand reason result_count max_score],
-    "api_call_completed" => %i[model response_type attempt_number duration_ms error_message error_message_truncated],
+    "api_call_completed" => %i[model response_type attempt_number iteration effective_query duration_ms error_message error_message_truncated],
     "description_intercept_checked" => %i[matched term excluded filtering filter_prefix_count guidance_level guidance_location escalate_to_webchat],
-    "question_returned" => %i[question_count attempt_number],
-    "answer_returned" => %i[answer_count confidence_levels attempt_number],
+    "question_returned" => %i[question_count attempt_number iteration effective_query],
+    "answer_returned" => %i[answer_count confidence_levels attempt_number iteration effective_query],
     "search_completed" => %i[query search_type results_type final_result_type total_attempts total_questions result_count max_score total_duration_ms description_intercept_matched description_intercept_term description_intercept_excluded description_intercept_filtering description_intercept_filter_prefix_count description_intercept_guidance_level description_intercept_guidance_location description_intercept_escalate_to_webchat error_message error_message_truncated],
     "retrieval_leg_completed" => %i[leg status result_count duration_ms error_message error_message_truncated],
     "result_selected" => %i[goods_nomenclature_item_id goods_nomenclature_class],
@@ -43,7 +43,7 @@ module SearchDiagnosticsHelper
     when "query_expanded"
       query_change_summary("Query expanded", fields[:original_query], fields[:expanded_query])
     when "query_refined"
-      "Query refined - added #{pluralize(fields[:answer_count].to_i, 'answer')}"
+      ["Query refined", iteration_label(fields), added_answers_label(fields) || "added #{pluralize(fields[:answer_count].to_i, 'answer')}"].compact_blank.join(" - ")
     when "query_expansion_decided"
       decision = truthy?(fields[:expand]) ? "used" : "skipped"
       ["Query expansion #{decision}", readable_value(fields[:reason])].compact_blank.join(" - ")
@@ -63,6 +63,8 @@ module SearchDiagnosticsHelper
         fields[:stage].to_s.humanize.presence,
         fields[:leg].to_s.humanize.presence,
         pluralize(fields[:result_count].to_i, "result"),
+        iteration_label(fields),
+        effective_query_label(fields),
       ].compact_blank.join(" - ")
     when "question_returned"
       "Questions returned - #{pluralize(fields[:question_count].to_i, 'question')}"
@@ -166,6 +168,49 @@ module SearchDiagnosticsHelper
     end
 
     timeline_events_by_order(sorted_events)
+  end
+
+  def search_diagnostic_iteration_summaries(events)
+    summaries = {}
+
+    Array(events).each do |event|
+      fields = search_diagnostic_fields(event)
+      iteration = fields[:iteration].presence
+      next if iteration.blank?
+
+      summary = summaries[iteration.to_i] ||= {
+        iteration: iteration.to_i,
+        effective_query: nil,
+        added_answers: [],
+        retrieval: nil,
+        model: nil,
+      }
+      summary[:effective_query] ||= fields[:effective_query].presence
+
+      case event[:event].to_s
+      when "query_refined"
+        summary[:effective_query] = fields[:effective_query].presence || summary[:effective_query]
+        summary[:added_answers] = Array(fields[:added_answers]).presence || summary[:added_answers]
+      when "retrieval_results_returned"
+        method_and_stage = [
+          fields[:retrieval_method].to_s.humanize.presence,
+          fields[:stage].to_s.humanize.downcase.presence,
+        ].compact_blank.join(" ")
+        summary[:retrieval] = [
+          method_and_stage.presence,
+          fields[:leg].to_s.humanize.downcase.presence,
+          pluralize(fields[:result_count].to_i, "result"),
+        ].compact_blank.join(" - ")
+      when "question_returned"
+        summary[:model] = "Questions returned - #{pluralize(fields[:question_count].to_i, 'question')}"
+      when "answer_returned"
+        summary[:model] = "Answers returned - #{pluralize(fields[:answer_count].to_i, 'answer')}"
+      when "api_call_completed"
+        summary[:model] ||= ["Model returned #{readable_value(fields[:response_type]) || 'response'}", attempt_label(fields)].compact_blank.join(" - ")
+      end
+    end
+
+    summaries.values.sort_by { |summary| summary[:iteration] }
   end
 
   def search_diagnostic_event_dom_id(index)
@@ -275,6 +320,7 @@ private
         "Stage" => fields[:stage],
         "Leg" => fields[:leg],
         "Iteration" => fields[:iteration],
+        "Effective query" => fields[:effective_query],
         "Result count" => fields[:result_count],
       ),
       result_table(results),
@@ -568,6 +614,25 @@ private
     return if fields[:attempt_number].blank?
 
     "attempt #{fields[:attempt_number]}"
+  end
+
+  def iteration_label(fields)
+    return if fields[:iteration].blank?
+
+    "iteration #{fields[:iteration]}"
+  end
+
+  def effective_query_label(fields)
+    return if fields[:effective_query].blank?
+
+    "query: #{fields[:effective_query]}"
+  end
+
+  def added_answers_label(fields)
+    answers = Array(fields[:added_answers]).compact_blank
+    return if answers.blank?
+
+    "added #{answers.join(', ')}"
   end
 
   def query_change_summary(label, original_query, changed_query)
