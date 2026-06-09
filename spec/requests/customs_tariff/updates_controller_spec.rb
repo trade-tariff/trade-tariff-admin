@@ -72,7 +72,7 @@ RSpec.describe CustomsTariff::UpdatesController, type: :request do
     before do
       stub_api_request("/customs_tariff_updates/#{update_version}")
         .and_return(update_response)
-      stub_api_request("/customs_tariff_updates/#{update_version}/section_notes")
+      stub_api_request("/customs_tariff_updates/#{update_version}/sections_summary")
         .and_return(
           status: 200,
           headers: { "content-type" => "application/json; charset=utf-8" },
@@ -87,6 +87,72 @@ RSpec.describe CustomsTariff::UpdatesController, type: :request do
     it "renders the compare form" do
       make_request
       expect(response.body).to include(customs_tariff_update_comparison_path(update_version))
+    end
+
+    context "when a previous version exists in the updates list" do
+      before do
+        stub_api_request("/customs_tariff_updates/#{update_version}").and_return(update_response)
+        stub_api_request("/customs_tariff_updates/#{update_version}/sections_summary").and_return(
+          status: 200,
+          headers: { "content-type" => "application/json; charset=utf-8" },
+          body: { data: [] }.to_json,
+        )
+        stub_api_request("/customs_tariff_updates").and_return(
+          status: 200,
+          headers: { "content-type" => "application/json; charset=utf-8" },
+          body: {
+            data: [
+              { type: "customs_tariff_update", id: update_version, attributes: update_attributes },
+              {
+                type: "customs_tariff_update",
+                id: "1.30",
+                attributes: update_attributes.merge("version" => "1.30", "status" => "pending", "validity_start_date" => "2025-12-01"),
+              },
+            ],
+          }.to_json,
+        )
+        get customs_tariff_update_path(update_version)
+      end
+
+      it "displays the baseline version in explanatory text" do
+        expect(response.body).to include("Comparing notes against version 1.30")
+      end
+    end
+
+    context "when a section summary has absent section note status" do
+      before do
+        stub_api_request("/customs_tariff_updates/#{update_version}").and_return(update_response)
+        stub_api_request("/customs_tariff_updates/#{update_version}/sections_summary").and_return(
+          status: 200,
+          headers: { "content-type" => "application/json; charset=utf-8" },
+          body: {
+            data: [
+              {
+                type: "section_summary",
+                id: "3",
+                attributes: {
+                  "section_id" => 3,
+                  "section_title" => "Section 3",
+                  "position" => 3,
+                  "section_note_id" => nil,
+                  "section_note_status" => "absent",
+                  "chapter_notes_total" => 0,
+                  "chapter_notes_changed" => 0,
+                },
+              },
+            ],
+          }.to_json,
+        )
+        stub_api_request("/customs_tariff_updates").and_return(updates_list_response)
+        get customs_tariff_update_path(update_version)
+      end
+
+      it "renders an Add link for the absent section", :aggregate_failures do
+        expect(response.body).to include(">Add<")
+        expect(response.body).to include(
+          new_customs_tariff_update_section_note_path(update_version, section_id: 3),
+        )
+      end
     end
   end
 
@@ -107,7 +173,7 @@ RSpec.describe CustomsTariff::UpdatesController, type: :request do
           )
       end
 
-      it { is_expected.to redirect_to(customs_tariff_update_path(update_version)) }
+      it { is_expected.to redirect_to(customs_tariff_updates_path) }
 
       it "sets a success flash notice" do
         make_request
@@ -136,6 +202,48 @@ RSpec.describe CustomsTariff::UpdatesController, type: :request do
       it "sets a flash alert containing the backend error detail" do
         make_request
         expect(session.dig("flash", "flashes", "alert")).to eq("Could not update status: Version is already approved")
+      end
+    end
+  end
+
+  describe "POST #reimport" do
+    let(:make_request) do
+      post reimport_customs_tariff_update_path(update_version)
+    end
+
+    context "when the backend accepts the reimport" do
+      before do
+        stub_api_request("/customs_tariff_updates/#{update_version}")
+          .and_return(update_response)
+        stub_api_request("/customs_tariff_updates/#{update_version}/reimport", :post)
+          .and_return(
+            status: 202,
+            headers: { "content-type" => "application/json; charset=utf-8" },
+            body: "",
+          )
+      end
+
+      it { is_expected.to redirect_to(customs_tariff_updates_path) }
+
+      it "sets a success flash notice" do
+        make_request
+        expect(session.dig("flash", "flashes", "notice")).to eq("Re-import queued.")
+      end
+    end
+
+    context "when the backend returns 404" do
+      before do
+        stub_api_request("/customs_tariff_updates/#{update_version}")
+          .and_return(update_response)
+        stub_api_request("/customs_tariff_updates/#{update_version}/reimport", :post)
+          .and_return(status: 404, body: "", headers: { "content-type" => "application/json; charset=utf-8" })
+      end
+
+      it { is_expected.to redirect_to(customs_tariff_updates_path) }
+
+      it "sets an alert flash" do
+        make_request
+        expect(session.dig("flash", "flashes", "alert")).to eq("Update could not be found.")
       end
     end
   end

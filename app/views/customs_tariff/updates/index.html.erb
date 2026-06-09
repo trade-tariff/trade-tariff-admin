@@ -8,6 +8,7 @@
       row.with_cell(text: 'Valid to')
       row.with_cell(text: 'Status')
       row.with_cell(text: 'Actions')
+      row.with_cell(text: '')
     end
   end
 
@@ -21,7 +22,16 @@
           tag.strong(update.status.capitalize, class: "govuk-tag govuk-tag--#{update.status_tag_colour}")
         end
         row.with_cell do
-          link_to 'Review', customs_tariff_update_path(update.version), class: 'govuk-link'
+          link_to('Review', customs_tariff_update_path(update.version), class: 'govuk-link')
+        end
+        row.with_cell do
+          if policy(update).update?
+            button_to('Re-import',
+                               reimport_customs_tariff_update_path(update.version),
+                               method: :post,
+                               class: 'govuk-button govuk-button--secondary govuk-!-margin-bottom-0',
+                               data: { confirm: 'This will reset all notes for this update to their originally imported content. Are you sure?' })
+          end
         end
       end
     end

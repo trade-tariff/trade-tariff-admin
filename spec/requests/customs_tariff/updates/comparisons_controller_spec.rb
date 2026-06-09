@@ -105,6 +105,62 @@ RSpec.describe CustomsTariff::Updates::ComparisonsController, type: :request do
     end
   end
 
+  describe "GET #show_chapter_note" do
+    let(:chapter_note_id) { "2164" }
+
+    let(:chapter_note_attributes) do
+      {
+        "chapter_id" => "41",
+        "content" => "## Chapter 41\n\nSome content.",
+        "customs_tariff_update_version" => update_version,
+        "file_diff" => { "changed_fields" => %w[content], "changes" => {} },
+        "versions" => [],
+      }
+    end
+
+    let(:chapter_note_response) do
+      {
+        status: 200,
+        headers: { "content-type" => "application/json; charset=utf-8" },
+        body: {
+          data: {
+            type: "customs_tariff_chapter_note",
+            id: chapter_note_id,
+            attributes: chapter_note_attributes,
+          },
+        }.to_json,
+      }
+    end
+
+    let(:make_request) do
+      get customs_tariff_update_comparison_chapter_note_path(update_version, chapter_note_id),
+          params: { compare_version:, section_id: "8" }
+    end
+
+    before do
+      stub_api_request("/customs_tariff_updates/#{update_version}")
+        .and_return(update_response)
+      stub_api_request("/customs_tariff_updates/#{update_version}/chapter_notes/#{chapter_note_id}")
+        .with(query: hash_including(
+          "customs_tariff_update_version" => update_version,
+          "compare_version" => compare_version,
+        ))
+        .and_return(chapter_note_response)
+    end
+
+    it { is_expected.to have_http_status(:ok) }
+    it { is_expected.to render_template(:show_chapter_note) }
+
+    context "when compare_version param is missing" do
+      let(:make_request) do
+        get customs_tariff_update_comparison_chapter_note_path(update_version, chapter_note_id),
+            params: { section_id: "8" }
+      end
+
+      it { is_expected.to redirect_to(customs_tariff_update_path(update_version)) }
+    end
+  end
+
   describe "GET #index" do
     let(:make_request) do
       get customs_tariff_update_comparison_path(update_version),

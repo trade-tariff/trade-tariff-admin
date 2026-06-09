@@ -10,6 +10,7 @@
       row.with_cell(text: "Section")
       row.with_cell(text: "Change")
       row.with_cell(text: "Actions")
+      row.with_cell(text: "Chapter Notes")
     end
   end
 
@@ -23,14 +24,26 @@
           tag.strong(note.file_diff_status.to_s.capitalize, class: "govuk-tag govuk-tag--#{chip_colour}")
         end
         row.with_cell do
-          unless note.file_diff_status == :new || note.file_diff_status == :unchanged
+          if note.file_diff_status == :changed
             link_to "View diff",
                     customs_tariff_update_comparison_section_note_path(
                       @update.version, note.id,
                       compare_version: @compare_version
                     ),
                     class: "govuk-link"
+          else
+            link_to "View/Edit",
+                    edit_customs_tariff_update_section_note_path(@update.version, note.id),
+                    class: "govuk-link"
           end
+        end
+        row.with_cell do
+          link_to "View chapter notes",
+                  customs_tariff_update_section_chapter_notes_path(
+                    @update.version, note.section_id,
+                    compare_version: @compare_version
+                  ),
+                  class: "govuk-link"
         end
       end
     end

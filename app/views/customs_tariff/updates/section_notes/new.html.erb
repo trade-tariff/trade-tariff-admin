@@ -1,4 +1,4 @@
-<h2> Edit Section <%= @section_note.section_id %> Note </h2>
+<h2>Add Section <%= @section_id %> Note</h2>
 
 <p class="govuk-body">
   Update version: <%= @update.version %>
@@ -11,8 +11,9 @@
      data-tariff-note-preview-url-value="<%= customs_tariff_section_note_preview_path %>">
   <div class="govuk-grid-column-one-half">
     <%= form_with model: @section_note,
-                  url: customs_tariff_update_section_note_path(@update.version, @section_note.id),
-                  method: :patch do |f| %>
+                  url: customs_tariff_update_section_notes_path(@update.version),
+                  method: :post do |f| %>
+      <%= hidden_field_tag :section_id, @section_id %>
       <div class="govuk-form-group">
         <%= f.label :content, 'Content', class: 'govuk-label govuk-label--m' %>
         <%= f.text_area :content, rows: 20, class: 'govuk-textarea',
@@ -29,26 +30,6 @@
   <div class="govuk-grid-column-one-half">
     <h2 class="govuk-heading-m">Preview</h2>
     <div class="govuk-body" data-tariff-note-preview-target="preview">
-      <%= @section_note.preview %>
     </div>
   </div>
 </div>
-
-<% if policy(@section_note).destroy? %>
-  <h3>Remove section note</h3>
-
-  <p>Remove this section note</p>
-  <%= link_to "Remove",
-              customs_tariff_update_section_note_path(@update.version, @section_note.id),
-              method: :delete,
-              data: { confirm: 'Are you sure?', disable: 'Working' },
-              class: 'govuk-button govuk-button--warning' %>
-<% end %>
-
-<% if @section_note.version_objects.any? %>
-  <%= render 'versions/history_section',
-        versions: @section_note.version_objects,
-        can_restore: policy(@section_note).update?,
-        view_path_helper: nil,
-        restore_path_helper: ->(v) { restore_version_path(v.resource_id) } %>
-<% end %>

@@ -4,7 +4,7 @@ module VersionsHelper
     opts = oid ? { oid: oid } : {}
 
     case version.item_type
-    when "CustomsTariffSectionNote"
+    when "CustomsTariffSectionNote", "CustomsTariffChapterNote"
       update_version = version.object&.dig("customs_tariff_update_version")
       customs_tariff_update_path(update_version) if update_version.present?
     when "GoodsNomenclatureLabel"

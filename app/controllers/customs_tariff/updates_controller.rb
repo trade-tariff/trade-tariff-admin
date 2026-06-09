@@ -9,7 +9,12 @@ module CustomsTariff
       @update = CustomsTariff::Update.find(params[:version])
       authorize @update, :show?
       @updates = CustomsTariff::Update.all
-      @section_notes = CustomsTariff::SectionNote.all(customs_tariff_update_version: params[:version])
+      @section_summaries = CustomsTariff::SectionSummary.all(customs_tariff_update_version: params[:version])
+      @baseline_version = @updates
+        .reject { |u| u.version == @update.version || u.status == "failed" }
+        .select { |u| u.validity_start_date.present? && u.validity_start_date < @update.validity_start_date }
+        .max_by(&:validity_start_date)
+        &.version
     end
 
     def update_status
@@ -21,11 +26,24 @@ module CustomsTariff
         { data: { attributes: { status: params.require(:status) } } },
       )
 
-      redirect_to customs_tariff_update_path(params[:version]),
+      redirect_to customs_tariff_updates_path,
                   notice: "Status updated to #{params[:status]}."
     rescue Faraday::UnprocessableEntityError => e
       redirect_to customs_tariff_update_path(params[:version]),
                   alert: "Could not update status: #{e.response[:body].dig('errors', 0, 'detail')}"
+    end
+
+    def reimport
+      @update = CustomsTariff::Update.find(params[:version])
+      authorize @update, :update?
+
+      CustomsTariff::Update.api.post(
+        "admin/customs_tariff_updates/#{params[:version]}/reimport",
+      )
+
+      redirect_to customs_tariff_updates_path, notice: "Re-import queued."
+    rescue Faraday::ResourceNotFound
+      redirect_to customs_tariff_updates_path, alert: "Update could not be found."
     end
   end
 end

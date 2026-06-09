@@ -17,7 +17,7 @@ class VersionsController < AuthenticatedController
     version_data = response.body["data"]
     restored = Version.new((version_data["attributes"] || {}).merge("id" => version_data["id"])) if version_data
 
-    redirect_to (restored && version_item_link(restored)) || versions_path,
+    redirect_to chapter_note_restore_path || (restored && version_item_link(restored)) || versions_path,
                 notice: "Restored successfully."
   rescue Faraday::ResourceNotFound
     redirect_to versions_path, alert: "Version not found."
@@ -26,6 +26,12 @@ class VersionsController < AuthenticatedController
   end
 
 private
+
+  def chapter_note_restore_path
+    return unless params[:section_id].present? && params[:update_version].present?
+
+    customs_tariff_update_section_chapter_notes_path(params[:update_version], params[:section_id])
+  end
 
   def version_params
     filter = { page: params[:page] || 1 }

@@ -1,5 +1,5 @@
 module CustomsTariff
-  class SectionNotePolicy < ApplicationPolicy
+  class ChapterNotePolicy < ApplicationPolicy
     def create?  = technical_operator?
     def edit?    = technical_operator?
     def update?  = technical_operator?

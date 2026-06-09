@@ -132,6 +132,34 @@ RSpec.describe CustomsTariff::Updates::SectionNotesController, type: :request do
     end
   end
 
+  describe "DELETE #destroy" do
+    let(:make_request) do
+      delete customs_tariff_update_section_note_path(update_version, section_note_id)
+    end
+
+    before do
+      stub_api_request("/customs_tariff_updates/#{update_version}")
+        .and_return(update_response)
+      stub_api_request("/customs_tariff_updates/#{update_version}/section_notes/#{section_note_id}")
+        .with(query: hash_including("customs_tariff_update_version" => update_version))
+        .and_return(section_note_response)
+    end
+
+    context "when the backend accepts the delete" do
+      before do
+        stub_api_request("/customs_tariff_updates/#{update_version}/section_notes/#{section_note_id}", :delete)
+          .and_return(status: 204, body: "", headers: {})
+      end
+
+      it { is_expected.to redirect_to(customs_tariff_update_path(update_version)) }
+
+      it "sets a success flash notice" do
+        make_request
+        expect(session.dig("flash", "flashes", "notice")).to eq("Section note removed.")
+      end
+    end
+  end
+
   describe "POST #preview" do
     let(:make_request) do
       post customs_tariff_section_note_preview_path, params: { content: "some markdown" }
@@ -142,6 +170,81 @@ RSpec.describe CustomsTariff::Updates::SectionNotesController, type: :request do
     it "returns JSON with an html key" do
       json = JSON.parse(rendered_page.body)
       expect(json).to have_key("html")
+    end
+  end
+
+  describe "GET #new" do
+    let(:section_id) { "5" }
+
+    let(:make_request) do
+      get new_customs_tariff_update_section_note_path(update_version),
+          params: { section_id: }
+    end
+
+    before do
+      stub_api_request("/customs_tariff_updates/#{update_version}")
+        .and_return(update_response)
+    end
+
+    it { is_expected.to have_http_status(:ok) }
+    it { is_expected.to render_template(:new) }
+  end
+
+  describe "POST #create" do
+    let(:section_id) { "5" }
+
+    let(:make_request) do
+      post customs_tariff_update_section_notes_path(update_version),
+           params: {
+             customs_tariff_section_note: { content: "Manually added content." },
+             section_id:,
+           }
+    end
+
+    before do
+      stub_api_request("/customs_tariff_updates/#{update_version}")
+        .and_return(update_response)
+    end
+
+    context "when the backend accepts the create" do
+      before do
+        stub_api_request("/customs_tariff_updates/#{update_version}/section_notes", :post)
+          .and_return(
+            status: 201,
+            headers: { "content-type" => "application/json; charset=utf-8" },
+            body: {
+              data: {
+                type: "customs_tariff_section_note",
+                id: "200",
+                attributes: section_note_attributes.merge(
+                  "section_id" => 5,
+                  "content" => "Manually added content.",
+                ),
+              },
+            }.to_json,
+          )
+      end
+
+      it { is_expected.to redirect_to(customs_tariff_update_path(update_version)) }
+
+      it "sets a success flash notice" do
+        make_request
+        expect(session.dig("flash", "flashes", "notice")).to eq("Section note added.")
+      end
+    end
+
+    context "when the backend rejects the create with a 422" do
+      before do
+        stub_api_request("/customs_tariff_updates/#{update_version}/section_notes", :post)
+          .and_return(
+            status: 422,
+            headers: { "content-type" => "application/json; charset=utf-8" },
+            body: { errors: [{ detail: "Content can't be blank" }] }.to_json,
+          )
+      end
+
+      it { is_expected.to have_http_status(:unprocessable_content) }
+      it { is_expected.to render_template(:new) }
     end
   end
 end
