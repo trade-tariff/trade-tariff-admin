@@ -56,38 +56,79 @@
   <%= f.submit "Compare", class: "govuk-button govuk-button--secondary" %>
 <% end %>
 
+<p class="govuk-body govuk-hint">
+  <% if @baseline_version %>
+    Comparing notes against version <%= @baseline_version %> (previous version).
+    To compare against a different version, use the form above.
+  <% else %>
+    No previous version found — notes shown without a comparison baseline.
+  <% end %>
+</p>
+
 <h2 class="govuk-heading-m">Section Notes</h2>
 
 <%= govuk_table do |table|
   table.with_head do |head|
     head.with_row do |row|
       row.with_cell(text: 'Section')
-      row.with_cell(text: 'Change')
+      row.with_cell(text: 'Section Note')
       row.with_cell(text: 'Actions')
+      row.with_cell(text: 'Chapter Notes')
     end
   end
 
   table.with_body do |body|
-    @section_notes.each do |note|
-      chip_colour = { new: 'blue', changed: 'orange', unchanged: 'grey' }.fetch(note.file_diff_status, 'grey')
+    @section_summaries.each do |summary|
+      chip_colour = { new: 'blue', changed: 'orange', unchanged: 'grey', absent: 'grey' }
+                      .fetch(summary.section_note_status_symbol, 'grey')
 
       body.with_row do |row|
-        row.with_cell(text: "Section #{note.section_id}")
+        row.with_cell(text: "Section #{summary.section_id}")
         row.with_cell do
-          tag.strong(note.file_diff_status.to_s.capitalize, class: "govuk-tag govuk-tag--#{chip_colour}")
-        end
-        row.with_cell do
-          if !@update.rejected? && policy(note).edit?
-            link_to 'Edit',
-                    edit_customs_tariff_update_section_note_path(@update.version, note.id),
-                    class: 'govuk-link'
+          if summary.section_note_status_symbol == :absent
+            "—"
+          else
+            tag.strong(summary.section_note_status.capitalize, class: "govuk-tag govuk-tag--#{chip_colour}")
           end
         end
-      end
-
-      if note.file_diff_status == :changed
-        body.with_row do |row|
-          row.with_cell(colspan: 3) { changeset_detail_html(note) }
+        row.with_cell do
+          if !@update.rejected? && summary.section_note_id.present?
+            note_stub = CustomsTariff::SectionNote.new(
+              id: summary.section_note_id,
+              customs_tariff_update_version: @update.version
+            )
+            if policy(note_stub).edit?
+              if summary.section_note_status_symbol == :changed && @baseline_version.present?
+                link_to 'View diff',
+                        customs_tariff_update_comparison_section_note_path(
+                          @update.version, summary.section_note_id,
+                          compare_version: @baseline_version
+                        ),
+                        class: 'govuk-link'
+              else
+                link_to 'View/Edit',
+                        edit_customs_tariff_update_section_note_path(@update.version, summary.section_note_id),
+                        class: 'govuk-link'
+              end
+            end
+          elsif !@update.rejected? && summary.section_note_status_symbol == :absent
+            if policy(CustomsTariff::SectionNote.new(customs_tariff_update_version: @update.version, section_id: summary.section_id)).create?
+              link_to 'Add',
+                      new_customs_tariff_update_section_note_path(
+                        @update.version, section_id: summary.section_id
+                      ),
+                      class: 'govuk-link'
+            end
+          end
+        end
+        row.with_cell do
+          chapter_colour = summary.chapter_notes_changed? ? 'orange' : 'grey'
+          link_to summary.chapter_note_summary_label,
+                  customs_tariff_update_section_chapter_notes_path(
+                    @update.version, summary.section_id,
+                    compare_version: @baseline_version,
+                  ),
+                  class: "govuk-link govuk-tag govuk-tag--#{chapter_colour}"
         end
       end
     end

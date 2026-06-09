@@ -24,6 +24,18 @@ module CustomsTariff
         )
       end
 
+      def show_chapter_note
+        @update = CustomsTariff::Update.find(params[:update_version])
+        authorize @update, :show?
+        @compare_version = params[:compare_version]
+        @section_id = params[:section_id]
+        @chapter_note = CustomsTariff::ChapterNote.find(
+          params[:id],
+          customs_tariff_update_version: params[:update_version],
+          compare_version: @compare_version,
+        )
+      end
+
     private
 
       def require_compare_version

@@ -166,18 +166,40 @@ Rails.application.routes.draw do
   scope path: "customs_tariff", module: "customs_tariff" do
     get  "updates", to: "updates#index", as: :customs_tariff_updates
     post "updates/section_notes/preview", to: "updates/section_notes#preview", as: :customs_tariff_section_note_preview
+    post "updates/chapter_notes/preview", to: "updates/chapter_notes#preview", as: :customs_tariff_chapter_note_preview
 
     constraints(version: /[^\/]+/) do
       get   "updates/:version",               to: "updates#show",          as: :customs_tariff_update
       patch "updates/:version/update_status", to: "updates#update_status", as: :update_status_customs_tariff_update
       get   "updates/:version/compare",       to: "updates/comparisons#index", as: :customs_tariff_update_comparison
+      post  "updates/:version/reimport",      to: "updates#reimport",      as: :reimport_customs_tariff_update
     end
 
     constraints(update_version: /[^\/]+/) do
+      get  "updates/:update_version/section_notes/new",
+           to: "updates/section_notes#new",
+           as: :new_customs_tariff_update_section_note
+      post "updates/:update_version/section_notes",
+           to: "updates/section_notes#create",
+           as: :customs_tariff_update_section_notes
       get   "updates/:update_version/section_notes/:id/edit", to: "updates/section_notes#edit",   as: :edit_customs_tariff_update_section_note
       patch "updates/:update_version/section_notes/:id",      to: "updates/section_notes#update", as: :customs_tariff_update_section_note
-      put   "updates/:update_version/section_notes/:id",      to: "updates/section_notes#update"
+      put    "updates/:update_version/section_notes/:id",      to: "updates/section_notes#update"
+      delete "updates/:update_version/section_notes/:id",      to: "updates/section_notes#destroy"
       get   "updates/:update_version/compare/section_notes/:id", to: "updates/comparisons#show", as: :customs_tariff_update_comparison_section_note
+      get   "updates/:update_version/compare/chapter_notes/:id", to: "updates/comparisons#show_chapter_note", as: :customs_tariff_update_comparison_chapter_note
+
+      get  "updates/:update_version/chapter_notes/new",
+           to: "updates/chapter_notes#new",
+           as: :new_customs_tariff_update_chapter_note
+      post "updates/:update_version/chapter_notes",
+           to: "updates/chapter_notes#create",
+           as: :customs_tariff_update_chapter_notes
+      get   "updates/:update_version/sections/:section_id/chapter_notes", to: "updates/chapter_notes#index",  as: :customs_tariff_update_section_chapter_notes
+      get   "updates/:update_version/chapter_notes/:id/edit",             to: "updates/chapter_notes#edit",   as: :edit_customs_tariff_update_chapter_note
+      patch  "updates/:update_version/chapter_notes/:id",                  to: "updates/chapter_notes#update", as: :customs_tariff_update_chapter_note
+      put    "updates/:update_version/chapter_notes/:id",                  to: "updates/chapter_notes#update"
+      delete "updates/:update_version/chapter_notes/:id",                  to: "updates/chapter_notes#destroy"
     end
   end
 

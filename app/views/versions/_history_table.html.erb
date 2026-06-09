@@ -43,7 +43,7 @@
         <td class="govuk-table__cell" style="<%= cell_style %>"><%= version.created_at_formatted %></td>
         <% if defined?(can_restore) && can_restore %>
           <td class="govuk-table__cell" style="<%= cell_style %>">
-            <% unless index == 0 %>
+            <% unless version.event == 'create' %>
               <%= button_to "Restore",
                             restore_path_helper.call(version),
                             method: :post,
