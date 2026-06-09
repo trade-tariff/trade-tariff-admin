@@ -39,7 +39,7 @@ RSpec.shared_context "with authenticated user" do # rubocop:disable RSpec/Multip
 
         ActionDispatch::Session::CookieStore.new(setter, key: "_trade-tariff-admin_app_session").call(env)
         cookies_key_value = env["action_dispatch.cookies"].as_json.first
-        cookies[:id_token] = id_token
+        cookies[TradeTariffAdmin.id_token_cookie_name] = id_token
         cookies[cookies_key_value.first] = cookies_key_value.last if cookies_key_value
       end
     elsif example.metadata[:type] == :feature && session_instance
@@ -53,7 +53,7 @@ RSpec.shared_context "with authenticated user" do # rubocop:disable RSpec/Multip
       cookies_key_value = env["action_dispatch.cookies"].as_json.first
 
       rack_session = page.driver.browser.rack_mock_session
-      rack_session.cookie_jar[:id_token] = "mock-id-token"
+      rack_session.cookie_jar[TradeTariffAdmin.id_token_cookie_name] = "mock-id-token"
       rack_session.cookie_jar[cookies_key_value.first] = cookies_key_value.last if cookies_key_value
     elsif session_instance
       session[:token] = session_instance.token

@@ -12,6 +12,8 @@ module VersionsHelper
       goods_nomenclature_label_path(item_id, **opts) if item_id.present?
     when "GoodsNomenclatureSelfText"
       goods_nomenclature_self_text_path(version.item_id, **opts) if version.item_id.present?
+    when "TariffKnowledge::CompressedNote"
+      tariff_knowledge_compressed_note_path(version.item_id, **opts) if version.item_id.present?
     when "AdminConfiguration"
       name = version.object&.dig("name")
       classification_configuration_path(name, **opts) if name.present?

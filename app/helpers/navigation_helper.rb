@@ -86,7 +86,7 @@ module NavigationHelper
             text: "Descriptions",
             href: goods_nomenclature_self_texts_path,
             policy_class: GoodsNomenclatureSelfText,
-            active_when: /\/goods_nomenclature_(self_texts|labels)/,
+            active_when: /\/(goods_nomenclature_(self_texts|labels)|tariff_knowledge_compressed_notes)/,
             service: nil,
           ),
           NavigationItem.new(
