@@ -2,8 +2,13 @@
 
 pin "application"
 
-pin_all_from "app/javascript/src", to: "src"
-
-pin_all_from "app/javascript/controllers", under: "controllers"
 pin "@hotwired/stimulus", to: "stimulus.min.js"
 pin "@hotwired/stimulus-loading", to: "stimulus-loading.js"
+
+pin "govuk-frontend" # @6.2.0
+pin "accessible-autocomplete" # @3.0.1
+
+pin_all_from "app/javascript/src", under: "src", to: "src"
+pin_all_from "app/javascript/controllers", under: "controllers"
+
+pin "markdown-preview"
