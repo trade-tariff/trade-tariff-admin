@@ -1,0 +1,37 @@
+{
+  "data": {
+    "id": "uk-7d-all",
+    "type": "search_analytics",
+    "attributes": {
+      "service": "uk",
+      "period": "7d",
+      "view": "all",
+      "bucket_size": "day",
+      "generated_at": "2026-06-10T09:55:00Z",
+      "data_through": "2026-06-10T09:50:00Z",
+      "summary": { "searches": 8420, "failure_rate": 0.009, "zero_result_rate": 0.071, "selection_rate": 0.44, "p90_latency_ms": 1650 },
+      "summary_statuses": {
+        "searches": { "level": "neutral", "message": "Search volume is available for this period" },
+        "failure_rate": { "level": "good", "message": "Failures are low" },
+        "zero_result_rate": { "level": "good", "message": "Most searches are returning results" },
+        "selection_rate": { "level": "good", "message": "Selections are tracking search volume" },
+        "p90_latency_ms": { "level": "watch", "message": "Some searches are taking longer than usual" }
+      },
+      "trends": {
+        "volume": [
+          { "bucket": "2026-06-04T00:00:00Z", "all": 1170, "classic": 690, "internal": 480 },
+          { "bucket": "2026-06-10T00:00:00Z", "all": 1240, "classic": 710, "internal": 530 }
+        ],
+        "outcomes": [
+          { "bucket": "2026-06-04T00:00:00Z", "completed": 1160, "failed": 10, "zero_result": 82, "selected": 512 },
+          { "bucket": "2026-06-10T00:00:00Z", "completed": 1228, "failed": 12, "zero_result": 88, "selected": 546 }
+        ]
+      },
+      "comparisons": {
+        "classic": { "searches": 4890, "zero_result_rate": 0.06, "selection_rate": 0.46, "p90_latency_ms": 610 },
+        "internal": { "searches": 3530, "zero_result_rate": 0.09, "selection_rate": 0.4, "p90_latency_ms": 2200 }
+      },
+      "improvement_terms": [{ "query": "chargers", "searches": 220, "zero_results": 65, "selection_rate": 0.18 }]
+    }
+  }
+}

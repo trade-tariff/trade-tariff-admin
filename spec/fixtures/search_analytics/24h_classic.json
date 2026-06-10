@@ -1,0 +1,25 @@
+{
+  "data": {
+    "id": "uk-24h-classic",
+    "type": "search_analytics",
+    "attributes": {
+      "service": "uk",
+      "period": "24h",
+      "view": "classic",
+      "bucket_size": "hour",
+      "generated_at": "2026-06-10T09:55:00Z",
+      "data_through": "2026-06-10T09:50:00Z",
+      "summary": { "searches": 710, "failure_rate": 0.006, "zero_result_rate": 0.07, "selection_rate": 0.43, "p90_latency_ms": 620 },
+      "summary_statuses": {
+        "searches": { "level": "neutral", "message": "Search volume is available for this period" },
+        "failure_rate": { "level": "good", "message": "Failures are low" },
+        "zero_result_rate": { "level": "good", "message": "Most searches are returning results" },
+        "selection_rate": { "level": "good", "message": "Selections are tracking search volume" },
+        "p90_latency_ms": { "level": "good", "message": "Most searches are completing quickly" }
+      },
+      "trends": { "volume": [{ "bucket": "2026-06-10T09:00:00Z", "all": 31, "classic": 31, "internal": 0 }], "outcomes": [{ "bucket": "2026-06-10T09:00:00Z", "completed": 31, "failed": 0, "zero_result": 2, "selected": 13 }] },
+      "comparisons": { "classic": { "searches": 710, "zero_result_rate": 0.07, "selection_rate": 0.43, "p90_latency_ms": 620 }, "internal": { "searches": 530, "zero_result_rate": 0.1, "selection_rate": 0.38, "p90_latency_ms": 2400 } },
+      "improvement_terms": [{ "query": "classic term", "searches": 18, "zero_results": 5, "selection_rate": 0.22 }]
+    }
+  }
+}

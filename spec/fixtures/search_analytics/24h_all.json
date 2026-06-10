@@ -1,0 +1,56 @@
+{
+  "data": {
+    "id": "uk-24h-all",
+    "type": "search_analytics",
+    "attributes": {
+      "service": "uk",
+      "period": "24h",
+      "view": "all",
+      "bucket_size": "hour",
+      "generated_at": "2026-06-10T09:55:00Z",
+      "data_through": "2026-06-10T09:50:00Z",
+      "summary": {
+        "searches": 1240,
+        "failure_rate": 0.012,
+        "zero_result_rate": 0.084,
+        "selection_rate": 0.41,
+        "p90_latency_ms": 1800
+      },
+      "summary_statuses": {
+        "searches": { "level": "neutral", "message": "Search volume is available for this period" },
+        "failure_rate": { "level": "good", "message": "Failures are low" },
+        "zero_result_rate": { "level": "watch", "message": "Zero-result searches are slightly higher than usual" },
+        "selection_rate": { "level": "good", "message": "Selections are tracking search volume" },
+        "p90_latency_ms": { "level": "watch", "message": "Some searches are taking longer than usual" }
+      },
+      "trends": {
+        "volume": [
+          { "bucket": "2026-06-10T08:00:00Z", "all": 48, "classic": 28, "internal": 20 },
+          { "bucket": "2026-06-10T09:00:00Z", "all": 52, "classic": 31, "internal": 21 }
+        ],
+        "outcomes": [
+          { "bucket": "2026-06-10T08:00:00Z", "completed": 47, "failed": 1, "zero_result": 3, "selected": 18 },
+          { "bucket": "2026-06-10T09:00:00Z", "completed": 50, "failed": 2, "zero_result": 4, "selected": 19 }
+        ]
+      },
+      "comparisons": {
+        "classic": { "searches": 710, "zero_result_rate": 0.07, "selection_rate": 0.43, "p90_latency_ms": 620 },
+        "internal": { "searches": 530, "zero_result_rate": 0.1, "selection_rate": 0.38, "p90_latency_ms": 2400 }
+      },
+      "improvement_terms": [
+        { "query": "3926909090", "searches": 40, "zero_results": 18, "selection_rate": 0.12 },
+        { "query": "4202129000", "searches": 28, "zero_results": 14, "selection_rate": 0.21 },
+        { "query": "9031809090", "searches": 24, "zero_results": 13, "selection_rate": 0.18 },
+        { "query": "9603909090", "searches": 21, "zero_results": 12, "selection_rate": 0.1 },
+        { "query": "3304990039", "searches": 20, "zero_results": 11, "selection_rate": 0.3 },
+        { "query": "3304990099", "searches": 19, "zero_results": 10, "selection_rate": 0.16 },
+        { "query": "0000000000", "searches": 18, "zero_results": 9, "selection_rate": 0.0 },
+        { "query": "bike seat", "searches": 17, "zero_results": 8, "selection_rate": 0.12 },
+        { "query": "yoga ball", "searches": 16, "zero_results": 7, "selection_rate": 0.19 },
+        { "query": "phone case", "searches": 15, "zero_results": 6, "selection_rate": 0.21 },
+        { "query": "ceramic mug", "searches": 14, "zero_results": 5, "selection_rate": 0.14 },
+        { "query": "garden lights", "searches": 13, "zero_results": 4, "selection_rate": 0.08 }
+      ]
+    }
+  }
+}

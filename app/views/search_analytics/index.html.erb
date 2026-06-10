@@ -1,0 +1,188 @@
+<% content_for :page_title, "Search dashboard" %>
+<%= javascript_pack_tag "search-analytics-dashboard", defer: true %>
+
+<% summary = (@search_analytics.summary || {}).with_indifferent_access %>
+<% statuses = (@search_analytics.summary_statuses || {}).with_indifferent_access %>
+<% trends = (@search_analytics.trends || {}).with_indifferent_access %>
+<% comparisons = (@search_analytics.comparisons || {}).with_indifferent_access %>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-l">Search dashboard</h1>
+    <% if @search_analytics.generated_at.present? || @search_analytics.data_through.present? %>
+      <p class="govuk-body-s govuk-!-margin-bottom-5">
+        <% if @search_analytics.generated_at.present? %>
+          Generated <%= search_analytics_timestamp(@search_analytics.generated_at) %>
+        <% end %>
+        <% if @search_analytics.data_through.present? %>
+          with data through <%= search_analytics_timestamp(@search_analytics.data_through) %>.
+        <% end %>
+      </p>
+    <% end %>
+
+    <div class="search-analytics-filters govuk-!-margin-bottom-5">
+      <div>
+        <h2 class="govuk-heading-s govuk-!-margin-bottom-2">Period</h2>
+        <div class="govuk-button-group">
+          <% [["24h", "24 hours"], ["7d", "7 days"], ["30d", "30 days"]].each do |period, label| %>
+            <%= link_to label,
+                        search_analytics_path(period: period, view: @view),
+                        class: ["govuk-link", ("govuk-!-font-weight-bold" if @period == period)].compact.join(" ") %>
+          <% end %>
+        </div>
+      </div>
+      <div>
+        <h2 class="govuk-heading-s govuk-!-margin-bottom-2">View</h2>
+        <div class="govuk-button-group">
+          <% [["all", "All"], ["classic", "Classic"], ["internal", "Internal"]].each do |view, label| %>
+            <%= link_to label,
+                        search_analytics_path(period: @period, view: view),
+                        class: ["govuk-link", ("govuk-!-font-weight-bold" if @view == view)].compact.join(" ") %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="search-analytics-metrics">
+      <% [
+        ["Searches", search_analytics_number(summary[:searches]), statuses[:searches]],
+        ["Failure rate", search_analytics_percentage(summary[:failure_rate]), statuses[:failure_rate]],
+        ["Zero-result rate", search_analytics_percentage(summary[:zero_result_rate]), statuses[:zero_result_rate]],
+        ["Selection rate", search_analytics_percentage(summary[:selection_rate]), statuses[:selection_rate]],
+        ["P90 latency", search_analytics_latency(summary[:p90_latency_ms]), statuses[:p90_latency_ms]],
+      ].each do |label, value, status| %>
+        <% status = (status || {}).with_indifferent_access %>
+        <section class="search-analytics-metric" aria-label="<%= label %>">
+          <h2 class="govuk-heading-s"><%= label %></h2>
+          <p class="search-analytics-metric__value"><%= value %></p>
+          <% if status[:level].present? %>
+            <strong class="<%= search_analytics_status_tag_class(status[:level]) %>"><%= status[:level].to_s.humanize %></strong>
+          <% end %>
+          <% if status[:message].present? %>
+            <p class="govuk-body-s govuk-!-margin-top-2"><%= status[:message] %></p>
+          <% end %>
+        </section>
+      <% end %>
+    </div>
+
+    <details class="govuk-details govuk-!-margin-top-4">
+      <summary class="govuk-details__summary">
+        <span class="govuk-details__summary-text">How these metrics are calculated</span>
+      </summary>
+      <div class="govuk-details__text">
+        <dl class="govuk-summary-list govuk-summary-list--no-border search-analytics-metric-definitions">
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Searches</dt>
+            <dd class="govuk-summary-list__value">Completed and failed search requests for the selected period and view.</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Failure rate</dt>
+            <dd class="govuk-summary-list__value">Failed searches divided by all searches.</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Zero-result rate</dt>
+            <dd class="govuk-summary-list__value">Completed searches with no results divided by completed searches.</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Selection rate</dt>
+            <dd class="govuk-summary-list__value">
+              Result selections divided by eligible searches. Eligible searches are classic fuzzy searches and internal searches that return ranked confidence results. Can exceed 100% when users open more than one result.
+            </dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">P90 latency</dt>
+            <dd class="govuk-summary-list__value">The response time that 90% of completed and failed searches were faster than.</dd>
+          </div>
+        </dl>
+      </div>
+    </details>
+
+    <div class="search-analytics-charts govuk-!-margin-top-6">
+      <section>
+        <h2 class="govuk-heading-m">Volume trend</h2>
+        <div class="search-analytics-chart-container">
+          <canvas class="search-analytics-chart"
+                  data-chart="<%= search_analytics_chart_payload(trends[:volume], series: { all: "All", classic: "Classic", internal: "Internal" }) %>"></canvas>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="govuk-heading-m">Outcome trend</h2>
+        <div class="search-analytics-chart-container">
+          <canvas class="search-analytics-chart"
+                  data-chart="<%= search_analytics_chart_payload(trends[:outcomes], series: { completed: "Completed", failed: "Failed", zero_result: "Zero result", selected: "Selected" }) %>"></canvas>
+        </div>
+      </section>
+    </div>
+
+    <% if search_analytics_show_view_summary?(comparisons) %>
+      <section class="search-analytics-view-summary govuk-!-margin-top-6">
+        <h2 class="govuk-heading-m">Searches by view</h2>
+        <table class="govuk-table search-analytics-view-summary__table">
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header">View</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">Searches</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">Share</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            <% search_analytics_view_summary_rows(comparisons).each do |row| %>
+              <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__header"><%= row[:label] %></th>
+                <td class="govuk-table__cell govuk-table__cell--numeric"><%= search_analytics_number(row[:searches]) %></td>
+                <td class="govuk-table__cell govuk-table__cell--numeric"><%= row[:percentage] %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </section>
+    <% end %>
+
+    <section class="govuk-!-margin-top-6" aria-labelledby="zero-search-terms-heading">
+      <h2 id="zero-search-terms-heading" class="govuk-heading-m">Zero search terms</h2>
+      <div class="search-analytics-term-controls govuk-!-margin-bottom-3">
+        <% [["all", "All"], ["non_numeric", "Non-numeric"], ["numeric", "Numeric"]].each do |filter, label| %>
+          <%= link_to label,
+                      search_analytics_path(period: @period, view: @view, term_filter: filter),
+                      class: ["govuk-link", ("govuk-!-font-weight-bold" if @term_filter == filter)].compact.join(" ") %>
+        <% end %>
+      </div>
+      <table class="govuk-table">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Query</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">Zero-result searches</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          <% @improvement_terms.each do |term| %>
+            <% term = term.with_indifferent_access %>
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell" data-improvement-term-query><%= term[:query] %></td>
+              <td class="govuk-table__cell govuk-table__cell--numeric"><%= search_analytics_number(term[:zero_results]) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+      <% if @term_total_pages > 1 %>
+        <nav class="govuk-pagination" role="navigation" aria-label="Zero search terms">
+          <% if @term_page > 1 %>
+            <div class="govuk-pagination__prev">
+              <%= link_to "Previous",
+                          search_analytics_path(period: @period, view: @view, term_filter: @term_filter, term_page: @term_page - 1),
+                          class: "govuk-link govuk-pagination__link" %>
+            </div>
+          <% end %>
+          <% if @term_page < @term_total_pages %>
+            <div class="govuk-pagination__next">
+              <%= link_to "Next",
+                          search_analytics_path(period: @period, view: @view, term_filter: @term_filter, term_page: @term_page + 1),
+                          class: "govuk-link govuk-pagination__link" %>
+            </div>
+          <% end %>
+        </nav>
+      <% end %>
+    </section>
+  </div>
+</div>
