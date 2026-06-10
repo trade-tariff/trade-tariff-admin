@@ -1,4 +1,5 @@
 import autosize from "autosize/dist/autosize";
+
 document.addEventListener("DOMContentLoaded", function() {
   var Previewer = {
     preview: function(content, output) {
@@ -41,5 +42,4 @@ document.addEventListener("DOMContentLoaded", function() {
   document.querySelectorAll("textarea.govuk-textarea").forEach(function(element) {
     autosize(element);
   });
-
 });

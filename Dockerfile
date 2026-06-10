@@ -40,7 +40,7 @@ ENV GOVUK_APP_DOMAIN=localhost \
   SECRET_KEY_BASE="bar" \
   NODE_OPTIONS="--openssl-legacy-provider"
 
-RUN bundle exec rails webpacker:compile
+RUN bundle exec rails assets:precompile
 
 # Cleanup to save space in the production image
 RUN rm -rf node_modules log tmp && \
