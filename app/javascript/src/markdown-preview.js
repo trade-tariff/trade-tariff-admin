@@ -1,4 +1,4 @@
-import autosize from "autosize/dist/autosize";
+import autosize from "autosize"
 
 document.addEventListener("DOMContentLoaded", function() {
   var Previewer = {
