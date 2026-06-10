@@ -9,11 +9,7 @@
   <% when "markdown" %>
     <%= govuk_markdown_area f, :value, rows: 10, label: { text: "Value" } %>
   <% when "boolean" %>
-    <%= f.govuk_collection_radio_buttons :value,
-                                         [OpenStruct.new(id: "true", name: "Yes"), OpenStruct.new(id: "false", name: "No")],
-                                         :id,
-                                         :name,
-                                         legend: { text: "Value" } %>
+    <%= f.govuk_collection_radio_buttons :value, { "true" => "Yes", "false" => "No" }, :first, :last, legend: { text: "Value" } %>
   <% when "integer" %>
     <%= f.govuk_number_field :value, label: { text: "Value" } %>
   <% when "date" %>
