@@ -32,3 +32,6 @@ db/*.sqlite3-wal
 db/*.sqlite3
 
 .claude/
+
+/app/assets/builds/*
+!/app/assets/builds/.keep

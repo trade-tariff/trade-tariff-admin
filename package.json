@@ -8,7 +8,7 @@
     "autosize": "^6.0.1",
     "chart.js": "^4.5.1",
     "govuk-frontend": "6.1.0",
-    "rails-ujs": "^5.2.8"
+    "sass": "^1.100.0"
   },
   "devDependencies": {
     "@webpack-cli/serve": "^3.0.1",
@@ -16,5 +16,8 @@
     "eslint-config-google": "^0.14.0",
     "webpack-dev-server": "^5.2.4"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "build:css": "sass ./app/assets/stylesheets/application.sass.scss:./app/assets/builds/application.css --no-source-map --load-path=node_modules"
+  }
 }

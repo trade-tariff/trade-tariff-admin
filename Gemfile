@@ -12,7 +12,11 @@ gem "routing-filter", github: "trade-tariff/routing-filter"
 gem "pg", require: false
 
 # Assets
-gem "webpacker"
+gem "cssbundling-rails"
+gem "importmap-rails"
+gem "propshaft"
+gem "stimulus-rails"
+gem "turbo-rails"
 
 # GovUK
 gem "govuk-components", "6.2.0"
