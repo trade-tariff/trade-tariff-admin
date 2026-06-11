@@ -94,7 +94,7 @@
         <h2 class="govuk-heading-m">Volume trend</h2>
         <div class="search-analytics-chart-container">
           <canvas class="search-analytics-chart"
-                  data-chart="<%= search_analytics_chart_payload(trends[:volume], series: { all: "All", classic: "Classic", internal: "Internal" }) %>"></canvas>
+                  data-chart="<%= search_analytics_chart_payload(trends[:volume], series: { all: "All", classic: "Classic", internal: "Internal" }, minimum_series_share: 1) %>"></canvas>
         </div>
       </section>
 
@@ -102,7 +102,7 @@
         <h2 class="govuk-heading-m">Outcome trend</h2>
         <div class="search-analytics-chart-container">
           <canvas class="search-analytics-chart"
-                  data-chart="<%= search_analytics_chart_payload(trends[:outcomes], series: { completed: "Completed", failed: "Failed", zero_result: "Zero result", selected: "Selected" }) %>"></canvas>
+                  data-chart="<%= search_analytics_chart_payload(trends[:outcomes], series: { completed: "Completed", failed: "Failed", zero_result: "Zero result", selected: "Selected" }, minimum_series_share: 1) %>"></canvas>
         </div>
       </section>
     </div>

@@ -59,10 +59,21 @@ RSpec.describe SearchAnalyticsHelper do
     let(:payload_with_zero_series) do
       helper.search_analytics_chart_payload(
         [
-          { bucket: "2026-06-10T09:00:00Z", completed: 52, failed: 0 },
-          { bucket: "2026-06-10T10:00:00Z", completed: 48, failed: 0 },
+          { bucket: "2026-06-10T09:00:00Z", completed: 52, failed: "0" },
+          { bucket: "2026-06-10T10:00:00Z", completed: 48, failed: "0" },
         ],
         series: { completed: "Completed", failed: "Failed" },
+      )
+    end
+
+    let(:payload_with_negligible_series) do
+      helper.search_analytics_chart_payload(
+        [
+          { bucket: "2026-06-10T09:00:00Z", all: 140_000, classic: 139_990, internal: 10 },
+          { bucket: "2026-06-10T10:00:00Z", all: 140_000, classic: 139_990, internal: 10 },
+        ],
+        series: { all: "All", classic: "Classic", internal: "Internal" },
+        minimum_series_share: 1,
       )
     end
 
@@ -76,6 +87,10 @@ RSpec.describe SearchAnalyticsHelper do
 
     it "omits chart series that are zero for every bucket" do
       expect(JSON.parse(payload_with_zero_series).fetch("datasets").pluck("label")).to eq(%w[Completed])
+    end
+
+    it "omits chart series below the configured share of the largest series" do
+      expect(JSON.parse(payload_with_negligible_series).fetch("datasets").pluck("label")).to eq(%w[All Classic])
     end
   end
 

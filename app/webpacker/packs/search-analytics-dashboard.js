@@ -9,6 +9,14 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    payload.datasets = payload.datasets.filter((dataset) => (
+      dataset.data || []
+    ).some((value) => Number(value) !== 0));
+
+    if (payload.datasets.length === 0) {
+      return;
+    }
+
     new Chart(canvas, {
       type: requestedType === 'line' && payload.labels.length < 2 ? 'bar' : requestedType,
       data: payload,

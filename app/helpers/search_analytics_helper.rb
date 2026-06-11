@@ -37,12 +37,18 @@ module SearchAnalyticsHelper
     }.fetch(level.to_s, "grey")
   end
 
-  def search_analytics_chart_payload(rows, series:)
+  def search_analytics_chart_payload(rows, series:, minimum_series_share: 0)
+    series_data = series.keys.index_with do |key|
+      Array(rows).map { |row| (row[key] || row[key.to_s]).to_i }
+    end
+    largest_series_total = series_data.values.map(&:sum).max.to_i
+
     {
       labels: Array(rows).map { |row| search_analytics_bucket_label(row[:bucket] || row["bucket"]) },
       datasets: series.filter_map do |key, label|
-        data = Array(rows).map { |row| row[key] || row[key.to_s] || 0 }
+        data = series_data.fetch(key)
         next if data.all?(&:zero?)
+        next if largest_series_total.positive? && ((data.sum.to_f / largest_series_total) * 100) < minimum_series_share
 
         {
           label: label,
