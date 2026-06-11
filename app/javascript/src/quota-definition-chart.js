@@ -1,4 +1,4 @@
-import Chart from 'chart.js/auto';
+import { Chart } from 'chart.js';
 
 const canvas = document.getElementById("quota-definitions-chart");
 const chartDataset = canvas.dataset;
