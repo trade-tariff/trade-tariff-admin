@@ -174,6 +174,7 @@ Rails.application.routes.draw do
       post :bulk_import
     end
   end
+  resources :search_analytics, only: %i[index]
   resources :search_diagnostics, only: %i[index show], param: :request_id, constraints: { request_id: /[^\/.]+/ }
   resources :goods_nomenclature_autocomplete_results, only: %i[index]
 

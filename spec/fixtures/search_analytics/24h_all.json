@@ -1,0 +1,60 @@
+{
+  "data": {
+    "id": "uk-24h-all",
+    "type": "search_analytics",
+    "attributes": {
+      "service": "uk",
+      "period": "24h",
+      "view": "all",
+      "bucket_size": "hour",
+      "generated_at": "2026-06-10T09:55:00Z",
+      "data_through": "2026-06-10T09:50:00Z",
+      "summary": {
+        "searches": 1240,
+        "failure_rate": 0.012,
+        "zero_result_rate": 0.084,
+        "selection_rate": 0.41,
+        "p90_latency_ms": 1800
+      },
+      "summary_statuses": {
+        "searches": { "level": "neutral", "message": "Search volume is available for this period" },
+        "failure_rate": { "level": "good", "message": "Failures are low" },
+        "zero_result_rate": { "level": "watch", "message": "Zero-result searches are slightly higher than usual" },
+        "selection_rate": { "level": "good", "message": "Selections are tracking search volume" },
+        "p90_latency_ms": { "level": "watch", "message": "Some searches are taking longer than usual" }
+      },
+      "trends": {
+        "volume": [
+          { "bucket": "2026-06-10T08:00:00Z", "all": 48, "classic": 28, "internal": 20 },
+          { "bucket": "2026-06-10T09:00:00Z", "all": 52, "classic": 31, "internal": 21 }
+        ],
+        "outcomes": [
+          { "bucket": "2026-06-10T08:00:00Z", "completed": 47, "failed": 1, "zero_result": 3, "selected": 18 },
+          { "bucket": "2026-06-10T09:00:00Z", "completed": 50, "failed": 2, "zero_result": 4, "selected": 19 }
+        ]
+      },
+      "comparisons": {
+        "classic": { "searches": 710, "zero_result_rate": 0.07, "selection_rate": 0.43, "p90_latency_ms": 620 },
+        "internal": { "searches": 530, "zero_result_rate": 0.1, "selection_rate": 0.38, "p90_latency_ms": 2400 }
+      },
+      "improvement_terms": [
+        { "query": "bike seat", "zero_results": 18, "term_type": "search_terms" },
+        { "query": "yoga ball", "zero_results": 17, "term_type": "search_terms" },
+        { "query": "phone case", "zero_results": 16, "term_type": "search_terms" },
+        { "query": "garden lights", "zero_results": 15, "term_type": "search_terms" },
+        { "query": "ceramic mug", "zero_results": 14, "term_type": "search_terms" },
+        { "query": "running shoes", "zero_results": 13, "term_type": "search_terms" },
+        { "query": "cotton scarf", "zero_results": 12, "term_type": "search_terms" },
+        { "query": "phone charger", "zero_results": 11, "term_type": "search_terms" },
+        { "query": "laptop stand", "zero_results": 10, "term_type": "search_terms" },
+        { "query": "desk lamp", "zero_results": 9, "term_type": "search_terms" },
+        { "query": "storage box", "zero_results": 8, "term_type": "search_terms" },
+        { "query": "3926909090", "zero_results": 18, "term_type": "item_ids" },
+        { "query": "4202129000", "zero_results": 14, "term_type": "item_ids" },
+        { "query": "9031809090", "zero_results": 13, "term_type": "item_ids" },
+        { "query": "9603909090", "zero_results": 12, "term_type": "item_ids" },
+        { "query": "3304990039", "zero_results": 11, "term_type": "item_ids" }
+      ]
+    }
+  }
+}
