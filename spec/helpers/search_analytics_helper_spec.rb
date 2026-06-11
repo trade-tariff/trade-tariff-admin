@@ -56,12 +56,26 @@ RSpec.describe SearchAnalyticsHelper do
       }
     end
 
+    let(:payload_with_zero_series) do
+      helper.search_analytics_chart_payload(
+        [
+          { bucket: "2026-06-10T09:00:00Z", completed: 52, failed: 0 },
+          { bucket: "2026-06-10T10:00:00Z", completed: 48, failed: 0 },
+        ],
+        series: { completed: "Completed", failed: "Failed" },
+      )
+    end
+
     it "builds chart JSON from trend rows" do
       expect(JSON.parse(trend_payload)).to match(expected_trend_payload)
     end
 
     it "labels daily buckets as dates" do
       expect(JSON.parse(daily_payload).fetch("labels")).to eq(["10 Jun"])
+    end
+
+    it "omits chart series that are zero for every bucket" do
+      expect(JSON.parse(payload_with_zero_series).fetch("datasets").pluck("label")).to eq(%w[Completed])
     end
   end
 

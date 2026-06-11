@@ -43,11 +43,8 @@ RSpec.describe "Search analytics dashboard" do
     visit search_analytics_path
 
     expect_first_improvement_term_page
-
-    click_link "Next"
-
-    expect(current_url).to include("term_page=2")
-    expect_second_improvement_term_page
+    expect_search_term_pagination
+    expect_second_improvement_term_page_after_next
   end
 
   def stub_search_analytics(period, view)
@@ -87,6 +84,19 @@ RSpec.describe "Search analytics dashboard" do
     expect(improvement_term_queries).not_to include("3926909090")
   end
 
+  def expect_search_term_pagination
+    expect(page).to have_css(".govuk-pagination__list")
+    expect(page).to have_link("1", class: "govuk-pagination__link")
+    expect(page).to have_link("2", class: "govuk-pagination__link")
+  end
+
+  def expect_second_improvement_term_page_after_next
+    click_link "Next"
+    expect(current_url).to include("page=2")
+    expect(current_url).not_to include("term_page")
+    expect_second_improvement_term_page
+  end
+
   def expect_default_dashboard_content
     expect(page).to have_content("Search dashboard")
     expect(page).to have_content("Searches")
@@ -94,10 +104,12 @@ RSpec.describe "Search analytics dashboard" do
     expect(page).to have_content("Failure rate")
     expect(page).to have_content("1.2%")
     expect(page).to have_content("Generated 10 June 2026 at 09:55")
-    expect(page).to have_content("data through 10 June 2026 at 09:50")
+    expect(page).not_to have_content("Query window ended")
     expect(page).to have_css(".govuk-details", text: "How these metrics are calculated")
-    expect(page).to have_content("Zero-result rate Completed searches with no results divided by completed searches.")
-    expect(page).to have_content("Selection rate Result selections divided by eligible searches.")
+    expect(page).to have_css(".govuk-summary-list__row", text: "Zero-result rate", visible: :all)
+    expect(page).to have_css(".govuk-summary-list__row", text: "Completed searches with no results divided by completed searches.", visible: :all)
+    expect(page).to have_css(".govuk-summary-list__row", text: "Selection rate", visible: :all)
+    expect(page).to have_css(".govuk-summary-list__row", text: "Result selections divided by eligible searches.", visible: :all)
     expect(page).to have_content("Can exceed 100% when users open more than one result.")
     expect(page).to have_content("Zero search terms")
     expect(page).not_to have_css("section[aria-labelledby='zero-search-terms-heading']", text: "Selection rate")

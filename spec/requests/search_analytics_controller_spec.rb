@@ -98,7 +98,8 @@ RSpec.describe SearchAnalyticsController do
     expect(response.body).to include("Zero-result rate", "8.4%")
     expect(response.body).to include("Selection rate", "41%")
     expect(response.body).to include("P90 latency", "1.8s")
-    expect(response.body).to include("Generated 10 June 2026 at 09:55", "data through 10 June 2026 at 09:50")
+    expect(response.body).to include("Generated 10 June 2026 at 09:55")
+    expect(response.body).not_to include("Query window ended")
     expect(response.body).to include("Zero search terms")
   end
 end

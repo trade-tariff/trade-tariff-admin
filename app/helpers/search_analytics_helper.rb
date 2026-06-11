@@ -25,23 +25,28 @@ module SearchAnalyticsHelper
   end
 
   def search_analytics_status_tag_class(level)
-    colour = {
+    "govuk-tag govuk-tag--#{search_analytics_status_tag_colour(level)}"
+  end
+
+  def search_analytics_status_tag_colour(level)
+    {
       "good" => "green",
       "watch" => "yellow",
       "problem" => "red",
       "neutral" => "blue",
     }.fetch(level.to_s, "grey")
-
-    "govuk-tag govuk-tag--#{colour}"
   end
 
   def search_analytics_chart_payload(rows, series:)
     {
       labels: Array(rows).map { |row| search_analytics_bucket_label(row[:bucket] || row["bucket"]) },
-      datasets: series.map do |key, label|
+      datasets: series.filter_map do |key, label|
+        data = Array(rows).map { |row| row[key] || row[key.to_s] || 0 }
+        next if data.all?(&:zero?)
+
         {
           label: label,
-          data: Array(rows).map { |row| row[key] || row[key.to_s] || 0 },
+          data: data,
         }.merge(search_analytics_chart_series_style(key))
       end,
     }.to_json
@@ -94,7 +99,7 @@ module SearchAnalyticsHelper
     return if value.blank?
 
     time = Time.zone.parse(value.to_s)
-    time.strftime("%-d %B %Y at %H:%M")
+    "#{time.to_date.to_fs(:govuk)} at #{time.strftime('%H:%M')}"
   rescue ArgumentError
     value.to_s
   end

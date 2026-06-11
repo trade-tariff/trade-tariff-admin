@@ -9,14 +9,9 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
     <h1 class="govuk-heading-l">Search dashboard</h1>
-    <% if @search_analytics.generated_at.present? || @search_analytics.data_through.present? %>
+    <% if @search_analytics.generated_at.present? %>
       <p class="govuk-body-s govuk-!-margin-bottom-5">
-        <% if @search_analytics.generated_at.present? %>
-          Generated <%= search_analytics_timestamp(@search_analytics.generated_at) %>
-        <% end %>
-        <% if @search_analytics.data_through.present? %>
-          with data through <%= search_analytics_timestamp(@search_analytics.data_through) %>.
-        <% end %>
+        Generated <%= search_analytics_timestamp(@search_analytics.generated_at) %>.
       </p>
     <% end %>
 
@@ -56,7 +51,7 @@
           <h2 class="govuk-heading-s"><%= label %></h2>
           <p class="search-analytics-metric__value"><%= value %></p>
           <% if status[:level].present? %>
-            <strong class="<%= search_analytics_status_tag_class(status[:level]) %>"><%= status[:level].to_s.humanize %></strong>
+            <%= govuk_tag(text: status[:level].to_s.humanize, colour: search_analytics_status_tag_colour(status[:level])) %>
           <% end %>
           <% if status[:message].present? %>
             <p class="govuk-body-s govuk-!-margin-top-2"><%= status[:message] %></p>
@@ -65,37 +60,34 @@
       <% end %>
     </div>
 
-    <details class="govuk-details govuk-!-margin-top-4">
-      <summary class="govuk-details__summary">
-        <span class="govuk-details__summary-text">How these metrics are calculated</span>
-      </summary>
-      <div class="govuk-details__text">
-        <dl class="govuk-summary-list govuk-summary-list--no-border search-analytics-metric-definitions">
-          <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">Searches</dt>
-            <dd class="govuk-summary-list__value">Completed and failed search requests for the selected period and view.</dd>
-          </div>
-          <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">Failure rate</dt>
-            <dd class="govuk-summary-list__value">Failed searches divided by all searches.</dd>
-          </div>
-          <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">Zero-result rate</dt>
-            <dd class="govuk-summary-list__value">Completed searches with no results divided by completed searches.</dd>
-          </div>
-          <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">Selection rate</dt>
-            <dd class="govuk-summary-list__value">
-              Result selections divided by eligible searches. Eligible searches are classic fuzzy searches and internal searches that return ranked confidence results. Can exceed 100% when users open more than one result.
-            </dd>
-          </div>
-          <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">P90 latency</dt>
-            <dd class="govuk-summary-list__value">The response time that 90% of completed and failed searches were faster than.</dd>
-          </div>
-        </dl>
-      </div>
-    </details>
+    <%= render GovukComponent::DetailsComponent.new(summary_text: "How these metrics are calculated", classes: "govuk-!-margin-top-4") do %>
+      <%= govuk_summary_list(
+            borders: false,
+            classes: "search-analytics-metric-definitions",
+            rows: [
+              {
+                key: { text: "Searches" },
+                value: { text: "Completed and failed search requests for the selected period and view." },
+              },
+              {
+                key: { text: "Failure rate" },
+                value: { text: "Failed searches divided by all searches." },
+              },
+              {
+                key: { text: "Zero-result rate" },
+                value: { text: "Completed searches with no results divided by completed searches." },
+              },
+              {
+                key: { text: "Selection rate" },
+                value: { text: "Result selections divided by eligible searches. Eligible searches are classic fuzzy searches and internal searches that return ranked confidence results. Can exceed 100% when users open more than one result." },
+              },
+              {
+                key: { text: "P90 latency" },
+                value: { text: "The response time that 90% of completed and failed searches were faster than." },
+              },
+            ],
+          ) %>
+    <% end %>
 
     <div class="search-analytics-charts govuk-!-margin-top-6">
       <section>
@@ -165,24 +157,7 @@
           <% end %>
         </tbody>
       </table>
-      <% if @term_total_pages > 1 %>
-        <nav class="govuk-pagination" role="navigation" aria-label="Zero search terms">
-          <% if @term_page > 1 %>
-            <div class="govuk-pagination__prev">
-              <%= link_to "Previous",
-                          search_analytics_path(period: @period, view: @view, term_filter: @term_filter, term_page: @term_page - 1),
-                          class: "govuk-link govuk-pagination__link" %>
-            </div>
-          <% end %>
-          <% if @term_page < @term_total_pages %>
-            <div class="govuk-pagination__next">
-              <%= link_to "Next",
-                          search_analytics_path(period: @period, view: @view, term_filter: @term_filter, term_page: @term_page + 1),
-                          class: "govuk-link govuk-pagination__link" %>
-            </div>
-          <% end %>
-        </nav>
-      <% end %>
+      <%= paginate @improvement_terms, params: { period: @period, view: @view, term_filter: @term_filter } %>
     </section>
   </div>
 </div>

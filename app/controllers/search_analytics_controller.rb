@@ -29,9 +29,10 @@ private
   def prepare_improvement_terms
     @term_filter = normalised_term_filter
     filtered_terms = filter_improvement_terms(Array(@search_analytics.improvement_terms))
-    @term_total_pages = [(filtered_terms.size.to_f / IMPROVEMENT_TERMS_PER_PAGE).ceil, 1].max
-    @term_page = [[params.fetch(:term_page, 1).to_i, 1].max, @term_total_pages].min
-    @improvement_terms = filtered_terms.slice((@term_page - 1) * IMPROVEMENT_TERMS_PER_PAGE, IMPROVEMENT_TERMS_PER_PAGE) || []
+    @improvement_terms = Kaminari
+      .paginate_array(filtered_terms)
+      .page(params.fetch(:page, 1))
+      .per(IMPROVEMENT_TERMS_PER_PAGE)
   end
 
   def normalised_term_filter
