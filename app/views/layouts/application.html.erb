@@ -12,13 +12,21 @@
     <%= favicon_link_tag image_path('/assets/images/govuk-icon-mask.svg'), rel: 'mask-icon', type: 'image/svg', color: "#0b0c0c" %>
     <%= favicon_link_tag image_path('/assets/images/govuk-icon-180.png'), rel: 'apple-touch-icon', type: 'image/png' %>
     <%= stylesheet_link_tag :application, 'data-turbolinks-track': 'reload', media: 'all' %>
+
+    <script async src="/javascripts/es-module-shims.js"></script>
+    <script type="esms-options">
+      {
+        "noLoadEventRetriggers": true
+      }
+    </script>
+
     <%= javascript_importmap_tags %>
   </head>
 
   <body class="govuk-template__body ">
-  <%= javascript_tag nonce: true do -%>
-    document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');
-  <% end -%>
+    <%= javascript_tag nonce: true do -%>
+      document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');
+    <% end -%>
 
     <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
 
