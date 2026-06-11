@@ -38,18 +38,22 @@
         "internal": { "searches": 530, "zero_result_rate": 0.1, "selection_rate": 0.38, "p90_latency_ms": 2400 }
       },
       "improvement_terms": [
-        { "query": "3926909090", "searches": 40, "zero_results": 18, "selection_rate": 0.12 },
-        { "query": "4202129000", "searches": 28, "zero_results": 14, "selection_rate": 0.21 },
-        { "query": "9031809090", "searches": 24, "zero_results": 13, "selection_rate": 0.18 },
-        { "query": "9603909090", "searches": 21, "zero_results": 12, "selection_rate": 0.1 },
-        { "query": "3304990039", "searches": 20, "zero_results": 11, "selection_rate": 0.3 },
-        { "query": "3304990099", "searches": 19, "zero_results": 10, "selection_rate": 0.16 },
-        { "query": "0000000000", "searches": 18, "zero_results": 9, "selection_rate": 0.0 },
-        { "query": "bike seat", "searches": 17, "zero_results": 8, "selection_rate": 0.12 },
-        { "query": "yoga ball", "searches": 16, "zero_results": 7, "selection_rate": 0.19 },
-        { "query": "phone case", "searches": 15, "zero_results": 6, "selection_rate": 0.21 },
-        { "query": "ceramic mug", "searches": 14, "zero_results": 5, "selection_rate": 0.14 },
-        { "query": "garden lights", "searches": 13, "zero_results": 4, "selection_rate": 0.08 }
+        { "query": "bike seat", "zero_results": 18, "term_type": "search_terms" },
+        { "query": "yoga ball", "zero_results": 17, "term_type": "search_terms" },
+        { "query": "phone case", "zero_results": 16, "term_type": "search_terms" },
+        { "query": "garden lights", "zero_results": 15, "term_type": "search_terms" },
+        { "query": "ceramic mug", "zero_results": 14, "term_type": "search_terms" },
+        { "query": "running shoes", "zero_results": 13, "term_type": "search_terms" },
+        { "query": "cotton scarf", "zero_results": 12, "term_type": "search_terms" },
+        { "query": "phone charger", "zero_results": 11, "term_type": "search_terms" },
+        { "query": "laptop stand", "zero_results": 10, "term_type": "search_terms" },
+        { "query": "desk lamp", "zero_results": 9, "term_type": "search_terms" },
+        { "query": "storage box", "zero_results": 8, "term_type": "search_terms" },
+        { "query": "3926909090", "zero_results": 18, "term_type": "item_ids" },
+        { "query": "4202129000", "zero_results": 14, "term_type": "item_ids" },
+        { "query": "9031809090", "zero_results": 13, "term_type": "item_ids" },
+        { "query": "9603909090", "zero_results": 12, "term_type": "item_ids" },
+        { "query": "3304990039", "zero_results": 11, "term_type": "item_ids" }
       ]
     }
   }

@@ -1,5 +1,5 @@
 class SearchAnalyticsController < AuthenticatedController
-  ZERO_SEARCH_TERM_FILTERS = %w[all search_terms item_ids].freeze
+  ZERO_SEARCH_TERM_FILTERS = %w[search_terms item_ids].freeze
   IMPROVEMENT_TERMS_PER_PAGE = 10
 
   def index
@@ -36,9 +36,9 @@ private
   end
 
   def normalised_term_filter
-    filter = params.fetch(:term_filter, "all")
+    filter = params.fetch(:term_filter, "search_terms")
 
-    ZERO_SEARCH_TERM_FILTERS.include?(filter) ? filter : "all"
+    ZERO_SEARCH_TERM_FILTERS.include?(filter) ? filter : "search_terms"
   end
 
   def filter_improvement_terms(terms)
@@ -53,6 +53,10 @@ private
   end
 
   def item_id_query?(term)
-    term.with_indifferent_access.fetch(:query, "").to_s.match?(/\A[\d\s.-]+\z/)
+    term = term.with_indifferent_access
+
+    return term[:term_type] == "item_ids" if term[:term_type].present?
+
+    term.fetch(:query, "").to_s.match?(/\A[\d\s.-]+\z/)
   end
 end

@@ -85,13 +85,13 @@ RSpec.describe "Search analytics dashboard" do
   end
 
   def expect_first_improvement_term_page
-    expect(improvement_term_queries).to include("3926909090")
-    expect(improvement_term_queries).not_to include("ceramic mug")
+    expect(improvement_term_queries).to include("bike seat", "yoga ball")
+    expect(improvement_term_queries).not_to include("3926909090", "storage box")
   end
 
   def expect_second_improvement_term_page
-    expect(improvement_term_queries).to include("ceramic mug")
-    expect(improvement_term_queries).not_to include("3926909090")
+    expect(improvement_term_queries).to include("storage box")
+    expect(improvement_term_queries).not_to include("3926909090", "bike seat")
   end
 
   def expect_search_term_pagination
@@ -126,7 +126,8 @@ RSpec.describe "Search analytics dashboard" do
     expect(page).not_to have_css("section[aria-labelledby='zero-search-terms-heading']", text: "Searches")
     expect(page).to have_css("section[aria-labelledby='zero-search-terms-heading']", text: "Zero-result searches")
     expect(page).to have_content("Searches by view")
-    expect(page).to have_content("3926909090")
+    expect(page).to have_content("bike seat")
+    expect(page).not_to have_css("section[aria-labelledby='zero-search-terms-heading']", text: "3926909090")
     expect(page).to have_css(".search-analytics-chart-container", count: 2)
     expect(page).to have_css(".search-analytics-view-summary")
     expect(page).to have_css(".search-analytics-view-summary__table")
@@ -134,6 +135,7 @@ RSpec.describe "Search analytics dashboard" do
     expect(page).to have_content("Internal")
     expect(page).to have_link("Search terms")
     expect(page).to have_link("Item IDs")
+    expect(page).not_to have_link("All", href: /term_filter/)
     expect(page).to have_link("Next")
     expect(chart_datasets).to all(include("borderColor"))
     expect(non_empty_chart_payloads.size).to eq(2)
