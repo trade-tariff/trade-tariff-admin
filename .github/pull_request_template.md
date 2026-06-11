@@ -30,6 +30,7 @@ Rate the overall risk of deploying this change:
 
 🟢 GREEN – things that are typically low risk:
 ───────────────────────────────────────────────────
+
 - New tests or improved test coverage with no production code changes
 - Dependency bumps with no API changes (minor/patch gems, npm packages)
 - Copy or content changes to admin UI labels, hint text, or page titles
@@ -41,6 +42,7 @@ Rate the overall risk of deploying this change:
 
 🟠 AMBER – things that need a team conversation first:
 ───────────────────────────────────────────────────
+
 - Changes to how tariff data is displayed, edited, or validated in the admin UI
 - New or modified API calls to the backend service
 - Changes to authentication or authorisation logic (AUTH_STRATEGY, identity integration)
@@ -53,6 +55,7 @@ Rate the overall risk of deploying this change:
 
 🔴 RED – requires explicit approval from Thor or Neil:
 ───────────────────────────────────────────────────
+
 - Changes to how measures, conditions, footnotes, or quotas are created or modified through the admin UI
 - Modifications to the authentication mechanism or identity service integration
 - Changes to admin user roles, permissions, or access control rules
