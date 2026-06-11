@@ -1,4 +1,9 @@
-import autosize from "autosize"
+function autosize(element) {
+  element.addEventListener("input", () => {
+    element.style.height = "auto";
+    element.style.height = `${element.scrollHeight}px`;
+  });
+};
 
 document.addEventListener("DOMContentLoaded", function() {
   var Previewer = {
