@@ -17,7 +17,7 @@ public/packs-test
 public/uploads/*
 public/assets/*
 .nvimlog
-vendor
+vendor/bundle
 .env
 .env.*.local
 /node_modules

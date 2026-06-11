@@ -7,5 +7,5 @@ initAll();
 window.GOVUK = {};
 window.GOVUK.accessibleAutocomplete = accessibleAutocomplete;
 
-import "markdown-preview";
-import "quota-definition-chart.js"
+import "src/markdown-preview";
+import "src/quota-definition-chart";
