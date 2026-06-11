@@ -134,7 +134,7 @@
     <section class="govuk-!-margin-top-6" aria-labelledby="zero-search-terms-heading">
       <h2 id="zero-search-terms-heading" class="govuk-heading-m">Zero search terms</h2>
       <div class="search-analytics-term-controls govuk-!-margin-bottom-3">
-        <% [["all", "All"], ["non_numeric", "Non-numeric"], ["numeric", "Numeric"]].each do |filter, label| %>
+        <% [["all", "All"], ["search_terms", "Search terms"], ["item_ids", "Item IDs"]].each do |filter, label| %>
           <%= link_to label,
                       search_analytics_path(period: @period, view: @view, term_filter: filter),
                       class: ["govuk-link", ("govuk-!-font-weight-bold" if @term_filter == filter)].compact.join(" ") %>

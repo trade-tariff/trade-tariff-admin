@@ -1,5 +1,5 @@
 class SearchAnalyticsController < AuthenticatedController
-  IMPROVEMENT_TERM_FILTERS = %w[all non_numeric numeric].freeze
+  ZERO_SEARCH_TERM_FILTERS = %w[all search_terms item_ids].freeze
   IMPROVEMENT_TERMS_PER_PAGE = 10
 
   def index
@@ -38,21 +38,21 @@ private
   def normalised_term_filter
     filter = params.fetch(:term_filter, "all")
 
-    IMPROVEMENT_TERM_FILTERS.include?(filter) ? filter : "all"
+    ZERO_SEARCH_TERM_FILTERS.include?(filter) ? filter : "all"
   end
 
   def filter_improvement_terms(terms)
     case @term_filter
-    when "numeric"
-      terms.select { |term| numeric_search_term?(term) }
-    when "non_numeric"
-      terms.reject { |term| numeric_search_term?(term) }
+    when "item_ids"
+      terms.select { |term| item_id_query?(term) }
+    when "search_terms"
+      terms.reject { |term| item_id_query?(term) }
     else
       terms
     end
   end
 
-  def numeric_search_term?(term)
+  def item_id_query?(term)
     term.with_indifferent_access.fetch(:query, "").to_s.match?(/\A[\d\s.-]+\z/)
   end
 end

@@ -29,14 +29,24 @@ RSpec.describe "Search analytics dashboard" do
     expect_view_link("Internal", content: "internal term", value: "530")
   end
 
-  it "filters improvement terms to non-numeric searches", :aggregate_failures do
+  it "filters zero search terms to search terms", :aggregate_failures do
     visit search_analytics_path
 
-    click_link "Non-numeric"
+    click_link "Search terms"
 
-    expect(current_url).to include("term_filter=non_numeric")
+    expect(current_url).to include("term_filter=search_terms")
     expect(improvement_term_queries).to include("yoga ball", "phone case")
     expect(improvement_term_queries).not_to include("3926909090")
+  end
+
+  it "filters zero search terms to item IDs", :aggregate_failures do
+    visit search_analytics_path
+
+    click_link "Item IDs"
+
+    expect(current_url).to include("term_filter=item_ids")
+    expect(improvement_term_queries).to include("3926909090")
+    expect(improvement_term_queries).not_to include("yoga ball", "phone case")
   end
 
   it "paginates improvement terms", :aggregate_failures do
@@ -122,7 +132,8 @@ RSpec.describe "Search analytics dashboard" do
     expect(page).to have_css(".search-analytics-view-summary__table")
     expect(page).to have_content("Classic")
     expect(page).to have_content("Internal")
-    expect(page).to have_link("Non-numeric")
+    expect(page).to have_link("Search terms")
+    expect(page).to have_link("Item IDs")
     expect(page).to have_link("Next")
     expect(chart_datasets).to all(include("borderColor"))
     expect(non_empty_chart_payloads.size).to eq(2)
