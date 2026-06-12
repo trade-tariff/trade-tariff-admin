@@ -1,4 +1,5 @@
-import Chart from 'chart.js/auto';
+import { Chart, registerables } from 'chart.js';
+Chart.register(...registerables);
 
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.search-analytics-chart').forEach((canvas) => {
