@@ -177,69 +177,6 @@ $govuk-image-url-function: frontend-image-url;
   }
 }
 
-.search-analytics-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: govuk-spacing(6);
-}
-
-.search-analytics-metrics {
-  display: grid;
-  gap: govuk-spacing(3);
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-}
-
-.search-analytics-metric {
-  border-top: 4px solid govuk-colour("blue");
-  padding-top: govuk-spacing(3);
-}
-
-.search-analytics-metric__value {
-  @include govuk-font($size: 36, $weight: bold);
-  margin: 0 0 govuk-spacing(2);
-}
-
-.search-analytics-charts {
-  display: grid;
-  gap: govuk-spacing(6);
-  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
-}
-
-.search-analytics-chart-container {
-  height: 18rem;
-  max-width: 100%;
-  position: relative;
-  width: 100%;
-}
-
-.search-analytics-chart {
-  display: block;
-  height: 100%;
-  width: 100%;
-}
-
-.search-analytics-term-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: govuk-spacing(3);
-}
-
-.search-analytics-view-summary {
-  max-width: 36rem;
-}
-
-.search-analytics-view-summary__table {
-  margin-bottom: 0;
-}
-
-.search-analytics-metric-definitions {
-  margin-bottom: 0;
-
-  .govuk-summary-list__key {
-    width: 9rem;
-  }
-}
-
 .scored-tag-pill {
   display: inline-flex;
   align-items: center;

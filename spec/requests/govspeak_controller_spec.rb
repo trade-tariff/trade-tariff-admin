@@ -23,7 +23,7 @@ RSpec.describe GovspeakController do
       it "returns html with goods nomenclature code links" do
         json = JSON.parse(rendered_page.body)
 
-        expect(Capybara.string(json.fetch("govspeak"))).to have_link "Chapter 01", href: "#{TradeTariffAdmin.frontend_host}/search?q=01"
+        expect(Capybara.string(json.fetch("govspeak"))).to have_link "01", href: "#{TradeTariffAdmin.frontend_host}/search?q=01"
       end
     end
   end

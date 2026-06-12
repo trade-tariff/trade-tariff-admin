@@ -6,6 +6,7 @@ RSpec.describe CustomsTariff::Updates::SectionNotesController, type: :request do
 
   let(:update_version) { "1.31" }
   let(:section_note_id) { "127" }
+  let(:section_id) { "5" }
 
   let(:update_attributes) do
     {
@@ -37,7 +38,7 @@ RSpec.describe CustomsTariff::Updates::SectionNotesController, type: :request do
   let(:section_note_attributes) do
     {
       "id" => section_note_id,
-      "section_id" => 5,
+      "section_id" => section_id.to_i,
       "content" => '## Section 5\n\nOriginal content.',
       "customs_tariff_update_version" => update_version,
       "file_diff" => nil,
@@ -61,13 +62,13 @@ RSpec.describe CustomsTariff::Updates::SectionNotesController, type: :request do
 
   describe "GET #edit" do
     let(:make_request) do
-      get edit_customs_tariff_update_section_note_path(update_version, section_note_id)
+      get edit_customs_tariff_update_section_note_path(update_version, section_id)
     end
 
     before do
       stub_api_request("/customs_tariff_updates/#{update_version}")
         .and_return(update_response)
-      stub_api_request("/customs_tariff_updates/#{update_version}/section_notes/#{section_note_id}")
+      stub_api_request("/customs_tariff_updates/#{update_version}/section_notes/#{section_id}")
         .with(query: hash_including("customs_tariff_update_version" => update_version))
         .and_return(section_note_response)
     end
@@ -78,21 +79,21 @@ RSpec.describe CustomsTariff::Updates::SectionNotesController, type: :request do
 
   describe "PATCH #update" do
     let(:make_request) do
-      patch customs_tariff_update_section_note_path(update_version, section_note_id),
+      patch customs_tariff_update_section_note_path(update_version, section_id),
             params: { customs_tariff_section_note: { content: "Updated content." } }
     end
 
     before do
       stub_api_request("/customs_tariff_updates/#{update_version}")
         .and_return(update_response)
-      stub_api_request("/customs_tariff_updates/#{update_version}/section_notes/#{section_note_id}")
+      stub_api_request("/customs_tariff_updates/#{update_version}/section_notes/#{section_id}")
         .with(query: hash_including("customs_tariff_update_version" => update_version))
         .and_return(section_note_response)
     end
 
     context "when the backend accepts the update" do
       before do
-        stub_api_request("/customs_tariff_updates/#{update_version}/section_notes/#{section_note_id}", :patch)
+        stub_api_request("/customs_tariff_updates/#{update_version}/section_notes/#{section_id}", :patch)
           .and_return(
             status: 200,
             headers: { "content-type" => "application/json; charset=utf-8" },
@@ -116,7 +117,7 @@ RSpec.describe CustomsTariff::Updates::SectionNotesController, type: :request do
 
     context "when the backend rejects the update with a 422" do
       before do
-        stub_api_request("/customs_tariff_updates/#{update_version}/section_notes/#{section_note_id}", :patch)
+        stub_api_request("/customs_tariff_updates/#{update_version}/section_notes/#{section_id}", :patch)
           .and_return(
             status: 422,
             headers: { "content-type" => "application/json; charset=utf-8" },
@@ -134,20 +135,20 @@ RSpec.describe CustomsTariff::Updates::SectionNotesController, type: :request do
 
   describe "DELETE #destroy" do
     let(:make_request) do
-      delete customs_tariff_update_section_note_path(update_version, section_note_id)
+      delete customs_tariff_update_section_note_path(update_version, section_id)
     end
 
     before do
       stub_api_request("/customs_tariff_updates/#{update_version}")
         .and_return(update_response)
-      stub_api_request("/customs_tariff_updates/#{update_version}/section_notes/#{section_note_id}")
+      stub_api_request("/customs_tariff_updates/#{update_version}/section_notes/#{section_id}")
         .with(query: hash_including("customs_tariff_update_version" => update_version))
         .and_return(section_note_response)
     end
 
     context "when the backend accepts the delete" do
       before do
-        stub_api_request("/customs_tariff_updates/#{update_version}/section_notes/#{section_note_id}", :delete)
+        stub_api_request("/customs_tariff_updates/#{update_version}/section_notes/#{section_id}", :delete)
           .and_return(status: 204, body: "", headers: {})
       end
 
@@ -171,11 +172,20 @@ RSpec.describe CustomsTariff::Updates::SectionNotesController, type: :request do
       json = JSON.parse(rendered_page.body)
       expect(json).to have_key("html")
     end
+
+    context "when the content references a chapter code" do
+      let(:make_request) do
+        post customs_tariff_section_note_preview_path, params: { content: "goods of Chapter 71" }
+      end
+
+      it "linkifies the code reference" do
+        json = JSON.parse(rendered_page.body)
+        expect(json["html"]).to include("search?q=71")
+      end
+    end
   end
 
   describe "GET #new" do
-    let(:section_id) { "5" }
-
     let(:make_request) do
       get new_customs_tariff_update_section_note_path(update_version),
           params: { section_id: }
@@ -191,8 +201,6 @@ RSpec.describe CustomsTariff::Updates::SectionNotesController, type: :request do
   end
 
   describe "POST #create" do
-    let(:section_id) { "5" }
-
     let(:make_request) do
       post customs_tariff_update_section_notes_path(update_version),
            params: {

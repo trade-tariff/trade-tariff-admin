@@ -27,13 +27,13 @@
           if note.file_diff_status == :changed
             link_to "View diff",
                     customs_tariff_update_comparison_section_note_path(
-                      @update.version, note.id,
+                      @update.version, note.section_id,
                       compare_version: @compare_version
                     ),
                     class: "govuk-link"
           else
             link_to "View/Edit",
-                    edit_customs_tariff_update_section_note_path(@update.version, note.id),
+                    edit_customs_tariff_update_section_note_path(@update.version, note.section_id),
                     class: "govuk-link"
           end
         end

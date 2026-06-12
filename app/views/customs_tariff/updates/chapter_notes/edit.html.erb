@@ -18,7 +18,7 @@
        data-tariff-note-preview-url-value="<%= customs_tariff_chapter_note_preview_path %>">
     <div class="govuk-grid-column-one-half">
       <%= form_with model: @chapter_note,
-                    url: customs_tariff_update_chapter_note_path(@update.version, @chapter_note.id),
+                    url: customs_tariff_update_chapter_note_path(@update.version, @chapter_note.chapter_id),
                     method: :patch do |f| %>
         <%= hidden_field_tag :section_id, @section_id %>
         <div class="govuk-form-group">
@@ -38,7 +38,7 @@
 
     <div class="govuk-grid-column-one-half">
       <h2 class="govuk-heading-m">Preview</h2>
-      <div class="govuk-body" data-tariff-note-preview-target="preview">
+      <div class="govuk-body tariff-note-preview" data-tariff-note-preview-target="preview">
         <%= @chapter_note.preview %>
       </div>
     </div>
@@ -51,7 +51,7 @@
   <p>Remove this chapter note</p>
 
   <%= link_to "Remove",
-              customs_tariff_update_chapter_note_path(@update.version, @chapter_note.id, section_id: @section_id),
+              customs_tariff_update_chapter_note_path(@update.version, @chapter_note.chapter_id, section_id: @section_id),
               method: :delete,
               data: { confirm: 'Are you sure?', disable: 'Working' },
               class: 'govuk-button govuk-button--warning' %>
