@@ -1,5 +1,4 @@
 <% content_for :page_title, "Search dashboard" %>
-<%= javascript_pack_tag "search-analytics-dashboard", defer: true %>
 
 <% summary = (@search_analytics.summary || {}).with_indifferent_access %>
 <% statuses = (@search_analytics.summary_statuses || {}).with_indifferent_access %>
