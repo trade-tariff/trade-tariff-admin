@@ -33,13 +33,11 @@ RSpec.describe CustomsTariff::ChapterNote do
       expect(chapter_note.preview).to be_nil
     end
 
-    it "passes content through TariffNoteFormatter then GovspeakPreview" do
-      formatter = instance_double(TariffNoteFormatter, format: "formatted content")
-      renderer  = instance_double(GovspeakPreview, render: "<p>formatted content</p>")
-      allow(TariffNoteFormatter).to receive(:new).with("Chapter note content").and_return(formatter)
-      allow(GovspeakPreview).to receive(:new).with("formatted content").and_return(renderer)
+    it "passes content directly through GovspeakPreview" do
+      renderer = instance_double(GovspeakPreview, render: "<p>Chapter note content</p>")
+      allow(GovspeakPreview).to receive(:new).with("Chapter note content", linkify_code_references: true).and_return(renderer)
 
-      expect(chapter_note.preview).to eq("<p>formatted content</p>")
+      expect(chapter_note.preview).to eq("<p>Chapter note content</p>")
     end
   end
 

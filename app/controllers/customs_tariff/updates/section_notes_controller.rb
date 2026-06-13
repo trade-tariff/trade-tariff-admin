@@ -81,8 +81,7 @@ module CustomsTariff
       def preview
         authorize CustomsTariff::SectionNote, :update?
         content = params.fetch(:content, "")
-        formatted = TariffNoteFormatter.new(content).format
-        render json: { html: GovspeakPreview.new(formatted).render }
+        render json: { html: GovspeakPreview.new(content, linkify_code_references: true).render }
       end
 
     private

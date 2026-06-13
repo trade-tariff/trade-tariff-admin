@@ -11,7 +11,7 @@
      data-tariff-note-preview-url-value="<%= customs_tariff_section_note_preview_path %>">
   <div class="govuk-grid-column-one-half">
     <%= form_with model: @section_note,
-                  url: customs_tariff_update_section_note_path(@update.version, @section_note.id),
+                  url: customs_tariff_update_section_note_path(@update.version, @section_note.section_id),
                   method: :patch do |f| %>
       <div class="govuk-form-group">
         <%= f.label :content, 'Content', class: 'govuk-label govuk-label--m' %>
@@ -28,7 +28,7 @@
 
   <div class="govuk-grid-column-one-half">
     <h2 class="govuk-heading-m">Preview</h2>
-    <div class="govuk-body" data-tariff-note-preview-target="preview">
+    <div class="govuk-body tariff-note-preview" data-tariff-note-preview-target="preview">
       <%= @section_note.preview %>
     </div>
   </div>
@@ -39,7 +39,7 @@
 
   <p>Remove this section note</p>
   <%= link_to "Remove",
-              customs_tariff_update_section_note_path(@update.version, @section_note.id),
+              customs_tariff_update_section_note_path(@update.version, @section_note.section_id),
               method: :delete,
               data: { confirm: 'Are you sure?', disable: 'Working' },
               class: 'govuk-button govuk-button--warning' %>

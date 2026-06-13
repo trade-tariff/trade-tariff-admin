@@ -4,8 +4,12 @@ module CustomsTariff
 
     attributes :chapter_id, :content, :customs_tariff_update_version, :file_diff, :versions
 
-    set_singular_path   "admin/customs_tariff_updates/:customs_tariff_update_version/chapter_notes/:id"
+    set_singular_path   "admin/customs_tariff_updates/:customs_tariff_update_version/chapter_notes/:chapter_id"
     set_collection_path "admin/customs_tariff_updates/:customs_tariff_update_version/chapter_notes"
+
+    def self.find_attributes(id, opts = {})
+      super.merge(chapter_id: id.to_s)
+    end
 
     def file_diff_status
       return :new       if file_diff.nil?
@@ -27,7 +31,7 @@ module CustomsTariff
     def preview
       return if content.blank?
 
-      GovspeakPreview.new(TariffNoteFormatter.new(content).format).render
+      GovspeakPreview.new(content, linkify_code_references: true).render
     end
 
     def version_objects

@@ -52,8 +52,8 @@ RSpec.describe GovspeakPreview do
       let(:content) { "Chapter 01, 0101, 010121, 01012100 and 0101210000" }
       let(:page) { Capybara.string(rendered) }
 
-      it "links chapter references to frontend search" do
-        expect(page).to have_link "Chapter 01", href: "#{TradeTariffAdmin.frontend_host}/search?q=01"
+      it "links the chapter code to frontend search" do
+        expect(page).to have_link "01", href: "#{TradeTariffAdmin.frontend_host}/search?q=01"
       end
 
       it "links heading references to frontend search" do

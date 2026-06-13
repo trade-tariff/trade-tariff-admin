@@ -106,9 +106,8 @@ module CustomsTariff
 
       def preview
         authorize CustomsTariff::ChapterNote, :update?
-        content   = params.fetch(:content, "")
-        formatted = TariffNoteFormatter.new(content).format
-        render json: { html: GovspeakPreview.new(formatted).render }
+        content = params.fetch(:content, "")
+        render json: { html: GovspeakPreview.new(content, linkify_code_references: true).render }
       end
 
     private

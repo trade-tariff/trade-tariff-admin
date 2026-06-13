@@ -7,6 +7,7 @@ RSpec.describe CustomsTariff::Updates::ComparisonsController, type: :request do
   let(:update_version)  { "1.32" }
   let(:compare_version) { "1.31" }
   let(:section_note_id) { "42" }
+  let(:section_id) { "5" }
 
   let(:update_attributes) do
     {
@@ -38,7 +39,7 @@ RSpec.describe CustomsTariff::Updates::ComparisonsController, type: :request do
   let(:section_note_attributes) do
     {
       "id" => section_note_id,
-      "section_id" => 5,
+      "section_id" => section_id.to_i,
       "content" => "## Section 5\n\nSome content here.",
       "customs_tariff_update_version" => update_version,
       "file_diff" => { "changed_fields" => %w[content], "changes" => {} },
@@ -64,7 +65,7 @@ RSpec.describe CustomsTariff::Updates::ComparisonsController, type: :request do
 
   describe "GET #show" do
     let(:make_request) do
-      get customs_tariff_update_comparison_section_note_path(update_version, section_note_id),
+      get customs_tariff_update_comparison_section_note_path(update_version, section_id),
           params: { compare_version: }
     end
 
@@ -85,7 +86,7 @@ RSpec.describe CustomsTariff::Updates::ComparisonsController, type: :request do
     before do
       stub_api_request("/customs_tariff_updates/#{update_version}")
         .and_return(update_response)
-      stub_api_request("/customs_tariff_updates/#{update_version}/section_notes/#{section_note_id}")
+      stub_api_request("/customs_tariff_updates/#{update_version}/section_notes/#{section_id}")
         .with(query: hash_including(
           "customs_tariff_update_version" => update_version,
           "compare_version" => compare_version,
@@ -98,7 +99,7 @@ RSpec.describe CustomsTariff::Updates::ComparisonsController, type: :request do
 
     context "when compare_version param is missing" do
       let(:make_request) do
-        get customs_tariff_update_comparison_section_note_path(update_version, section_note_id)
+        get customs_tariff_update_comparison_section_note_path(update_version, section_id)
       end
 
       it { is_expected.to redirect_to(customs_tariff_update_path(update_version)) }

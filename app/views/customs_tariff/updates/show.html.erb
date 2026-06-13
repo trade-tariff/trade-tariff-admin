@@ -95,19 +95,20 @@
           if !@update.rejected? && summary.section_note_id.present?
             note_stub = CustomsTariff::SectionNote.new(
               id: summary.section_note_id,
+              section_id: summary.section_id,
               customs_tariff_update_version: @update.version
             )
             if policy(note_stub).edit?
               if summary.section_note_status_symbol == :changed && @baseline_version.present?
                 link_to 'View diff',
                         customs_tariff_update_comparison_section_note_path(
-                          @update.version, summary.section_note_id,
+                          @update.version, summary.section_id,
                           compare_version: @baseline_version
                         ),
                         class: 'govuk-link'
               else
                 link_to 'View/Edit',
-                        edit_customs_tariff_update_section_note_path(@update.version, summary.section_note_id),
+                        edit_customs_tariff_update_section_note_path(@update.version, summary.section_id),
                         class: 'govuk-link'
               end
             end

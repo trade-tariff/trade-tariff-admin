@@ -43,7 +43,7 @@
               if @compare_version.present? && note.file_diff_status == :changed
                 link_to 'View diff',
                         customs_tariff_update_comparison_chapter_note_path(
-                          @update.version, note.id,
+                          @update.version, note.chapter_id,
                           compare_version: @compare_version,
                           section_id: @section_id,
                         ),
@@ -51,7 +51,7 @@
               else
                 link_to 'View/Edit',
                         edit_customs_tariff_update_chapter_note_path(
-                          @update.version, note.id,
+                          @update.version, note.chapter_id,
                           section_id: @section_id,
                           compare_version: @compare_version,
                         ),

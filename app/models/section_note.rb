@@ -15,6 +15,6 @@ class SectionNote
     content = public_send(field_name)
     return if content.blank?
 
-    GovspeakPreview.new(TariffNoteFormatter.new(content).format, **options).render
+    GovspeakPreview.new(content, **options).render
   end
 end
