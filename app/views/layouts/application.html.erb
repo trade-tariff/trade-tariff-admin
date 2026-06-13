@@ -5,20 +5,28 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <%= tag :meta, name: 'viewport', content: 'width=device-width, initial-scale=1' %>
-    <%= tag :meta, property: 'og:image', content: asset_pack_path('media/images/govuk-opengraph-image.png') %>
+    <%= tag :meta, property: 'og:image', content: image_path('/assets/images/govuk-opengraph-image.png') %>
     <%= tag :meta, name: 'theme-color', content: '#1d70b8' %>
-    <%= favicon_link_tag asset_pack_path('media/images/favicon.ico'), sizes: '48x48' %>
-    <%= favicon_link_tag asset_pack_path('media/images/favicon.svg'), sizes: 'any' %>
-    <%= favicon_link_tag asset_pack_path('media/images/govuk-icon-mask.svg'), rel: 'mask-icon', type: 'image/svg', color: "#0b0c0c" %>
-    <%= favicon_link_tag asset_pack_path('media/images/govuk-icon-180.png'), rel: 'apple-touch-icon', type: 'image/png' %>
-    <%= stylesheet_pack_tag 'application', 'data-turbolinks-track': 'reload', media: 'all' %>
-    <%= javascript_pack_tag 'application', 'data-turbolinks-track': 'reload', defer: true %>
+    <%= favicon_link_tag image_path('/assets/images/favicon.ico'), sizes: '48x48' %>
+    <%= favicon_link_tag image_path('/assets/images/favicon.svg'), sizes: 'any' %>
+    <%= favicon_link_tag image_path('/assets/images/govuk-icon-mask.svg'), rel: 'mask-icon', type: 'image/svg', color: "#0b0c0c" %>
+    <%= favicon_link_tag image_path('/assets/images/govuk-icon-180.png'), rel: 'apple-touch-icon', type: 'image/png' %>
+    <%= stylesheet_link_tag :application, 'data-turbo': 'reload', media: 'all' %>
+
+    <script async src="/javascripts/es-module-shims.js"></script>
+    <script type="esms-options">
+      {
+        "noLoadEventRetriggers": true
+      }
+    </script>
+
+    <%= javascript_importmap_tags %>
   </head>
 
   <body class="govuk-template__body ">
-  <%= javascript_tag nonce: true do -%>
-    document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');
-  <% end -%>
+    <%= javascript_tag nonce: true do -%>
+      document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');
+    <% end -%>
 
     <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
 

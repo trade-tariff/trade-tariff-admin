@@ -110,7 +110,7 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
 
       # rubocop:disable RSpec/ExampleLength
       it "uses the shared generated content table controller" do
-        controller = Rails.root.join("app/webpacker/controllers/generated_content_table_controller.js").read
+        controller = Rails.root.join("app/javascript/controllers/generated_content_table_controller.js").read
 
         expect(controller).to include(%(scope="col">Tags</th>))
         expect(controller).to include("params.set('status', this.tagsValue);")
@@ -121,27 +121,21 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
       end
       # rubocop:enable RSpec/ExampleLength
 
-      it "defines a fixed layout for the self-text table styles" do
-        stylesheet = Rails.root.join("app/webpacker/packs/application.scss").read
+      stylesheet = Rails.root.join("app/assets/stylesheets/application.sass.scss").read
 
+      it "defines a fixed layout for the self-text table styles" do
         expect(stylesheet).to match(/\.self-text-table\s*\{[\s\S]*table-layout:\s*fixed;/)
       end
 
       it "defines wrapping styles for long self-text content" do
-        stylesheet = Rails.root.join("app/webpacker/packs/application.scss").read
-
         expect(stylesheet).to match(/\.self-text-table\s*\{[\s\S]*&__description\s*\{[\s\S]*overflow-wrap:\s*anywhere;[\s\S]*word-break:\s*break-word;/)
       end
 
       it "defines a fixed layout for the labels table styles" do
-        stylesheet = Rails.root.join("app/webpacker/packs/application.scss").read
-
         expect(stylesheet).to match(/\.label-table\s*\{[\s\S]*table-layout:\s*fixed;/)
       end
 
       it "defines wrapping styles for long label descriptions" do
-        stylesheet = Rails.root.join("app/webpacker/packs/application.scss").read
-
         expect(stylesheet).to match(/\.label-table\s*\{[\s\S]*&__description\s*\{[\s\S]*overflow-wrap:\s*anywhere;[\s\S]*word-break:\s*break-word;/)
       end
       # rubocop:enable RSpec/MultipleExpectations
