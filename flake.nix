@@ -142,9 +142,10 @@
           rm -rf "$HOME/.local/share/gem/worktrees/$WT_ID" 2>/dev/null || true
           rm -rf "$HOME/.cache/bundle/worktrees/$WT_ID" 2>/dev/null || true
 
-          # Per-worktree Yarn cache + generated webpack packs (for bin/webpack)
+          # Per-worktree Yarn cache + generated assets
           rm -rf "$HOME/.local/share/yarn/worktrees/$WT_ID"
           rm -rf public/packs public/packs-test 2>/dev/null || true
+          bundle exec rails assets:clobber
 
           rm -f "$HOME/.local/share/postgres/worktrees/$WT_ID/.worktree-initialized" 2>/dev/null || true
 
@@ -192,7 +193,7 @@
               mkdir -p $GEM_HOME
             fi
 
-            # Per-worktree Yarn cache (for bin/webpack after yarn)
+            # Per-worktree Yarn cache
             if [ "$(${worktree.isWorktree})" = "true" ]; then
               export YARN_CACHE_FOLDER="$HOME/.local/share/yarn/worktrees/$WT_ID"
               mkdir -p "$YARN_CACHE_FOLDER"
@@ -293,7 +294,7 @@
                 run_setup_step "Preparing development database" bundle exec rails db:prepare || fail_worktree_setup
                 run_setup_step "Preparing test database" env RAILS_ENV=test bundle exec rails db:prepare || fail_worktree_setup
                 run_setup_step "Installing JS dependencies" yarn install --frozen-lockfile || fail_worktree_setup
-                run_setup_step "Compiling webpack packs" bundle exec bin/webpack || fail_worktree_setup
+                run_setup_step "Compiling assets" bundle exec rails assets:precompile || fail_worktree_setup
                 run_setup_step "Installing pre-commit hooks" pre-commit install --install-hooks || fail_worktree_setup
 
                 touch "$MARKER"
