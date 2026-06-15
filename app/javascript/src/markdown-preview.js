@@ -1,4 +1,10 @@
-import autosize from "autosize/dist/autosize";
+function autosize(element) {
+  element.addEventListener("input", () => {
+    element.style.height = "auto";
+    element.style.height = `${element.scrollHeight}px`;
+  });
+};
+
 document.addEventListener("DOMContentLoaded", function() {
   var Previewer = {
     preview: function(content, output) {
@@ -41,5 +47,4 @@ document.addEventListener("DOMContentLoaded", function() {
   document.querySelectorAll("textarea.govuk-textarea").forEach(function(element) {
     autosize(element);
   });
-
 });
