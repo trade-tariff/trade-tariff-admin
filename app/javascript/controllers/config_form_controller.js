@@ -127,6 +127,7 @@ export default class extends Controller {
     this.hiddenFieldTarget.value = JSON.stringify(data);
   }
 
+  // TODO: do something useful with the error
   parseJson(value) {
     try {
       return JSON.parse(value || '{}');
