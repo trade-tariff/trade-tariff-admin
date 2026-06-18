@@ -158,9 +158,14 @@
         '';
 
         lint = pkgs.writeShellScriptBin "lint" ''
-          changed_files=$(git diff --name-only --diff-filter=ACM --merge-base main)
+          mapfile -t changed_files < <(git diff --name-only --diff-filter=ACM --merge-base main)
 
-          bundle exec rubocop --autocorrect-all --force-exclusion $changed_files Gemfile
+          if [ ''${#changed_files[@]} -eq 0 ]; then
+            echo "No changed files to lint."
+            exit 0
+          fi
+
+          pre-commit run --files "''${changed_files[@]}"
         '';
         lint-all = pkgs.writeShellScriptBin "lint-all" ''
           bundle exec rubocop --autocorrect-all
