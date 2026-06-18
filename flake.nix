@@ -257,6 +257,30 @@
           };
         };
 
+        preCommit = pkgs.writeShellScriptBin "pre-commit" ''
+          set -euo pipefail
+
+          has_config=false
+          for arg in "$@"; do
+            case "$arg" in
+              -c|--config|--config=*)
+                has_config=true
+                ;;
+            esac
+          done
+
+          if [ "$has_config" = true ]; then
+            exec ${preCommitCheck.config.package}/bin/pre-commit "$@"
+          fi
+
+          if [ "''${1:-}" = "run" ]; then
+            shift
+            exec ${preCommitCheck.config.package}/bin/pre-commit run --config .pre-commit-config-nix.yaml "$@"
+          fi
+
+          exec ${preCommitCheck.config.package}/bin/pre-commit "$@"
+        '';
+
       in
       {
         devShells.default = pkgs.mkShell {
@@ -394,6 +418,7 @@
             fi
 
             ${preCommitCheck.shellHook}
+            export PATH=${preCommit}/bin:$PATH
             ${worktree-info}/bin/worktree-info
           '';
 
