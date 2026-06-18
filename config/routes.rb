@@ -202,7 +202,6 @@ Rails.application.routes.draw do
 
     constraints(version: /[^\/]+/) do
       get   "updates/:version",               to: "updates#show",          as: :customs_tariff_update
-      patch "updates/:version/update_status", to: "updates#update_status", as: :update_status_customs_tariff_update
       get   "updates/:version/compare",       to: "updates/comparisons#index", as: :customs_tariff_update_comparison
       post  "updates/:version/reimport",      to: "updates#reimport",      as: :reimport_customs_tariff_update
     end

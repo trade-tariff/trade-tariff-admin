@@ -14,7 +14,7 @@
   <% end %>
 <% end %>
 
-<% if !@update.rejected? && policy(@section_note).edit? %>
+<% if policy(@section_note).edit? %>
   <p class="govuk-body">
     <%= link_to "Edit this note",
           edit_customs_tariff_update_section_note_path(@update.version, @section_note.section_id),
