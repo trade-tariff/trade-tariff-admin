@@ -2,7 +2,7 @@ module CustomsTariff
   class UpdatesController < AuthenticatedController
     def index
       authorize CustomsTariff::Update, :index?
-      @updates = CustomsTariff::Update.all
+      @updates = CustomsTariff::Update.all(page: current_page)
     end
 
     def show
@@ -15,22 +15,6 @@ module CustomsTariff
         .select { |u| u.validity_start_date.present? && u.validity_start_date < @update.validity_start_date }
         .max_by(&:validity_start_date)
         &.version
-    end
-
-    def update_status
-      @update = CustomsTariff::Update.find(params[:version])
-      authorize @update, :update?
-
-      CustomsTariff::Update.api.patch(
-        "admin/customs_tariff_updates/#{params[:version]}/status",
-        { data: { attributes: { status: params.require(:status) } } },
-      )
-
-      redirect_to customs_tariff_updates_path,
-                  notice: "Status updated to #{params[:status]}."
-    rescue Faraday::UnprocessableEntityError => e
-      redirect_to customs_tariff_update_path(params[:version]),
-                  alert: "Could not update status: #{e.response[:body].dig('errors', 0, 'detail')}"
     end
 
     def reimport

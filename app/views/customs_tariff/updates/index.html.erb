@@ -6,7 +6,6 @@
       row.with_cell(text: 'Version')
       row.with_cell(text: 'Valid from')
       row.with_cell(text: 'Valid to')
-      row.with_cell(text: 'Status')
       row.with_cell(text: 'Actions')
       row.with_cell(text: '')
     end
@@ -18,9 +17,6 @@
         row.with_cell(text: update.version)
         row.with_cell(text: update.validity_start_date)
         row.with_cell(text: update.validity_end_date || '—')
-        row.with_cell do
-          tag.strong(update.status.capitalize, class: "govuk-tag govuk-tag--#{update.status_tag_colour}")
-        end
         row.with_cell do
           link_to('Review', customs_tariff_update_path(update.version), class: 'govuk-link')
         end
@@ -37,3 +33,5 @@
     end
   end
 end %>
+
+<%= paginate @updates %>

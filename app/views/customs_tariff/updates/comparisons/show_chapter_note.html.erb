@@ -17,7 +17,7 @@
   <% end %>
 <% end %>
 
-<% if !@update.rejected? && policy(@chapter_note).edit? %>
+<% if policy(@chapter_note).edit? %>
   <p class="govuk-body">
     <%= link_to "Edit this note",
           edit_customs_tariff_update_chapter_note_path(@update.version, @chapter_note.chapter_id,

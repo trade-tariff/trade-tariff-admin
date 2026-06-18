@@ -8,42 +8,36 @@
         class: 'govuk-link' %>
 </p>
 
-<% if @update.rejected? %>
-  <%= govuk_inset_text do %>
-    This file has been rejected. To edit individual notes, set it back to pending.
-  <% end %>
-<% else %>
-  <div class="govuk-grid-row"
-       data-controller="tariff-note-preview"
-       data-tariff-note-preview-url-value="<%= customs_tariff_chapter_note_preview_path %>">
-    <div class="govuk-grid-column-one-half">
-      <%= form_with model: @chapter_note,
-                    url: customs_tariff_update_chapter_note_path(@update.version, @chapter_note.chapter_id),
-                    method: :patch do |f| %>
-        <%= hidden_field_tag :section_id, @section_id %>
-        <div class="govuk-form-group">
-          <%= f.label :content, 'Content', class: 'govuk-label govuk-label--m' %>
-          <%= f.text_area :content, rows: 20, class: 'govuk-textarea',
-                          data: { tariff_note_preview_target: 'content',
-                                  action: 'input->tariff-note-preview#update' } %>
-        </div>
-        <div class="govuk-button-group">
-          <%= f.submit 'Save', class: 'govuk-button' %>
-          <%= link_to 'Cancel',
-                customs_tariff_update_section_chapter_notes_path(@update.version, @section_id),
-                class: 'govuk-link' %>
-        </div>
-      <% end %>
-    </div>
-
-    <div class="govuk-grid-column-one-half">
-      <h2 class="govuk-heading-m">Preview</h2>
-      <div class="govuk-body tariff-note-preview" data-tariff-note-preview-target="preview">
-        <%= @chapter_note.preview %>
+<div class="govuk-grid-row"
+     data-controller="tariff-note-preview"
+     data-tariff-note-preview-url-value="<%= customs_tariff_chapter_note_preview_path %>">
+  <div class="govuk-grid-column-one-half">
+    <%= form_with model: @chapter_note,
+                  url: customs_tariff_update_chapter_note_path(@update.version, @chapter_note.chapter_id),
+                  method: :patch do |f| %>
+      <%= hidden_field_tag :section_id, @section_id %>
+      <div class="govuk-form-group">
+        <%= f.label :content, 'Content', class: 'govuk-label govuk-label--m' %>
+        <%= f.text_area :content, rows: 20, class: 'govuk-textarea',
+                        data: { tariff_note_preview_target: 'content',
+                                action: 'input->tariff-note-preview#update' } %>
       </div>
+      <div class="govuk-button-group">
+        <%= f.submit 'Save', class: 'govuk-button' %>
+        <%= link_to 'Cancel',
+              customs_tariff_update_section_chapter_notes_path(@update.version, @section_id),
+              class: 'govuk-link' %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="govuk-grid-column-one-half">
+    <h2 class="govuk-heading-m">Preview</h2>
+    <div class="hott-markdown-preview" data-tariff-note-preview-target="preview">
+      <%= @chapter_note.preview %>
     </div>
   </div>
-<% end %>
+</div>
 
 <% if policy(@chapter_note).destroy? %>
   <h3>Remove chapter note</h3>
