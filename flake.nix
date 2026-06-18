@@ -2,6 +2,10 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    pre-commit-hooks = {
+      url = "github:cachix/git-hooks.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     nixpkgs-ruby = {
       url = "github:bobvanderlinden/nixpkgs-ruby";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -11,16 +15,17 @@
 
   outputs =
     {
-      self,
       nixpkgs,
       flake-utils,
+      pre-commit-hooks,
       nixpkgs-ruby,
+      ...
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
       let
         pkgs = import nixpkgs {
-          system = system;
+          inherit system;
           config.allowUnfree = true;
           config.permittedInsecurePackages = [
             "google-chrome-144.0.7559.97"
@@ -169,6 +174,89 @@
           cd terraform && terraform init -input=false -no-color -backend=false
         '';
 
+        preCommitCheck = pre-commit-hooks.lib.${system}.run {
+          src = ./.;
+          configPath = ".pre-commit-config-nix.yaml";
+          default_stages = [ "pre-commit" ];
+          hooks = {
+            actionlint = {
+              enable = true;
+              stages = [ "pre-commit" ];
+            };
+            check-added-large-files = {
+              enable = true;
+              stages = [ "pre-commit" ];
+            };
+            check-case-conflicts = {
+              enable = true;
+              stages = [ "pre-commit" ];
+            };
+            check-merge-conflicts = {
+              enable = true;
+              stages = [ "pre-commit" ];
+            };
+            check-yaml = {
+              enable = true;
+              excludes = [ "^config/database\\.yml$" ];
+              stages = [ "pre-commit" ];
+            };
+            deadnix = {
+              enable = true;
+              stages = [ "pre-commit" ];
+            };
+            detect-private-keys = {
+              enable = true;
+              stages = [ "pre-commit" ];
+            };
+            end-of-file-fixer = {
+              enable = true;
+              stages = [ "pre-commit" ];
+            };
+            nixfmt-rfc-style = {
+              enable = true;
+              stages = [ "pre-commit" ];
+            };
+            shellcheck = {
+              enable = true;
+              stages = [ "pre-commit" ];
+            };
+            statix = {
+              enable = true;
+              settings.ignore = [ ".worktrees" ];
+              stages = [ "pre-commit" ];
+            };
+            terraform-format = {
+              enable = true;
+              stages = [ "pre-commit" ];
+            };
+            terraform-validate = {
+              enable = true;
+              stages = [ "pre-commit" ];
+            };
+            tflint = {
+              enable = true;
+              stages = [ "pre-commit" ];
+            };
+            trim-trailing-whitespace = {
+              enable = true;
+              stages = [ "pre-commit" ];
+            };
+            trufflehog = {
+              enable = true;
+              stages = [ "pre-commit" ];
+            };
+
+            rubocop = {
+              enable = true;
+              name = "rubocop";
+              description = "Run RuboCop through Bundler";
+              entry = "bundle exec rubocop --autocorrect";
+              files = "\\.(rb|rake)$|^(Gemfile|Rakefile|config\\.ru)$";
+              stages = [ "pre-commit" ];
+            };
+          };
+        };
+
       in
       {
         devShells.default = pkgs.mkShell {
@@ -295,7 +383,6 @@
                 run_setup_step "Preparing test database" env RAILS_ENV=test bundle exec rails db:prepare || fail_worktree_setup
                 run_setup_step "Installing JS dependencies" yarn install --frozen-lockfile || fail_worktree_setup
                 run_setup_step "Compiling assets" bundle exec rails assets:precompile || fail_worktree_setup
-                run_setup_step "Installing pre-commit hooks" pre-commit install --install-hooks || fail_worktree_setup
 
                 touch "$MARKER"
                 echo ""
@@ -306,15 +393,15 @@
               fi
             fi
 
+            ${preCommitCheck.shellHook}
             ${worktree-info}/bin/worktree-info
           '';
 
-          buildInputs = [
+          buildInputs = preCommitCheck.enabledPackages ++ [
             chrome
             init
             lint
             lint-all
-            pkgs.pre-commit
             pkgs.circleci-cli
             pkgs.python3
             pkgs.rufo

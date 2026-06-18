@@ -21,6 +21,7 @@ vendor/bundle
 .env
 .env.*.local
 /node_modules
+/.pre-commit-config-nix.yaml
 yarn-error.log
 .byebug_history
 .pycache/
