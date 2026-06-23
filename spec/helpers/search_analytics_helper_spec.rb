@@ -17,15 +17,6 @@ RSpec.describe SearchAnalyticsHelper do
     end
   end
 
-  describe "#search_analytics_status_tag_class" do
-    it "maps status levels to GOV.UK tag classes", :aggregate_failures do
-      expect(helper.search_analytics_status_tag_class("good")).to eq("govuk-tag govuk-tag--green")
-      expect(helper.search_analytics_status_tag_class("watch")).to eq("govuk-tag govuk-tag--yellow")
-      expect(helper.search_analytics_status_tag_class("problem")).to eq("govuk-tag govuk-tag--red")
-      expect(helper.search_analytics_status_tag_class("neutral")).to eq("govuk-tag govuk-tag--blue")
-    end
-  end
-
   describe "#search_analytics_chart_payload" do
     let(:trend_payload) do
       helper.search_analytics_chart_payload(
@@ -91,30 +82,6 @@ RSpec.describe SearchAnalyticsHelper do
 
     it "omits chart series below the configured share of the largest series" do
       expect(JSON.parse(payload_with_negligible_series).fetch("datasets").pluck("label")).to eq(%w[All Classic])
-    end
-  end
-
-  describe "#search_analytics_comparison_chart_payload" do
-    let(:comparison_payload) do
-      helper.search_analytics_comparison_chart_payload(
-        {
-          classic: { searches: 710 },
-          internal: { searches: 530 },
-        },
-      )
-    end
-
-    let(:expected_comparison_payload) do
-      {
-        "labels" => %w[Classic Internal],
-        "datasets" => [
-          include("label" => "Searches", "data" => [710, 530], "borderColor" => "#144e81", "backgroundColor" => "#144e81"),
-        ],
-      }
-    end
-
-    it "builds chart JSON from comparison rows" do
-      expect(JSON.parse(comparison_payload)).to match(expected_comparison_payload)
     end
   end
 

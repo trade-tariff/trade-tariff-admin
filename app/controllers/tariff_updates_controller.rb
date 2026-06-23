@@ -47,8 +47,4 @@ private
       .permit(:filename)
       .to_h
   end
-
-  def error_messages_for(model)
-    model.errors.full_messages.join(", ")
-  end
 end

@@ -142,18 +142,6 @@ module GreenLanes
       }
     end
 
-    def merge_filter
-      filters = params(:filters, {}).permit(:exemption_code).to_h
-
-      if params[:exemption_code].present?
-        filters.merge!(exemption_code: params[:exemption_code])
-      else
-        params[:exemption_code] = params.dig(:filters, :exemption_code)
-      end
-
-      params[:filters] = ActionController::Parameters.new(filters).permit(:exemption_code)
-    end
-
     def merge_filters
       filters = params.fetch(:filters, {}).permit(
         :exemption_code,

@@ -1,8 +1,8 @@
 # rubocop:disable RSpec/NoExpectationExample, RSpec/ExampleLength
 RSpec.describe "Entity search in references" do
   let(:section) { build(:section, resource_id: 1, numeral: "I", title: "Live animals; animal products") }
-  let(:sections_url) { "#{TradeTariffAdmin::ServiceChooser.api_host}/admin/sections" }
-  let(:internal_search_url) { "#{TradeTariffAdmin::ServiceChooser.api_host}/internal/search" }
+  let(:sections_url) { "#{TradeTariffAdmin::ServiceChooser.service_choices.fetch('uk')}/admin/sections" }
+  let(:internal_search_url) { "#{TradeTariffAdmin::ServiceChooser.service_choices.fetch('uk')}/internal/search" }
 
   let(:chapter) do
     build(

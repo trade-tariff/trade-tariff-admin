@@ -305,50 +305,6 @@ RSpec.describe AdminConfiguration do
     end
   end
 
-  describe "#nested_sub_value" do
-    context "with nested_options type and sub_values set" do
-      let(:attributes) do
-        {
-          name: "search_model",
-          config_type: "nested_options",
-          value: {
-            "selected" => "gpt-5.2",
-            "sub_values" => { "reasoning_effort" => "low" },
-            "options" => [],
-          },
-        }
-      end
-
-      it "returns the sub_value for the given key" do
-        expect(configuration.nested_sub_value("reasoning_effort")).to eq("low")
-      end
-    end
-
-    context "with nested_options type and no sub_values" do
-      let(:attributes) do
-        {
-          name: "expand_model",
-          config_type: "nested_options",
-          value: {
-            "selected" => "gpt-4.1-mini-2025-04-14",
-            "sub_values" => {},
-            "options" => [],
-          },
-        }
-      end
-
-      it "returns nil" do
-        expect(configuration.nested_sub_value("reasoning_effort")).to be_nil
-      end
-    end
-
-    context "with non-nested_options type" do
-      it "returns nil" do
-        expect(configuration.nested_sub_value("reasoning_effort")).to be_nil
-      end
-    end
-  end
-
   describe "#selected_option_label" do
     context "with options type" do
       let(:attributes) do

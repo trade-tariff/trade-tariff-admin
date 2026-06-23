@@ -2,7 +2,7 @@
 RSpec.describe References::EntitySearch do
   describe ".call" do
     let(:section) { build(:section, resource_id: 1, numeral: "I", title: "Live animals") }
-    let(:internal_search_url) { "#{TradeTariffAdmin::ServiceChooser.api_host}/internal/search" }
+    let(:internal_search_url) { "#{TradeTariffAdmin::ServiceChooser.service_choices.fetch('uk')}/internal/search" }
 
     before do
       allow(Section).to receive(:all).and_return([section])

@@ -66,15 +66,6 @@ class AdminConfiguration
     option&.dig("label") || selected
   end
 
-  def nested_sub_value(key)
-    return unless config_type == "nested_options" && value.is_a?(Hash)
-
-    sub_values = value["sub_values"]
-    return unless sub_values.is_a?(Hash)
-
-    sub_values[key]
-  end
-
   def object_templates
     return {} unless config_type == "object_template" && value.is_a?(Hash)
 

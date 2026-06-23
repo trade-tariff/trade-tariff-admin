@@ -21,28 +21,6 @@ RSpec.describe TradeTariffAdmin::ServiceChooser do
     end
   end
 
-  describe ".api_host" do
-    before do
-      Thread.current[:service_choice] = choice
-    end
-
-    context "when the service choice does not have a corresponding url" do
-      let(:choice) { "foo" }
-
-      it "returns the default service choice url" do
-        expect(described_class.api_host).to eq("http://localhost:3018")
-      end
-    end
-
-    context "when the service choice has a corresponding url" do
-      let(:choice) { "xi" }
-
-      it "returns the service choice url" do
-        expect(described_class.api_host).to eq("http://localhost:3019")
-      end
-    end
-  end
-
   describe ".uk?" do
     before do
       Thread.current[:service_choice] = choice
