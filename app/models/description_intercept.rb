@@ -2,8 +2,6 @@ class DescriptionIntercept
   include ApiEntity
   include RecordDateFormatting
 
-  GUIDANCE_LEVELS = %w[info warning error].freeze
-  GUIDANCE_LOCATIONS = %w[interstitial results question].freeze
   SOURCES = %w[guided_search fpo_search].freeze
   SOURCE_LABELS = {
     "guided_search" => "Guided search",
@@ -127,10 +125,6 @@ class DescriptionIntercept
 
   def sources_label
     Array(sources).map { |source| SOURCE_LABELS[source] || source.to_s.humanize }.join(", ").presence || "-"
-  end
-
-  def filter_prefixes_label
-    Array(filter_prefixes).join(", ").presence || "-"
   end
 
   def aliases_label

@@ -29,14 +29,6 @@ module TradeTariffAdmin
         service_choice || service_default
       end
 
-      def api_host
-        host = service_choices[service_choice]
-
-        return service_choices[service_default] if host.blank?
-
-        host
-      end
-
       def api_client(forced_service = nil)
         return Rails.application.config.public_send("http_client_#{forced_service}") if forced_service
         return Rails.application.config.http_client_xi if xi?

@@ -14,12 +14,4 @@ class SearchReference
       attrs.delete(key.to_sym)
     end
   end
-
-  def referenced_entity
-    referenced_class.find(referenced_id)
-  end
-
-  def referenced_class
-    attributes["referenced_class"].constantize
-  end
 end

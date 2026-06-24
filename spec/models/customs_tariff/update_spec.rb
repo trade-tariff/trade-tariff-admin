@@ -44,25 +44,4 @@ RSpec.describe CustomsTariff::Update do
       expect(update).to be_rejected
     end
   end
-
-  describe "#status_tag_colour" do
-    it "returns 'blue' for pending" do
-      expect(update.status_tag_colour).to eq("blue")
-    end
-
-    it "returns 'green' for approved" do
-      update.status = "approved"
-      expect(update.status_tag_colour).to eq("green")
-    end
-
-    it "returns 'red' for rejected" do
-      update.status = "rejected"
-      expect(update.status_tag_colour).to eq("red")
-    end
-
-    it "returns 'grey' for an unknown status" do
-      update.status = "unknown_value"
-      expect(update.status_tag_colour).to eq("grey")
-    end
-  end
 end

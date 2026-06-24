@@ -24,10 +24,6 @@ module SearchAnalyticsHelper
     "#{number_with_precision(value.to_f / 1_000, precision: 1, strip_insignificant_zeros: true)}s"
   end
 
-  def search_analytics_status_tag_class(level)
-    "govuk-tag govuk-tag--#{search_analytics_status_tag_colour(level)}"
-  end
-
   def search_analytics_status_tag_colour(level)
     {
       "good" => "green",
@@ -55,21 +51,6 @@ module SearchAnalyticsHelper
           data: data,
         }.merge(search_analytics_chart_series_style(key))
       end,
-    }.to_json
-  end
-
-  def search_analytics_comparison_chart_payload(comparisons)
-    rows = (comparisons || {}).with_indifferent_access
-    chart_rows = rows.slice(:classic, :internal)
-
-    {
-      labels: chart_rows.keys.map { |view| view.to_s.humanize },
-      datasets: [
-        {
-          label: "Searches",
-          data: chart_rows.values.map { |row| row[:searches] || row["searches"] || 0 },
-        }.merge(search_analytics_chart_series_style(:searches)),
-      ],
     }.to_json
   end
 

@@ -110,7 +110,11 @@ module ApiResponsesHelper
     backend_url = if backend
                     TradeTariffAdmin::ServiceChooser.service_choices[backend]
                   else
-                    TradeTariffAdmin::ServiceChooser.api_host
+                    service_choice = TradeTariffAdmin::ServiceChooser.service_choice
+                    service_default = TradeTariffAdmin::ServiceChooser.service_default
+
+                    TradeTariffAdmin::ServiceChooser.service_choices[service_choice].presence ||
+                      TradeTariffAdmin::ServiceChooser.service_choices.fetch(service_default)
                   end
 
     endpoint = "/#{endpoint}" unless endpoint.starts_with?("/")

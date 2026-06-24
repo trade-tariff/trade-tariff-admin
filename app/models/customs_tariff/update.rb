@@ -11,9 +11,5 @@ module CustomsTariff
     def pending?  = status == "pending"
     def approved? = status == "approved"
     def rejected? = status == "rejected"
-
-    def status_tag_colour
-      { "pending" => "blue", "approved" => "green", "rejected" => "red" }.fetch(status, "grey")
-    end
   end
 end
