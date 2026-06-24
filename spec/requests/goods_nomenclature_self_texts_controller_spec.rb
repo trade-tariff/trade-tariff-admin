@@ -121,6 +121,18 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
       end
       # rubocop:enable RSpec/ExampleLength
 
+      # rubocop:disable RSpec/ExampleLength
+      it "defers initial data loading for hidden generated content tab panels" do
+        controller = Rails.root.join("app/javascript/controllers/generated_content_table_controller.js").read
+
+        expect(rendered_page.body).to include('govuk-tabs__panel govuk-tabs__panel--hidden" id="labels"')
+        expect(rendered_page.body).to include('govuk-tabs__panel govuk-tabs__panel--hidden" id="compressed-notes"')
+        expect(controller).to include("if (this.visible()) {")
+        expect(controller).to include("this.visibilityObserver = new MutationObserver")
+        expect(controller).to include("this.fetchDataOnceVisible")
+      end
+      # rubocop:enable RSpec/ExampleLength
+
       stylesheet = Rails.root.join("app/assets/stylesheets/application.sass.scss").read
 
       it "defines a fixed layout for the self-text table styles" do

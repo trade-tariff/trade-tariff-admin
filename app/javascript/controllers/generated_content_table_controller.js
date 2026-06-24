@@ -26,6 +26,28 @@ export default class extends Controller {
   }
 
   connect() {
+    if (this.visible()) {
+      this.fetchData();
+      return;
+    }
+
+    this.visibilityObserver = new MutationObserver(this.fetchDataOnceVisible.bind(this));
+    this.visibilityObserver.observe(this.element, {
+      attributes: true,
+      attributeFilter: ['class', 'hidden', 'style'],
+    });
+  }
+
+  disconnect() {
+    if (this.visibilityObserver) {
+      this.visibilityObserver.disconnect();
+    }
+  }
+
+  fetchDataOnceVisible() {
+    if (!this.visible()) return;
+
+    this.visibilityObserver.disconnect();
     this.fetchData();
   }
 
@@ -77,6 +99,10 @@ export default class extends Controller {
       this.pageValue = page;
       this.fetchData();
     }
+  }
+
+  visible() {
+    return !this.element.closest('.govuk-tabs__panel--hidden') && !this.element.hidden;
   }
 
   fetchData() {
