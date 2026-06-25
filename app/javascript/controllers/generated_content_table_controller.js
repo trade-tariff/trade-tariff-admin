@@ -26,28 +26,17 @@ export default class extends Controller {
   }
 
   connect() {
+    this.loaded = false;
+
     if (this.visible()) {
-      this.fetchData();
-      return;
-    }
-
-    this.visibilityObserver = new MutationObserver(this.fetchDataOnceVisible.bind(this));
-    this.visibilityObserver.observe(this.element, {
-      attributes: true,
-      attributeFilter: ['class', 'hidden', 'style'],
-    });
-  }
-
-  disconnect() {
-    if (this.visibilityObserver) {
-      this.visibilityObserver.disconnect();
+      this.loadOnce();
     }
   }
 
-  fetchDataOnceVisible() {
-    if (!this.visible()) return;
+  loadOnce() {
+    if (this.loaded || !this.visible()) return;
 
-    this.visibilityObserver.disconnect();
+    this.loaded = true;
     this.fetchData();
   }
 
