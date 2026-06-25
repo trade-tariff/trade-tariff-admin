@@ -36,6 +36,7 @@
   table.with_head do |head|
     head.with_row do |row|
       row.with_cell(text: 'Section')
+      row.with_cell(text: 'Chapters')
       row.with_cell(text: 'Section Note')
       row.with_cell(text: 'Actions')
       row.with_cell(text: 'Chapter Notes')
@@ -49,6 +50,7 @@
 
       body.with_row do |row|
         row.with_cell(text: "Section #{summary.section_id}")
+        row.with_cell(text: @sections_by_id[summary.section_id]&.chapters_range)
         row.with_cell do
           if summary.section_note_status_symbol == :absent
             "—"
