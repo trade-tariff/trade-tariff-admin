@@ -137,6 +137,11 @@ RSpec.describe CustomsTariff::UpdatesController, type: :request do
           body: { data: [] }.to_json,
         )
       stub_api_request("/customs_tariff_updates").and_return(updates_list_response)
+      stub_api_request("/sections").and_return(
+        status: 200,
+        headers: { "content-type" => "application/json; charset=utf-8" },
+        body: { data: [] }.to_json,
+      )
     end
 
     it { is_expected.to have_http_status(:ok) }
@@ -184,6 +189,11 @@ RSpec.describe CustomsTariff::UpdatesController, type: :request do
             ],
           }.to_json,
         )
+        stub_api_request("/sections").and_return(
+          status: 200,
+          headers: { "content-type" => "application/json; charset=utf-8" },
+          body: { data: [] }.to_json,
+        )
         get customs_tariff_update_path(update_version)
       end
 
@@ -225,6 +235,11 @@ RSpec.describe CustomsTariff::UpdatesController, type: :request do
           }.to_json,
         )
         stub_api_request("/customs_tariff_updates").and_return(updates_list_response)
+        stub_api_request("/sections").and_return(
+          status: 200,
+          headers: { "content-type" => "application/json; charset=utf-8" },
+          body: { data: [] }.to_json,
+        )
         get customs_tariff_update_path(update_version)
       end
 
