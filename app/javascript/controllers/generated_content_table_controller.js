@@ -26,6 +26,17 @@ export default class extends Controller {
   }
 
   connect() {
+    this.loaded = false;
+
+    if (this.visible()) {
+      this.loadOnce();
+    }
+  }
+
+  loadOnce() {
+    if (this.loaded || !this.visible()) return;
+
+    this.loaded = true;
     this.fetchData();
   }
 
@@ -77,6 +88,10 @@ export default class extends Controller {
       this.pageValue = page;
       this.fetchData();
     }
+  }
+
+  visible() {
+    return !this.element.closest('.govuk-tabs__panel--hidden') && !this.element.hidden;
   }
 
   fetchData() {
