@@ -8,6 +8,7 @@ module SearchDiagnosticsHelper
     "description_intercept_checked" => %i[matched term excluded filtering filter_prefix_count guidance_level guidance_location escalate_to_webchat],
     "question_returned" => %i[question_count attempt_number iteration effective_query],
     "answer_returned" => %i[answer_count confidence_levels attempt_number iteration effective_query],
+    "evaluation_trace_returned" => %i[trace_version query effective_query iteration answer_count retrieval_method results_type candidate_count logged_candidate_count candidates_truncated final_result_type ranked_answer_count logged_ranked_answer_count ranked_answers_truncated question_count logged_question_count questions_truncated confidence_levels ranking_source model result_limit error_message error_message_truncated],
     "search_completed" => %i[query search_type results_type final_result_type total_attempts total_questions result_count max_score total_duration_ms description_intercept_matched description_intercept_term description_intercept_excluded description_intercept_filtering description_intercept_filter_prefix_count description_intercept_guidance_level description_intercept_guidance_location description_intercept_escalate_to_webchat error_message error_message_truncated],
     "retrieval_leg_completed" => %i[leg status result_count duration_ms error_message error_message_truncated],
     "result_selected" => %i[goods_nomenclature_item_id goods_nomenclature_class],
@@ -30,6 +31,7 @@ module SearchDiagnosticsHelper
     retrieval_results_returned
     question_returned
     answer_returned
+    evaluation_trace_returned
     search_completed
     search_failed
   ].freeze
@@ -70,6 +72,13 @@ module SearchDiagnosticsHelper
       "Questions returned - #{pluralize(fields[:question_count].to_i, 'question')}"
     when "answer_returned"
       "Answers returned - #{pluralize(fields[:answer_count].to_i, 'answer')}"
+    when "evaluation_trace_returned"
+      [
+        "Evaluation trace returned",
+        readable_value(fields[:final_result_type]),
+        readable_value(fields[:ranking_source]),
+        pluralize(fields[:ranked_answer_count].to_i, "ranked answer"),
+      ].compact_blank.join(" - ")
     when "description_intercept_checked"
       description_intercept_summary(fields)
     when "search_completed"
@@ -205,6 +214,17 @@ module SearchDiagnosticsHelper
         summary[:model] = "Questions returned - #{pluralize(fields[:question_count].to_i, 'question')}"
       when "answer_returned"
         summary[:model] = "Answers returned - #{pluralize(fields[:answer_count].to_i, 'answer')}"
+      when "evaluation_trace_returned"
+        summary[:effective_query] = fields[:effective_query].presence || summary[:effective_query]
+        summary[:retrieval] ||= [
+          fields[:retrieval_method].to_s.humanize.presence,
+          pluralize(fields[:candidate_count].to_i, "candidate"),
+        ].compact_blank.join(" - ")
+        summary[:model] = [
+          "#{readable_value(fields[:final_result_type]).presence || 'Result'} trace",
+          readable_value(fields[:ranking_source]),
+          pluralize(fields[:ranked_answer_count].to_i, "ranked answer"),
+        ].compact_blank.join(" - ")
       when "api_call_completed"
         summary[:model] ||= ["Model returned #{readable_value(fields[:response_type]) || 'response'}", attempt_label(fields)].compact_blank.join(" - ")
       end
@@ -239,6 +259,8 @@ module SearchDiagnosticsHelper
                 questions_details(fields)
               when "answer_returned"
                 answers_details(fields)
+              when "evaluation_trace_returned"
+                evaluation_trace_details(fields)
               when *EVENT_DETAIL_KEYS.keys
                 generic_event_details(event[:event].to_s, fields)
               end
@@ -343,6 +365,23 @@ private
     ])
   end
 
+  def evaluation_trace_details(fields)
+    details = search_diagnostic_details(fields)
+    candidates = diagnostic_result_rows(details[:candidates])
+    ranked_answers = diagnostic_result_rows(details[:ranked_answers])
+    questions = Array(details[:questions]).compact_blank
+
+    safe_join([
+      generic_event_details("evaluation_trace_returned", fields),
+      content_tag(:h4, "Candidate set", class: "govuk-heading-s govuk-!-margin-bottom-2"),
+      result_table(candidates),
+      content_tag(:h4, "Ranked answers", class: "govuk-heading-s govuk-!-margin-bottom-2"),
+      ranked_answers.blank? ? content_tag(:p, "No ranked answers were logged.", class: "govuk-body-s") : result_table(ranked_answers),
+      content_tag(:h4, "Questions", class: "govuk-heading-s govuk-!-margin-bottom-2"),
+      questions.blank? ? content_tag(:p, "No questions were logged.", class: "govuk-body-s") : ordered_list(questions.map { |question| question[:question] || question["question"] || question.to_s }),
+    ])
+  end
+
   def result_group(level, results, include_admin_links: true)
     safe_join([
       content_tag(:h5, level.to_s.humanize, class: "govuk-heading-s govuk-!-margin-bottom-1"),
@@ -351,6 +390,7 @@ private
   end
 
   def result_table(results, include_admin_links: true)
+    results = diagnostic_result_rows(results)
     return content_tag(:p, "No results were logged.", class: "govuk-body-s") if results.blank?
 
     content_tag(:table, class: "govuk-table govuk-!-margin-bottom-4 app-diagnostics-table") do
@@ -438,7 +478,7 @@ private
   end
 
   def goods_nomenclature_link(result)
-    endpoint = result[:target_endpoint].presence || endpoint_for_class(result[:goods_nomenclature_class])
+    endpoint = result[:target_endpoint].presence || endpoint_for_class(result[:goods_nomenclature_class]) || ("commodities" if result[:commodity_code].present?)
     id = result[:target_id].presence || result[:goods_nomenclature_item_id].presence || result[:commodity_code]
     return id if endpoint.blank? && id.present?
     return "-" if endpoint.blank? || id.blank?
@@ -461,7 +501,15 @@ private
   end
 
   def search_diagnostic_details(fields)
-    normalise_search_diagnostic_hash(fields[:details] || {})
+    details = normalise_search_diagnostic_hash(fields[:details] || {})
+    details.is_a?(Hash) ? details : {}.with_indifferent_access
+  end
+
+  def diagnostic_result_rows(results)
+    Array(results).filter_map do |result|
+      row = normalise_search_diagnostic_hash(result)
+      row if row.is_a?(Hash)
+    end
   end
 
   def overview_query(events)
@@ -523,7 +571,7 @@ private
   end
 
   def goods_nomenclature_href(result)
-    endpoint = result[:target_endpoint].presence || endpoint_for_class(result[:goods_nomenclature_class])
+    endpoint = result[:target_endpoint].presence || endpoint_for_class(result[:goods_nomenclature_class]) || ("commodities" if result[:commodity_code].present?)
     id = target_id(result)
     return if endpoint.blank? || id.blank?
 
