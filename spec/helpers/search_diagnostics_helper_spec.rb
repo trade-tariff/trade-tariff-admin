@@ -68,6 +68,12 @@ RSpec.describe SearchDiagnosticsHelper do
       expect(html).to include(*evaluation_trace_detail_fragments)
     end
 
+    it "renders evaluation trace questions logged as strings" do
+      html = details("evaluation_trace_returned", evaluation_trace_fields.deep_merge(details: { questions: ["Is it woven?"] }))
+
+      expect(html).to include("Questions", "Is it woven?")
+    end
+
     it "handles malformed evaluation trace details" do
       html = details("evaluation_trace_returned", evaluation_trace_fields.merge(details: "not-json"))
 

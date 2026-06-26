@@ -378,8 +378,19 @@ private
       content_tag(:h4, "Ranked answers", class: "govuk-heading-s govuk-!-margin-bottom-2"),
       ranked_answers.blank? ? content_tag(:p, "No ranked answers were logged.", class: "govuk-body-s") : result_table(ranked_answers),
       content_tag(:h4, "Questions", class: "govuk-heading-s govuk-!-margin-bottom-2"),
-      questions.blank? ? content_tag(:p, "No questions were logged.", class: "govuk-body-s") : ordered_list(questions.map { |question| question[:question] || question["question"] || question.to_s }),
+      questions.blank? ? content_tag(:p, "No questions were logged.", class: "govuk-body-s") : ordered_list(questions.map { |question| diagnostic_question_text(question) }),
     ])
+  end
+
+  def diagnostic_question_text(question)
+    if question.respond_to?(:[])
+      text = question[:question] || question[:text] || question["question"] || question["text"]
+      return text.presence || question.to_s
+    end
+
+    question.to_s
+  rescue TypeError
+    question.to_s
   end
 
   def result_group(level, results, include_admin_links: true)
