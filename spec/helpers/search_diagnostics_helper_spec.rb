@@ -19,6 +19,10 @@ RSpec.describe SearchDiagnosticsHelper do
     it "humanises search completion result types" do
       expect(summary("search_completed", results_type: "fuzzy_search", result_count: 0)).to eq("Search completed - fuzzy search")
     end
+
+    it "summarises evaluation trace events" do
+      expect(summary("evaluation_trace_returned", evaluation_trace_fields)).to eq("Evaluation trace returned - answers - model answers - 2 ranked answers")
+    end
   end
 
   describe "#search_diagnostic_event_details" do
@@ -56,6 +60,24 @@ RSpec.describe SearchDiagnosticsHelper do
       page = Capybara.string(details("result_selected", selected_heading_fields))
 
       expect(page).to have_link("6110", href: "#{TradeTariffAdmin.frontend_host}/headings/6110")
+    end
+
+    it "renders evaluation trace candidates and ranked answers" do
+      html = details("evaluation_trace_returned", evaluation_trace_fields)
+
+      expect(html).to include(*evaluation_trace_detail_fragments)
+    end
+
+    it "renders evaluation trace questions logged as strings" do
+      html = details("evaluation_trace_returned", evaluation_trace_fields.deep_merge(details: { questions: ["Is it woven?"] }))
+
+      expect(html).to include("Questions", "Is it woven?")
+    end
+
+    it "handles malformed evaluation trace details" do
+      html = details("evaluation_trace_returned", evaluation_trace_fields.merge(details: "not-json"))
+
+      expect(html).to include("Candidate set", "No results were logged.", "Ranked answers", "No ranked answers were logged.")
     end
   end
 
@@ -125,7 +147,7 @@ RSpec.describe SearchDiagnosticsHelper do
     it "returns significant events when present" do
       timeline_events = helper.search_diagnostic_timeline_events(self.timeline_events)
 
-      expect(helper.search_diagnostic_significant_timeline_events(timeline_events).pluck(:name)).to eq(["Answer returned", "Search failed"])
+      expect(helper.search_diagnostic_significant_timeline_events(timeline_events).pluck(:name)).to eq(["Answer returned", "Evaluation trace returned", "Search failed"])
     end
 
     it "falls back to all events when no significant events were logged" do
@@ -243,6 +265,58 @@ RSpec.describe SearchDiagnosticsHelper do
     ["Attempt", "1", "Confidence levels", "strong: 1, possible: 1", "6403990000", "strong", "4202210000", "possible", "View labels"]
   end
 
+  def evaluation_trace_detail_fragments
+    [
+      "Trace version",
+      "classification_evaluation_trace.v1",
+      "Candidate set",
+      "Ranked answers",
+      "#{TradeTariffAdmin.frontend_host}/commodities/6403990000",
+      "#{TradeTariffAdmin.frontend_host}/commodities/9503000000",
+    ]
+  end
+
+  def evaluation_trace_fields
+    {
+      trace_version: "classification_evaluation_trace.v1",
+      query: "shoes",
+      effective_query: "shoes Leather",
+      iteration: 2,
+      answer_count: 1,
+      retrieval_method: "hybrid",
+      results_type: "hybrid",
+      candidate_count: 2,
+      logged_candidate_count: 2,
+      candidates_truncated: false,
+      final_result_type: "answers",
+      ranked_answer_count: 2,
+      logged_ranked_answer_count: 2,
+      ranked_answers_truncated: false,
+      confidence_levels: { "strong" => 1, "possible" => 1 },
+      ranking_source: "model_answers",
+      model: "gpt-5.2",
+      result_limit: 3,
+      details: {
+        candidates: [
+          {
+            goods_nomenclature_item_id: "6403990000",
+            goods_nomenclature_class: "Commodity",
+            score: 10.2,
+          },
+          {
+            goods_nomenclature_item_id: "4202210000",
+            goods_nomenclature_class: "Commodity",
+            score: 8.1,
+          },
+        ],
+        ranked_answers: [
+          { commodity_code: "6403990000", confidence: "strong" },
+          { commodity_code: "9503000000", confidence: "possible" },
+        ],
+      },
+    }
+  end
+
   def fuzzy_results_fields
     {
       result_count: 1,
@@ -339,6 +413,7 @@ RSpec.describe SearchDiagnosticsHelper do
 
   def timeline_events
     [
+      { timestamp: "2026-06-05 09:59:03.000", event: "evaluation_trace_returned", search_type: "interactive", fields: evaluation_trace_fields },
       { timestamp: "2026-06-05 09:59:02.000", event: "answer_returned", search_type: "interactive", fields: { answer_count: 1 } },
       { timestamp: "2026-06-05 09:59:00.000", event: "search_started", search_type: "interactive", fields: { query: "shoes" } },
       { timestamp: "2026-06-05 09:59:04.000", event: "search_failed", search_type: "interactive", fields: { error_type: "Faraday::TimeoutError" } },
@@ -348,7 +423,8 @@ RSpec.describe SearchDiagnosticsHelper do
   def expected_timeline_summary
     [
       ["Search started", 0, false, "Internal"],
-      ["Answer returned", 50, true, "Internal"],
+      ["Answer returned", 33, true, "Internal"],
+      ["Evaluation trace returned", 67, true, "Internal"],
       ["Search failed", 100, true, "Internal"],
     ]
   end
