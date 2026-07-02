@@ -11,6 +11,7 @@ class SearchAnalytics
              :summary_statuses,
              :trends,
              :comparisons,
+             :request_sources,
              :suggestions,
              :improvement_terms
 

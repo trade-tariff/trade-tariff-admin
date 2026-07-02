@@ -25,8 +25,8 @@
       },
       "trends": {
         "volume": [
-          { "bucket": "2026-06-10T08:00:00Z", "all": 48, "classic": 28, "internal": 20 },
-          { "bucket": "2026-06-10T09:00:00Z", "all": 52, "classic": 31, "internal": 21 }
+          { "bucket": "2026-06-10T08:00:00Z", "all": 48, "classic": 28, "internal": 20, "frontend": 36, "backend_only": 10, "unknown": 2 },
+          { "bucket": "2026-06-10T09:00:00Z", "all": 52, "classic": 31, "internal": 21, "frontend": 39, "backend_only": 11, "unknown": 2 }
         ],
         "outcomes": [
           { "bucket": "2026-06-10T08:00:00Z", "completed": 47, "failed": 1, "zero_result": 3, "selected": 18 },
@@ -36,6 +36,11 @@
       "comparisons": {
         "classic": { "searches": 710, "zero_result_rate": 0.07, "selection_rate": 0.43, "p90_latency_ms": 620 },
         "internal": { "searches": 530, "zero_result_rate": 0.1, "selection_rate": 0.38, "p90_latency_ms": 2400 }
+      },
+      "request_sources": {
+        "frontend": { "searches": 915, "failure_rate": 0.01, "zero_result_rate": 0.08, "selection_rate": 0.41, "p90_latency_ms": 1800 },
+        "backend_only": { "searches": 320, "failure_rate": 0.02, "zero_result_rate": 0.09, "selection_rate": 0.35, "p90_latency_ms": 900 },
+        "unknown": { "searches": 5, "failure_rate": 0.0, "zero_result_rate": 0.2, "selection_rate": 0.2, "p90_latency_ms": 700 }
       },
       "improvement_terms": [
         { "query": "bike seat", "zero_results": 18, "term_type": "search_terms" },

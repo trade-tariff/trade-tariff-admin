@@ -103,6 +103,31 @@ RSpec.describe SearchAnalyticsHelper do
     end
   end
 
+  describe "#search_analytics_request_source_rows" do
+    let(:rows) do
+      helper.search_analytics_request_source_rows(
+        {
+          frontend: { searches: 920, failure_rate: 0.01, zero_result_rate: 0.08, selection_rate: 0.41, p90_latency_ms: 1800 },
+          backend_only: { searches: 320, failure_rate: 0.02, zero_result_rate: 0.09, selection_rate: 0.35, p90_latency_ms: 900 },
+          unknown: { searches: 5, failure_rate: 0.0, zero_result_rate: 0.2, selection_rate: 0.2, p90_latency_ms: 700 },
+          partner_api: { searches: 12, failure_rate: 0.0, zero_result_rate: 0.1, selection_rate: 0.3, p90_latency_ms: 600 },
+        },
+      )
+    end
+    let(:expected_rows) do
+      [
+        include(key: "frontend", label: "Frontend-routed", searches: 920),
+        include(key: "backend_only", label: "Direct backend / non-frontend", searches: 320),
+        include(key: "unknown", label: "Unknown", searches: 5),
+        include(key: "partner_api", label: "Partner api", searches: 12),
+      ]
+    end
+
+    it "builds ordered rows for known and unexpected request sources" do
+      expect(rows).to match(expected_rows)
+    end
+  end
+
   describe "#search_analytics_show_view_summary?" do
     subject(:show_view_summary) { helper.search_analytics_show_view_summary?(comparisons) }
 
