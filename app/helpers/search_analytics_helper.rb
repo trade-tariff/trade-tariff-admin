@@ -10,7 +10,11 @@ module SearchAnalyticsHelper
     zero_result: "#594d00",
     selected: "#005a30",
     searches: "#144e81",
+    frontend: "#00703c",
+    backend_only: "#d4351c",
+    unknown: "#505a5f",
   }.freeze
+  REQUEST_SOURCE_ORDER = %w[frontend backend_only unknown].freeze
 
   def search_analytics_number(value)
     number_with_delimiter(value.to_i)
@@ -72,6 +76,25 @@ module SearchAnalyticsHelper
     end
   end
 
+  def search_analytics_request_source_rows(request_sources)
+    rows = (request_sources || {}).with_indifferent_access
+    ordered_sources = REQUEST_SOURCE_ORDER.select { |source| rows.key?(source) } + (rows.keys.map(&:to_s) - REQUEST_SOURCE_ORDER).sort
+
+    ordered_sources.map do |source|
+      row = rows.fetch(source).with_indifferent_access
+
+      {
+        key: source.to_s,
+        label: search_analytics_request_source_label(source),
+        searches: row[:searches].to_i,
+        failure_rate: row[:failure_rate].to_f,
+        zero_result_rate: row[:zero_result_rate].to_f,
+        selection_rate: row[:selection_rate].to_f,
+        p90_latency_ms: row[:p90_latency_ms].to_i,
+      }
+    end
+  end
+
   def search_analytics_show_view_summary?(comparisons)
     rows = (comparisons || {}).with_indifferent_access
     total_searches = rows.slice(:classic, :internal).values.sum { |row| (row[:searches] || row["searches"]).to_i }
@@ -111,5 +134,13 @@ private
       pointBackgroundColor: colour,
       pointBorderColor: colour,
     }
+  end
+
+  def search_analytics_request_source_label(source)
+    {
+      "frontend" => "Frontend-routed",
+      "backend_only" => "Direct backend / non-frontend",
+      "unknown" => "Unknown",
+    }.fetch(source.to_s, source.to_s.humanize)
   end
 end

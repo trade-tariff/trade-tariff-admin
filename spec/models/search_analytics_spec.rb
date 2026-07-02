@@ -34,6 +34,10 @@ RSpec.describe SearchAnalytics do
                 { bucket: "2026-06-10T09:00:00Z", all: 52 },
               ],
             },
+            request_sources: {
+              frontend: { searches: 920 },
+              backend_only: { searches: 320 },
+            },
           },
         )
     end
@@ -48,6 +52,10 @@ RSpec.describe SearchAnalytics do
 
     it "parses the trend payload" do
       expect(analytics.trends.dig(:volume, 0, :all)).to eq(52)
+    end
+
+    it "parses request source summaries" do
+      expect(analytics.request_sources.dig(:frontend, :searches)).to eq(920)
     end
   end
 end

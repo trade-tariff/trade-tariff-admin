@@ -4,6 +4,7 @@
 <% statuses = (@search_analytics.summary_statuses || {}).with_indifferent_access %>
 <% trends = (@search_analytics.trends || {}).with_indifferent_access %>
 <% comparisons = (@search_analytics.comparisons || {}).with_indifferent_access %>
+<% request_sources = (@search_analytics.request_sources || {}).with_indifferent_access %>
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
@@ -90,10 +91,18 @@
 
     <div class="search-analytics-charts govuk-!-margin-top-6">
       <section>
-        <h2 class="govuk-heading-m">Volume trend</h2>
+        <h2 class="govuk-heading-m">Volume by view</h2>
         <div class="search-analytics-chart-container">
           <canvas class="search-analytics-chart"
                   data-chart="<%= search_analytics_chart_payload(trends[:volume], series: { all: "All", classic: "Classic", internal: "Internal" }, minimum_series_share: 1) %>"></canvas>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="govuk-heading-m">Volume by request source</h2>
+        <div class="search-analytics-chart-container">
+          <canvas class="search-analytics-chart"
+                  data-chart="<%= search_analytics_chart_payload(trends[:volume], series: { frontend: "Frontend-routed", backend_only: "Direct backend / non-frontend", unknown: "Unknown" }, minimum_series_share: 1) %>"></canvas>
         </div>
       </section>
 
@@ -123,6 +132,37 @@
                 <th scope="row" class="govuk-table__header"><%= row[:label] %></th>
                 <td class="govuk-table__cell govuk-table__cell--numeric"><%= search_analytics_number(row[:searches]) %></td>
                 <td class="govuk-table__cell govuk-table__cell--numeric"><%= row[:percentage] %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </section>
+    <% end %>
+
+    <% source_rows = search_analytics_request_source_rows(request_sources) %>
+    <% if source_rows.any? %>
+      <section class="search-analytics-request-source-summary govuk-!-margin-top-6">
+        <h2 class="govuk-heading-m">Searches by request source</h2>
+        <table class="govuk-table">
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header">Source</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">Searches</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">Failure rate</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">Zero-result rate</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">Selection rate</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">P90 latency</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            <% source_rows.each do |row| %>
+              <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__header"><%= row[:label] %></th>
+                <td class="govuk-table__cell govuk-table__cell--numeric"><%= search_analytics_number(row[:searches]) %></td>
+                <td class="govuk-table__cell govuk-table__cell--numeric"><%= search_analytics_percentage(row[:failure_rate]) %></td>
+                <td class="govuk-table__cell govuk-table__cell--numeric"><%= search_analytics_percentage(row[:zero_result_rate]) %></td>
+                <td class="govuk-table__cell govuk-table__cell--numeric"><%= search_analytics_percentage(row[:selection_rate]) %></td>
+                <td class="govuk-table__cell govuk-table__cell--numeric"><%= search_analytics_latency(row[:p90_latency_ms]) %></td>
               </tr>
             <% end %>
           </tbody>
