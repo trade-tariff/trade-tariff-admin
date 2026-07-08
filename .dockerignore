@@ -4,6 +4,7 @@ db/development.sqlite3
 db/test.sqlite3
 docs
 log/*.log
+public/assets/
 node_modules
 spec/
 terraform/

@@ -41,6 +41,7 @@ module TradeTariffAdmin
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+    config.asset_host = ENV["ASSET_HOST"] if ENV["ASSET_HOST"].present?
     config.x.http.retry_options = {}
   end
 end
