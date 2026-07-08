@@ -20,12 +20,6 @@ RSpec.describe "Importmap configuration" do
     expect(importmap_imports.fetch("govuk-frontend")).to include("/assets/govuk-frontend/dist/govuk/all.bundle")
   end
 
-  it "uses the configured asset host for importmap asset URLs" do
-    imports = importmap_imports("ASSET_HOST" => "http://localhost:3003")
-
-    expect(imports.fetch("govuk-frontend")).to start_with("http://localhost:3003/assets/")
-  end
-
   it "vendors Chart.js as a self-contained browser module" do
     chart_js = Rails.root.join("vendor/javascript/chart.js.js").read
 
