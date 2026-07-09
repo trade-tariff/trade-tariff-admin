@@ -73,6 +73,7 @@ RSpec.describe SearchDiagnosticsController do
                 fields: {
                   request_id: "request-123",
                   query: "horse",
+                  total_duration_ms: 85.4,
                 },
               },
               {
@@ -199,6 +200,44 @@ RSpec.describe SearchDiagnosticsController do
                   response_type: "questions",
                   attempt_number: 1,
                   duration_ms: 450.1,
+                  provider: "openai",
+                  event_kind: "interactive_search",
+                  input_tokens: 1_000,
+                  output_tokens: 200,
+                  total_tokens: 1_200,
+                  input_cost_usd: 0.002,
+                  output_cost_usd: 0.0016,
+                  total_cost_usd: 0.0036,
+                  pricing_known: true,
+                },
+              },
+              {
+                timestamp: "2026-06-05 09:59:04.600",
+                event: "api_call_completed",
+                search_type: "interactive",
+                fields: {
+                  request_id: "request-123",
+                  model: "gpt-4.1-mini",
+                  response_type: "answers",
+                  attempt_number: 2,
+                  duration_ms: 320.0,
+                  provider: "openai",
+                  event_kind: "interactive_search_final_answer",
+                  input_tokens: 500,
+                  output_tokens: 100,
+                  total_tokens: 600,
+                  total_cost_usd: 0.0015,
+                  pricing_known: true,
+                },
+              },
+              {
+                timestamp: "2026-06-05 09:59:04.700",
+                event: "search_completed",
+                search_type: "interactive",
+                fields: {
+                  request_id: "request-123",
+                  query: "red leather shoes",
+                  total_duration_ms: 1500.25,
                 },
               },
               {
@@ -424,6 +463,10 @@ RSpec.describe SearchDiagnosticsController do
       "Description intercept",
       "1 fuzzy result",
       "#{TradeTariffAdmin.frontend_host}/commodities/6403990000",
+      "Elapsed time",
+      "1.50 s",
+      "Estimated AI cost",
+      "$0.0051",
     ]
   end
 end

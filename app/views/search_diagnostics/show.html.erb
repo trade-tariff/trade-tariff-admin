@@ -5,7 +5,7 @@
     <h1 class="govuk-heading-l">Search diagnostics</h1>
 
     <% contextual_events = @search_diagnostic.events? ? search_diagnostic_events_with_context(@search_diagnostic.events) : [] %>
-    <% overview = search_diagnostic_overview(contextual_events) if contextual_events.any? %>
+    <% overview = contextual_events.any? ? search_diagnostic_overview(contextual_events) : nil %>
 
     <dl class="govuk-summary-list">
       <div class="govuk-summary-list__row">
@@ -50,6 +50,18 @@
         <div class="govuk-summary-list__row">
           <dt class="govuk-summary-list__key">Selected</dt>
           <dd class="govuk-summary-list__value"><%= safe_join(overview[:selected_results].map { |result| search_diagnostic_overview_selected_result_link(result) }, ", ") %></dd>
+        </div>
+      <% end %>
+      <% if overview&.dig(:elapsed_time).present? %>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Elapsed time</dt>
+          <dd class="govuk-summary-list__value"><%= overview[:elapsed_time] %></dd>
+        </div>
+      <% end %>
+      <% if overview&.dig(:total_cost).present? %>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Estimated AI cost</dt>
+          <dd class="govuk-summary-list__value"><%= overview[:total_cost] %></dd>
         </div>
       <% end %>
     </dl>

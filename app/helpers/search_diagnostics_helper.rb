@@ -4,7 +4,25 @@ module SearchDiagnosticsHelper
     "query_expanded" => %i[original_query expanded_query reason duration_ms],
     "query_refined" => %i[base_query original_query refined_query effective_query added_answers answer_count iteration],
     "query_expansion_decided" => %i[query expand reason result_count max_score],
-    "api_call_completed" => %i[model response_type attempt_number iteration effective_query duration_ms error_message error_message_truncated],
+    "api_call_completed" => %i[
+      model
+      response_type
+      attempt_number
+      iteration
+      effective_query
+      duration_ms
+      provider
+      event_kind
+      input_tokens
+      output_tokens
+      total_tokens
+      input_cost_usd
+      output_cost_usd
+      total_cost_usd
+      pricing_known
+      error_message
+      error_message_truncated
+    ],
     "description_intercept_checked" => %i[matched term excluded filtering filter_prefix_count guidance_level guidance_location escalate_to_webchat],
     "question_returned" => %i[question_count attempt_number iteration effective_query],
     "answer_returned" => %i[answer_count confidence_levels attempt_number iteration effective_query],
@@ -15,12 +33,32 @@ module SearchDiagnosticsHelper
     "search_failed" => %i[search_type error_type error_message error_message_truncated],
   }.freeze
 
+  AI_USAGE_FIELD_KEYS = %i[
+    provider
+    event_kind
+    input_tokens
+    output_tokens
+    total_tokens
+    input_cost_usd
+    output_cost_usd
+    total_cost_usd
+    pricing_known
+  ].freeze
+
   FIELD_LABELS = {
     attempt_number: "Attempt",
     duration_ms: "Duration",
     total_duration_ms: "Total duration",
     final_result_type: "Final result",
     expand: "Expand query",
+    input_tokens: "Input tokens",
+    output_tokens: "Output tokens",
+    total_tokens: "Total tokens",
+    input_cost_usd: "Input cost (USD)",
+    output_cost_usd: "Output cost (USD)",
+    total_cost_usd: "Total cost (USD)",
+    pricing_known: "Pricing known",
+    event_kind: "Event kind",
   }.freeze
 
   SIGNIFICANT_TIMELINE_EVENTS = %w[
@@ -132,6 +170,8 @@ module SearchDiagnosticsHelper
       route_tags: overview_route_tags(events),
       results: overview_results(events),
       selected_results: overview_selected_results(events),
+      elapsed_time: overview_elapsed_time(events),
+      total_cost: overview_total_cost(events),
     }
   end
 
@@ -470,6 +510,11 @@ private
     return value.map { |item| readable_value(item) }.join(", ") if value.is_a?(Array)
     return value.map { |key, item| "#{readable_value(key)}: #{readable_value(item)}" }.join(", ") if value.is_a?(Hash)
     return "#{number_with_delimiter(value)} ms" if key.to_s.end_with?("_ms")
+
+    if key.to_s.end_with?("_usd")
+      amount = Float(value, exception: false)
+      return format_search_diagnostic_cost_usd(amount) if amount
+    end
     return value if key.to_sym == :description_intercept
 
     readable_value(value)
@@ -575,6 +620,56 @@ private
 
       { id:, href: }
     end
+  end
+
+  def overview_elapsed_time(events)
+    duration_ms = events.reverse_each.filter_map { |event|
+      next unless event[:event].to_s == "search_completed"
+
+      value = search_diagnostic_fields(event)[:total_duration_ms]
+      next unless logged_value?(value)
+
+      Float(value, exception: false)
+    }.first
+
+    format_search_diagnostic_duration_ms(duration_ms) if duration_ms
+  end
+
+  def overview_total_cost(events)
+    api_calls = events.select { |event| event[:event].to_s == "api_call_completed" }
+    return if api_calls.blank?
+
+    field_sets = api_calls.map { |event| search_diagnostic_fields(event) }
+    return unless field_sets.any? { |fields| ai_usage_fields?(fields) }
+
+    costs = field_sets.map { |fields| Float(fields[:total_cost_usd], exception: false) }
+    known_costs = costs.compact
+    return "Unavailable (pricing unknown)" if known_costs.blank?
+
+    label = format_search_diagnostic_cost_usd(known_costs.sum)
+    return label if known_costs.size == costs.size
+
+    "#{label} (partial — some calls missing pricing)"
+  end
+
+  def ai_usage_fields?(fields)
+    AI_USAGE_FIELD_KEYS.any? { |key| fields.key?(key) && !fields[key].nil? }
+  end
+
+  def format_search_diagnostic_duration_ms(duration_ms)
+    return if duration_ms.nil?
+
+    if duration_ms < 1000
+      "#{duration_ms.round} ms"
+    else
+      sprintf("%.2f s", duration_ms / 1000.0)
+    end
+  end
+
+  def format_search_diagnostic_cost_usd(amount)
+    rounded = amount.round(6)
+    formatted = sprintf("%.6f", rounded).sub(/0+\z/, "").sub(/\.\z/, "")
+    "$#{formatted}"
   end
 
   def endpoint_for_class(goods_nomenclature_class)
