@@ -109,6 +109,38 @@ RSpec.describe SearchDiagnosticsHelper do
     it "summarises a zero-result search as needing attention" do
       expect(overview_summary(zero_result_events)).to eq(zero_result_overview_summary)
     end
+
+    it "includes elapsed time from the last completed search total duration" do
+      expect(overview_summary(interactive_cost_events)[:elapsed_time]).to eq("1.50 s")
+    end
+
+    it "sums request-linked model call costs for the estimated AI cost" do
+      expect(overview_summary(interactive_cost_events)[:total_cost]).to eq("$0.0051")
+    end
+
+    it "marks the cost as partial when some model calls lack pricing" do
+      expect(overview_summary(partial_cost_events)[:total_cost]).to eq("$0.0036 (partial — some calls missing pricing)")
+    end
+
+    it "shows unavailable when AI usage is present but no costs can be priced" do
+      expect(overview_summary(unpriced_cost_events)[:total_cost]).to eq("Unavailable (pricing unknown)")
+    end
+
+    it "omits cost when no AI usage telemetry is present" do
+      expect(overview_summary(classic_overview_events)[:total_cost]).to be_nil
+    end
+
+    it "omits elapsed time when search_completed has no total duration" do
+      expect(overview_summary(classic_overview_events)[:elapsed_time]).to be_nil
+    end
+
+    it "formats sub-second elapsed times in milliseconds" do
+      events = [
+        { event: "search_completed", fields: { total_duration_ms: 450.1 } },
+      ]
+
+      expect(helper.search_diagnostic_overview(events)[:elapsed_time]).to eq("450 ms")
+    end
   end
 
   describe "#search_diagnostic_event_time" do
@@ -385,6 +417,8 @@ RSpec.describe SearchDiagnosticsHelper do
       route_tags: overview[:route_tags].pluck(:label, :colour),
       results: overview[:results],
       selected_results: overview[:selected_results],
+      elapsed_time: overview[:elapsed_time],
+      total_cost: overview[:total_cost],
     }
   end
 
@@ -398,6 +432,8 @@ RSpec.describe SearchDiagnosticsHelper do
         { id: "6110", href: "#{TradeTariffAdmin.frontend_host}/headings/6110" },
         { id: "6110309900", href: "#{TradeTariffAdmin.frontend_host}/commodities/6110309900" },
       ],
+      elapsed_time: nil,
+      total_cost: nil,
     }
   end
 
@@ -408,6 +444,8 @@ RSpec.describe SearchDiagnosticsHelper do
       route_tags: [%w[Classic blue], %w[Fuzzy purple]],
       results: "0 fuzzy results",
       selected_results: [],
+      elapsed_time: nil,
+      total_cost: nil,
     }
   end
 
@@ -478,6 +516,87 @@ RSpec.describe SearchDiagnosticsHelper do
       { timestamp: "2026-06-05 09:33:44.079", event: "search_started", search_type: "classic", fields: { query: "women's breif" } },
       { timestamp: "2026-06-05 09:33:44.114", event: "fuzzy_results_returned", search_type: "classic", fields: { result_count: 0 } },
       { timestamp: "2026-06-05 09:33:44.114", event: "search_completed", search_type: "classic", fields: { query: "women's breif", result_count: 0, results_type: "fuzzy_search" } },
+    ]
+  end
+
+  def interactive_cost_events
+    [
+      { event: "search_started", search_type: "interactive", fields: { query: "red shoes" } },
+      {
+        event: "api_call_completed",
+        search_type: "interactive",
+        fields: {
+          model: "gpt-4.1-mini",
+          response_type: "questions",
+          input_tokens: 1_000,
+          output_tokens: 200,
+          total_tokens: 1_200,
+          total_cost_usd: 0.0036,
+          pricing_known: true,
+        },
+      },
+      {
+        event: "api_call_completed",
+        search_type: "interactive",
+        fields: {
+          model: "gpt-4.1-mini",
+          response_type: "answers",
+          input_tokens: 500,
+          output_tokens: 100,
+          total_tokens: 600,
+          total_cost_usd: 0.0015,
+          pricing_known: true,
+        },
+      },
+      {
+        event: "search_completed",
+        search_type: "interactive",
+        fields: {
+          query: "red shoes",
+          result_count: 2,
+          results_type: "hybrid",
+          total_duration_ms: 1500.25,
+        },
+      },
+    ]
+  end
+
+  def partial_cost_events
+    [
+      {
+        event: "api_call_completed",
+        search_type: "interactive",
+        fields: {
+          model: "gpt-4.1-mini",
+          total_cost_usd: 0.0036,
+          pricing_known: true,
+        },
+      },
+      {
+        event: "api_call_completed",
+        search_type: "interactive",
+        fields: {
+          model: "gpt-4.1-mini",
+          input_tokens: 75,
+          total_cost_usd: nil,
+          pricing_known: false,
+        },
+      },
+    ]
+  end
+
+  def unpriced_cost_events
+    [
+      {
+        event: "api_call_completed",
+        search_type: "interactive",
+        fields: {
+          model: "gpt-4.1-mini",
+          input_tokens: 75,
+          total_cost_usd: nil,
+          pricing_known: false,
+        },
+      },
     ]
   end
 end
