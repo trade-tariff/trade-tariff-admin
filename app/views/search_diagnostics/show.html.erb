@@ -5,7 +5,7 @@
     <h1 class="govuk-heading-l">Search diagnostics</h1>
 
     <% contextual_events = @search_diagnostic.events? ? search_diagnostic_events_with_context(@search_diagnostic.events) : [] %>
-    <% overview = search_diagnostic_overview(contextual_events) if contextual_events.any? %>
+    <% overview = contextual_events.any? ? search_diagnostic_overview(contextual_events) : nil %>
 
     <dl class="govuk-summary-list">
       <div class="govuk-summary-list__row">
