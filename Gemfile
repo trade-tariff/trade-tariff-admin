@@ -19,7 +19,7 @@ gem "stimulus-rails"
 gem "turbo-rails"
 
 # GovUK
-gem "govuk-components", "6.3.1"
+gem "govuk-components", "6.4.0"
 gem "govuk_design_system_formbuilder"
 
 # Markdown
