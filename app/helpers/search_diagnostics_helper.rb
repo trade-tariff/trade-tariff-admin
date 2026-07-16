@@ -26,6 +26,7 @@ module SearchDiagnosticsHelper
     "description_intercept_checked" => %i[matched term excluded filtering filter_prefix_count guidance_level guidance_location escalate_to_webchat],
     "question_returned" => %i[question_count attempt_number iteration effective_query],
     "answer_returned" => %i[answer_count confidence_levels attempt_number iteration effective_query],
+    "note_evidence_evaluated" => %i[query effective_query iteration attempt_number operation note_evidence_enabled note_evidence_status considered_note_count considered_evidence_count selected_note_count selected_evidence_count omitted_evidence_count logged_omitted_evidence_count omitted_evidence_truncated],
     "evaluation_trace_returned" => %i[trace_version query effective_query iteration answer_count retrieval_method results_type candidate_count logged_candidate_count candidates_truncated final_result_type ranked_answer_count logged_ranked_answer_count ranked_answers_truncated question_count logged_question_count questions_truncated confidence_levels ranking_source model result_limit error_message error_message_truncated],
     "search_completed" => %i[query search_type results_type final_result_type total_attempts total_questions result_count max_score total_duration_ms description_intercept_matched description_intercept_term description_intercept_excluded description_intercept_filtering description_intercept_filter_prefix_count description_intercept_guidance_level description_intercept_guidance_location description_intercept_escalate_to_webchat error_message error_message_truncated],
     "retrieval_leg_completed" => %i[leg status result_count duration_ms error_message error_message_truncated],
@@ -67,6 +68,7 @@ module SearchDiagnosticsHelper
     api_call_completed
     retrieval_leg_completed
     retrieval_results_returned
+    note_evidence_evaluated
     question_returned
     answer_returned
     evaluation_trace_returned
@@ -97,6 +99,8 @@ module SearchDiagnosticsHelper
       "Fuzzy results returned - #{pluralize(fields[:result_count].to_i, 'result')}"
     when "interactive_configuration_used"
       "Interactive configuration used"
+    when "note_evidence_evaluated"
+      ["Compressed note evidence #{readable_value(fields[:note_evidence_status])}", iteration_label(fields), attempt_label(fields)].compact_blank.join(" - ")
     when "retrieval_results_returned"
       [
         fields[:retrieval_method].to_s.humanize.presence,
@@ -271,6 +275,53 @@ module SearchDiagnosticsHelper
     end
 
     summaries.values.sort_by { |summary| summary[:iteration] }
+  end
+
+  def search_diagnostic_note_evidence(events)
+    Array(events).filter_map do |raw_event|
+      event = normalise_search_diagnostic_hash(raw_event)
+      next unless event.is_a?(Hash) && event[:event].to_s == "note_evidence_evaluated"
+
+      fields = search_diagnostic_fields(event)
+      fields = {}.with_indifferent_access unless fields.is_a?(Hash)
+      details = search_diagnostic_details(fields)
+      limits = normalise_search_diagnostic_hash(details[:limits])
+      limits = {}.with_indifferent_access unless limits.is_a?(Hash)
+      selected_contexts = diagnostic_result_rows(details[:selected_contexts]).map do |context|
+        context.merge(evidence: diagnostic_result_rows(context[:evidence]))
+      end
+
+      {
+        iteration: Integer(fields[:iteration], exception: false),
+        attempt_number: Integer(fields[:attempt_number], exception: false),
+        operation: fields[:operation],
+        timestamp: event[:timestamp],
+        query: fields[:query],
+        effective_query: fields[:effective_query],
+        enabled: truthy?(fields[:note_evidence_enabled]),
+        status: fields[:note_evidence_status],
+        considered_note_count: fields[:considered_note_count],
+        considered_evidence_count: fields[:considered_evidence_count],
+        selected_note_count: fields[:selected_note_count],
+        selected_evidence_count: fields[:selected_evidence_count],
+        omitted_evidence_count: fields[:omitted_evidence_count],
+        logged_omitted_evidence_count: fields[:logged_omitted_evidence_count],
+        omitted_evidence_truncated: truthy?(fields[:omitted_evidence_truncated]),
+        limits:,
+        selected_contexts:,
+        omitted_evidence: diagnostic_result_rows(details[:omitted_evidence]),
+      }
+    end
+  end
+
+  def search_diagnostic_note_evidence_status(status)
+    case status.to_s
+    when "selected" then { label: "Selected", colour: "green" }
+    when "disabled" then { label: "Disabled", colour: "grey" }
+    when "no_compressed_notes" then { label: "No compressed notes", colour: "yellow" }
+    when "no_eligible_evidence" then { label: "No eligible evidence", colour: "yellow" }
+    else { label: status.to_s.humanize.presence || "Unknown", colour: "grey" }
+    end
   end
 
   def search_diagnostic_event_dom_id(index)
