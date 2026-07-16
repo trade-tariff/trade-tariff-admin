@@ -574,8 +574,9 @@ RSpec.describe SearchDiagnosticsController do
       it "renders each empty selection state without inventing omitted samples" do
         rendered_page
 
-        expect(Capybara.string(response.body).text).to include(
-          "Disabled", "No compressed notes", "No eligible evidence", "No omitted evidence samples were logged (3 omitted in total)."
+        expect(Capybara.string(response.body).text.squish).to include(
+          "Disabled", "No compressed notes", "No eligible evidence", "No omitted evidence samples were logged (3 omitted in total).",
+          "Considered - notes; - evidence records", "Selected - notes; - evidence records"
         )
       end
     end
