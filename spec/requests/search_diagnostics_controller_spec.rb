@@ -177,6 +177,89 @@ RSpec.describe SearchDiagnosticsController do
                 },
               },
               {
+                timestamp: "2026-06-05 09:59:03.950",
+                event: "note_evidence_evaluated",
+                search_type: "interactive",
+                fields: {
+                  request_id: "request-123",
+                  query: "pig iron",
+                  effective_query: "pig iron primary forms",
+                  iteration: 2,
+                  attempt_number: 2,
+                  operation: "interactive_search",
+                  note_evidence_enabled: true,
+                  note_evidence_status: "selected",
+                  considered_note_count: 4,
+                  considered_evidence_count: 5,
+                  selected_note_count: 1,
+                  selected_evidence_count: 2,
+                  omitted_evidence_count: 1,
+                  logged_omitted_evidence_count: 1,
+                  omitted_evidence_truncated: false,
+                  details: {
+                    limits: { minimum_score: 6, per_note: 2, total: 8 },
+                    selected_contexts: [
+                      {
+                        context_hash: "chapter-72-hash",
+                        note_ref: "compressed_note_1",
+                        commodity_codes: %w[7201101100 7201200000],
+                        evidence: [
+                          {
+                            evidence_kind: "note_block",
+                            source_node_key: "note_block:customs_tariff_chapter_note:1.31:72:1:a",
+                            source: "pig Iron",
+                            source_ref: "chapter 72 note",
+                            source_type: "customs_tariff_chapter_note",
+                            source_id: "72",
+                            source_version: "1.31",
+                            type: "definition",
+                            fragment_node_keys: ["note_fragment:customs_tariff_chapter_note:1.31:72:0001"],
+                            fragment_node_keys_truncated: false,
+                            graph_paths: [%w[contains contains applies_to]],
+                            text: "Pig iron means iron-carbon alloys containing more than 2% carbon.",
+                            score: 35,
+                            score_reasons: ["exact term match pig iron", "definition block"],
+                            decision: "selected",
+                          },
+                          {
+                            evidence_kind: "note_fragment",
+                            source_node_key: "note_fragment:customs_tariff_chapter_note:1.31:72:0042",
+                            source: "Chapter 72 note fragment 42",
+                            source_ref: "chapter 72 note",
+                            source_type: "customs_tariff_chapter_note",
+                            source_id: "72",
+                            source_version: "1.31",
+                            parent_source_node_key: "note_source:customs_tariff_chapter_note:1.31:72",
+                            parent_source_title: "Chapter 72 notes",
+                            type: "inclusion",
+                            range_node_key: "range:heading:7201",
+                            range_type: "heading",
+                            range_code: "7201",
+                            graph_paths: [%w[contains references expands_to]],
+                            text: "Heading 7201 includes pig iron and spiegeleisen.",
+                            score: 16,
+                            score_reasons: ["candidate heading 7201"],
+                            decision: "selected",
+                          },
+                        ],
+                      },
+                    ],
+                    omitted_evidence: [
+                      {
+                        context_hash: "chapter-02-hash",
+                        evidence_kind: "note_fragment",
+                        source_node_key: "note_fragment:customs_tariff_chapter_note:1.31:02:0001",
+                        source_ref: "chapter 2 note",
+                        text: "Unrelated meat note.",
+                        score: 3,
+                        decision: "omitted",
+                        omission_reason: "below_minimum_score",
+                      },
+                    ],
+                  },
+                },
+              },
+              {
                 timestamp: "2026-06-05 09:59:04.000",
                 event: "question_returned",
                 search_type: "interactive",
@@ -358,6 +441,15 @@ RSpec.describe SearchDiagnosticsController do
       )
     end
 
+    it "renders compressed note evidence and omission reasons by iteration" do
+      rendered_page
+
+      page = Capybara.string(response.body)
+      section = page.find("section.search-diagnostics-note-evidence")
+
+      expect(section.text).to include(*note_evidence_copy)
+    end
+
     it "renders the GOV.UK formatted log search window and event timeline chart" do
       rendered_page
 
@@ -412,6 +504,82 @@ RSpec.describe SearchDiagnosticsController do
       end
     end
 
+    context "when the request predates compressed note evidence diagnostics" do
+      before do
+        stub_api_request("/search_diagnostics/legacy-request")
+          .to_return jsonapi_response(
+            :search_diagnostic,
+            {
+              resource_id: "legacy-request",
+              request_id: "legacy-request",
+              log_group_name: "platform-logs-test",
+              start_time: "2026-06-02T10:00:00Z",
+              end_time: "2026-06-05T10:00:00Z",
+              events: [
+                {
+                  timestamp: "2026-06-05 09:58:58.000",
+                  event: "search_started",
+                  search_type: "interactive",
+                  fields: { request_id: "legacy-request", query: "pig iron" },
+                },
+              ],
+            },
+          )
+      end
+
+      let(:make_request) { get search_diagnostic_path("legacy-request") }
+
+      it "explains that no note evidence event was logged" do
+        rendered_page
+
+        expect(response.body).to include(
+          "Compressed note evidence",
+          "No compressed note evidence event was logged for this request. Older requests may pre-date this diagnostic.",
+        )
+      end
+    end
+
+    context "when note evidence is not selected" do
+      before do
+        events = %w[disabled no_compressed_notes no_eligible_evidence].map.with_index do |status, index|
+          {
+            timestamp: "2026-06-05 09:58:5#{index}.000",
+            event: "note_evidence_evaluated",
+            search_type: "interactive",
+            fields: {
+              request_id: "status-request",
+              iteration: index + 1,
+              note_evidence_status: status,
+              omitted_evidence_count: status == "no_eligible_evidence" ? 3 : 0,
+              details: {},
+            },
+          }
+        end
+        stub_api_request("/search_diagnostics/status-request")
+          .to_return jsonapi_response(
+            :search_diagnostic,
+            {
+              resource_id: "status-request",
+              request_id: "status-request",
+              log_group_name: "platform-logs-test",
+              start_time: "2026-06-02T10:00:00Z",
+              end_time: "2026-06-05T10:00:00Z",
+              events:,
+            },
+          )
+      end
+
+      let(:make_request) { get search_diagnostic_path("status-request") }
+
+      it "renders each empty selection state without inventing omitted samples" do
+        rendered_page
+
+        expect(Capybara.string(response.body).text).to include(
+          "Disabled", "No compressed notes", "No eligible evidence", "No omitted evidence samples were logged (3 omitted in total)."
+        )
+      end
+    end
+
     context "when the backend cannot load diagnostics" do
       before do
         stub_api_request("/search_diagnostics/request-123").to_return(status: 502, body: "", headers: {})
@@ -446,6 +614,38 @@ RSpec.describe SearchDiagnosticsController do
       "Answers returned - 1 answer",
       "Result selected - commodity 6403990000",
       "Search failed - Faraday::TimeoutError",
+    ]
+  end
+
+  def note_evidence_copy
+    [
+      "Compressed note evidence",
+      "Selected",
+      "Iteration 2",
+      "attempt 2",
+      "Interactive search",
+      "Search query: pig iron",
+      "pig iron primary forms",
+      "compressed_note_1",
+      "chapter-72-hash",
+      "7201101100, 7201200000",
+      "pig Iron",
+      "chapter 72 note",
+      "note_block:customs_tariff_chapter_note:1.31:72:1:a",
+      "Source ID: 72",
+      "Contained fragments: note_fragment:customs_tariff_chapter_note:1.31:72:0001",
+      "Chapter 72 note fragment 42",
+      "note_fragment:customs_tariff_chapter_note:1.31:72:0042",
+      "Parent source: Chapter 72 notes (note_source:customs_tariff_chapter_note:1.31:72)",
+      "Range: heading 7201 (range:heading:7201)",
+      "Definition block",
+      "Score 35",
+      "exact term match pig iron",
+      "contains → contains → applies_to",
+      "Pig iron means iron-carbon alloys containing more than 2% carbon.",
+      "Omitted evidence (1)",
+      "below minimum score",
+      "Unrelated meat note.",
     ]
   end
 

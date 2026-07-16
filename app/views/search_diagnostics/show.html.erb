@@ -135,6 +135,8 @@
         </section>
       <% end %>
 
+      <%= render "note_evidence", note_evidence_events: search_diagnostic_note_evidence(contextual_events) %>
+
       <table class="govuk-table search-diagnostics-events">
         <caption class="govuk-table__caption govuk-table__caption--m">Search journey events</caption>
         <thead class="govuk-table__head">

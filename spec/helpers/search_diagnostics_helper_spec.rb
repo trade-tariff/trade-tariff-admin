@@ -81,6 +81,39 @@ RSpec.describe SearchDiagnosticsHelper do
     end
   end
 
+  describe "#search_diagnostic_note_evidence" do
+    subject(:evidence) { helper.search_diagnostic_note_evidence(events) }
+
+    let(:events) { [note_evidence_event] }
+
+    it { is_expected.to match([expected_note_evidence]) }
+
+    context "with unrelated and malformed diagnostic events" do
+      let(:events) do
+        [
+          { event: "search_started", fields: { query: "pig iron" } },
+          { event: "note_evidence_evaluated", fields: "not-json" },
+        ]
+      end
+
+      it { is_expected.to match([include(iteration: nil, status: nil, selected_contexts: [], omitted_evidence: [])]) }
+    end
+
+    context "with malformed nested diagnostics" do
+      let(:events) do
+        [note_evidence_event.deep_merge(fields: { details: { limits: "malformed", selected_contexts: [{ evidence: [123] }] } })]
+      end
+
+      it { is_expected.to match([include(limits: {}, selected_contexts: [include(evidence: [])])]) }
+    end
+  end
+
+  describe "#search_diagnostic_note_evidence_status" do
+    subject(:statuses) { %w[selected disabled no_compressed_notes no_eligible_evidence].map { |status| helper.search_diagnostic_note_evidence_status(status) } }
+
+    it { is_expected.to eq(expected_note_evidence_statuses) }
+  end
+
   describe "#search_diagnostic_event_name" do
     it "humanises event names for display" do
       expect(helper.search_diagnostic_event_name(event: "query_expansion_decided")).to eq("Query expansion decided")
@@ -305,6 +338,113 @@ RSpec.describe SearchDiagnosticsHelper do
       "Ranked answers",
       "#{TradeTariffAdmin.frontend_host}/commodities/6403990000",
       "#{TradeTariffAdmin.frontend_host}/commodities/9503000000",
+    ]
+  end
+
+  def note_evidence_event
+    {
+      timestamp: "2026-06-05 09:59:04.250",
+      event: "note_evidence_evaluated",
+      search_type: "interactive",
+      fields: {
+        query: "pig iron",
+        effective_query: "pig iron primary forms",
+        iteration: 2,
+        attempt_number: 2,
+        operation: "interactive_search",
+        note_evidence_enabled: true,
+        note_evidence_status: "selected",
+        considered_note_count: 4,
+        selected_note_count: 1,
+        selected_evidence_count: 2,
+        omitted_evidence_count: 3,
+        omitted_evidence_truncated: false,
+        details: {
+          selected_contexts: [
+            {
+              context_hash: "chapter-72-hash",
+              note_ref: "compressed_note_1",
+              commodity_codes: %w[7201101100 7201200000],
+              evidence: [
+                {
+                  evidence_kind: "note_block",
+                  source_node_key: "note_block:customs_tariff_chapter_note:1.31:72:1:a",
+                  source_ref: "chapter 72 note",
+                  source_version: "1.31",
+                  text: "Pig iron means iron-carbon alloys containing more than 2% carbon.",
+                  score: 35,
+                  score_reasons: ["exact term match pig iron", "definition block"],
+                  graph_paths: [%w[contains contains applies_to]],
+                  decision: "selected",
+                },
+              ],
+            },
+          ],
+          omitted_evidence: [
+            {
+              context_hash: "chapter-02-hash",
+              source_node_key: "note_fragment:customs_tariff_chapter_note:1.31:02:0001",
+              text: "Unrelated meat note.",
+              score: 3,
+              decision: "omitted",
+              omission_reason: "below_minimum_score",
+            },
+          ],
+        },
+      },
+    }
+  end
+
+  def expected_note_evidence
+    include(
+      iteration: 2,
+      attempt_number: 2,
+      operation: "interactive_search",
+      timestamp: "2026-06-05 09:59:04.250",
+      query: "pig iron",
+      effective_query: "pig iron primary forms",
+      enabled: true,
+      status: "selected",
+      considered_note_count: 4,
+      selected_note_count: 1,
+      selected_evidence_count: 2,
+      omitted_evidence_count: 3,
+      omitted_evidence_truncated: false,
+      selected_contexts: [
+        include(
+          context_hash: "chapter-72-hash",
+          note_ref: "compressed_note_1",
+          commodity_codes: %w[7201101100 7201200000],
+          evidence: [
+            include(
+              evidence_kind: "note_block",
+              source_node_key: "note_block:customs_tariff_chapter_note:1.31:72:1:a",
+              source_ref: "chapter 72 note",
+              source_version: "1.31",
+              score: 35,
+              score_reasons: ["exact term match pig iron", "definition block"],
+              graph_paths: [%w[contains contains applies_to]],
+              decision: "selected",
+            ),
+          ],
+        ),
+      ],
+      omitted_evidence: [
+        include(
+          source_node_key: "note_fragment:customs_tariff_chapter_note:1.31:02:0001",
+          score: 3,
+          omission_reason: "below_minimum_score",
+        ),
+      ],
+    )
+  end
+
+  def expected_note_evidence_statuses
+    [
+      { label: "Selected", colour: "green" },
+      { label: "Disabled", colour: "grey" },
+      { label: "No compressed notes", colour: "yellow" },
+      { label: "No eligible evidence", colour: "yellow" },
     ]
   end
 
