@@ -27,11 +27,11 @@
         <dl class="govuk-summary-list govuk-summary-list--no-border">
           <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">Considered</dt>
-            <dd class="govuk-summary-list__value"><%= note_event[:considered_note_count] || 0 %> notes; <%= note_event[:considered_evidence_count] || 0 %> evidence records</dd>
+            <dd class="govuk-summary-list__value"><%= note_event[:considered_note_count].presence || "-" %> notes; <%= note_event[:considered_evidence_count].presence || "-" %> evidence records</dd>
           </div>
           <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">Selected</dt>
-            <dd class="govuk-summary-list__value"><%= note_event[:selected_note_count] || 0 %> notes; <%= note_event[:selected_evidence_count] || 0 %> evidence records</dd>
+            <dd class="govuk-summary-list__value"><%= note_event[:selected_note_count].presence || "-" %> notes; <%= note_event[:selected_evidence_count].presence || "-" %> evidence records</dd>
           </div>
           <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">Selection limits</dt>
