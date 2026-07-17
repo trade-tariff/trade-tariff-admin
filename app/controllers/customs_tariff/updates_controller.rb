@@ -12,7 +12,7 @@ module CustomsTariff
       @section_summaries = CustomsTariff::SectionSummary.all(customs_tariff_update_version: params[:version])
       @sections_by_id = Section.all.index_by { |s| s.position.to_i }
       @baseline_version = @updates
-        .reject { |u| u.version == @update.version || u.status == "failed" }
+        .reject { |u| u.version == @update.version || u.failed? }
         .select { |u| u.validity_start_date.present? && u.validity_start_date < @update.validity_start_date }
         .max_by(&:validity_start_date)
         &.version
