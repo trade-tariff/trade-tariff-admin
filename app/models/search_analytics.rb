@@ -12,6 +12,7 @@ class SearchAnalytics
              :trends,
              :comparisons,
              :request_sources,
+             :ai_costs,
              :suggestions,
              :improvement_terms
 

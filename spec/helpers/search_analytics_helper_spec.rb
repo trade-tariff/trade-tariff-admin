@@ -17,6 +17,45 @@ RSpec.describe SearchAnalyticsHelper do
     end
   end
 
+  describe "#search_analytics_cost" do
+    it "formats small dollar costs without hiding useful precision", :aggregate_failures do
+      expect(helper.search_analytics_cost(0.00150714)).to eq("US$0.001507")
+      expect(helper.search_analytics_cost(0.01)).to eq("US$0.01")
+    end
+  end
+
+  describe "#search_analytics_cost_chart_payload" do
+    let(:payload) do
+      helper.search_analytics_cost_chart_payload(
+        [
+          { bucket: "2026-06-10T09:00:00Z", input_cost_usd: 0.004, output_cost_usd: 0.006, embedding_cost_usd: 0.0002 },
+        ],
+      )
+    end
+    let(:expected_datasets) do
+      [
+        include("label" => "Model input", "data" => [0.004]),
+        include("label" => "Model output", "data" => [0.006]),
+        include("label" => "Embeddings", "data" => [0.0002]),
+      ]
+    end
+
+    it "preserves fractional costs and labels each cost component" do
+      expect(JSON.parse(payload).fetch("datasets")).to match(expected_datasets)
+    end
+  end
+
+  describe "#search_analytics_ai_operation_rows" do
+    it "adds readable labels and each operation's share of total cost" do
+      rows = helper.search_analytics_ai_operation_rows(
+        [{ event_kind: "vector_search_query_embedding", calls: 2, total_tokens: 100, total_cost_usd: 0.002 }],
+        total_cost: 0.01,
+      )
+
+      expect(rows).to contain_exactly(include(label: "Vector query embedding", calls: 2, total_tokens: 100, share: 0.2))
+    end
+  end
+
   describe "#search_analytics_chart_payload" do
     let(:trend_payload) do
       helper.search_analytics_chart_payload(
