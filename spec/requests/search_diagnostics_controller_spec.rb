@@ -191,8 +191,11 @@ RSpec.describe SearchDiagnosticsController do
                   note_evidence_status: "selected",
                   considered_note_count: 4,
                   considered_evidence_count: 5,
+                  considered_association_count: 5,
+                  considered_distinct_source_count: 3,
                   selected_note_count: 1,
                   selected_evidence_count: 2,
+                  selected_distinct_source_count: 2,
                   omitted_evidence_count: 1,
                   logged_omitted_evidence_count: 1,
                   omitted_evidence_truncated: false,
@@ -447,7 +450,32 @@ RSpec.describe SearchDiagnosticsController do
       page = Capybara.string(response.body)
       section = page.find("section.search-diagnostics-note-evidence")
 
-      expect(section.text).to include(*note_evidence_copy)
+      expect(section.text.squish).to include(*note_evidence_copy)
+    end
+
+    it "separates the journey and notes into GOV.UK tabs" do
+      rendered_page
+      page = Capybara.string(response.body)
+
+      expect(page).to have_css(".govuk-tabs__list-item--selected a[href='#journey']", text: "Journey")
+        .and have_css("a[href='#notes']", text: "Notes")
+    end
+
+    it "links journey evidence to the collapsed notes iteration" do
+      rendered_page
+      page = Capybara.string(response.body)
+
+      expect(page).to have_css("#journey a[href='#notes']", text: "View iteration 2 notes")
+        .and have_css("#notes details#note-evidence-iteration-2:not([open])")
+    end
+
+    it "keeps the note payload out of the journey panel" do
+      rendered_page
+
+      page = Capybara.string(response.body)
+      payload = "Pig iron means iron-carbon alloys"
+
+      expect([page.find("#journey").text.include?(payload), page.find("#notes").text.include?(payload)]).to eq([false, true])
     end
 
     it "renders the GOV.UK formatted log search window and event timeline chart" do
@@ -574,10 +602,9 @@ RSpec.describe SearchDiagnosticsController do
       it "renders each empty selection state without inventing omitted samples" do
         rendered_page
 
-        expect(Capybara.string(response.body).text.squish).to include(
-          "Disabled", "No compressed notes", "No eligible evidence", "No omitted evidence samples were logged (3 omitted in total).",
-          "Considered - notes; - evidence records", "Selected - notes; - evidence records"
-        )
+        copy = ["Disabled", "No compressed notes", "No eligible evidence", "No omitted evidence samples were logged (3 omitted in total).", "Considered unavailable contexts; unavailable reported evidence records", "Selected unavailable contexts; unavailable reported evidence records", "No compressed note passage was added to this model prompt."]
+
+        expect(Capybara.string(response.body).text.squish).to include(*copy)
       end
     end
 
@@ -627,6 +654,8 @@ RSpec.describe SearchDiagnosticsController do
       "Interactive search",
       "Search query: pig iron",
       "pig iron primary forms",
+      "4 contexts; 5 associations; 3 distinct source passages",
+      "1 contexts; 2 distinct source passages",
       "compressed_note_1",
       "chapter-72-hash",
       "7201101100, 7201200000",

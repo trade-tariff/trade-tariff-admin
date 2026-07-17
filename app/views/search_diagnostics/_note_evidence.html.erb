@@ -1,95 +1,118 @@
 <section class="search-diagnostics-note-evidence" aria-labelledby="search-diagnostics-note-evidence-title">
   <h2 class="govuk-heading-m" id="search-diagnostics-note-evidence-title">Compressed note evidence</h2>
-  <p class="govuk-body">Evidence recorded immediately before each model call. It explains which note blocks or fragments entered the prompt and why other evidence was omitted.</p>
+  <p class="govuk-body">Evidence recorded immediately before each model call. Each model call is stateless, so retained passages are sent again on later iterations.</p>
 
   <% if note_evidence_events.empty? %>
     <div class="govuk-inset-text">No compressed note evidence event was logged for this request. Older requests may pre-date this diagnostic.</div>
   <% else %>
     <% note_evidence_events.each do |note_event| %>
       <% status = search_diagnostic_note_evidence_status(note_event[:status]) %>
-      <article class="govuk-!-margin-bottom-7">
-        <h3 class="govuk-heading-s govuk-!-margin-bottom-2">
-          <%= note_event[:iteration] ? "Iteration #{note_event[:iteration]}" : "Prompt evaluation" %>
-          <% if note_event[:attempt_number] %>(attempt <%= note_event[:attempt_number] %>)<% end %>
-        </h3>
-        <p class="govuk-body-s">
-          <strong class="govuk-tag govuk-tag--<%= status[:colour] %>"><%= status[:label] %></strong>
-          <% if note_event[:operation].present? %><span class="govuk-!-margin-left-2"><%= note_event[:operation].to_s.humanize %></span><% end %>
-        </p>
+      <% changes = note_event[:change_counts] %>
+      <details class="govuk-details" id="<%= note_event[:dom_id] %>">
+        <summary class="govuk-details__summary">
+          <span class="govuk-details__summary-text">
+            <%= note_event[:iteration] ? "Iteration #{note_event[:iteration]}" : "Prompt evaluation" %> —
+            <%= note_event[:selected_distinct_source_count].presence || note_event[:selected_evidence_count].presence || note_event[:selected_evidence].size %> selected;
+            <%= changes[:added] %> added, <%= changes[:retained] %> retained, <%= changes[:removed] %> removed
+          </span>
+        </summary>
+        <div class="govuk-details__text">
+          <p class="govuk-body-s">
+            <strong class="govuk-tag govuk-tag--<%= status[:colour] %>"><%= status[:label] %></strong>
+            <% if note_event[:attempt_number] %><span class="govuk-!-margin-left-2">attempt <%= note_event[:attempt_number] %></span><% end %>
+            <% if note_event[:operation].present? %><span class="govuk-!-margin-left-2"><%= note_event[:operation].to_s.humanize %></span><% end %>
+          </p>
 
-        <% if note_event[:query].present? %>
-          <p class="govuk-body"><strong>Search query:</strong> <%= note_event[:query] %></p>
-        <% end %>
-        <% if note_event[:effective_query].present? %>
-          <p class="govuk-body"><strong>Effective query:</strong> <%= note_event[:effective_query] %></p>
-        <% end %>
+          <% if note_event[:query].present? %><p class="govuk-body"><strong>Search query:</strong> <%= note_event[:query] %></p><% end %>
+          <% if note_event[:effective_query].present? %><p class="govuk-body"><strong>Effective query:</strong> <%= note_event[:effective_query] %></p><% end %>
 
-        <dl class="govuk-summary-list govuk-summary-list--no-border">
-          <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">Considered</dt>
-            <dd class="govuk-summary-list__value"><%= note_event[:considered_note_count].presence || "-" %> notes; <%= note_event[:considered_evidence_count].presence || "-" %> evidence records</dd>
-          </div>
-          <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">Selected</dt>
-            <dd class="govuk-summary-list__value"><%= note_event[:selected_note_count].presence || "-" %> notes; <%= note_event[:selected_evidence_count].presence || "-" %> evidence records</dd>
-          </div>
-          <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">Selection limits</dt>
-            <dd class="govuk-summary-list__value">Minimum score <%= note_event.dig(:limits, :minimum_score) || "-" %>; per note <%= note_event.dig(:limits, :per_note) || "-" %>; total <%= note_event.dig(:limits, :total) || "-" %></dd>
-          </div>
-        </dl>
+          <dl class="govuk-summary-list govuk-summary-list--no-border">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Considered</dt>
+              <dd class="govuk-summary-list__value">
+                <% if note_event[:considered_distinct_source_count].present? %>
+                  <%= note_event[:considered_note_count].presence || "unavailable" %> contexts;
+                  <%= note_event[:considered_association_count].presence || "unavailable" %> associations;
+                  <%= note_event[:considered_distinct_source_count] %> distinct source passages
+                <% else %>
+                  <%= note_event[:considered_note_count].presence || "unavailable" %> contexts;
+                  <%= note_event[:considered_evidence_count].presence || "unavailable" %> reported evidence records
+                <% end %>
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Selected</dt>
+              <dd class="govuk-summary-list__value">
+                <%= note_event[:selected_note_count].presence || "unavailable" %> contexts;
+                <%= note_event[:selected_distinct_source_count].presence || note_event[:selected_evidence_count].presence || "unavailable" %>
+                <%= note_event[:selected_distinct_source_count].present? ? "distinct source passages" : "reported evidence records" %>
+              </dd>
+            </div>
+          </dl>
 
-        <% note_event[:selected_contexts].each do |context| %>
-          <div class="govuk-!-margin-bottom-5">
-            <h4 class="govuk-heading-s govuk-!-margin-bottom-1"><%= context[:note_ref].presence || "Compressed note context" %></h4>
-            <p class="govuk-body-s govuk-!-margin-bottom-1"><strong>Context hash:</strong> <%= context[:context_hash].presence || "-" %></p>
-            <p class="govuk-body-s"><strong>Commodity codes:</strong> <%= Array(context[:commodity_codes]).join(", ").presence || "-" %></p>
+          <% if note_event[:selected_evidence].empty? %>
+            <p class="govuk-inset-text">No compressed note passage was added to this model prompt.</p>
+          <% end %>
 
-            <% Array(context[:evidence]).each do |evidence| %>
-              <details class="govuk-details" open>
-                <summary class="govuk-details__summary">
-                  <span class="govuk-details__summary-text"><%= evidence[:source].presence || evidence[:source_ref].presence || evidence[:source_node_key].presence || "Selected evidence" %></span>
-                </summary>
+          <% note_event[:selected_evidence].each do |evidence| %>
+            <article class="govuk-!-margin-bottom-5">
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-1"><%= evidence[:source].presence || evidence[:source_ref].presence || evidence[:source_node_key].presence || "Selected evidence" %></h3>
+              <p class="govuk-body-s govuk-!-margin-bottom-1"><strong><%= evidence[:change].to_s.humanize %></strong><% if evidence[:change] == :retained %> and sent again on this stateless model call<% end %></p>
+              <p class="govuk-body"><%= evidence[:text] %></p>
+
+              <details class="govuk-details">
+                <summary class="govuk-details__summary"><span class="govuk-details__summary-text">Technical selection details</span></summary>
                 <div class="govuk-details__text">
-                  <p class="govuk-body-s"><strong>Source:</strong> <%= [evidence[:source_ref], evidence[:source_type], evidence[:source_version]].compact_blank.join("; ").presence || "-" %></p>
-                  <p class="govuk-body-s"><strong>Source node:</strong> <%= evidence[:source_node_key].presence || "-" %></p>
+                  <% if evidence[:note_ref].present? %><p class="govuk-body-s"><strong>Compressed note:</strong> <%= evidence[:note_ref] %></p><% end %>
+                  <p class="govuk-body-s"><strong>Source:</strong> <%= [evidence[:source_ref], evidence[:source_type], evidence[:source_version]].compact_blank.join("; ").presence || "unavailable" %></p>
+                  <p class="govuk-body-s"><strong>Source node:</strong> <%= evidence[:source_node_key].presence || "unavailable" %></p>
                   <% if evidence[:source_id].present? %><p class="govuk-body-s"><strong>Source ID:</strong> <%= evidence[:source_id] %></p><% end %>
-                  <% if evidence[:parent_source_node_key].present? || evidence[:parent_source_title].present? %><p class="govuk-body-s"><strong>Parent source:</strong> <%= evidence[:parent_source_title].presence || "-" %> (<%= evidence[:parent_source_node_key].presence || "-" %>)</p><% end %>
-                  <% if evidence[:range_node_key].present? || evidence[:range_code].present? %><p class="govuk-body-s"><strong>Range:</strong> <%= [evidence[:range_type], evidence[:range_code]].compact_blank.join(" ") %> (<%= evidence[:range_node_key].presence || "-" %>)</p><% end %>
+                  <% if evidence[:parent_source_node_key].present? || evidence[:parent_source_title].present? %><p class="govuk-body-s"><strong>Parent source:</strong> <%= evidence[:parent_source_title].presence || "unavailable" %> (<%= evidence[:parent_source_node_key].presence || "unavailable" %>)</p><% end %>
+                  <% if evidence[:range_node_key].present? || evidence[:range_code].present? %><p class="govuk-body-s"><strong>Range:</strong> <%= [evidence[:range_type], evidence[:range_code]].compact_blank.join(" ") %> (<%= evidence[:range_node_key].presence || "unavailable" %>)</p><% end %>
                   <% if Array(evidence[:fragment_node_keys]).any? %><p class="govuk-body-s"><strong>Contained fragments:</strong> <%= Array(evidence[:fragment_node_keys]).join(", ") %><%= " (truncated)" if evidence[:fragment_node_keys_truncated] %></p><% end %>
+                  <p class="govuk-body-s"><strong>Context hashes:</strong> <%= Array(evidence[:context_hashes]).join(", ").presence || "unavailable" %></p>
+                  <p class="govuk-body-s"><strong>Commodity codes:</strong> <%= Array(evidence[:commodity_codes]).join(", ").presence || "unavailable" %></p>
+                  <% if evidence[:best_candidate_rank].present? %><p class="govuk-body-s"><strong>Best candidate rank:</strong> <%= evidence[:best_candidate_rank] %></p><% end %>
+                  <% if evidence[:range_specificity].present? %><p class="govuk-body-s"><strong>Range specificity:</strong> <%= evidence[:range_specificity].to_s.humanize %></p><% end %>
                   <p class="govuk-body-s"><strong>Kind:</strong> <%= evidence[:evidence_kind].to_s == "note_block" ? "#{evidence[:type].to_s.humanize} block" : evidence[:evidence_kind].to_s.humanize %>; <strong>Score <%= evidence[:score] %></strong></p>
                   <% if Array(evidence[:score_reasons]).any? %><p class="govuk-body-s"><strong>Why selected:</strong> <%= Array(evidence[:score_reasons]).join("; ") %></p><% end %>
                   <% Array(evidence[:graph_paths]).each do |path| %><p class="govuk-body-s"><strong>Graph path:</strong> <%= Array(path).join(" → ") %></p><% end %>
-                  <p class="govuk-body"><%= evidence[:text] %></p>
                 </div>
               </details>
-            <% end %>
-          </div>
-        <% end %>
+            </article>
+          <% end %>
 
-        <details class="govuk-details">
-          <summary class="govuk-details__summary">
-            <span class="govuk-details__summary-text">Omitted evidence (<%= note_event[:omitted_evidence_count] || 0 %>)</span>
-          </summary>
-          <div class="govuk-details__text">
-            <% if note_event[:omitted_evidence].empty? %>
-              <% if note_event[:omitted_evidence_count].to_i.positive? %>
-                <p class="govuk-body">No omitted evidence samples were logged (<%= note_event[:omitted_evidence_count] %> omitted in total).</p>
+          <% if note_event[:removed_evidence].any? %>
+            <details class="govuk-details">
+              <summary class="govuk-details__summary"><span class="govuk-details__summary-text">Removed since the previous iteration (<%= note_event[:removed_evidence].size %>)</span></summary>
+              <div class="govuk-details__text">
+                <% note_event[:removed_evidence].each do |evidence| %><p class="govuk-body-s"><%= evidence[:source].presence || evidence[:source_ref].presence || evidence[:source_node_key] %></p><% end %>
+              </div>
+            </details>
+          <% end %>
+
+          <details class="govuk-details">
+            <summary class="govuk-details__summary"><span class="govuk-details__summary-text">Omitted evidence (<%= note_event[:omitted_evidence_count] || 0 %>)</span></summary>
+            <div class="govuk-details__text">
+              <% if note_event[:omitted_evidence].empty? %>
+                <% if note_event[:omitted_evidence_count].to_i.positive? %>
+                  <p class="govuk-body">No omitted evidence samples were logged (<%= note_event[:omitted_evidence_count] %> omitted in total).</p>
+                <% else %>
+                  <p class="govuk-body">No evidence was omitted.</p>
+                <% end %>
               <% else %>
-                <p class="govuk-body">No evidence was omitted.</p>
+                <% note_event[:omitted_evidence].each do |evidence| %>
+                  <div class="govuk-!-margin-bottom-4">
+                    <p class="govuk-body-s"><strong><%= evidence[:omission_reason].to_s.humanize.downcase %></strong>; score <%= evidence[:score] %>; <%= evidence[:source_ref].presence || evidence[:source_node_key] %></p>
+                    <p class="govuk-body"><%= evidence[:text] %></p>
+                  </div>
+                <% end %>
+                <% if note_event[:omitted_evidence_truncated] %><p class="govuk-body-s">Only <%= note_event[:logged_omitted_evidence_count] %> omitted records were logged.</p><% end %>
               <% end %>
-            <% else %>
-              <% note_event[:omitted_evidence].each do |evidence| %>
-                <div class="govuk-!-margin-bottom-4">
-                  <p class="govuk-body-s"><strong><%= evidence[:omission_reason].to_s.humanize.downcase %></strong>; score <%= evidence[:score] %>; <%= evidence[:source_ref].presence || evidence[:source_node_key] %></p>
-                  <p class="govuk-body"><%= evidence[:text] %></p>
-                </div>
-              <% end %>
-              <% if note_event[:omitted_evidence_truncated] %><p class="govuk-body-s">Only <%= note_event[:logged_omitted_evidence_count] %> omitted records were logged.</p><% end %>
-            <% end %>
-          </div>
-        </details>
-      </article>
+            </div>
+          </details>
+        </div>
+      </details>
     <% end %>
   <% end %>
 </section>
