@@ -6,23 +6,26 @@ module SearchDiagnosticsHelper
     "query_expansion_decided" => %i[query expand reason result_count max_score],
     "api_call_completed" => %i[
       model
+      event_kind
       response_type
       attempt_number
       iteration
       effective_query
       duration_ms
       provider
-      event_kind
       input_tokens
+      cached_input_tokens
       output_tokens
       total_tokens
       input_cost_usd
+      cached_input_cost_usd
       output_cost_usd
       total_cost_usd
       pricing_known
       error_message
       error_message_truncated
     ],
+    "embedding_api_call_completed" => %i[model event_kind input_tokens total_tokens input_cost_usd total_cost_usd pricing_known duration_ms],
     "description_intercept_checked" => %i[matched term excluded filtering filter_prefix_count guidance_level guidance_location escalate_to_webchat],
     "question_returned" => %i[question_count attempt_number iteration effective_query],
     "answer_returned" => %i[answer_count confidence_levels attempt_number iteration effective_query],
@@ -66,6 +69,7 @@ module SearchDiagnosticsHelper
     exact_match_selected
     fuzzy_results_returned
     api_call_completed
+    embedding_api_call_completed
     retrieval_leg_completed
     retrieval_results_returned
     note_evidence_evaluated
@@ -91,6 +95,8 @@ module SearchDiagnosticsHelper
       ["Query expansion #{decision}", readable_value(fields[:reason])].compact_blank.join(" - ")
     when "api_call_completed"
       ["Model returned #{readable_value(fields[:response_type]) || 'response'}", attempt_label(fields)].compact_blank.join(" - ")
+    when "embedding_api_call_completed"
+      "Vector query embedding generated"
     when "exact_match_selected"
       code = target_label(fields)
       source = fields[:match_source].to_s.humanize.downcase.presence || "source"
@@ -176,7 +182,37 @@ module SearchDiagnosticsHelper
       selected_results: overview_selected_results(events),
       elapsed_time: overview_elapsed_time(events),
       total_cost: overview_total_cost(events),
+      ai_usage: search_diagnostic_cost_summary(events),
     }
+  end
+
+  def search_diagnostic_cost_summary(events)
+    usage_events = Array(events).filter_map do |event|
+      fields = search_diagnostic_fields(event)
+      fields if fields.key?(:total_tokens) || fields.key?(:total_cost_usd) || fields.key?(:pricing_known)
+    end
+    return if usage_events.empty?
+
+    known_cost = usage_events.filter_map { |fields| decimal_value(fields[:total_cost_usd]) }.sum(0.to_d)
+    unknown_pricing_count = usage_events.count { |fields| !truthy?(fields[:pricing_known]) }
+
+    {
+      call_count: usage_events.size,
+      input_tokens: usage_events.sum { |fields| fields[:input_tokens].to_i },
+      cached_input_tokens: usage_events.sum { |fields| fields[:cached_input_tokens].to_i },
+      output_tokens: usage_events.sum { |fields| fields[:output_tokens].to_i },
+      total_tokens: usage_events.sum { |fields| fields[:total_tokens].to_i },
+      known_input_cost_usd: sum_diagnostic_cost(usage_events, :input_cost_usd),
+      known_cached_input_cost_usd: sum_diagnostic_cost(usage_events, :cached_input_cost_usd),
+      known_output_cost_usd: sum_diagnostic_cost(usage_events, :output_cost_usd),
+      known_cost_usd: known_cost,
+      unknown_pricing_count:,
+      complete: unknown_pricing_count.zero?,
+    }
+  end
+
+  def search_diagnostic_cost(cost)
+    number_to_currency(cost, unit: "US$", precision: 6)
   end
 
   def search_diagnostic_overview_tag(tag)
@@ -932,6 +968,16 @@ private
 
   def truthy?(value)
     value == true || value.to_s == "true"
+  end
+
+  def decimal_value(value)
+    BigDecimal(value.to_s)
+  rescue ArgumentError
+    nil
+  end
+
+  def sum_diagnostic_cost(usage_events, key)
+    usage_events.filter_map { |fields| decimal_value(fields[key]) }.sum(0.to_d)
   end
 
   def normalise_search_diagnostic_hash(value)
