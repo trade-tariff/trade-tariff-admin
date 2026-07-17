@@ -283,18 +283,20 @@ RSpec.describe SearchDiagnosticsController do
                 fields: {
                   request_id: "request-123",
                   model: "gpt-4.1-mini",
+                  event_kind: "interactive_search",
                   response_type: "questions",
                   attempt_number: 1,
-                  duration_ms: 450.1,
-                  provider: "openai",
-                  event_kind: "interactive_search",
                   input_tokens: 1_000,
+                  cached_input_tokens: 200,
                   output_tokens: 200,
                   total_tokens: 1_200,
                   input_cost_usd: 0.002,
+                  cached_input_cost_usd: 0.00002,
                   output_cost_usd: 0.0016,
                   total_cost_usd: 0.0036,
                   pricing_known: true,
+                  duration_ms: 450.1,
+                  provider: "openai",
                 },
               },
               {
@@ -422,6 +424,14 @@ RSpec.describe SearchDiagnosticsController do
       rendered_page
 
       expect(response.body).to include(*operator_overview_fragments)
+    end
+
+    it "renders the complete request-correlated AI cost and token usage" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_css(".govuk-summary-list__row", text: "AI input 1,500 tokens — US$0.002000 Includes 200 cached tokens costing US$0.000020", normalize_ws: true)
+        .and have_css(".govuk-summary-list__row", text: "AI output 300 tokens — US$0.001600", normalize_ws: true)
+        .and have_css(".govuk-summary-list__row", text: "AI total 1,800 tokens — US$0.005100 · 2 AI calls", normalize_ws: true)
     end
 
     it "renders classic exact and fuzzy event summaries" do

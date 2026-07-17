@@ -64,6 +64,40 @@
           <dd class="govuk-summary-list__value"><%= overview[:total_cost] %></dd>
         </div>
       <% end %>
+      <% if overview&.dig(:ai_usage).present? %>
+        <% ai_usage = overview[:ai_usage] %>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">AI input</dt>
+          <dd class="govuk-summary-list__value">
+            <%= number_with_delimiter(ai_usage[:input_tokens]) %> tokens
+            &mdash; <%= search_diagnostic_cost(ai_usage[:known_input_cost_usd]) %>
+            <% if ai_usage[:cached_input_tokens].positive? %>
+              <br>
+              <span class="govuk-hint govuk-!-margin-bottom-0">
+                Includes <%= number_with_delimiter(ai_usage[:cached_input_tokens]) %> cached tokens costing <%= search_diagnostic_cost(ai_usage[:known_cached_input_cost_usd]) %>
+              </span>
+            <% end %>
+          </dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">AI output</dt>
+          <dd class="govuk-summary-list__value">
+            <%= number_with_delimiter(ai_usage[:output_tokens]) %> tokens
+            &mdash; <%= search_diagnostic_cost(ai_usage[:known_output_cost_usd]) %>
+          </dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key"><%= ai_usage[:complete] ? "AI total" : "Known AI total" %></dt>
+          <dd class="govuk-summary-list__value">
+            <%= number_with_delimiter(ai_usage[:total_tokens]) %> tokens
+            &mdash; <%= search_diagnostic_cost(ai_usage[:known_cost_usd]) %>
+            &middot; <%= pluralize(ai_usage[:call_count], "AI call") %>
+            <% unless ai_usage[:complete] %>
+              (partial; <%= pluralize(ai_usage[:unknown_pricing_count], "call") %> with unknown pricing)
+            <% end %>
+          </dd>
+        </div>
+      <% end %>
     </dl>
 
     <% if @search_diagnostic.events? %>

@@ -198,6 +198,10 @@ RSpec.describe SearchDiagnosticsHelper do
 
       expect(helper.search_diagnostic_overview(events)[:elapsed_time]).to eq("450 ms")
     end
+
+    it "totals known AI costs and marks the total partial when pricing is unknown" do
+      expect(helper.search_diagnostic_cost_summary(ai_usage_events)).to include(expected_ai_usage_summary)
+    end
   end
 
   describe "#search_diagnostic_event_time" do
@@ -625,6 +629,27 @@ RSpec.describe SearchDiagnosticsHelper do
       { timestamp: "2026-06-05 09:59:00.000", event: "search_started", search_type: "interactive", fields: { query: "shoes" } },
       { timestamp: "2026-06-05 09:59:04.000", event: "search_failed", search_type: "interactive", fields: { error_type: "Faraday::TimeoutError" } },
     ]
+  end
+
+  def ai_usage_events
+    [
+      { event: "api_call_completed", fields: { input_tokens: 1_000, cached_input_tokens: 200, output_tokens: 200, total_tokens: 1_200, input_cost_usd: 0.0018, cached_input_cost_usd: 0.00002, output_cost_usd: 0.0016, total_cost_usd: 0.0034, pricing_known: true } },
+      { event: "embedding_api_call_completed", fields: { input_tokens: 10, total_tokens: 10, input_cost_usd: 0.000001, total_cost_usd: 0.000001, pricing_known: true } },
+      { event: "api_call_completed", fields: { input_tokens: 1_000, output_tokens: 200, total_tokens: 1_200, total_cost_usd: nil, pricing_known: false } },
+    ]
+  end
+
+  def expected_ai_usage_summary
+    {
+      call_count: 3,
+      input_tokens: 2_010,
+      cached_input_tokens: 200,
+      output_tokens: 400,
+      total_tokens: 2_410,
+      known_cost_usd: BigDecimal("0.003401"),
+      unknown_pricing_count: 1,
+      complete: false,
+    }
   end
 
   def expected_timeline_summary
