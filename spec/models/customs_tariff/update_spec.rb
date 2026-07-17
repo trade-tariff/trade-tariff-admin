@@ -4,7 +4,7 @@ RSpec.describe CustomsTariff::Update do
   let(:attributes) do
     {
       version: "1.31",
-      status: "pending",
+      import_error: nil,
       validity_start_date: "2026-01-01",
       validity_end_date: nil,
       source_url: "https://example.com/document.pdf",
@@ -14,34 +14,14 @@ RSpec.describe CustomsTariff::Update do
     }
   end
 
-  describe "#pending?" do
-    it { is_expected.to be_pending }
-
-    it "is false when status is approved" do
-      update.status = "approved"
-      expect(update).not_to be_pending
-    end
-  end
-
-  describe "#approved?" do
-    it "is false when status is pending" do
-      expect(update).not_to be_approved
+  describe "#failed?" do
+    it "is false when import_error is nil" do
+      expect(update).not_to be_failed
     end
 
-    it "is true when status is approved" do
-      update.status = "approved"
-      expect(update).to be_approved
-    end
-  end
-
-  describe "#rejected?" do
-    it "is false when status is pending" do
-      expect(update).not_to be_rejected
-    end
-
-    it "is true when status is rejected" do
-      update.status = "rejected"
-      expect(update).to be_rejected
+    it "is true when import_error is present" do
+      update.import_error = "Something went wrong"
+      expect(update).to be_failed
     end
   end
 end
