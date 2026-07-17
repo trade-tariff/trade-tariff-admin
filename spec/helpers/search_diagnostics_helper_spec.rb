@@ -132,6 +132,12 @@ RSpec.describe SearchDiagnosticsHelper do
     it { is_expected.to eq(expected_note_evidence_statuses) }
   end
 
+  describe "#search_diagnostic_fields" do
+    it "normalises malformed fields to an empty hash" do
+      expect(helper.search_diagnostic_fields(fields: "not-json")).to eq({})
+    end
+  end
+
   describe "#search_diagnostic_event_name" do
     it "humanises event names for display" do
       expect(helper.search_diagnostic_event_name(event: "query_expansion_decided")).to eq("Query expansion decided")
