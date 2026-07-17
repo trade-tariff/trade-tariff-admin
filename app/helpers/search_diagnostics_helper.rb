@@ -26,7 +26,7 @@ module SearchDiagnosticsHelper
     "description_intercept_checked" => %i[matched term excluded filtering filter_prefix_count guidance_level guidance_location escalate_to_webchat],
     "question_returned" => %i[question_count attempt_number iteration effective_query],
     "answer_returned" => %i[answer_count confidence_levels attempt_number iteration effective_query],
-    "note_evidence_evaluated" => %i[query effective_query iteration attempt_number operation note_evidence_enabled note_evidence_status considered_note_count considered_evidence_count selected_note_count selected_evidence_count omitted_evidence_count logged_omitted_evidence_count omitted_evidence_truncated],
+    "note_evidence_evaluated" => %i[query effective_query iteration attempt_number operation note_evidence_enabled note_evidence_status considered_note_count considered_evidence_count considered_association_count considered_distinct_source_count selected_note_count selected_evidence_count selected_distinct_source_count omitted_evidence_count logged_omitted_evidence_count omitted_evidence_truncated],
     "evaluation_trace_returned" => %i[trace_version query effective_query iteration answer_count retrieval_method results_type candidate_count logged_candidate_count candidates_truncated final_result_type ranked_answer_count logged_ranked_answer_count ranked_answers_truncated question_count logged_question_count questions_truncated confidence_levels ranking_source model result_limit error_message error_message_truncated],
     "search_completed" => %i[query search_type results_type final_result_type total_attempts total_questions result_count max_score total_duration_ms description_intercept_matched description_intercept_term description_intercept_excluded description_intercept_filtering description_intercept_filter_prefix_count description_intercept_guidance_level description_intercept_guidance_location description_intercept_escalate_to_webchat error_message error_message_truncated],
     "retrieval_leg_completed" => %i[leg status result_count duration_ms error_message error_message_truncated],
@@ -278,7 +278,7 @@ module SearchDiagnosticsHelper
   end
 
   def search_diagnostic_note_evidence(events)
-    Array(events).filter_map do |raw_event|
+    note_events = Array(events).filter_map do |raw_event|
       event = normalise_search_diagnostic_hash(raw_event)
       next unless event.is_a?(Hash) && event[:event].to_s == "note_evidence_evaluated"
 
@@ -289,6 +289,16 @@ module SearchDiagnosticsHelper
       limits = {}.with_indifferent_access unless limits.is_a?(Hash)
       selected_contexts = diagnostic_result_rows(details[:selected_contexts]).map do |context|
         context.merge(evidence: diagnostic_result_rows(context[:evidence]))
+      end
+      selected_evidence = selected_contexts.flat_map do |context|
+        context[:evidence].map do |item|
+          item.merge(
+            context_hash: context[:context_hash],
+            context_hashes: Array(item[:context_hashes]).presence || [context[:context_hash]].compact,
+            commodity_codes: Array(item[:commodity_codes]).presence || Array(context[:commodity_codes]),
+            note_ref: context[:note_ref],
+          )
+        end
       end
 
       {
@@ -302,16 +312,22 @@ module SearchDiagnosticsHelper
         status: fields[:note_evidence_status],
         considered_note_count: fields[:considered_note_count],
         considered_evidence_count: fields[:considered_evidence_count],
+        considered_association_count: fields[:considered_association_count],
+        considered_distinct_source_count: fields[:considered_distinct_source_count],
         selected_note_count: fields[:selected_note_count],
         selected_evidence_count: fields[:selected_evidence_count],
+        selected_distinct_source_count: fields[:selected_distinct_source_count],
         omitted_evidence_count: fields[:omitted_evidence_count],
         logged_omitted_evidence_count: fields[:logged_omitted_evidence_count],
         omitted_evidence_truncated: truthy?(fields[:omitted_evidence_truncated]),
         limits:,
         selected_contexts:,
+        selected_evidence:,
         omitted_evidence: diagnostic_result_rows(details[:omitted_evidence]),
       }
     end
+
+    annotate_note_evidence_changes(note_events)
   end
 
   def search_diagnostic_note_evidence_status(status)
@@ -367,6 +383,43 @@ module SearchDiagnosticsHelper
   end
 
 private
+
+  def annotate_note_evidence_changes(note_events)
+    previous = []
+
+    note_events.each_with_index.map do |note_event, index|
+      current = note_event[:selected_evidence]
+      previous_by_identity = previous.index_by { |evidence| note_evidence_identity(evidence) }
+      current_by_identity = current.index_by { |evidence| note_evidence_identity(evidence) }
+      annotated = current.map do |evidence|
+        change = previous_by_identity.key?(note_evidence_identity(evidence)) ? :retained : :added
+        evidence.merge(change:)
+      end
+      removed = previous.filter_map do |evidence|
+        evidence.merge(change: :removed) unless current_by_identity.key?(note_evidence_identity(evidence))
+      end
+      changes = annotated + removed
+
+      previous = current
+      note_event.merge(
+        dom_id: note_evidence_dom_id(note_event, index),
+        selected_evidence: annotated,
+        removed_evidence: removed,
+        change_counts: changes.map { |evidence| evidence[:change] }.tally.reverse_merge(added: 0, retained: 0, removed: 0),
+      )
+    end
+  end
+
+  def note_evidence_identity(evidence)
+    evidence[:source_node_key].presence || Digest::SHA256.hexdigest(
+      [evidence[:source_ref], evidence[:evidence_kind], evidence[:text].to_s.squish.downcase].join("|"),
+    )
+  end
+
+  def note_evidence_dom_id(note_event, index)
+    suffix = note_event[:iteration].presence || "evaluation-#{index + 1}"
+    "note-evidence-iteration-#{suffix}"
+  end
 
   def diagnostic_datetime(timestamp)
     parsed = diagnostic_timestamp(timestamp)

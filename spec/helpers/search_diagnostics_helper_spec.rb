@@ -88,6 +88,24 @@ RSpec.describe SearchDiagnosticsHelper do
 
     it { is_expected.to match([expected_note_evidence]) }
 
+    it "assigns stable anchors and marks the first iteration's evidence as added" do
+      expect(evidence.first).to include(
+        dom_id: "note-evidence-iteration-2",
+        change_counts: { added: 1, retained: 0, removed: 0 },
+        selected_evidence: contain_exactly(include(change: :added)),
+      )
+    end
+
+    it "marks unchanged evidence as retained on the following iteration" do
+      changes = note_evidence_changes
+
+      expect(changes.last[:change_counts]).to eq(added: 0, retained: 1, removed: 0)
+    end
+
+    it "retains the unchanged evidence payload for inspection" do
+      expect(note_evidence_changes.last[:selected_evidence]).to contain_exactly(include(change: :retained))
+    end
+
     context "with unrelated and malformed diagnostic events" do
       let(:events) do
         [
@@ -393,6 +411,11 @@ RSpec.describe SearchDiagnosticsHelper do
         },
       },
     }
+  end
+
+  def note_evidence_changes
+    following = note_evidence_event.deep_merge(fields: { iteration: 3, attempt_number: 3 })
+    helper.search_diagnostic_note_evidence([note_evidence_event, following])
   end
 
   def expected_note_evidence

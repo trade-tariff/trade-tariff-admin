@@ -68,6 +68,20 @@
 
     <% if @search_diagnostic.events? %>
       <% timeline_events = search_diagnostic_timeline_events(contextual_events) %>
+      <% note_evidence_events = search_diagnostic_note_evidence(contextual_events) %>
+
+      <div class="govuk-tabs" data-module="govuk-tabs">
+        <h2 class="govuk-tabs__title">Contents</h2>
+        <ul class="govuk-tabs__list">
+          <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+            <a class="govuk-tabs__tab" href="#journey">Journey</a>
+          </li>
+          <li class="govuk-tabs__list-item">
+            <a class="govuk-tabs__tab" href="#notes">Notes</a>
+          </li>
+        </ul>
+
+        <div class="govuk-tabs__panel" id="journey">
 
       <% if timeline_events.any? %>
         <% highlighted_timeline_events = search_diagnostic_significant_timeline_events(timeline_events) %>
@@ -135,8 +149,6 @@
         </section>
       <% end %>
 
-      <%= render "note_evidence", note_evidence_events: search_diagnostic_note_evidence(contextual_events) %>
-
       <table class="govuk-table search-diagnostics-events">
         <caption class="govuk-table__caption govuk-table__caption--m">Search journey events</caption>
         <thead class="govuk-table__head">
@@ -154,21 +166,33 @@
               <td class="govuk-table__cell" data-label="Time"><%= search_diagnostic_event_time(event) %></td>
               <td class="govuk-table__cell" data-label="Event"><%= search_diagnostic_event_name(event) %></td>
               <td class="govuk-table__cell" data-label="Type"><%= search_diagnostic_search_type(event) %></td>
-              <td class="govuk-table__cell" data-label="Summary"><%= search_diagnostic_event_summary(event) %></td>
+              <td class="govuk-table__cell" data-label="Summary">
+                <%= search_diagnostic_event_summary(event) %>
+              </td>
               <td class="govuk-table__cell" data-label="Diagnostics">
-                <details class="govuk-details">
-                  <summary class="govuk-details__summary">
-                    <span class="govuk-details__summary-text">View diagnostics</span>
-                  </summary>
-                  <div class="govuk-details__text">
-                    <%= search_diagnostic_event_details(event) %>
-                  </div>
-                </details>
+                <% if event[:event].to_s == "note_evidence_evaluated" && search_diagnostic_fields(event)[:iteration].present? %>
+                  <%= link_to "View iteration #{search_diagnostic_fields(event)[:iteration]} notes", "#notes", class: "govuk-link" %>
+                <% else %>
+                  <details class="govuk-details">
+                    <summary class="govuk-details__summary">
+                      <span class="govuk-details__summary-text">View diagnostics</span>
+                    </summary>
+                    <div class="govuk-details__text">
+                      <%= search_diagnostic_event_details(event) %>
+                    </div>
+                  </details>
+                <% end %>
               </td>
             </tr>
           <% end %>
         </tbody>
       </table>
+        </div>
+
+        <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="notes">
+          <%= render "note_evidence", note_evidence_events: %>
+        </div>
+      </div>
     <% else %>
       <p class="govuk-body">No search journey events were found for this request ID.</p>
     <% end %>
