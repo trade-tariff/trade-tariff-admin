@@ -29,6 +29,13 @@ RSpec.describe "Search analytics dashboard" do
     expect_view_link("Internal", content: "internal term", value: "530")
   end
 
+  it "explains why the classic view has no AI cost", :aggregate_failures do
+    visit search_analytics_path(period: "24h", view: "classic")
+
+    expect(page).to have_content("Classic search does not make AI model or embedding calls")
+    expect(page).not_to have_content("Known AI cost")
+  end
+
   it "filters zero search terms to search terms", :aggregate_failures do
     visit search_analytics_path
 
@@ -135,7 +142,14 @@ RSpec.describe "Search analytics dashboard" do
     expect(page).to have_content("5")
     expect(page).to have_content("bike seat")
     expect(page).not_to have_css("section[aria-labelledby='zero-search-terms-heading']", text: "3926909090")
-    expect(page).to have_css(".search-analytics-chart-container", count: 3)
+    expect(page).to have_css(".search-analytics-chart-container", count: 4)
+    expect(page).to have_css("section[aria-labelledby='ai-cost-heading']", text: "Known AI cost")
+    expect(page).to have_content("US$0.03165")
+    expect(page).to have_content("Pricing was available for 96%")
+    expect(page).to have_css("canvas[data-chart-type='bar'][data-stacked='true'][data-y-axis-format='currency']")
+    expect(page).to have_css(".govuk-details", text: "View AI cost chart data")
+    expect(page).to have_css(".search-analytics-ai-cost__breakdown", text: "24,500")
+    expect(page).to have_css(".search-analytics-ai-cost__breakdown", text: "US$0.0218 total")
     expect(page).to have_css(".search-analytics-view-summary")
     expect(page).to have_css(".search-analytics-view-summary__table")
     expect(page).to have_content("Classic")
@@ -146,7 +160,7 @@ RSpec.describe "Search analytics dashboard" do
     expect(page).to have_link("Next")
     expect(chart_datasets).to all(include("borderColor"))
     expect(chart_datasets.pluck("label")).to include("Frontend-routed", "Direct backend / non-frontend", "Unknown")
-    expect(non_empty_chart_payloads.size).to eq(3)
+    expect(non_empty_chart_payloads.size).to eq(4)
   end
 
   def expect_period_link(label, content:, query:)

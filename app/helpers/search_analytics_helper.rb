@@ -13,6 +13,9 @@ module SearchAnalyticsHelper
     frontend: "#00703c",
     backend_only: "#d4351c",
     unknown: "#505a5f",
+    ai_input: "#144e81",
+    ai_output: "#00703c",
+    ai_embedding: "#912b88",
   }.freeze
   REQUEST_SOURCE_ORDER = %w[frontend backend_only unknown].freeze
 
@@ -26,6 +29,42 @@ module SearchAnalyticsHelper
 
   def search_analytics_latency(value)
     "#{number_with_precision(value.to_f / 1_000, precision: 1, strip_insignificant_zeros: true)}s"
+  end
+
+  def search_analytics_cost(value)
+    number_to_currency(value.to_f, unit: "US$", precision: 6, strip_insignificant_zeros: true)
+  end
+
+  def search_analytics_cost_chart_payload(rows)
+    search_analytics_decimal_chart_payload(
+      rows,
+      series: {
+        input_cost_usd: "Model input",
+        output_cost_usd: "Model output",
+        embedding_cost_usd: "Embeddings",
+      },
+    )
+  end
+
+  def search_analytics_ai_operation_rows(operations, total_cost:)
+    Array(operations).map do |operation|
+      row = operation.with_indifferent_access
+      cost = row[:total_cost_usd].to_f
+
+      {
+        label: search_analytics_ai_operation_label(row[:event_kind]),
+        calls: row[:calls].to_i,
+        input_tokens: row[:input_tokens].to_i,
+        cached_input_tokens: row[:cached_input_tokens].to_i,
+        output_tokens: row[:output_tokens].to_i,
+        total_tokens: row[:total_tokens].to_i,
+        input_cost_usd: row[:input_cost_usd].to_f,
+        output_cost_usd: row[:output_cost_usd].to_f,
+        embedding_cost_usd: row[:embedding_cost_usd].to_f,
+        total_cost_usd: cost,
+        share: total_cost.to_f.positive? ? cost / total_cost.to_f : 0,
+      }
+    end
   end
 
   def search_analytics_status_tag_colour(level)
@@ -116,6 +155,21 @@ module SearchAnalyticsHelper
 
 private
 
+  def search_analytics_decimal_chart_payload(rows, series:)
+    {
+      labels: Array(rows).map { |row| search_analytics_bucket_label(row[:bucket] || row["bucket"]) },
+      datasets: series.filter_map do |key, label|
+        data = Array(rows).map { |row| (row[key] || row[key.to_s]).to_f }
+        next if data.all?(&:zero?)
+
+        {
+          label: label,
+          data: data,
+        }.merge(search_analytics_chart_series_style("ai_#{key.to_s.delete_suffix('_cost_usd')}"))
+      end,
+    }.to_json
+  end
+
   def search_analytics_bucket_label(bucket)
     time = Time.zone.parse(bucket.to_s)
     return time.strftime("%-d %b") if time.hour.zero? && time.min.zero?
@@ -142,5 +196,15 @@ private
       "backend_only" => "Direct backend / non-frontend",
       "unknown" => "Unknown",
     }.fetch(source.to_s, source.to_s.humanize)
+  end
+
+  def search_analytics_ai_operation_label(event_kind)
+    {
+      "interactive_search" => "Interactive search",
+      "interactive_search_final_answer" => "Final answer",
+      "search_query_expansion" => "Query expansion",
+      "duplicate_question_guard" => "Duplicate-question guard",
+      "vector_search_query_embedding" => "Vector query embedding",
+    }.fetch(event_kind.to_s, event_kind.to_s.humanize)
   end
 end

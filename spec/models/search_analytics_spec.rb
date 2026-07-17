@@ -38,6 +38,9 @@ RSpec.describe SearchAnalytics do
               frontend: { searches: 920 },
               backend_only: { searches: 320 },
             },
+            ai_costs: {
+              summary: { total_cost_usd: 0.0102, assisted_searches: 2 },
+            },
           },
         )
     end
@@ -56,6 +59,10 @@ RSpec.describe SearchAnalytics do
 
     it "parses request source summaries" do
       expect(analytics.request_sources.dig(:frontend, :searches)).to eq(920)
+    end
+
+    it "parses AI cost summaries" do
+      expect(analytics.ai_costs.dig(:summary, :total_cost_usd)).to eq(0.0102)
     end
   end
 end

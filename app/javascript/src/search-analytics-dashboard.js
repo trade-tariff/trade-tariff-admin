@@ -5,6 +5,13 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.search-analytics-chart').forEach((canvas) => {
     const payload = JSON.parse(canvas.dataset.chart || '{}');
     const requestedType = canvas.dataset.chartType || 'line';
+    const currencyAxis = canvas.dataset.yAxisFormat === 'currency';
+    const stacked = canvas.dataset.stacked === 'true';
+    const currency = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 6,
+    });
 
     if (!payload.labels || !payload.datasets) {
       return;
@@ -40,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         scales: {
           x: {
+            stacked,
             ticks: {
               autoSkip: true,
               maxRotation: 0,
@@ -48,8 +56,9 @@ document.addEventListener('DOMContentLoaded', () => {
           },
           y: {
             beginAtZero: true,
+            stacked,
             ticks: {
-              precision: 0,
+              ...(currencyAxis ? { callback: (value) => currency.format(value) } : { precision: 0 }),
             },
           },
         },
@@ -57,6 +66,11 @@ document.addEventListener('DOMContentLoaded', () => {
           legend: {
             position: 'bottom',
           },
+          tooltip: currencyAxis ? {
+            callbacks: {
+              label: (context) => `${context.dataset.label}: ${currency.format(context.parsed.y)}`,
+            },
+          } : {},
         },
       },
     });

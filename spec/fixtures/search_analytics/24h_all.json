@@ -42,6 +42,28 @@
         "backend_only": { "searches": 320, "failure_rate": 0.02, "zero_result_rate": 0.09, "selection_rate": 0.35, "p90_latency_ms": 900 },
         "unknown": { "searches": 5, "failure_rate": 0.0, "zero_result_rate": 0.2, "selection_rate": 0.2, "p90_latency_ms": 700 }
       },
+      "ai_costs": {
+        "summary": {
+          "total_cost_usd": 0.03165,
+          "assisted_searches": 21,
+          "average_cost_usd": 0.00150714,
+          "p50_cost_usd": 0.00131,
+          "p90_cost_usd": 0.00241,
+          "priced_calls": 48,
+          "unpriced_calls": 2,
+          "pricing_coverage": 0.96,
+          "complete": false
+        },
+        "trend": [
+          { "bucket": "2026-06-10T08:00:00Z", "input_cost_usd": 0.0038, "output_cost_usd": 0.0085, "embedding_cost_usd": 0.0002, "total_cost_usd": 0.0125 },
+          { "bucket": "2026-06-10T09:00:00Z", "input_cost_usd": 0.0054, "output_cost_usd": 0.0135, "embedding_cost_usd": 0.00025, "total_cost_usd": 0.01915 }
+        ],
+        "operations": [
+          { "event_kind": "interactive_search", "calls": 21, "input_tokens": 18400, "cached_input_tokens": 4200, "output_tokens": 6100, "total_tokens": 24500, "input_cost_usd": 0.0068, "output_cost_usd": 0.015, "embedding_cost_usd": 0.0, "total_cost_usd": 0.0218, "priced_calls": 20, "unpriced_calls": 1 },
+          { "event_kind": "interactive_search_final_answer", "calls": 8, "input_tokens": 7200, "cached_input_tokens": 1600, "output_tokens": 2300, "total_tokens": 9500, "input_cost_usd": 0.0024, "output_cost_usd": 0.007, "embedding_cost_usd": 0.0, "total_cost_usd": 0.0094, "priced_calls": 7, "unpriced_calls": 1 },
+          { "event_kind": "vector_search_query_embedding", "calls": 21, "input_tokens": 3780, "cached_input_tokens": 0, "output_tokens": 0, "total_tokens": 3780, "input_cost_usd": 0.0, "output_cost_usd": 0.0, "embedding_cost_usd": 0.00045, "total_cost_usd": 0.00045, "priced_calls": 21, "unpriced_calls": 0 }
+        ]
+      },
       "improvement_terms": [
         { "query": "bike seat", "zero_results": 18, "term_type": "search_terms" },
         { "query": "yoga ball", "zero_results": 17, "term_type": "search_terms" },
