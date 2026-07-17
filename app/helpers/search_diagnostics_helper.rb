@@ -379,7 +379,8 @@ module SearchDiagnosticsHelper
   end
 
   def search_diagnostic_fields(event)
-    normalise_search_diagnostic_hash(event[:fields] || {})
+    fields = normalise_search_diagnostic_hash(event[:fields] || {})
+    fields.is_a?(Hash) ? fields : {}.with_indifferent_access
   end
 
 private
