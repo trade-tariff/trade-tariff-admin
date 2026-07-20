@@ -585,6 +585,35 @@ RSpec.describe SearchDiagnosticsController do
       end
     end
 
+    context "when an AI call has unknown pricing" do
+      before do
+        stub_api_request("/search_diagnostics/unpriced-request")
+          .to_return jsonapi_response(
+            :search_diagnostic,
+            {
+              resource_id: "unpriced-request",
+              request_id: "unpriced-request",
+              events: [
+                {
+                  event: "api_call_completed",
+                  fields: { input_tokens: 500, output_tokens: 100, total_tokens: 600, pricing_known: false },
+                },
+              ],
+            },
+          )
+      end
+
+      let(:make_request) { get search_diagnostic_path("unpriced-request") }
+
+      it "uses the same partial wording for the AI total" do
+        expect(Capybara.string(rendered_page.body)).to have_css(
+          ".govuk-summary-list__row",
+          text: "Known AI total 600 tokens from 1 AI call costing US$0.000000 (partial: 1 call with unknown pricing)",
+          normalize_ws: true,
+        )
+      end
+    end
+
     context "when note evidence is not selected" do
       before do
         events = %w[disabled no_compressed_notes no_eligible_evidence].map.with_index do |status, index|
