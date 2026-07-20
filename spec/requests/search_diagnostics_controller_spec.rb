@@ -429,9 +429,9 @@ RSpec.describe SearchDiagnosticsController do
     it "renders the complete request-correlated AI cost and token usage" do
       page = Capybara.string(rendered_page.body)
 
-      expect(page).to have_css(".govuk-summary-list__row", text: "AI input 1,500 tokens — US$0.002000 Includes 200 cached tokens costing US$0.000020", normalize_ws: true)
-        .and have_css(".govuk-summary-list__row", text: "AI output 300 tokens — US$0.001600", normalize_ws: true)
-        .and have_css(".govuk-summary-list__row", text: "AI total 1,800 tokens — US$0.005100 · 2 AI calls", normalize_ws: true)
+      expect(page).to have_css(".govuk-summary-list__row", text: "AI input 1,500 tokens costing US$0.002000 Includes 200 cached tokens costing US$0.000020", normalize_ws: true)
+        .and have_css(".govuk-summary-list__row", text: "AI output 300 tokens costing US$0.001600", normalize_ws: true)
+        .and have_css(".govuk-summary-list__row", text: "AI total 1,800 tokens from 2 AI calls costing US$0.005100", normalize_ws: true)
     end
 
     it "renders classic exact and fuzzy event summaries" do
@@ -461,6 +461,14 @@ RSpec.describe SearchDiagnosticsController do
       section = page.find("section.search-diagnostics-note-evidence")
 
       expect(section.text.squish).to include(*note_evidence_copy)
+    end
+
+    it "uses plain punctuation in the note evidence summary" do
+      expect(Capybara.string(rendered_page.body)).to have_css(
+        ".govuk-details__summary-text",
+        text: "Iteration 2: 2 selected; 2 added, 0 retained, 0 removed",
+        normalize_ws: true,
+      )
     end
 
     it "separates the journey and notes into GOV.UK tabs" do

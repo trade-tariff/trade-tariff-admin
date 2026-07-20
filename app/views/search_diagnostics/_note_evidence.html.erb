@@ -11,7 +11,7 @@
       <details class="govuk-details" id="<%= note_event[:dom_id] %>">
         <summary class="govuk-details__summary">
           <span class="govuk-details__summary-text">
-            <%= note_event[:iteration] ? "Iteration #{note_event[:iteration]}" : "Prompt evaluation" %> —
+            <%= note_event[:iteration] ? "Iteration #{note_event[:iteration]}" : "Prompt evaluation" %>:
             <%= note_event[:selected_distinct_source_count].presence || note_event[:selected_evidence_count].presence || note_event[:selected_evidence].size %> selected;
             <%= changes[:added] %> added, <%= changes[:retained] %> retained, <%= changes[:removed] %> removed
           </span>
