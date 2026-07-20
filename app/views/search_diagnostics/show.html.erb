@@ -93,7 +93,7 @@
             from <%= pluralize(ai_usage[:call_count], "AI call") %>
             costing <%= search_diagnostic_cost(ai_usage[:known_cost_usd]) %>
             <% unless ai_usage[:complete] %>
-              (partial; <%= pluralize(ai_usage[:unknown_pricing_count], "call") %> with unknown pricing)
+              (partial: <%= pluralize(ai_usage[:unknown_pricing_count], "call") %> with unknown pricing)
             <% end %>
           </dd>
         </div>
