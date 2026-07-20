@@ -176,7 +176,7 @@ RSpec.describe SearchDiagnosticsHelper do
     end
 
     it "marks the cost as partial when some model calls lack pricing" do
-      expect(overview_summary(partial_cost_events)[:total_cost]).to eq("$0.0036 (partial — some calls missing pricing)")
+      expect(overview_summary(partial_cost_events)[:total_cost]).to eq("$0.0036 (partial: some calls are missing pricing)")
     end
 
     it "shows unavailable when AI usage is present but no costs can be priced" do

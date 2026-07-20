@@ -790,7 +790,7 @@ private
     label = format_search_diagnostic_cost_usd(known_costs.sum)
     return label if known_costs.size == costs.size
 
-    "#{label} (partial — some calls missing pricing)"
+    "#{label} (partial: some calls are missing pricing)"
   end
 
   def ai_usage_fields?(fields)
