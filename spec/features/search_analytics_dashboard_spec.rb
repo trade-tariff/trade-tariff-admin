@@ -19,6 +19,7 @@ RSpec.describe "Search analytics dashboard" do
     visit search_analytics_path
 
     expect_period_link("7 days", content: "8,420", query: "period=7d")
+    expect_ai_cost_summary("US$0.1842")
     expect_period_link("30 days", content: "36,100", query: "period=30d")
   end
 
@@ -27,6 +28,7 @@ RSpec.describe "Search analytics dashboard" do
 
     expect_view_link("Classic", content: "classic term", value: "710")
     expect_view_link("Internal", content: "internal term", value: "530")
+    expect_ai_cost_summary("US$0.0294")
   end
 
   it "explains why the classic view has no AI cost", :aggregate_failures do
@@ -173,5 +175,10 @@ RSpec.describe "Search analytics dashboard" do
     click_link label
     expect(page).to have_content(content)
     expect(page).to have_content(value)
+  end
+
+  def expect_ai_cost_summary(total_cost)
+    expect(page).to have_css("section[aria-labelledby='ai-cost-heading']", text: "Estimated total cost")
+    expect(page).to have_content(total_cost)
   end
 end

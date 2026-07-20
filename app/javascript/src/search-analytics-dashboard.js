@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const requestedType = canvas.dataset.chartType || 'line';
     const currencyAxis = canvas.dataset.yAxisFormat === 'currency';
     const stacked = canvas.dataset.stacked === 'true';
-    const currency = new Intl.NumberFormat('en-US', {
+    const currency = new Intl.NumberFormat('en-GB', {
       style: 'currency',
       currency: 'USD',
       maximumFractionDigits: 6,
