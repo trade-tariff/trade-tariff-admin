@@ -4,7 +4,7 @@ require "simplecov"
 # require 'rspec/rebound'
 
 SimpleCov.start "rails"
-SimpleCov.formatters = SimpleCov::Formatter::HTMLFormatter
+SimpleCov.formatter = SimpleCov::Formatter::HTMLFormatter
 
 ENV["AUTH_STRATEGY"] ||= "passwordless"
 
