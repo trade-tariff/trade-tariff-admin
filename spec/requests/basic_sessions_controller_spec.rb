@@ -20,6 +20,14 @@ RSpec.describe "BasicSessionsController", type: :request do
       get "/basic_sessions/new"
       expect(assigns(:basic_session).return_url).to eq("/customs_tariff/updates")
     end
+
+    it "renders the show password toggle with visible label text" do
+      get "/basic_sessions/new"
+
+      page = Capybara.string(response.body)
+      toggle = "button.govuk-password-input__toggle[hidden]"
+      expect(page).to have_css(toggle, text: "Show", visible: :hidden)
+    end
   end
 
   describe "POST /basic_sessions" do
