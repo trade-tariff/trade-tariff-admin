@@ -24,9 +24,9 @@ RSpec.describe NavigationHelper, type: :helper do
       )
     end
 
-    it "defines Classification with 7 items" do
+    it "defines Classification with 6 items" do
       section = helper.navigation_sections.find { |s| s.key == :classification }
-      expect(section.items.map(&:text)).to eq(["Search References", "Descriptions", "Configuration", "Intercepts", "Search dashboard", "Search diagnostics", "Recent changes"])
+      expect(section.items.map(&:text)).to eq(["Search References", "Descriptions", "Configuration", "Intercepts", "Search diagnostics", "Recent changes"])
     end
 
     it "defines SPIMM with xi service restriction" do
@@ -81,7 +81,7 @@ RSpec.describe NavigationHelper, type: :helper do
                          "Reports",
                          "Rollbacks",
                        ],
-                       classification: ["Search References", "Descriptions", "Configuration", "Intercepts", "Search dashboard", "Search diagnostics", "Recent changes"],
+                       classification: ["Search References", "Descriptions", "Configuration", "Intercepts", "Search diagnostics", "Recent changes"],
                        manage_users: nil
     end
 
@@ -92,7 +92,7 @@ RSpec.describe NavigationHelper, type: :helper do
 
       include_examples "visible sections and items",
                        ott_admin: ["News", "Live Issues"],
-                       classification: ["Search References", "Search dashboard", "Search diagnostics"]
+                       classification: ["Search References", "Search diagnostics"]
     end
 
     context "with UK service and auditor role" do
@@ -109,7 +109,7 @@ RSpec.describe NavigationHelper, type: :helper do
                          "Updates",
                          "Rollbacks",
                        ],
-                       classification: ["Search References", "Configuration", "Search dashboard", "Search diagnostics"]
+                       classification: ["Search References", "Configuration", "Search diagnostics"]
     end
 
     context "with UK service and guest role" do
@@ -129,7 +129,7 @@ RSpec.describe NavigationHelper, type: :helper do
 
       include_examples "visible sections and items",
                        ott_admin: ["Section & chapter notes", "Updates", "Reports", "Rollbacks"],
-                       classification: ["Search References", "Descriptions", "Search dashboard", "Search diagnostics", "Recent changes"],
+                       classification: ["Search References", "Descriptions", "Search diagnostics", "Recent changes"],
                        spimm: [
                          "Category Assessments",
                          "Exemptions",
@@ -147,7 +147,7 @@ RSpec.describe NavigationHelper, type: :helper do
       let(:user) { build(:user, :hmrc_admin) }
 
       include_examples "visible sections and items",
-                       classification: ["Search References", "Search dashboard", "Search diagnostics"]
+                       classification: ["Search References", "Search diagnostics"]
     end
 
     context "with XI service and auditor role" do
@@ -157,7 +157,7 @@ RSpec.describe NavigationHelper, type: :helper do
 
       include_examples "visible sections and items",
                        ott_admin: ["Section & chapter notes", "Updates", "Rollbacks"],
-                       classification: ["Search References", "Search dashboard", "Search diagnostics"],
+                       classification: ["Search References", "Search diagnostics"],
                        spimm: [
                          "Category Assessments",
                          "Exemptions",

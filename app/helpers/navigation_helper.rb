@@ -104,13 +104,6 @@ module NavigationHelper
             service: :uk,
           ),
           NavigationItem.new(
-            text: "Search dashboard",
-            href: search_analytics_path,
-            policy_class: SearchAnalytics,
-            active_when: /\/search_analytics/,
-            service: nil,
-          ),
-          NavigationItem.new(
             text: "Search diagnostics",
             href: search_diagnostics_path,
             policy_class: SearchDiagnostic,
