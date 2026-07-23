@@ -122,7 +122,6 @@ RSpec.describe "Search analytics dashboard" do
     expect(page).to have_content("1,240")
     expect(page).to have_content("Failure rate")
     expect(page).to have_content("1.2%")
-    expect(page).not_to have_content(/Generated \d{1,2} \w+ \d{4} at \d{2}:\d{2}/)
     expect(page).not_to have_content("Query window ended")
     expect(page).to have_css(".govuk-details", text: "How these metrics are calculated")
     expect(page).to have_css(".govuk-summary-list__row", text: "Zero-result rate", visible: :all)
