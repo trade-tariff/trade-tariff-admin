@@ -11,11 +11,6 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
     <h1 class="govuk-heading-l">Search dashboard</h1>
-    <% if @search_analytics.generated_at.present? %>
-      <p class="govuk-body-s govuk-!-margin-bottom-5">
-        Generated <%= search_analytics_timestamp(@search_analytics.generated_at) %>.
-      </p>
-    <% end %>
 
     <div class="search-analytics-filters govuk-!-margin-bottom-5">
       <div>
