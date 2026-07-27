@@ -1,11 +1,11 @@
-class ClassificationConfigurationsController < AuthenticatedController
+class ConfigurationsController < AuthenticatedController
   before_action :set_current_configuration, only: %i[edit update]
 
   def index
     authorize AdminConfiguration, :index?
     @configurations = AdminConfiguration.all.sort_by { |c| [c.config_type, c.name] }
   rescue Faraday::Error => e
-    Rails.logger.error("Failed to fetch classification configurations: #{e.message}")
+    Rails.logger.error("Failed to fetch configurations: #{e.message}")
     @configurations = []
     flash.now[:alert] = "Unable to load configurations. Please try again."
   end
@@ -15,13 +15,13 @@ class ClassificationConfigurationsController < AuthenticatedController
     @configuration = find_configuration
     @versions = fetch_versions
   rescue Faraday::ResourceNotFound
-    redirect_to classification_configurations_path, alert: "Configuration not found."
+    redirect_to configurations_path, alert: "Configuration not found."
   end
 
   def edit
     authorize AdminConfiguration, :update?
   rescue Faraday::ResourceNotFound
-    redirect_to classification_configurations_path, alert: "Configuration not found."
+    redirect_to configurations_path, alert: "Configuration not found."
   end
 
   def update
@@ -30,13 +30,13 @@ class ClassificationConfigurationsController < AuthenticatedController
     @configuration.assign_attributes(configuration_params)
 
     if @configuration.save && @configuration.errors.empty?
-      redirect_to classification_configuration_path(@configuration),
+      redirect_to configuration_path(@configuration),
                   notice: "Configuration updated."
     else
       render :edit
     end
   rescue Faraday::ResourceNotFound
-    redirect_to classification_configurations_path, alert: "Configuration not found."
+    redirect_to configurations_path, alert: "Configuration not found."
   end
 
 private
@@ -46,7 +46,7 @@ private
 
     return if @configuration.current?
 
-    redirect_to classification_configuration_path(@configuration),
+    redirect_to configuration_path(@configuration),
                 alert: "Cannot edit historical versions."
   end
 
@@ -65,7 +65,7 @@ private
   end
 
   def configuration_params
-    permitted = params.require(:classification_configuration).permit(:value).to_h
+    permitted = params.require(:configuration).permit(:value).to_h
 
     if permitted[:value].is_a?(String) && permitted[:value].match?(/\A\s*[\[{]/)
       begin

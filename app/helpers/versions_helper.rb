@@ -16,7 +16,7 @@ module VersionsHelper
       tariff_knowledge_compressed_note_path(version.item_id, **opts) if version.item_id.present?
     when "AdminConfiguration"
       name = version.object&.dig("name")
-      classification_configuration_path(name, **opts) if name.present?
+      configuration_path(name, **opts) if name.present?
     end
   end
 

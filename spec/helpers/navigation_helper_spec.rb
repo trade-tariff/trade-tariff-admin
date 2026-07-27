@@ -13,8 +13,8 @@ RSpec.describe NavigationHelper, type: :helper do
   end
 
   describe "#navigation_sections" do
-    it "returns all four sections" do
-      expect(helper.navigation_sections.map(&:key)).to eq(%i[ott_admin classification spimm manage_users])
+    it "returns all five sections" do
+      expect(helper.navigation_sections.map(&:key)).to eq(%i[ott_admin classification spimm manage_users configuration])
     end
 
     it "defines OTT Admin with 8 items" do
@@ -24,9 +24,9 @@ RSpec.describe NavigationHelper, type: :helper do
       )
     end
 
-    it "defines Classification with 7 items" do
+    it "defines Classification with 6 items" do
       section = helper.navigation_sections.find { |s| s.key == :classification }
-      expect(section.items.map(&:text)).to eq(["Search References", "Descriptions", "Configuration", "Intercepts", "Search dashboard", "Search diagnostics", "Recent changes"])
+      expect(section.items.map(&:text)).to eq(["Search References", "Descriptions", "Intercepts", "Search dashboard", "Search diagnostics", "Recent changes"])
     end
 
     it "defines SPIMM with xi service restriction" do
@@ -47,6 +47,13 @@ RSpec.describe NavigationHelper, type: :helper do
     it "defines Manage Users with users_path href" do
       section = helper.navigation_sections.find { |s| s.key == :manage_users }
       expect(section.href).to eq(helper.users_path)
+    end
+
+    it "defines Configuration as standalone with configurations_path href", :aggregate_failures do
+      section = helper.navigation_sections.find { |s| s.key == :configuration }
+
+      expect(section.items).to be_empty
+      expect(section.href).to eq(helper.configurations_path)
     end
   end
 
@@ -81,8 +88,9 @@ RSpec.describe NavigationHelper, type: :helper do
                          "Reports",
                          "Rollbacks",
                        ],
-                       classification: ["Search References", "Descriptions", "Configuration", "Intercepts", "Search dashboard", "Search diagnostics", "Recent changes"],
-                       manage_users: nil
+                       classification: ["Search References", "Descriptions", "Intercepts", "Search dashboard", "Search diagnostics", "Recent changes"],
+                       manage_users: nil,
+                       configuration: []
     end
 
     context "with UK service and hmrc_admin role" do
@@ -109,7 +117,8 @@ RSpec.describe NavigationHelper, type: :helper do
                          "Updates",
                          "Rollbacks",
                        ],
-                       classification: ["Search References", "Configuration", "Search dashboard", "Search diagnostics"]
+                       classification: ["Search References", "Search dashboard", "Search diagnostics"],
+                       configuration: []
     end
 
     context "with UK service and guest role" do
@@ -205,6 +214,14 @@ RSpec.describe NavigationHelper, type: :helper do
 
       it "returns Manage Users section" do
         expect(helper.current_navigation_section.key).to eq(:manage_users)
+      end
+    end
+
+    context "when on the configurations page" do
+      let(:request_path) { "/configurations" }
+
+      it "returns Configuration section" do
+        expect(helper.current_navigation_section.key).to eq(:configuration)
       end
     end
 

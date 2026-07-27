@@ -90,13 +90,6 @@ module NavigationHelper
             service: nil,
           ),
           NavigationItem.new(
-            text: "Configuration",
-            href: classification_configurations_path,
-            policy_class: AdminConfiguration,
-            active_when: /\/classification_configurations/,
-            service: :uk,
-          ),
-          NavigationItem.new(
             text: "Intercepts",
             href: description_intercepts_path,
             policy_class: DescriptionIntercept,
@@ -183,6 +176,13 @@ module NavigationHelper
         service: nil,
         items: [],
       ),
+      NavigationSection.new(
+        key: :configuration,
+        label: "Configuration",
+        href: configurations_path,
+        items: [],
+        service: :uk,
+      ),
     ]
   end
 
@@ -243,6 +243,8 @@ private
     case section.key
     when :manage_users
       policy(User).index?
+    when :configuration
+      policy(AdminConfiguration).index?
     else
       true
     end

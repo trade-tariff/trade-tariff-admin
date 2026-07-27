@@ -1,8 +1,8 @@
 <% form_data = %w[options multi_options nested_options].include?(configuration.config_type) ? { controller: 'config-form' } : {} %>
 
 <%= govuk_form_for configuration,
-                   as: :classification_configuration,
-                   url: classification_configuration_path(configuration),
+                   as: :configuration,
+                   url: configuration_path(configuration),
                    html: { data: form_data } do |f| %>
 
   <% case configuration.config_type %>
@@ -22,7 +22,7 @@
     <% selected = configuration.value.is_a?(Hash) ? configuration.value["selected"] : "" %>
 
     <input type="hidden"
-           name="classification_configuration[value]"
+           name="configuration[value]"
            value="<%= configuration.value.is_a?(Hash) ? configuration.value.to_json : configuration.value %>"
            data-config-form-target="hiddenField">
 
@@ -43,7 +43,7 @@
     <% selected_values = configuration.value.is_a?(Hash) ? Array(configuration.value["selected"]) : [] %>
 
     <input type="hidden"
-           name="classification_configuration[value]"
+           name="configuration[value]"
            value="<%= configuration.value.is_a?(Hash) ? configuration.value.to_json : configuration.value %>"
            data-config-form-target="hiddenField">
 
@@ -76,7 +76,7 @@
     <% sub_values = configuration.value.is_a?(Hash) ? (configuration.value["sub_values"] || {}) : {} %>
 
     <input type="hidden"
-           name="classification_configuration[value]"
+           name="configuration[value]"
            value="<%= configuration.value.is_a?(Hash) ? configuration.value.to_json : configuration.value %>"
            data-config-form-target="hiddenField">
 
@@ -109,5 +109,5 @@
                           rows: 6 %>
   <% end %>
 
-  <%= submit_and_back_buttons f, classification_configurations_path %>
+  <%= submit_and_back_buttons f, configurations_path %>
 <% end %>

@@ -42,8 +42,8 @@ ChapterNotePolicy#create?
 ChapterNotePolicy#destroy?
 ChapterNotePolicy#show?
 ChapterNotePolicy#update?
-ClassificationConfigurationsController#edit
-ClassificationConfigurationsController#show
+ConfigurationsController#edit
+ConfigurationsController#show
 Commodity#declarable?
 Commodity#reference_title
 CustomsTariff::ChapterNote#version_objects

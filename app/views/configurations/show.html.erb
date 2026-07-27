@@ -1,8 +1,8 @@
-<%= govuk_breadcrumbs "Configurations": classification_configurations_path %>
+<%= govuk_breadcrumbs "Configurations": configurations_path %>
 
 <%= render "versions/version_banner",
            record: @configuration,
-           current_path: classification_configuration_path(@configuration),
+           current_path: configuration_path(@configuration),
            type_name: "configuration" %>
 
 <h1 class="govuk-heading-l">Configuration: <%= @configuration.display_name %></h1>
@@ -216,14 +216,14 @@
 
 <% if @configuration.current? && policy(@configuration).update? %>
   <div class="govuk-button-group">
-    <%= link_to "Edit", edit_classification_configuration_path(@configuration), class: "govuk-button" %>
+    <%= link_to "Edit", edit_configuration_path(@configuration), class: "govuk-button" %>
   </div>
 <% end %>
 
 <% if @versions.present? %>
   <%= render "versions/history_section",
              versions: @versions,
-             view_path_helper: ->(v) { classification_configuration_path(@configuration, oid: v.resource_id) },
+             view_path_helper: ->(v) { configuration_path(@configuration, oid: v.resource_id) },
              restore_path_helper: ->(v) { restore_version_path(v.resource_id) },
              can_restore: policy(@configuration).update?,
              current_oid: @configuration.version_oid %>
@@ -231,4 +231,4 @@
 
 <%= render "versions/version_navigation",
            record: @configuration,
-           version_path_helper: ->(oid) { classification_configuration_path(@configuration, oid: oid) } %>
+           version_path_helper: ->(oid) { configuration_path(@configuration, oid: oid) } %>

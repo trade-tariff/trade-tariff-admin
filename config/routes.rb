@@ -162,7 +162,7 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :classification_configurations, param: :name, only: %i[index show edit update]
+  resources :configurations, param: :name, only: %i[index show edit update]
 
   resources :description_intercepts, only: %i[index new create show edit update destroy] do
     member do
