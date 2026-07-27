@@ -123,8 +123,8 @@ RSpec.describe DescriptionInterceptsController, type: :request do
         page = Capybara.string(rendered_page.body)
 
         expect(page).to have_text("No templates are currently configured.")
-        expect(rendered_page.body).to include("Classification configurations")
-        expect(rendered_page.body).to include(classification_configuration_path("description_intercept_templates"))
+        expect(rendered_page.body).to include("Configurations")
+        expect(rendered_page.body).to include(configuration_path("description_intercept_templates"))
         expect(rendered_page.body).to include('disabled="disabled"')
         expect(rendered_page.body).to include('value="Import description intercepts"')
       end

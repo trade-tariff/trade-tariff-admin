@@ -1,5 +1,5 @@
 # rubocop:disable RSpec/MultipleMemoizedHelpers, RSpec/MultipleExpectations, RSpec/ExampleLength
-RSpec.describe ClassificationConfigurationsController, type: :request do
+RSpec.describe ConfigurationsController, type: :request do
   subject(:rendered_page) { make_request && response }
 
   include_context "with authenticated user"
@@ -142,13 +142,13 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
         .and_return(collection_response)
     end
 
-    let(:make_request) { get classification_configurations_path }
+    let(:make_request) { get configurations_path }
 
     it { is_expected.to have_http_status :success }
     it { is_expected.to render_template(:index) }
 
     it "displays configurations with humanised names" do
-      expect(rendered_page.body).to include("Classification Configurations")
+      expect(rendered_page.body).to include("Configurations")
       expect(rendered_page.body).to include("Expansion Prompt")
       expect(rendered_page.body).to include("Qa Enabled")
       expect(rendered_page.body).to include("Object template")
@@ -206,7 +206,7 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
         .and_return(status: 200, headers: { "content-type" => "application/json; charset=utf-8" }, body: { data: [] }.to_json)
     end
 
-    let(:make_request) { get classification_configuration_path(config_name) }
+    let(:make_request) { get configuration_path(config_name) }
 
     it { is_expected.to have_http_status :success }
     it { is_expected.to render_template(:show) }
@@ -382,7 +382,7 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
           .and_return(historical_config_response)
       end
 
-      let(:make_request) { get classification_configuration_path(config_name, oid: 41) }
+      let(:make_request) { get configuration_path(config_name, oid: 41) }
 
       it { is_expected.to have_http_status :success }
 
@@ -405,7 +405,7 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
           .and_return(status: 404, body: { error: "Not found" }.to_json)
       end
 
-      it { is_expected.to redirect_to(classification_configurations_path) }
+      it { is_expected.to redirect_to(configurations_path) }
 
       it "shows an error message" do
         rendered_page
@@ -442,7 +442,7 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
         .and_return(config_response)
     end
 
-    let(:make_request) { get edit_classification_configuration_path(config_name) }
+    let(:make_request) { get edit_configuration_path(config_name) }
 
     it { is_expected.to have_http_status :success }
     it { is_expected.to render_template(:edit) }
@@ -661,9 +661,9 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
 
     it "does not render editable name, type, or description fields", :aggregate_failures do
       body = rendered_page.body
-      expect(body).not_to include('name="classification_configuration[name]"')
-      expect(body).not_to include('name="classification_configuration[config_type]"')
-      expect(body).not_to include('name="classification_configuration[description]"')
+      expect(body).not_to include('name="configuration[name]"')
+      expect(body).not_to include('name="configuration[config_type]"')
+      expect(body).not_to include('name="configuration[description]"')
     end
 
     context "when configuration is a historical version" do
@@ -672,7 +672,7 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
           .and_return(historical_config_response)
       end
 
-      it { is_expected.to redirect_to(classification_configuration_path(config_name)) }
+      it { is_expected.to redirect_to(configuration_path(config_name)) }
 
       it "shows a historical version alert" do
         rendered_page
@@ -688,9 +688,9 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
     end
 
     let(:make_request) do
-      patch classification_configuration_path(config_name),
+      patch configuration_path(config_name),
             params: {
-              classification_configuration: {
+              configuration: {
                 value: "Updated prompt text",
               },
             }
@@ -702,7 +702,7 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
           .and_return(config_response)
       end
 
-      it { is_expected.to redirect_to(classification_configuration_path(config_name)) }
+      it { is_expected.to redirect_to(configuration_path(config_name)) }
 
       it "shows a success message" do
         rendered_page
@@ -736,9 +736,9 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
         }
       end
       let(:make_request) do
-        patch classification_configuration_path(config_name),
+        patch configuration_path(config_name),
               params: {
-                classification_configuration: {
+                configuration: {
                   value: options_json,
                 },
               }
@@ -756,7 +756,7 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
           .and_return(config_response)
       end
 
-      it { is_expected.to redirect_to(classification_configuration_path(config_name)) }
+      it { is_expected.to redirect_to(configuration_path(config_name)) }
 
       it "parses the JSON string value to a hash before sending to API" do
         rendered_page
@@ -777,9 +777,9 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
         }
       end
       let(:make_request) do
-        patch classification_configuration_path(config_name),
+        patch configuration_path(config_name),
               params: {
-                classification_configuration: {
+                configuration: {
                   value: "false",
                 },
               }
@@ -790,7 +790,7 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
           .and_return(config_response)
       end
 
-      it { is_expected.to redirect_to(classification_configuration_path(config_name)) }
+      it { is_expected.to redirect_to(configuration_path(config_name)) }
     end
 
     context "with a string config value" do
@@ -806,9 +806,9 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
         }
       end
       let(:make_request) do
-        patch classification_configuration_path(config_name),
+        patch configuration_path(config_name),
               params: {
-                classification_configuration: {
+                configuration: {
                   value: "sk-new...key",
                 },
               }
@@ -819,7 +819,7 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
           .and_return(config_response)
       end
 
-      it { is_expected.to redirect_to(classification_configuration_path(config_name)) }
+      it { is_expected.to redirect_to(configuration_path(config_name)) }
     end
 
     context "with an integer config value" do
@@ -835,9 +835,9 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
         }
       end
       let(:make_request) do
-        patch classification_configuration_path(config_name),
+        patch configuration_path(config_name),
               params: {
-                classification_configuration: {
+                configuration: {
                   value: "500",
                 },
               }
@@ -848,7 +848,7 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
           .and_return(config_response)
       end
 
-      it { is_expected.to redirect_to(classification_configuration_path(config_name)) }
+      it { is_expected.to redirect_to(configuration_path(config_name)) }
     end
 
     context "with a multi_options config JSON value" do
@@ -867,9 +867,9 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
         }
       end
       let(:make_request) do
-        patch classification_configuration_path(config_name),
+        patch configuration_path(config_name),
               params: {
-                classification_configuration: {
+                configuration: {
                   value: multi_options_json,
                 },
               }
@@ -894,14 +894,14 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
           .and_return(config_response)
       end
 
-      it { is_expected.to redirect_to(classification_configuration_path(config_name)) }
+      it { is_expected.to redirect_to(configuration_path(config_name)) }
     end
 
     context "when extra params are submitted" do
       let(:make_request) do
-        patch classification_configuration_path(config_name),
+        patch configuration_path(config_name),
               params: {
-                classification_configuration: {
+                configuration: {
                   value: "Updated prompt text",
                   name: "hacked_name",
                   config_type: "boolean",
@@ -940,15 +940,15 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
       end
 
       let(:make_request) do
-        patch classification_configuration_path(config_name),
+        patch configuration_path(config_name),
               params: {
-                classification_configuration: {
+                configuration: {
                   value: "Updated prompt text",
                 },
               }
       end
 
-      it { is_expected.to redirect_to(classification_configuration_path(config_name)) }
+      it { is_expected.to redirect_to(configuration_path(config_name)) }
 
       it "shows a historical version alert" do
         rendered_page
@@ -966,7 +966,7 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
           .and_return(collection_response)
       end
 
-      let(:make_request) { get classification_configurations_path }
+      let(:make_request) { get configurations_path }
 
       it { is_expected.to have_http_status :forbidden }
     end
@@ -981,7 +981,7 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
           .and_return(collection_response)
       end
 
-      let(:make_request) { get classification_configurations_path }
+      let(:make_request) { get configurations_path }
 
       it { is_expected.to have_http_status :success }
     end
@@ -992,7 +992,7 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
           .and_return(config_response)
       end
 
-      let(:make_request) { get edit_classification_configuration_path(config_name) }
+      let(:make_request) { get edit_configuration_path(config_name) }
 
       it { is_expected.to have_http_status :forbidden }
     end
@@ -1004,8 +1004,8 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
       end
 
       let(:make_request) do
-        patch classification_configuration_path(config_name),
-              params: { classification_configuration: { value: "Updated prompt text" } }
+        patch configuration_path(config_name),
+              params: { configuration: { value: "Updated prompt text" } }
       end
 
       it { is_expected.to have_http_status :forbidden }
@@ -1021,7 +1021,7 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
           .and_return(collection_response)
       end
 
-      let(:make_request) { get classification_configurations_path }
+      let(:make_request) { get configurations_path }
 
       it { is_expected.to have_http_status :success }
     end
@@ -1032,7 +1032,7 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
           .and_return(config_response)
       end
 
-      let(:make_request) { get edit_classification_configuration_path(config_name) }
+      let(:make_request) { get edit_configuration_path(config_name) }
 
       it { is_expected.to have_http_status :forbidden }
     end
@@ -1044,8 +1044,8 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
       end
 
       let(:make_request) do
-        patch classification_configuration_path(config_name),
-              params: { classification_configuration: { value: "Updated prompt text" } }
+        patch configuration_path(config_name),
+              params: { configuration: { value: "Updated prompt text" } }
       end
 
       it { is_expected.to have_http_status :forbidden }
@@ -1054,7 +1054,7 @@ RSpec.describe ClassificationConfigurationsController, type: :request do
 
   context "when user is guest (unauthorized)" do
     let(:current_user) { create(:user, :guest) }
-    let(:make_request) { get classification_configurations_path }
+    let(:make_request) { get configurations_path }
 
     it { is_expected.to have_http_status :forbidden }
   end
