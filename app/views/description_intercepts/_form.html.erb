@@ -159,16 +159,11 @@
                             :message,
                             label: { text: "Guidance message" },
                             hint: { text: "Shown to the trader-facing frontend when this intercept matches." },
-                            rows: 5,
-                            linkify_code_references: true do %>
-      <%= govuk_details(summary_text: "Markdown and automatic short code links") do %>
+                            rows: 5 do %>
+      <%= govuk_details(summary_text: "Markdown formatting") do %>
         <p class="govuk-body">
-          Short codes are automatically rendered as links in the frontend. You do not need to add markdown links for
-          chapters, headings, subheadings or commodities.
-        </p>
-        <p class="govuk-body">
-          For example, <code>01</code>, <code>0101</code>, <code>010121</code> and <code>0101210000</code> will be linked
-          automatically.
+          Commodity codes are not linked automatically. Add markdown links yourself when a chapter, heading,
+          subheading or commodity should be clickable.
         </p>
         <p class="govuk-body">
           Use the
