@@ -412,18 +412,15 @@ RSpec.describe DescriptionInterceptsController, type: :request do
 
       expect(page).to have_css ".govuk-grid-row .govuk-grid-column-one-half", count: 2
       expect(page).to have_css 'textarea.govuk-textarea[name="description_intercept[message]"]'
-      expect(page).to have_css '.hott-markdown-preview[data-preview="govspeak"][data-preview-for="#description-intercept-message-field"][data-preview-linkify-code-references="true"]'
+      expect(page).to have_css '.hott-markdown-preview[data-preview="govspeak"][data-preview-for="#description-intercept-message-field"]'
+      expect(page).not_to have_css '.hott-markdown-preview[data-preview-linkify-code-references="true"]'
     end
 
-    it "explains markdown and automatic short code links in a details component" do
+    it "explains markdown formatting in a details component" do
       page = Capybara.string(rendered_page.body)
 
-      expect(page).to have_css ".govuk-details__summary-text", text: "Markdown and automatic short code links"
-      expect(page).to have_css ".govuk-details__text", text: "Short codes are automatically rendered as links", visible: :all
-      expect(page).to have_css ".govuk-details__text", text: "01", visible: :all
-      expect(page).to have_css ".govuk-details__text", text: "0101", visible: :all
-      expect(page).to have_css ".govuk-details__text", text: "010121", visible: :all
-      expect(page).to have_css ".govuk-details__text", text: "0101210000", visible: :all
+      expect(page).to have_css ".govuk-details__summary-text", text: "Markdown formatting"
+      expect(page).to have_css ".govuk-details__text", text: "Commodity codes are not linked automatically", visible: :all
       expect(page).to have_link "Markdown guide", href: "https://govspeak-preview.publishing.service.gov.uk/guide", visible: :all
     end
 
