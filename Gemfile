@@ -63,7 +63,6 @@ end
 group :test do
   gem "capybara"
   gem "database_cleaner"
-  gem "debride", "~> 1.15", require: false
   gem "factory_bot_rails"
   gem "parallel_tests"
   gem "rails-controller-testing"
