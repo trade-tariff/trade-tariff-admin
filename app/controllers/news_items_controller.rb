@@ -64,25 +64,63 @@ private
   end
 
   def news_item_params
-    params.require(:news_item).permit(%i[
-      title
-      slug
-      content
-      precis
-      display_style
-      show_on_uk
-      show_on_xi
-      show_on_home_page
-      show_on_updates_page
-      show_on_banner
-      start_date
-      end_date
-      chapters
-      notify_subscribers
-    ], collection_ids: []).reverse_merge(default_params)
+    permitted = params.require(:news_item).permit(
+      %i[
+        title
+        slug
+        content
+        precis
+        display_style
+        show_on_uk
+        show_on_xi
+        show_on_home_page
+        show_on_updates_page
+        show_on_banner
+        start_date
+        end_date
+        chapters
+        notify_subscribers
+      ],
+      collection_ids: [],
+      **multipart_date_params,
+    ).reverse_merge(default_params)
+
+    permitted
+      .merge(
+        start_date: compose_date(:start_date),
+        end_date: compose_date(:end_date),
+      )
+      .except(*multipart_date_keys)
+  end
+
+  def multipart_date_keys
+    %w[
+      start_date(1i)
+      start_date(2i)
+      start_date(3i)
+      end_date(1i)
+      end_date(2i)
+      end_date(3i)
+    ]
+  end
+
+  def multipart_date_params
+    multipart_date_keys.index_with { [] }
   end
 
   def default_params
     { display_style: News::Item::DISPLAY_STYLE_REGULAR }
+  end
+
+  def compose_date(date_param)
+    year = params.dig(:news_item, "#{date_param}(1i)")
+    month = params.dig(:news_item, "#{date_param}(2i)")
+    day = params.dig(:news_item, "#{date_param}(3i)")
+
+    return nil if [year, month, day].all?(&:blank?)
+
+    "#{year}-#{month}-#{day}"
+  rescue StandardError
+    nil
   end
 end
