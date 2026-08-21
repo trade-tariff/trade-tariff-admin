@@ -104,4 +104,20 @@ RSpec.describe News::Item do
       it { is_expected.to eq "foo-bar" }
     end
   end
+
+  describe "#start_date" do
+    subject { news_item.start_date }
+
+    context "when a start date is present" do
+      let(:news_item) { build :news_item, start_date: Time.zone.yesterday }
+
+      it { is_expected.to eq Time.zone.yesterday }
+    end
+
+    context "when a start date is not present" do
+      let(:news_item) { build :news_item, start_date: nil }
+
+      it { is_expected.to eq Time.zone.today }
+    end
+  end
 end

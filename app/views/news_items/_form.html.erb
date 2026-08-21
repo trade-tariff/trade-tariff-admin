@@ -51,17 +51,24 @@
     </div>
   </details>
 
-  <%= f.govuk_text_field :start_date, width: 'one-third' %>
-  <%= f.govuk_text_field :end_date, width: 'one-third' %>
+  <%= f.govuk_date_field :start_date,
+                          maxlength_enabled: true,
+                          width: 'one-third' %>
 
-  <%= f.govuk_text_field :chapters, width: 'one-half' %>
+  <%= f.govuk_date_field :end_date,
+                          maxlength_enabled: true,
+                          width: 'one-third' %>
+
+  <%= f.govuk_text_field :chapters,
+                          label: { size: 'm' },
+                          width: 'one-half' %>
 
   <%= f.govuk_check_box :notify_subscribers, 1, 0,
                           label: { text: 'e-mail subscribers?' },
                           multiple: false,
                           link_errors: true %>
 
-  <%= f.govuk_check_boxes_fieldset :display do %>
+  <%= f.govuk_check_boxes_fieldset :display_style do %>
 
     <%= f.govuk_check_box :show_on_uk, 1, 0,
                           label: { text: 'Show on UK service' },
