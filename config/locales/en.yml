@@ -71,11 +71,11 @@ en:
         date: Should be in 'YYYY-MM-DD' format
 
       news_item:
-        title: Not shown on frontend for Banner stories.
-        slug: Leave blank to automatically assign.
-        start_date: The news item is visible from this date.
-        end_date: Leave blank for no end date.
-        chapters: Separate each 2-digit chapter with a comma e.g. 01, 39, 44 or leave blank.
+        title: Not shown on frontend for Banner stories
+        slug: Leave blank to automatically assign
+        start_date: For example, 21 8 2026
+        end_date: Leave blank for no end date
+        chapters: Separate each 2-digit chapter with a comma e.g. 01, 39, 44 - or leave blank
 
   activemodel:
     attributes:
