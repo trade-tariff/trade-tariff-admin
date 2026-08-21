@@ -10,6 +10,7 @@ RSpec.describe "news_items/form" do
     it { is_expected.to have_css "form input" }
     it { is_expected.not_to have_css 'input[name="news_item[slug]"]' }
     it { is_expected.to have_css "fieldset legend", text: /News collections/ }
+    it { is_expected.to have_css ".govuk-date-input", count: 2 }
 
     context "without collections available" do
       let(:collections) { [] }

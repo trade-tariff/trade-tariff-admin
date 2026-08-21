@@ -80,6 +80,10 @@ module News
       else
         use_today ? Time.zone.today : nil
       end
+    rescue StandardError
+      # reset the input fields to nil
+      Rails.logger.debug("Received invalid date: #{date}")
+      nil
     end
   end
 end
