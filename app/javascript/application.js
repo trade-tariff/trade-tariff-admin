@@ -10,3 +10,4 @@ window.GOVUK.accessibleAutocomplete = accessibleAutocomplete;
 import "markdown-preview";
 import "quota-definition-chart";
 import "search-analytics-dashboard";
+import "@hotwired/turbo-rails"
