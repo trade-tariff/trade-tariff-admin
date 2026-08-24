@@ -1,15 +1,15 @@
 <%= govuk_breadcrumbs 'News': news_items_path %>
 
-<h2>Edit News story</h2>
+<h1>Edit News story</h1>
 
 <%= render 'form', news_item: @news_item, collections: @collections %>
 
 <% if policy(@news_item).destroy? %>
   <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
-  <h3>
+  <h2>
     Remove News item
-  </h3>
+  </h2>
 
   <p>
     Remove this News item

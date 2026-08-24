@@ -1,5 +1,6 @@
 class Rollback
   include ApiEntity
+  include FormattedDate
 
   attributes :reason,
              :date,
@@ -12,5 +13,13 @@ class Rollback
 
   def user
     @user ||= User.find_by(uid: whodunnit)
+  end
+
+  def date=(value)
+    @date = normalise_date(value)
+  end
+
+  def date
+    initialise_date!(@date, use_today: true)
   end
 end

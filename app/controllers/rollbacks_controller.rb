@@ -1,4 +1,6 @@
 class RollbacksController < AuthenticatedController
+  include MultipartDate
+
   def index
     authorize Rollback, :index?
     @rollbacks = Rollback.all(page: current_page)
@@ -6,7 +8,7 @@ class RollbacksController < AuthenticatedController
 
   def new
     authorize Rollback, :create?
-    @rollback = Rollback.new(rollback_params)
+    @rollback = Rollback.new
   end
 
   def create
@@ -24,13 +26,15 @@ class RollbacksController < AuthenticatedController
 private
 
   def rollback_params
-    if params[:rollback].blank?
-      { date: Time.zone.today, keep: true }
-    else
-      params
-        .require(:rollback)
-        .permit(:date, :keep, :reason)
-        .to_h
-    end
+    permitted = params.require(:rollback).permit(
+      %i[keep reason],
+      **multipart_date_params(%w[date]),
+    )
+
+    compose_date_params(
+      permitted_params: permitted,
+      hash: :rollback,
+      date_params: %i[date],
+    )
   end
 end

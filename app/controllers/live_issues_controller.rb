@@ -1,5 +1,6 @@
 class LiveIssuesController < AuthenticatedController
   before_action :disable_service_switching!
+  include MultipartDate
 
   def index
     authorize LiveIssue, :index?
@@ -48,14 +49,21 @@ class LiveIssuesController < AuthenticatedController
 private
 
   def live_issue_params
-    params.require(:live_issue).permit(
-      :title,
-      :description,
-      :suggested_action,
-      :status,
-      :date_discovered,
-      :date_resolved,
-      :commodities,
+    permitted = params.require(:live_issue).permit(
+      %i[
+        title
+        description
+        suggested_action
+        status
+        commodities
+      ],
+      **multipart_date_params(%w[date_discovered date_resolved]),
+    )
+
+    compose_date_params(
+      permitted_params: permitted,
+      hash: :live_issue,
+      date_params: %i[date_discovered date_resolved],
     )
   end
 end

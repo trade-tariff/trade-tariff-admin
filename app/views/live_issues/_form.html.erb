@@ -1,39 +1,35 @@
 <%= govuk_form_for live_issue do |f| %>
   <%= f.govuk_text_field :title, width: 'one-half' %>
 
-  <%= govuk_markdown_area f, :description,
-          hint: { text: 'Provide a description of the issue. Aim for 256 characters or less' },
-          rows: 8
-  %>
+  <%= govuk_markdown_area f, :description, rows: 8 %>
 
   <%= govuk_markdown_area f, :suggested_action,
-          label: { text: 'Suggested action' },
-          hint: { text: 'Provide next steps for the users. Aim for 256 characters or less' },
-          rows: 8
+                              label: { text: 'Suggested action' },
+                              rows: 8
   %>
 
   <%= f.govuk_text_field :commodities,
-          label: { text: 'Commodities affected' },
-          hint: { text: 'Separate each 10 digit commodity code with a space e.g. 0101210000 0101300000. Leave blank if none are affected' },
-          width: 'one-half'
+                          label: {
+                            text: 'Commodities affected',
+                            size: 'm'
+                          },
+                          width: 'one-half'
   %>
 
   <%= f.govuk_check_box :status, 'Resolved', 'Active',
-                        label: { text: 'Resolved?' },
-                        hint: { text: 'Tick this box if the issue has been resolved' },
-                        multiple: false
+                          label: { text: 'Resolved?' },
+                          hint: { text: 'Tick this box if the issue has been resolved' },
+                          multiple: false
   %>
 
-  <%= f.govuk_text_field :date_discovered,
-          label: { text: 'Date discovered' },
-          hint: { text: 'YYYY/MM/DD' },
-          width: 'one-third'
+  <%= f.govuk_date_field :date_discovered,
+                          maxlength_enabled: true,
+                          width: 'one-third'
   %>
 
-  <%= f.govuk_text_field :date_resolved,
-          label: { text: 'Date resolved' },
-          hint: { text: 'YYYY/MM/DD or leave blank if unresolved' },
-          width: 'one-third'
+  <%= f.govuk_date_field :date_resolved,
+                          maxlength_enabled: true,
+                          width: 'one-third'
   %>
 
   <%= submit_and_back_buttons f, live_issues_path %>

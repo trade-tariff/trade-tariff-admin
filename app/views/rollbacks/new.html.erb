@@ -2,9 +2,17 @@
 
 <%= govuk_form_for @rollback do |f| %>
   <%= f.govuk_text_area :reason %>
-  <%= f.govuk_text_field :date, width: 'one-third' %>
+
+  <%= f.govuk_date_field :date,
+                          maxlength_enabled: true,
+                          width: 'one-third'
+  %>
+
   <%= f.govuk_check_boxes_fieldset :keep, multiple: false do %>
-    <%= f.govuk_check_box :keep, 1, 0, multiple: false, link_errors: true %>
+    <%= f.govuk_check_box :keep, 1, 0,
+                            multiple: false,
+                            link_errors: true
+    %>
   <% end %>
 
   <%= submit_and_back_buttons f, rollbacks_path %>

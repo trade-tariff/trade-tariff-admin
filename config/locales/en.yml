@@ -57,7 +57,8 @@ en:
 
     legend:
       rollback:
-        keep: Keep
+        keep: Keep update files?
+        date: Rollback to date
 
       news_item:
         collection_ids: Show in News collections
@@ -65,10 +66,14 @@ en:
         start_date: Start date
         end_date: End date
 
+      live_issue:
+        date_discovered: Date discovered
+        date_resolved: Date resolved
+
     hint:
       rollback:
-        keep: Keeps update files and records since specified date and just mark them pending
-        date: Should be in 'YYYY-MM-DD' format
+        keep: Keeps update files and records since specified date, and marks them as pending
+        date: For example, 21 8 2026
 
       news_item:
         title: Not shown on frontend for Banner stories
@@ -76,6 +81,13 @@ en:
         start_date: For example, 21 8 2026
         end_date: Leave blank for no end date
         chapters: Separate each 2-digit chapter with a comma e.g. 01, 39, 44 - or leave blank
+
+      live_issue:
+        commodities: Separate each 10 digit commodity code with a space e.g. 0101210000 0101300000. Leave blank if none are affected
+        date_discovered: For example, 21 8 2026
+        date_resolved: Leave blank if unresolved
+        description: Provide a description of the issue. Aim for 256 characters or less
+        suggested_action: Provide next steps for users. Aim for 256 characters or less
 
   activemodel:
     attributes:
