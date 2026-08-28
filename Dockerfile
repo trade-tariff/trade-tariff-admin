@@ -56,7 +56,8 @@ FROM ruby:${RUBY_VERSION}-alpine${ALPINE_VERSION} AS production
 
 RUN apk add --update --no-cache tzdata postgresql-dev nodejs && \
   cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
-  echo "Europe/London" > /etc/timezone
+  echo "Europe/London" > /etc/timezone && \
+  rm -f /usr/local/lib/ruby/gems/*/specifications/default/json-*.gemspec
 
 # The application runs from /app
 WORKDIR /app
@@ -68,7 +69,6 @@ ENV RAILS_SERVE_STATIC_FILES=true \
 # Copy files generated in the builder image
 COPY --from=builder /app /app
 COPY --from=builder /usr/local/bundle/ /usr/local/bundle/
-
 
 RUN bundle config set without 'development test'
 RUN addgroup -S tariff && \
