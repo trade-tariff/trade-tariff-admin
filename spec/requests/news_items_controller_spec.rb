@@ -55,6 +55,78 @@ RSpec.describe NewsItemsController do
       it { is_expected.to have_attributes body: /can.+t be blank/ }
       it { is_expected.not_to include "div.current-service" }
     end
+
+    context "with valid item using multipart date fields" do
+      let(:news_item_params) do
+        {
+          title: "Test News",
+          slug: "test-news",
+          content: "Content here",
+          precis: "Precis",
+          display_style: "regular",
+          "start_date(1i)" => "2026",
+          "start_date(2i)" => "08",
+          "start_date(3i)" => "21",
+          "end_date(1i)" => "2026",
+          "end_date(2i)" => "09",
+          "end_date(3i)" => "21",
+        }
+      end
+
+      let(:create_response) do
+        webmock_response(:created, {
+          id: 1,
+          title: "Test News",
+          start_date: "2026-08-21",
+          end_date: "2026-09-21",
+        })
+      end
+
+      it { is_expected.to redirect_to news_items_path }
+    end
+
+    context "with partial date fields (only start_date)" do
+      let(:news_item_params) do
+        {
+          title: "Test News",
+          "start_date(1i)" => "2026",
+          "start_date(2i)" => "08",
+          "start_date(3i)" => "21",
+          "end_date(1i)" => "",
+          "end_date(2i)" => "",
+          "end_date(3i)" => "",
+        }
+      end
+
+      let(:create_response) do
+        webmock_response(:created, {
+          id: 1,
+          title: "Test News",
+          start_date: "2026-08-21",
+          end_date: nil,
+        })
+      end
+
+      it { is_expected.to redirect_to news_items_path }
+    end
+
+    context "with invalid date fields" do
+      let(:news_item_params) do
+        {
+          title: "",
+          "start_date(1i)" => "2026",
+          "start_date(2i)" => "2",
+          "start_date(3i)" => "30",
+        }
+      end
+
+      let(:create_response) do
+        webmock_response(:error, { start_date: ["is not a valid date"] })
+      end
+
+      it { is_expected.to have_http_status :ok }
+      it { is_expected.to have_attributes body: /is not a valid date/ }
+    end
   end
 
   describe "GET #edit" do
