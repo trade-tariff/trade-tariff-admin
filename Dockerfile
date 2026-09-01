@@ -57,7 +57,9 @@ FROM ruby:${RUBY_VERSION}-alpine${ALPINE_VERSION} AS production
 RUN apk add --update --no-cache tzdata postgresql-dev nodejs && \
   cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
   echo "Europe/London" > /etc/timezone && \
-  rm -f /usr/local/lib/ruby/gems/*/specifications/default/json-*.gemspec
+  rm -f /usr/local/lib/ruby/gems/*/specifications/default/json-*.gemspec && \
+  rm -rf /usr/local/lib/ruby/gems/*/gems/json-* && \
+  rm -rf /usr/local/lib/ruby/*/json.rb /usr/local/lib/ruby/*/json /usr/local/lib/ruby/*/*-linux-musl/json
 
 # The application runs from /app
 WORKDIR /app

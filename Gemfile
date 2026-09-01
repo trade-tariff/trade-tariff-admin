@@ -46,6 +46,7 @@ gem "logstash-event"
 gem "bootsnap", require: false
 gem "csv", "~> 3.3"
 gem "nokogiri"
+gem "resolv", "~> 0.7.2"
 gem "rubyzip"
 
 group :development, :test do
