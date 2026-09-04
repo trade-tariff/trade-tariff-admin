@@ -12,7 +12,7 @@ module NavigationHelper
         service: nil,
         items: [
           NavigationItem.new(
-            text: "Section & chapter notes",
+            text: versioning ? "Customs Tariff Updates" : "Section & chapter notes",
             href: versioning ? customs_tariff_updates_path : notes_sections_path,
             policy_class: versioning ? CustomsTariff::Update : SectionNote,
             active_when: versioning ? %r{/customs_tariff} : %r{/notes},

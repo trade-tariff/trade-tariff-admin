@@ -1,9 +1,6 @@
-<p class="govuk-body">
-  <%= govuk_back_link(
-    text: "Back to update #{@update.version}",
-    href: customs_tariff_update_path(@update.version)
-  ) %>
-</p>
+<%= govuk_back_link text: "Back to update #{@update.version}",
+                    href: customs_tariff_update_path(@update.version)
+%>
 
 <h2>Chapter Notes &mdash; <%= @section.title %></h2>
 <p class="govuk-body">Update version: <%= @update.version %></p>
