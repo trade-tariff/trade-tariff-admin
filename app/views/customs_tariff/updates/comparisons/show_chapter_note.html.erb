@@ -1,11 +1,10 @@
-<p class="govuk-body">
-  <%= govuk_back_link(
-    text: "Back to chapter notes",
-    href: customs_tariff_update_section_chapter_notes_path(
-      @update.version, @section_id, compare_version: @compare_version
-    )
-  ) %>
-</p>
+<%= govuk_back_link text: "Back to Chapter Notes",
+                    href: customs_tariff_update_section_chapter_notes_path(
+                            @update.version,
+                            @section_id,
+                            compare_version: @compare_version
+                          )
+%>
 
 <h2>Chapter <%= @chapter_note.chapter_id %> &mdash; <%= @update.version %> compared against <%= @compare_version %></h2>
 

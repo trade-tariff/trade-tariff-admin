@@ -20,7 +20,7 @@ RSpec.describe NavigationHelper, type: :helper do
     it "defines OTT Admin with 8 items" do
       section = helper.navigation_sections.find { |s| s.key == :ott_admin }
       expect(section.items.map(&:text)).to eq(
-        ["Section & chapter notes", "Section & chapter notes", "News", "Live Issues", "Quotas", "Updates", "Reports", "Rollbacks"],
+        ["Customs Tariff Updates", "Section & chapter notes", "News", "Live Issues", "Quotas", "Updates", "Reports", "Rollbacks"],
       )
     end
 
@@ -80,7 +80,7 @@ RSpec.describe NavigationHelper, type: :helper do
 
       include_examples "visible sections and items",
                        ott_admin: [
-                         "Section & chapter notes",
+                         "Customs Tariff Updates",
                          "News",
                          "Live Issues",
                          "Quotas",
@@ -110,7 +110,7 @@ RSpec.describe NavigationHelper, type: :helper do
 
       include_examples "visible sections and items",
                        ott_admin: [
-                         "Section & chapter notes",
+                         "Customs Tariff Updates",
                          "News",
                          "Live Issues",
                          "Quotas",

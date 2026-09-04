@@ -1,9 +1,11 @@
-<h2> Edit Section <%= @section_note.section_id %> Note </h2>
+<%= govuk_back_link text: "Back to update #{@update.version}",
+                    href: customs_tariff_update_path(@update.version)
+%>
+
+<h2>Edit Section <%= @section_note.section_id %> Note</h2>
 
 <p class="govuk-body">
   Update version: <%= @update.version %>
-  &nbsp;
-  <%= link_to 'Back to update', customs_tariff_update_path(@update.version), class: 'govuk-link' %>
 </p>
 
 <div class="govuk-grid-row"
@@ -21,7 +23,10 @@
       </div>
       <div class="govuk-button-group">
         <%= f.submit 'Save', class: 'govuk-button' %>
-        <%= link_to 'Cancel', customs_tariff_update_path(@update.version), class: 'govuk-link' %>
+        <%= link_to 'Cancel',
+                    customs_tariff_update_path(@update.version),
+                    class: 'govuk-button govuk-button--secondary'
+        %>
       </div>
     <% end %>
   </div>
