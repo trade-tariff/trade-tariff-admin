@@ -24,11 +24,15 @@
         <td><%= adco.additional_code %></td>
         <td>
           <% if policy(GreenLanes::ExemptingOverride).destroy? %>
-            <%= link_to 'Remove',
-                        green_lanes_exempting_additional_code_override_path(adco),
-                        method: :delete,
-                        class: 'govuk-button govuk-button--warning',
-                        data: { confirm: "Are you sure?", disable: 'Working ...' } %>
+            <%= button_to 'Remove',
+                          green_lanes_exempting_additional_code_override_path(adco),
+                          method: :delete,
+                          class: 'govuk-button govuk-button--warning',
+                          data: {
+                            turbo_confirm: "Are you sure you want to remove this exempting override?",
+                            turbo_submits_with: "Working..."
+                          }
+            %>
           <% end %>
         </td>
       </tr>

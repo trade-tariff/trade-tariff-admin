@@ -11,10 +11,10 @@
     Remove this Live Issue
   </h3>
 
-  <%= link_to 'Remove',
-                  live_issue_path(@live_issue),
-                  method: :delete,
-                  class: 'govuk-button govuk-button--warning',
-                  data: { confirm: "Are you sure?", disable: 'Working ...' }
+  <%= button_to 'Remove',
+                live_issue_path(@live_issue),
+                method: :delete,
+                class: 'govuk-button govuk-button--warning',
+                data: { turbo_confirm: "Are you sure you want to remove this live issue?", turbo_submits_with: "Working..." }
   %>
 <% end %>

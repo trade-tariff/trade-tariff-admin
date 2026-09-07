@@ -17,5 +17,10 @@
     Remove this section note
   </p>
 
-  <%= link_to "Remove", notes_section_section_note_path(@section),  method: :delete, data: { confirm: 'Are you sure?', disable: 'Working'}, class: 'govuk-button govuk-button--warning' %>
+  <%= button_to "Remove",
+                notes_section_section_note_path(@section),
+                method: :delete,
+                data: { turbo_confirm: 'Are you sure you want to remove this section note?', turbo_submits_with: "Working..."},
+                class: 'govuk-button govuk-button--warning'
+  %>
 <% end %>
