@@ -7,7 +7,7 @@ default_stages:
 
 repos:
   - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.106.0
+    rev: v1.109.1
     hooks:
       - id: terraform_fmt
       - id: terraform_validate
@@ -23,16 +23,17 @@ repos:
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
+        exclude: 'vendor/.*'
       - id: check-yaml
         exclude: config/database.yml
 
   - repo: https://github.com/trufflesecurity/trufflehog
-    rev: v3.95.4
+    rev: v3.97.4
     hooks:
       - id: trufflehog
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.48.0
+    rev: v0.49.1
     hooks:
       - id: markdownlint-fix
         args:
