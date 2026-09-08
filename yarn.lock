@@ -426,10 +426,10 @@ globals@^17.11.0:
   resolved "https://registry.yarnpkg.com/globals/-/globals-17.11.0.tgz#d643485bb30220d7751e511cf4f68c73d3870d87"
   integrity sha512-Z2I8hM+PbJDXQDq3Icgpzv+mPdwr68iZUU9d5WW4FuXfDUQfkZaZuvjMv42/5crNyw154+9+VWXbYrUgDXbxNw==
 
-govuk-frontend@6.4.0:
-  version "6.4.0"
-  resolved "https://registry.yarnpkg.com/govuk-frontend/-/govuk-frontend-6.4.0.tgz#bacd856aae0b27862b9636734eddcfa14b90b3ac"
-  integrity sha512-jU3oaVFXqK1yDVIdZs1YZ6JD7YDB4PFUHF3rFMWJye9ArImp42F9wCsFzzB1+udjuzGCryJGcHHbBQ5HY+8rqQ==
+govuk-frontend@6.5.0:
+  version "6.5.0"
+  resolved "https://registry.yarnpkg.com/govuk-frontend/-/govuk-frontend-6.5.0.tgz#f1dd6b145469f15133d9f0b0da0ea8fe15729aba"
+  integrity sha512-yWZZCvv99Q0WzPC3+YszHk65Op1yowXpvbGGPi2bsoZiHKfwQGRxOoCaYBWTIOAiphp4QRTFgbGI3fpiFTfZww==
 
 ignore@^5.2.0:
   version "5.3.2"
