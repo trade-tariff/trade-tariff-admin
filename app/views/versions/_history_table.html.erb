@@ -47,7 +47,7 @@
                           restore_path_helper.call(version),
                           method: :post,
                           class: "govuk-button govuk-button--secondary govuk-!-margin-bottom-0",
-                          data: { module: "govuk-button", confirm: "Restore to this version? The current values will be overwritten." } %>
+                          data: { module: "govuk-button", turbo_confirm: "Restore to this version? The current values will be overwritten." } %>
           </td>
         <% end %>
         <% if defined?(view_path_helper) && view_path_helper %>

@@ -22,11 +22,15 @@
         <td><%= mtp.theme_id %></td>
         <td>
           <% if policy(mtp).destroy? %>
-            <%= link_to 'Remove',
-                        green_lanes_measure_type_mapping_path(mtp),
-                        method: :delete,
-                        class: 'govuk-button govuk-button--warning',
-                        data: { confirm: "Are you sure?", disable: 'Working ...' } %>
+            <%= button_to 'Remove',
+                          green_lanes_measure_type_mapping_path(mtp),
+                          method: :delete,
+                          class: 'govuk-button govuk-button--warning',
+                          data: {
+                            turbo_confirm: "Are you sure you want to remove this measure type mapping?",
+                            turbo_submits_with: "Working..."
+                          }
+            %>
           <% end %>
         </td>
       </tr>

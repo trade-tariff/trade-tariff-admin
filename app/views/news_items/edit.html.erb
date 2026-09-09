@@ -15,9 +15,10 @@
     Remove this News item
   </p>
 
-  <%= link_to 'Remove',
-                  news_item_path(@news_item),
-                  method: :delete,
-                  class: 'govuk-button govuk-button--warning',
-                  data: { confirm: "Are you sure?", disable: 'Working ...' } %>
+  <%= button_to 'Remove',
+                news_item_path(@news_item),
+                method: :delete,
+                class: 'govuk-button govuk-button--warning',
+                data: { turbo_confirm: "Are you sure you want to remove this news item?", turbo_submits_with: "Working..." }
+  %>
 <% end %>
