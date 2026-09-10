@@ -51,12 +51,11 @@
 
   <p>Remove this chapter note</p>
 
-  <%= button_to "Remove",
-                customs_tariff_update_chapter_note_path(@update.version, @chapter_note.chapter_id, section_id: @section_id),
-                method: :delete,
-                data: { turbo_confirm: 'Are you sure you want to remove this chapter note?', turbo_submits_with: "Working..." },
-                class: 'govuk-button govuk-button--warning'
-  %>
+  <%= link_to "Remove",
+              customs_tariff_update_chapter_note_path(@update.version, @chapter_note.chapter_id, section_id: @section_id),
+              method: :delete,
+              data: { confirm: 'Are you sure?', disable: 'Working' },
+              class: 'govuk-button govuk-button--warning' %>
 <% end %>
 
 <% if @chapter_note.version_objects.any? %>

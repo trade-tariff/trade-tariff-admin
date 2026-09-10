@@ -21,12 +21,8 @@
   Remove this Category Assessment
 </p>
 
-<%= button_to 'Remove',
-              green_lanes_category_assessment_path(@category_assessment),
-              method: :delete,
-              class: 'govuk-button govuk-button--warning',
-              data: {
-                turbo_confirm: "Are you sure you want to remove this Category Assessment?",
-                turbo_submits_with: "Working..."
-              }
-%>
+<%= link_to 'Remove',
+            green_lanes_category_assessment_path(@category_assessment),
+            method: :delete,
+            class: 'govuk-button govuk-button--warning',
+            data: { confirm: "Are you sure?", disable: 'Working ...' } %>

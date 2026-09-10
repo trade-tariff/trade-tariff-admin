@@ -5,8 +5,6 @@
 
   <%= render "references/release_services_fieldset", form: f %>
 
-  <div class="govuk-button-group">
-    <%= f.govuk_submit "Remove Search reference", warning: true %>
-    <%= govuk_link_to "Back", back_path, class: "govuk-button govuk-button--secondary" %>
-  </div>
+  <%= f.govuk_submit "Remove Search reference", warning: true %>
+  <%= govuk_link_to "Back", back_path, class: "govuk-link govuk-!-margin-left-4" %>
 <% end %>

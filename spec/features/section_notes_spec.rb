@@ -70,7 +70,7 @@ RSpec.describe "Section Note management" do
 
     it "can be removed" do
       ensure_on edit_notes_section_section_note_path(section)
-      click_button "Remove"
+      click_link "Remove"
       verify current_path == customs_tariff_updates_path
     end
   end
