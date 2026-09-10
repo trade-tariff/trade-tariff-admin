@@ -74,7 +74,7 @@ RSpec.describe "Chapter Note management" do
 
     specify do
       ensure_on edit_notes_chapter_chapter_note_path(chapter)
-      click_button "Remove"
+      click_link "Remove"
       verify current_path == notes_section_chapters_path(section_id: chapter.section.id)
     end
   end

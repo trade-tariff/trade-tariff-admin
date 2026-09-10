@@ -48,13 +48,8 @@
 <h3>
   Action taken for this data update
 </h3>
-
-<%= button_to 'Update',
-              green_lanes_update_notification_path(@update),
-              method: :patch,
-              class: 'govuk-button govuk-button--warning',
-              data: {
-                turbo_confirm: "Are you sure you want to update this notification?",
-                turbo_submits_with: "Working..."
-              }
-%>
+<%= link_to 'Update',
+            green_lanes_update_notification_path(@update),
+            method: :patch,
+            class: 'govuk-button govuk-button--warning',
+            data: { confirm: "Are you sure?", disable: 'Working ...' } %>

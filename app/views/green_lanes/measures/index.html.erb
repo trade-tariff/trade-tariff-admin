@@ -42,12 +42,11 @@
         </td>
         <td>
           <% if policy(me).destroy? %>
-            <%= button_to 'Remove',
-                          green_lanes_measure_path(me),
-                          method: :delete,
-                          class: 'govuk-button govuk-button--warning',
-                          data: { turbo_confirm: "Are you sure you want to remove this measure?", turbo_submits_with: "Working..." }
-            %>
+            <%= link_to 'Remove',
+                        green_lanes_measure_path(me),
+                        method: :delete,
+                        class: 'govuk-button govuk-button--warning',
+                        data: { confirm: "Are you sure?", disable: 'Working ...' } %>
           <% end %>
         </td>
       </tr>

@@ -43,12 +43,11 @@
   <h3>Remove section note</h3>
 
   <p>Remove this section note</p>
-  <%= button_to "Remove",
-                customs_tariff_update_section_note_path(@update.version, @section_note.section_id),
-                method: :delete,
-                data: { turbo_confirm: 'Are you sure you want to remove this section note?', turbo_submits_with: "Working..." },
-                class: 'govuk-button govuk-button--warning'
-  %>
+  <%= link_to "Remove",
+              customs_tariff_update_section_note_path(@update.version, @section_note.section_id),
+              method: :delete,
+              data: { confirm: 'Are you sure?', disable: 'Working' },
+              class: 'govuk-button govuk-button--warning' %>
 <% end %>
 
 <% if @section_note.version_objects.any? %>

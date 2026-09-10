@@ -14,9 +14,8 @@
   Remove this Exemption
 </p>
 
-<%= button_to 'Remove',
-              green_lanes_exemption_path(@exemption),
-              method: :delete,
-              class: 'govuk-button govuk-button--warning',
-              data: { turbo_confirm: "Are you sure you want to remove this exemption?", turbo_submits_with: "Working..." }
-%>
+<%= link_to 'Remove',
+            green_lanes_exemption_path(@exemption),
+            method: :delete,
+            class: 'govuk-button govuk-button--warning',
+            data: { confirm: "Are you sure?", disable: 'Working ...' } %>
