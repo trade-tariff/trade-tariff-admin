@@ -80,8 +80,19 @@ module SearchDiagnosticsHelper
     search_failed
   ].freeze
 
-  def search_diagnostic_event_summary(event)
+  def search_diagnostic_event_summary(event, errors_recorded: false)
     fields = search_diagnostic_fields(event)
+
+    error_details = fields.values_at(:operation, :failure_code, :error_type, :error_message)
+    error_details << fields[:status] if %w[error failed failure].include?(fields[:status].to_s)
+    error_details << "message truncated" if truthy?(fields[:error_message_truncated])
+
+    if event[:event].to_s == "search_completed" && (errors_recorded || search_diagnostic_error?(event))
+      return ["Search completed with errors", readable_value(fields[:results_type]), *error_details].compact_blank.join(" - ")
+    end
+    if search_diagnostic_error_event?(event)
+      return [search_diagnostic_event_name(event), *error_details].compact_blank.join(" - ")
+    end
 
     case event[:event].to_s
     when "search_started"
@@ -247,7 +258,7 @@ module SearchDiagnosticsHelper
         search_type: search_diagnostic_search_type(event),
         timestamp: timestamp,
         time: search_diagnostic_event_time(event),
-        significant: SIGNIFICANT_TIMELINE_EVENTS.include?(event[:event].to_s),
+        significant: SIGNIFICANT_TIMELINE_EVENTS.include?(event[:event].to_s) || search_diagnostic_error?(event),
       }
     end
     return [] if timed_events.blank?
@@ -408,10 +419,49 @@ module SearchDiagnosticsHelper
                 generic_event_details(event[:event].to_s, fields)
               end
 
+    error_fields = search_diagnostic_error_fields(event).except(*EVENT_DETAIL_KEYS.fetch(event[:event].to_s, []))
+
     safe_join([
       content.presence,
+      (key_value_list(error_fields) if error_fields.present? && search_diagnostic_error?(event)),
       raw_event_details(event),
     ].compact)
+  end
+
+  def search_diagnostic_error_fields(event)
+    fields = search_diagnostic_fields(event)
+    fields.slice(:operation, :failure_code, :error_type, :error_message, :error_message_truncated, *search_diagnostic_failure_flags(event))
+  end
+
+  def search_diagnostic_error_event?(event)
+    fields = search_diagnostic_fields(event)
+    event[:event].to_s.end_with?("_failed") ||
+      %w[error failed failure].include?(fields[:status].to_s) ||
+      fields.values_at(:error_type, :error_message, :failure_code).any?(&:present?)
+  end
+
+  def search_diagnostic_error?(event)
+    search_diagnostic_error_event?(event) || search_diagnostic_failure_flags(event).any?
+  end
+
+  def search_diagnostic_failure_flags(event)
+    search_diagnostic_fields(event).select { |key, value| (key == "search_degraded" || key.end_with?("_failed")) && truthy?(value) }.keys
+  end
+
+  def search_diagnostic_errors(events)
+    error_events = events.each_with_index.filter_map do |event, index|
+      next unless search_diagnostic_error_event?(event)
+
+      { id: search_diagnostic_event_dom_id(index), summary: search_diagnostic_event_summary(event) }
+    end
+    error_events.uniq { |event| event[:summary] }
+  end
+
+  def search_diagnostic_error_heading(events)
+    return "Search failed" if events.any? { |event| event[:event].to_s == "search_failed" }
+    return "Search completed with errors" if events.any? { |event| event[:event].to_s == "search_completed" }
+
+    "Search errors recorded"
   end
 
   def search_diagnostic_fields(event)
@@ -656,7 +706,7 @@ private
       amount = Float(value, exception: false)
       return format_search_diagnostic_cost_usd(amount) if amount
     end
-    return value if key.to_sym == :description_intercept
+    return value if %i[description_intercept operation failure_code error_type error_message].include?(key.to_sym)
 
     readable_value(value)
   end
@@ -717,7 +767,10 @@ private
     tags = []
     result_count = overview_result_count(events)
 
-    tags << { label: "Failed", colour: "red" } if events.any? { |event| event[:event].to_s == "search_failed" }
+    if events.any? { |event| search_diagnostic_error?(event) }
+      label = search_diagnostic_error_heading(events).delete_prefix("Search ").capitalize
+      tags << { label: label, colour: "red" }
+    end
     tags << { label: "Zero results", colour: "yellow" } if result_count&.zero?
     tags << { label: "Result selected", colour: "green" } if events.any? { |event| event[:event].to_s == "result_selected" }
     tags << { label: "Results returned", colour: "green" } if result_count.to_i.positive?
