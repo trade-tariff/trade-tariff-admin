@@ -7,6 +7,24 @@
     <% contextual_events = @search_diagnostic.events? ? search_diagnostic_events_with_context(@search_diagnostic.events) : [] %>
     <% overview = contextual_events.any? ? search_diagnostic_overview(contextual_events) : nil %>
 
+    <% if contextual_events.any? { |event| search_diagnostic_error?(event) } %>
+      <section class="govuk-error-summary" id="search-diagnostics-errors" aria-labelledby="search-diagnostics-errors-title">
+        <h2 class="govuk-error-summary__title" id="search-diagnostics-errors-title"><%= search_diagnostic_error_heading(contextual_events) %></h2>
+        <div class="govuk-error-summary__body">
+          <p class="govuk-body">Errors were recorded during this search. Returned results do not mean every stage succeeded.</p>
+          <% failure_flags = contextual_events.flat_map { |event| search_diagnostic_failure_flags(event) }.uniq %>
+          <% if failure_flags.any? %>
+            <p class="govuk-body">Failure flags: <%= failure_flags.join(", ") %></p>
+          <% end %>
+          <ul class="govuk-list govuk-list--bullet">
+            <% search_diagnostic_errors(contextual_events).each do |error| %>
+              <li><%= link_to error[:summary], "##{error[:id]}", class: "govuk-link" %></li>
+            <% end %>
+          </ul>
+        </div>
+      </section>
+    <% end %>
+
     <dl class="govuk-summary-list">
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">Request ID</dt>
@@ -201,7 +219,7 @@
               <td class="govuk-table__cell" data-label="Event"><%= search_diagnostic_event_name(event) %></td>
               <td class="govuk-table__cell" data-label="Type"><%= search_diagnostic_search_type(event) %></td>
               <td class="govuk-table__cell" data-label="Summary">
-                <%= search_diagnostic_event_summary(event) %>
+                <%= search_diagnostic_event_summary(event, errors_recorded: contextual_events.take(index).any? { |previous_event| search_diagnostic_error?(previous_event) }) %>
               </td>
               <td class="govuk-table__cell" data-label="Diagnostics">
                 <% if event[:event].to_s == "note_evidence_evaluated" && search_diagnostic_fields(event)[:iteration].present? %>

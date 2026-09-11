@@ -25,7 +25,43 @@ RSpec.describe SearchDiagnosticsHelper do
     end
   end
 
+  describe "#search_diagnostic_error?" do
+    [
+      { event: "new_stage_failed" },
+      { event: "retrieval_leg_completed", fields: { status: "error" } },
+      { event: "unknown_event", fields: { status: "failed" } },
+      { event: "api_call_completed", fields: { error_type: "TimeoutError" } },
+      { event: "unknown_event", fields: { failure_code: "new_failure" } },
+      { event: "search_completed", fields: { search_degraded: true } },
+      { event: "search_completed", fields: { new_stage_failed: "true" } },
+    ].each do |event|
+      it "recognises #{event.inspect}" do
+        expect(helper.search_diagnostic_error?(event)).to be(true)
+      end
+    end
+
+    it "ignores false flags and empty errors" do
+      event = { event: "api_call_completed", fields: { status: "success", error_type: nil, error_message: "", failure_code: nil, search_degraded: false, opensearch_failed: "false" } }
+
+      expect(helper.search_diagnostic_error?(event)).to be(false)
+    end
+  end
+
+  describe "#search_diagnostic_errors" do
+    it "collapses repeated failures and links to the first occurrence" do
+      event = { event: "search_stage_failed", fields: { error_message: "[401] Unauthorized" } }
+
+      expect(helper.search_diagnostic_errors([event, event])).to eq([{ id: helper.search_diagnostic_event_dom_id(0), summary: "Search stage failed - [401] Unauthorized" }])
+    end
+  end
+
   describe "#search_diagnostic_event_details" do
+    it "renders unknown error fields outside raw JSON" do
+      page = Capybara.string(details("new_provider_event", operation: "query_expansion", error_type: "TimeoutError", error_message: "Timed out", error_message_truncated: true))
+
+      expect(page).to have_css("dl", text: "Operationquery_expansionError typeTimeoutErrorError messageTimed outError message truncatedtrue")
+    end
+
     it "renders relevant fields as readable key value rows and keeps raw fields available" do
       html = details("search_completed", search_completed_fields)
 
@@ -251,7 +287,7 @@ RSpec.describe SearchDiagnosticsHelper do
   end
 
   def summary(event_name, fields)
-    helper.search_diagnostic_event_summary(event: event_name, fields: fields)
+    helper.search_diagnostic_event_summary({ event: event_name, fields: fields })
   end
 
   def details(event_name, fields)
