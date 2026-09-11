@@ -49,6 +49,31 @@ RSpec.describe SearchDiagnosticsHelper do
   end
 
   describe "#search_diagnostic_errors" do
+    it "keeps propagated flags out of local errors" do
+      failure = { event: "search_stage_failed", fields: { error_message: "Unauthorized" } }
+      completion = { event: "search_completed", fields: { search_degraded: true } }
+
+      expect(helper.search_diagnostic_errors([failure, completion])).to eq([
+        { id: helper.search_diagnostic_event_dom_id(0), summary: "Search stage failed - Unauthorized" },
+      ])
+    end
+
+    context "with only propagated failure flags" do
+      let(:events) do
+        [
+          { event: "search_started", fields: {} },
+          { event: "search_completed", fields: { search_degraded: true } },
+          { event: "answer_returned", fields: { embedding_generation_failed: true } },
+        ]
+      end
+
+      it "links only the first flagged event" do
+        expect(helper.search_diagnostic_errors(events)).to eq([
+          { id: helper.search_diagnostic_event_dom_id(1), summary: "Search completed with errors" },
+        ])
+      end
+    end
+
     it "collapses repeated failures and links to the first occurrence" do
       event = { event: "search_stage_failed", fields: { error_message: "[401] Unauthorized" } }
 
