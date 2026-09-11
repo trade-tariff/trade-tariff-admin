@@ -31,6 +31,7 @@ RSpec.describe SearchDiagnosticsHelper do
       { event: "retrieval_leg_completed", fields: { status: "error" } },
       { event: "unknown_event", fields: { status: "failed" } },
       { event: "api_call_completed", fields: { error_type: "TimeoutError" } },
+      { event: "unknown_event", fields: { error_class: "TimeoutError" } },
       { event: "unknown_event", fields: { failure_code: "new_failure" } },
       { event: "search_completed", fields: { search_degraded: true } },
       { event: "search_completed", fields: { new_stage_failed: "true" } },
@@ -169,6 +170,12 @@ RSpec.describe SearchDiagnosticsHelper do
   end
 
   describe "#search_diagnostic_fields" do
+    it "decodes structured CloudWatch values without decoding free text" do
+      event = { fields: { query: "{}", error_message: "[]", added_answers: '["{}"]', confidence_levels: '{"strong":1}', details: '{"questions":[{"question":"[]","options":["{}"]}]}' }.to_json }
+
+      expect(helper.search_diagnostic_fields(event)).to eq("query" => "{}", "error_message" => "[]", "added_answers" => ["{}"], "confidence_levels" => { "strong" => 1 }, "details" => { "questions" => [{ "question" => "[]", "options" => ["{}"] }] })
+    end
+
     it "normalises malformed fields to an empty hash" do
       expect(helper.search_diagnostic_fields(fields: "not-json")).to eq({})
     end

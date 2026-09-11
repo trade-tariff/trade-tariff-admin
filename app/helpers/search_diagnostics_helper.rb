@@ -83,7 +83,7 @@ module SearchDiagnosticsHelper
   def search_diagnostic_event_summary(event, errors_recorded: false)
     fields = search_diagnostic_fields(event)
 
-    error_details = fields.values_at(:operation, :failure_code, :error_type, :error_message)
+    error_details = fields.values_at(:operation, :failure_code, :error_type, :error_class, :error_message)
     error_details << fields[:status] if %w[error failed failure].include?(fields[:status].to_s)
     error_details << "message truncated" if truthy?(fields[:error_message_truncated])
 
@@ -430,14 +430,14 @@ module SearchDiagnosticsHelper
 
   def search_diagnostic_error_fields(event)
     fields = search_diagnostic_fields(event)
-    fields.slice(:operation, :failure_code, :error_type, :error_message, :error_message_truncated, *search_diagnostic_failure_flags(event))
+    fields.slice(:operation, :failure_code, :error_type, :error_class, :error_message, :error_message_truncated, *search_diagnostic_failure_flags(event))
   end
 
   def search_diagnostic_error_event?(event)
     fields = search_diagnostic_fields(event)
     event[:event].to_s.end_with?("_failed") ||
       %w[error failed failure].include?(fields[:status].to_s) ||
-      fields.values_at(:error_type, :error_message, :failure_code).any?(&:present?)
+      fields.values_at(:error_type, :error_class, :error_message, :failure_code).any?(&:present?)
   end
 
   def search_diagnostic_error?(event)
@@ -675,7 +675,7 @@ private
 
   def key_value_list(rows)
     rows = rows.filter_map do |key, value|
-      next if value.blank?
+      next if value.blank? && value != false
 
       content_tag(:div, class: "govuk-summary-list__row") do
         safe_join([
@@ -706,7 +706,7 @@ private
       amount = Float(value, exception: false)
       return format_search_diagnostic_cost_usd(amount) if amount
     end
-    return value if %i[description_intercept operation failure_code error_type error_message].include?(key.to_sym)
+    return value if %i[description_intercept operation failure_code error_type error_class error_message].include?(key.to_sym)
 
     readable_value(value)
   end
@@ -1003,8 +1003,8 @@ private
     [
       "Matched",
       fields[:description_intercept_term],
-      fields[:description_intercept_excluded].present? ? "excluded" : nil,
-      fields[:description_intercept_filtering].present? ? "filtering" : nil,
+      truthy?(fields[:description_intercept_excluded]) ? "excluded" : nil,
+      truthy?(fields[:description_intercept_filtering]) ? "filtering" : nil,
     ].compact_blank.join(" ")
   end
 
@@ -1033,14 +1033,18 @@ private
     usage_events.filter_map { |fields| decimal_value(fields[key]) }.sum(0.to_d)
   end
 
-  def normalise_search_diagnostic_hash(value)
+  def normalise_search_diagnostic_hash(value, parse_json: true)
     return nil if value.nil?
 
-    value = JSON.parse(value) if value.is_a?(String) && value.strip.start_with?("{", "[")
-    return value.map { |item| normalise_search_diagnostic_hash(item) } if value.is_a?(Array)
+    value = JSON.parse(value) if parse_json && value.is_a?(String) && value.strip.start_with?("{", "[")
+    return value.map { |item| normalise_search_diagnostic_hash(item, parse_json: false) } if value.is_a?(Array)
     return value unless value.respond_to?(:to_h)
 
-    value.to_h.with_indifferent_access.transform_values { |item| normalise_search_diagnostic_hash(item) }
+    value.to_h.each_with_object({}.with_indifferent_access) do |(key, item), normalised|
+      # CloudWatch projects structured fields as JSON strings; free text must stay literal.
+      structured = %w[fields details confidence_levels added_answers].include?(key.to_s)
+      normalised[key] = normalise_search_diagnostic_hash(item, parse_json: structured)
+    end
   rescue JSON::ParserError
     value
   end
