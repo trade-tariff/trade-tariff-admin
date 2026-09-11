@@ -450,11 +450,16 @@ module SearchDiagnosticsHelper
 
   def search_diagnostic_errors(events)
     error_events = events.each_with_index.filter_map do |event, index|
-      next unless search_diagnostic_error?(event)
+      next unless search_diagnostic_error_event?(event)
 
       { id: search_diagnostic_event_dom_id(index), summary: search_diagnostic_event_summary(event) }
     end
-    error_events.uniq { |event| event[:summary] }
+    return error_events.uniq { |event| event[:summary] } if error_events.any?
+
+    index = events.index { |event| search_diagnostic_failure_flags(event).any? }
+    return [] unless index
+
+    [{ id: search_diagnostic_event_dom_id(index), summary: search_diagnostic_event_summary(events[index]) }]
   end
 
   def search_diagnostic_error_heading(events)
