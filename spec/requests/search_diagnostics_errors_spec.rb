@@ -82,6 +82,12 @@ RSpec.describe "Search diagnostics errors", :aggregate_failures do
       expect(page).to have_css("#search-diagnostics-errors", text: "embedding_generation_failed")
       expect(page).to have_css(".govuk-tag", text: "Completed with errors")
     end
+
+    it "links to the flagged completion event" do
+      link = page.find("#search-diagnostics-errors li a", text: "Search completed with errors")
+
+      expect(page).to have_css("tr#{link[:href]}", text: "Search completed with errors")
+    end
   end
 
   context "with a recovered error and a clean completion event" do
