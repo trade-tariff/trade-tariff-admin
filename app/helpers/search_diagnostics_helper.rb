@@ -450,7 +450,7 @@ module SearchDiagnosticsHelper
 
   def search_diagnostic_errors(events)
     error_events = events.each_with_index.filter_map do |event, index|
-      next unless search_diagnostic_error_event?(event)
+      next unless search_diagnostic_error?(event)
 
       { id: search_diagnostic_event_dom_id(index), summary: search_diagnostic_event_summary(event) }
     end
