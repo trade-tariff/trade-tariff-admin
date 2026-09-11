@@ -1,4 +1,4 @@
-<div class="govuk-grid-row">
+<div class="govuk-grid-row" data-controller="search-diagnostics">
   <div class="govuk-grid-column-full">
     <%= link_to "Back to search diagnostics", search_diagnostics_path, class: "govuk-back-link" %>
 
@@ -18,7 +18,7 @@
           <% end %>
           <ul class="govuk-list govuk-list--bullet">
             <% search_diagnostic_errors(contextual_events).each do |error| %>
-              <li><%= link_to error[:summary], "##{error[:id]}", class: "govuk-link" %></li>
+              <li><%= link_to error[:summary], "##{error[:id]}", class: "govuk-link", data: { action: "click->search-diagnostics#revealJourney" } %></li>
             <% end %>
           </ul>
         </div>
@@ -126,7 +126,7 @@
         <h2 class="govuk-tabs__title">Contents</h2>
         <ul class="govuk-tabs__list">
           <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
-            <a class="govuk-tabs__tab" href="#journey">Journey</a>
+            <a class="govuk-tabs__tab" href="#journey" data-search-diagnostics-target="journeyTab">Journey</a>
           </li>
           <li class="govuk-tabs__list-item">
             <a class="govuk-tabs__tab" href="#notes">Notes</a>

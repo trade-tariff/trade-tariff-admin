@@ -109,6 +109,50 @@ RSpec.describe "Search diagnostics errors", :aggregate_failures do
     end
   end
 
+  context "with an embedding exception class" do
+    let(:events) { [{ event: "embedding_api_call_failed", fields: { error_class: "Faraday::TimeoutError", error_message: "Timed out" } }] }
+
+    it "shows the exception class outside raw fields" do
+      expect(page).to have_css("#search-diagnostics-errors", text: "Faraday::TimeoutError")
+      expect(page).to have_css("td[data-label='Summary']", text: "Faraday::TimeoutError")
+      expect(page).to have_css("dl", text: "Error classFaraday::TimeoutError", visible: :all)
+    end
+  end
+
+  ["{}", "[]", '{"Error":"MixedCase"}'].each do |message|
+    context "with JSON-shaped error text #{message}" do
+      let(:events) { [{ event: "api_call_completed", fields: { error_message: message } }] }
+
+      it "preserves the literal message and flags the error" do
+        expect(page).to have_css("#search-diagnostics-errors", text: "Api call completed - #{message}")
+        expect(page).to have_css("td[data-label='Summary']", text: "Api call completed - #{message}")
+      end
+    end
+  end
+
+  context "with disabled configuration switches" do
+    let(:events) { [{ event: "interactive_configuration_used", fields: { details: { search_labels_enabled: false } } }] }
+
+    it "shows disabled values rather than hiding them" do
+      expect(page).to have_css("dl", text: "Search labels enabledfalse", visible: :all)
+      expect(page).not_to have_css("#search-diagnostics-errors")
+    end
+  end
+
+  [false, "false"].each do |flag|
+    context "with false intercept flags #{flag.inspect}" do
+      let(:events) do
+        [{ event: "search_completed", fields: { description_intercept_matched: true, description_intercept_term: "fish", description_intercept_excluded: flag, description_intercept_filtering: flag } }]
+      end
+
+      it "does not report exclusion or filtering" do
+        expect(page).to have_css("dl", text: "Description interceptMatched fish", visible: :all)
+        expect(page).not_to have_css("dl", text: "Matched fish excluded", visible: :all)
+        expect(page).not_to have_css("dl", text: "Matched fish filtering", visible: :all)
+      end
+    end
+  end
+
   context "with an error on the completion event" do
     let(:events) { [{ event: "search_completed", fields: { error_message: "Provider unavailable", result_count: 0 } }] }
 
