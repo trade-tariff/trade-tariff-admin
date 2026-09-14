@@ -21,6 +21,10 @@ class DescriptionIntercept
   boolean_attributes :excluded,
                      :escalate_to_webchat
 
+  def save
+    super.tap { collapse_duplicate_term_errors }
+  end
+
   def normalize_serialized_attributes(attrs)
     # The form hides guidance and filter controls depending on the selected
     # search behaviour. Send one canonical payload for new and existing records:
@@ -133,6 +137,22 @@ class DescriptionIntercept
 
   def aliases_array
     Array(aliases).reject(&:blank?)
+  end
+
+private
+
+  def collapse_duplicate_term_errors
+    term_messages = errors[:term]
+    return unless term_messages.any? { |message| duplicate_term_error?(message) }
+
+    remaining = term_messages.reject { |message| duplicate_term_error?(message) }
+    errors.delete(:term)
+    errors.add(:term, "This search term has already been used")
+    remaining.each { |message| errors.add(:term, message) }
+  end
+
+  def duplicate_term_error?(message)
+    message.match?(/already (?:used|taken)/i)
   end
 
   class BulkImportResult

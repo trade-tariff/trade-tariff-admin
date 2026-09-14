@@ -194,6 +194,40 @@ RSpec.describe DescriptionIntercept do
     end
   end
 
+  describe "#save" do
+    subject(:save_intercept) { described_class.new(term: "gift").save }
+
+    context "when the search term is already used" do
+      before do
+        stub_api_request("/description_intercepts", :post)
+          .and_return(
+            status: 422,
+            headers: { "content-type" => "application/json; charset=utf-8" },
+            body: {
+              errors: [
+                {
+                  status: 422,
+                  title: "is already used by another description intercept (gift)",
+                  detail: "Term is already used by another description intercept (gift)",
+                  source: { pointer: "/data/attributes/term" },
+                },
+                {
+                  status: 409,
+                  title: "is already taken",
+                  detail: "Term is already taken",
+                  source: { pointer: "/data/attributes/term" },
+                },
+              ],
+            }.to_json,
+          )
+      end
+
+      it "collapses duplicate term errors into one message" do
+        expect(save_intercept.errors[:term]).to eq(["This search term has already been used"])
+      end
+    end
+  end
+
   describe ".find" do
     before do
       stub_api_request("/description_intercepts/123")

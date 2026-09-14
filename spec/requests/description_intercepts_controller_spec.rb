@@ -626,6 +626,57 @@ RSpec.describe DescriptionInterceptsController, type: :request do
       it { is_expected.to render_template(:new) }
     end
 
+    context "when the search term already exists" do
+      let(:make_request) do
+        post description_intercepts_path, params: {
+          description_intercept: {
+            term: "gift",
+            excluded: "0",
+            aliases: [""],
+            message: "",
+            escalate_to_webchat: "0",
+            sources: %w[guided_search],
+            filter_prefixes: [""],
+          },
+        }
+      end
+
+      before do
+        stub_api_request("/description_intercepts", :post)
+          .and_return(
+            status: 422,
+            headers: { "content-type" => "application/json; charset=utf-8" },
+            body: {
+              errors: [
+                {
+                  status: 422,
+                  title: "is already used by another description intercept (gift)",
+                  detail: "Term is already used by another description intercept (gift)",
+                  source: { pointer: "/data/attributes/term" },
+                },
+                {
+                  status: 409,
+                  title: "is already taken",
+                  detail: "Term is already taken",
+                  source: { pointer: "/data/attributes/term" },
+                },
+              ],
+            }.to_json,
+          )
+      end
+
+      it "shows a unique search term validation message" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(rendered_page).to have_http_status(:unprocessable_content)
+        expect(session.dig("flash", "flashes")).to be_blank
+        expect(page).to have_css(".govuk-error-summary a[href='#description-intercept-term-field-error']", text: "This search term has already been used")
+        expect(page).to have_css(".govuk-error-message", text: "This search term has already been used")
+        expect(page).to have_no_text("Term is already used by another description intercept")
+        expect(page).to have_no_text("Term is already taken")
+      end
+    end
+
     context "when exclude search results is selected" do
       let(:make_request) do
         post description_intercepts_path, params: {
