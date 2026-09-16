@@ -40,8 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
       options: {
         animation: false,
         interaction: {
-          intersect: false,
-          mode: 'index',
+          intersect: requestedType === 'pie',
+          mode: requestedType === 'pie' ? 'nearest' : 'index',
         },
         responsive: true,
         maintainAspectRatio: false,
@@ -54,9 +54,11 @@ document.addEventListener('DOMContentLoaded', () => {
             radius: 3,
           },
         },
-        scales: {
+        scales: requestedType === 'pie' ? {} : {
           x: {
             stacked,
+            title: { display: Boolean(canvas.dataset.xAxisTitle), text: canvas.dataset.xAxisTitle },
+            grid: { display: canvas.dataset.hideXGrid !== 'true' },
             ticks: {
               autoSkip: true,
               maxRotation: 0,
@@ -66,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
           y: {
             beginAtZero: true,
             stacked,
+            title: { display: Boolean(canvas.dataset.yAxisTitle), text: canvas.dataset.yAxisTitle },
             ticks: {
               ...(currencyAxis ? { precision: 2, callback: formatCost } : { precision: 0 }),
             },
@@ -73,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         plugins: {
           legend: {
+            display: canvas.dataset.hideLegend !== 'true',
             position: 'bottom',
           },
           tooltip: currencyAxis ? {

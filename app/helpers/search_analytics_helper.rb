@@ -10,6 +10,23 @@ module SearchAnalyticsHelper
     searches: "#144e81",
     ai_total: "#144e81",
   }.freeze
+  def search_analytics_frontend_action_rows(actions)
+    actions = (actions || {}).with_indifferent_access
+    [["Result selections", actions[:result_selected].to_i], ["Don't know", actions[:dont_know].to_i]]
+  end
+
+  def search_analytics_frontend_chart_payload(rows, label:, pie: false)
+    {
+      labels: rows.map(&:first),
+      datasets: [{
+        label:,
+        data: rows.map(&:last),
+        backgroundColor: pie ? ["#144e81", "#f47738"] : "#144e81",
+        maxBarThickness: 72,
+      }],
+    }.to_json
+  end
+
   def search_analytics_frontend_question_rows(rows)
     Array(rows).group_by { |row| search_analytics_question_bucket(row.with_indifferent_access[:questions]) }.map do |label, group|
       [label, group.sum { |row| row.with_indifferent_access[:journeys].to_i }]

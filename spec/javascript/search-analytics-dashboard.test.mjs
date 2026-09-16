@@ -7,7 +7,7 @@ import { runInNewContext } from 'node:vm';
 const source = readFileSync(new URL('../../app/javascript/src/search-analytics-dashboard.js', import.meta.url), 'utf8')
   .replace("import { Chart, registerables } from 'chart.js';", '');
 
-function renderChart(values, currency = true) {
+function renderChart(values, currency = true, chartType = 'bar', attributes = {}) {
   const charts = [];
   const canvas = {
     dataset: {
@@ -15,8 +15,9 @@ function renderChart(values, currency = true) {
         labels: values.map((_, index) => String(index)),
         datasets: [{ label: 'Estimated AI cost', data: values }],
       }),
-      chartType: 'bar',
+      chartType,
       yAxisFormat: currency ? 'currency' : undefined,
+      ...attributes,
     },
   };
   class Chart {
@@ -62,6 +63,33 @@ test('leaves count charts on integer axes', () => {
   const chart = renderChart([12], false);
   assert.equal(chart.options.scales.y.ticks.precision, 0);
   assert.equal(chart.options.scales.y.ticks.callback, undefined);
+});
+
+test('renders action pies without Cartesian axes and targets the hovered segment', () => {
+  const chart = renderChart([5, 2], false, 'pie');
+  assert.equal(chart.type, 'pie');
+  assert.deepEqual(Object.keys(chart.options.scales), []);
+  assert.deepEqual(Array.from(chart.data.datasets[0].data), [5, 2]);
+  assert.equal(chart.options.interaction.mode, 'nearest');
+  assert.equal(chart.options.interaction.intersect, true);
+  assert.equal(chart.options.plugins.legend.position, 'bottom');
+});
+
+test('labels question-distribution axes without a redundant legend or vertical grid', () => {
+  const chart = renderChart([6, 5, 3], false, 'bar', {
+    xAxisTitle: 'Reported questions', yAxisTitle: 'Journeys', hideLegend: 'true', hideXGrid: 'true',
+  });
+  assert.equal(chart.options.scales.x.title.text, 'Reported questions');
+  assert.equal(chart.options.scales.x.title.display, true);
+  assert.equal(chart.options.scales.y.title.text, 'Journeys');
+  assert.equal(chart.options.scales.y.ticks.precision, 0);
+  assert.equal(chart.options.scales.x.grid.display, false);
+  assert.equal(chart.options.plugins.legend.display, false);
+});
+
+test('keeps a single-category pie and skips an empty action pie', () => {
+  assert.equal(renderChart([5], false, 'pie').type, 'pie');
+  assert.equal(renderChart([0, 0], false, 'pie'), undefined);
 });
 
 test('does not create a chart for an entirely zero-cost dataset', () => {

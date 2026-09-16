@@ -11,7 +11,7 @@ RSpec.describe "Frontend search event widgets" do
   end
 
   %w[all internal].each do |view|
-    it "shows separate rendered and visible observations for #{view}", :aggregate_failures do
+    it "shows one frontend page-event count for #{view}", :aggregate_failures do
       stub_events(view:)
       visit search_analytics_path(period: "24h", view:)
       expect_event_tables
@@ -50,7 +50,7 @@ RSpec.describe "Frontend search event widgets" do
     event_data["coverage"].merge!("complete" => false, "expected_days" => 7)
     stub_events(period: "7d")
     visit search_analytics_path(period: "7d", view: "all")
-    expect(page).to have_content("Frontend coverage: 1 of 7 complete UTC days collected.")
+    expect(page).to have_content("Frontend event coverage is incomplete")
     expect(page).to have_content("missing days are not zero-activity days")
   end
 
@@ -64,21 +64,45 @@ RSpec.describe "Frontend search event widgets" do
   it "keeps unknown question counts separate from zero and groups overflow", :aggregate_failures do
     stub_events
     visit search_analytics_path
-    table = page.find("table", text: "Reported questions per observed journey")
-    expect(table.all("tbody tr").map { |row| row.all("th, td").map(&:text) }).to eq([["Unknown", "1"], ["0", "1"], ["8+", "2"]])
-    expect(page).to have_content("this is not a count of answered questions")
+    expect_question_chart
+  end
+
+  it "shows an empty state instead of a blank actions pie", :aggregate_failures do
+    event_data["actions"] = { "result_selected" => 0, "dont_know" => 0 }
+    stub_events
+    visit search_analytics_path
+    expect(page).to have_content("No actions recorded.")
+    expect(page).not_to have_css("canvas[data-chart-type='pie']")
   end
 
   def expect_event_tables
     expect(page).to have_css("#frontend-events-heading", text: "Guided search events")
     table = page.find("table", text: "Observed page outcomes")
+    expect(table.all("thead th").map(&:text)).to eq(["Outcome", "Page events", "Average time to next page"])
     expect(table.all("tbody tr").map { |row| row.all("th, td").map(&:text) }).to eq([
-      ["Question", "3", "2", "2", "2", "1.5s"],
-      ["Results", "2", "0", "2", "0", "Unavailable"],
+      ["Question", "3", "1.5s"],
+      ["Results", "2", "Unavailable"],
     ])
-    expect(page).to have_content("not completion or abandonment rates")
-    expect(page.find(".govuk-summary-list__row", text: "Result selection events")).to have_css("dd", exact_text: "3")
-    expect(page.find(".govuk-summary-list__row", text: "Don't know events")).to have_css("dd", exact_text: "1")
+    expect_action_chart
+  end
+
+  def expect_action_chart
+    canvas = page.find(".search-analytics-actions-chart canvas[data-chart-type='pie'][role='img']")
+    payload = JSON.parse(canvas["data-chart"])
+    expect(payload["labels"]).to eq(["Result selections", "Don't know"])
+    expect(payload["datasets"].first["data"]).to eq([3, 1])
+    table = page.find("details", text: "View action data").find("table", visible: :all)
+    expect(table.text(:all)).to include("Result selections", "Don't know", "3", "1")
+  end
+
+  def expect_question_chart
+    canvas = page.find("section[aria-labelledby='frontend-events-heading'] canvas[data-chart-type='bar'][role='img']")
+    payload = JSON.parse(canvas["data-chart"])
+    expect([canvas["data-x-axis-title"], canvas["data-y-axis-title"], canvas["data-hide-legend"]]).to eq(["Reported questions", "Journeys", "true"])
+    expect(payload["labels"]).to eq(["Unknown", "0", "8+"])
+    expect(payload["datasets"].first["data"]).to eq([1, 1, 2])
+    table = page.find("details", text: "View question data").find("table", visible: :all)
+    expect(table.text(:all)).to include("Maximum reported questions", "Unknown", "0", "8+")
   end
 
   def expect_missing_frontend_data
