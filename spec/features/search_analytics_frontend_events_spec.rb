@@ -78,7 +78,7 @@ RSpec.describe "Frontend search event widgets" do
   def expect_event_tables
     expect(page).to have_css("#frontend-events-heading", text: "Guided search events")
     table = page.find("table", text: "Observed page outcomes")
-    expect(table.all("thead th").map(&:text)).to eq(["Outcome", "Page events", "Average time to next page"])
+    expect(table.all("thead th").map(&:text)).to eq(["Outcome", "Page events", "Average wait for page"])
     expect(table.all("tbody tr").map { |row| row.all("th, td").map(&:text) }).to eq([
       ["Question", "3", "1.5s"],
       ["Results", "2", "Unavailable"],
