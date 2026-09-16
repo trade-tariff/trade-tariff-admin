@@ -82,6 +82,14 @@ RSpec.describe "Search analytics dashboard" do
     end
   end
 
+  it "retains rare non-zero failures, zero results and selections in the outcome trend", :aggregate_failures do
+    stub_rare_outcomes
+    visit search_analytics_path(period: "24h", view: "internal")
+    payload = JSON.parse(all(".search-analytics-charts canvas").last["data-chart"])
+    expect(payload.fetch("datasets").pluck("label")).to eq(["Completed", "Failed", "Zero result", "Selected"])
+    expect(payload.fetch("datasets").drop(1).pluck("data")).to all(eq([1]))
+  end
+
   it "presents a total-cost chart and business-focused cost tables", :aggregate_failures do
     visit search_analytics_path
 
@@ -279,6 +287,13 @@ RSpec.describe "Search analytics dashboard" do
     body["data"]["attributes"]["summary"].merge!("searches" => 6, "requests" => 32)
     body["data"]["attributes"]["journeys"] = { "count" => 6 }
     stub_api_request("/search_analytics").with(query: { period: "24h", view: })
+      .to_return(status: 200, headers: { "content-type" => "application/json" }, body: body.to_json)
+  end
+
+  def stub_rare_outcomes
+    body = JSON.parse(Rails.root.join("spec/fixtures/search_analytics/24h_internal.json").read)
+    body["data"]["attributes"]["trends"]["outcomes"].each { |row| row.merge!("completed" => 1000, "failed" => 1, "zero_result" => 1, "selected" => 1) }
+    stub_api_request("/search_analytics").with(query: { period: "24h", view: "internal" })
       .to_return(status: 200, headers: { "content-type" => "application/json" }, body: body.to_json)
   end
 
