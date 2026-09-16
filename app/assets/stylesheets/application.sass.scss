@@ -173,7 +173,36 @@
 .search-analytics-filters {
   display: flex;
   flex-wrap: wrap;
-  gap: govuk.govuk-spacing(6);
+  align-items: flex-start;
+  gap: govuk.govuk-spacing(3) govuk.govuk-spacing(5);
+
+  .govuk-button-group {
+    margin-bottom: 0;
+  }
+}
+
+.search-analytics-date-range {
+  .govuk-fieldset {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: govuk.govuk-spacing(2);
+  }
+
+  .govuk-form-group,
+  .govuk-button {
+    margin-bottom: 0;
+  }
+
+  .govuk-label {
+    @include govuk.govuk-font($size: 19, $weight: bold);
+    margin-bottom: govuk.govuk-spacing(2);
+  }
+
+  .govuk-input {
+    @include govuk.govuk-font($size: 16);
+    width: 9rem;
+  }
 }
 
 .search-analytics-metrics {
@@ -217,14 +246,6 @@
   gap: govuk.govuk-spacing(3);
 }
 
-.search-analytics-view-summary {
-  max-width: 36rem;
-}
-
-.search-analytics-view-summary__table {
-  margin-bottom: 0;
-}
-
 .search-analytics-metric-definitions {
   margin-bottom: 0;
 
@@ -261,13 +282,6 @@
       min-width: 28rem;
     }
   }
-}
-
-.search-analytics-table-detail {
-  display: block;
-  color: govuk.govuk-colour("black", $variant: "tint-25");
-  font-size: 0.875rem;
-  margin-top: govuk.govuk-spacing(1);
 }
 
 .scored-tag-pill {

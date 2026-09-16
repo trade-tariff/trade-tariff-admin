@@ -10,8 +10,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const currency = new Intl.NumberFormat('en-GB', {
       style: 'currency',
       currency: 'USD',
-      maximumFractionDigits: 6,
+      currencyDisplay: 'narrowSymbol',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     });
+    const formatCost = (value) => {
+      const amount = Number(value);
+      if (value === null || value === undefined || !Number.isFinite(amount)) {
+        return 'Unavailable';
+      }
+      return amount > 0 && amount < 0.01 ? '<$0.01' : currency.format(amount);
+    };
 
     if (!payload.labels || !payload.datasets) {
       return;
@@ -58,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
             beginAtZero: true,
             stacked,
             ticks: {
-              ...(currencyAxis ? { callback: (value) => currency.format(value) } : { precision: 0 }),
+              ...(currencyAxis ? { precision: 2, callback: formatCost } : { precision: 0 }),
             },
           },
         },
@@ -68,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
           },
           tooltip: currencyAxis ? {
             callbacks: {
-              label: (context) => `${context.dataset.label}: ${currency.format(context.parsed.y)}`,
+              label: (context) => `${context.dataset.label}: ${formatCost(context.parsed.y)}`,
             },
           } : {},
         },

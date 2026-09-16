@@ -7,6 +7,7 @@ RSpec.describe SearchAnalyticsController do
     SearchAnalytics.new(
       period: "24h",
       view: "all",
+      availability: { journey_metrics: true, costs_match_view: true },
       generated_at: "2026-06-10T09:55:00Z",
       data_through: "2026-06-10T09:50:00Z",
       summary: {
@@ -79,7 +80,7 @@ RSpec.describe SearchAnalyticsController do
       it "shows that analytics are unavailable" do
         rendered_page
 
-        expect(response.body).to include("Search analytics are not available yet.")
+        expect(response.body).to include("No collected search analytics are available for the selected dates.")
       end
     end
 
@@ -93,7 +94,7 @@ RSpec.describe SearchAnalyticsController do
   def expect_dashboard_content
     expect(response.body).to include("24 hours", "7 days", "30 days", "All", "Classic", "Internal")
     expect(response.body).not_to include("Suggestions")
-    expect(response.body).to include("Searches", "1,240")
+    expect(response.body).to include("Search requests", "1,240")
     expect(response.body).to include("Failure rate", "1.2%")
     expect(response.body).to include("Zero-result rate", "8.4%")
     expect(response.body).to include("Selection rate", "41%")

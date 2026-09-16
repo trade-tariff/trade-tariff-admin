@@ -223,7 +223,7 @@ module SearchDiagnosticsHelper
   end
 
   def search_diagnostic_cost(cost)
-    number_to_currency(cost, unit: "US$", precision: 6)
+    number_to_currency(cost, unit: "$", precision: 6)
   end
 
   def search_diagnostic_overview_tag(tag)
