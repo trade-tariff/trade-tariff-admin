@@ -132,7 +132,7 @@
     <% end %>
 
     <% if !availability[:journey_metrics] %>
-      <p class="govuk-body">Search journeys need to be collected for this date range. Older request counts are not journey counts.</p>
+      <p class="govuk-body">Search journeys<%= " and their AI costs" unless @view == "classic" %> need to be collected for this date range. Older request counts are not journey counts.</p>
     <% end %>
     <% unless @view == "classic" %>
     <% if availability[:journey_metrics] && availability[:costs_match_view] != true %>
