@@ -132,8 +132,10 @@
     <% end %>
 
     <% if !availability[:journey_metrics] %>
-      <p class="govuk-body">Search journeys and their AI costs need to be collected for this date range. Older request counts are not journey counts.</p>
-    <% elsif availability[:costs_match_view] != true %>
+      <p class="govuk-body">Search journeys need to be collected for this date range. Older request counts are not journey counts.</p>
+    <% end %>
+    <% unless @view == "classic" %>
+    <% if availability[:journey_metrics] && availability[:costs_match_view] != true %>
       <p class="govuk-body">Matching AI cost data is not available for the selected view.</p>
     <% end %>
     <% if availability[:journey_metrics] && availability[:costs_match_view] == true %>
@@ -224,6 +226,7 @@
           </section>
         <% end %>
     </section>
+    <% end %>
     <% end %>
 
     <div class="search-analytics-charts govuk-!-margin-top-6">
