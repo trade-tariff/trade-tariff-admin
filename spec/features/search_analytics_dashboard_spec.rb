@@ -455,7 +455,7 @@ RSpec.describe "Search analytics dashboard" do
     expect(page).not_to have_content("Query window ended")
     expect(page).to have_css(".govuk-details", text: "How these metrics are calculated")
     expect(page).to have_css(".govuk-summary-list__row", text: "Zero-result rate", visible: :all)
-    expect(page).to have_css(".govuk-summary-list__row", text: "Completed requests with no results divided by completed requests.", visible: :all)
+    expect(page).to have_css(".govuk-summary-list__row", text: "no commodity results", visible: :all)
     expect(page).to have_css(".govuk-summary-list__row", text: "Selection rate", visible: :all)
     expect(page).to have_css(".govuk-summary-list__row", text: "Result selections divided by eligible searches.", visible: :all)
     expect(page).to have_content("Can exceed 100% when users open more than one result.")
