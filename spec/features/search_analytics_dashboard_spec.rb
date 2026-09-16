@@ -112,6 +112,16 @@ RSpec.describe "Search analytics dashboard" do
     expect(page).to have_css("section[aria-label='Search requests']", text: "Unavailable")
   end
 
+  [false, nil].each do |matches|
+    it "withholds unmatched costs while retaining current journey counts (#{matches.inspect})", :aggregate_failures do
+      stub_journey_analytics(costs_match_view: matches)
+      visit search_analytics_path(period: "24h", view: "internal")
+      expect(page).to have_css("section[aria-label='Search requests']", text: "6")
+      expect(page).not_to have_css("#ai-cost-heading")
+      expect(page).to have_content("Matching AI cost data is not available for the selected view.")
+    end
+  end
+
   it "shows zero recorded costs when the selected view has no AI calls", :aggregate_failures do
     visit search_analytics_path(period: "24h", view: "classic")
 
@@ -207,9 +217,9 @@ RSpec.describe "Search analytics dashboard" do
     expect(page).not_to have_content("Each step counts as a search request")
   end
 
-  def stub_journey_analytics(journey_metrics: true)
+  def stub_journey_analytics(journey_metrics: true, costs_match_view: true)
     body = JSON.parse(Rails.root.join("spec/fixtures/search_analytics/24h_internal.json").read)
-    body["data"]["attributes"]["availability"].merge!("journey_metrics" => journey_metrics)
+    body["data"]["attributes"]["availability"].merge!("journey_metrics" => journey_metrics, "costs_match_view" => costs_match_view)
     body["data"]["attributes"]["summary"].merge!("searches" => 6, "requests" => 32)
     body["data"]["attributes"]["journeys"] = { "count" => 6 }
     stub_api_request("/search_analytics").with(query: { period: "24h", view: "internal" })

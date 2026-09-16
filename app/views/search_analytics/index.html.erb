@@ -114,10 +114,12 @@
           ) %>
     <% end %>
 
-    <% unless availability[:journey_metrics] %>
+    <% if !availability[:journey_metrics] %>
       <p class="govuk-body">Search journeys and their AI costs need to be collected for this date range. Older request counts are not journey counts.</p>
+    <% elsif availability[:costs_match_view] != true %>
+      <p class="govuk-body">Matching AI cost data is not available for the selected view.</p>
     <% end %>
-    <% if availability[:journey_metrics] %>
+    <% if availability[:journey_metrics] && availability[:costs_match_view] == true %>
     <% if availability[:unattributed_cost_requests].to_i.positive? %>
       <p class="govuk-body">AI costs that could not be linked to search journeys in this period are not included.</p>
     <% end %>
