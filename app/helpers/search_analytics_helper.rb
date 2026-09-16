@@ -10,6 +10,18 @@ module SearchAnalyticsHelper
     searches: "#144e81",
     ai_total: "#144e81",
   }.freeze
+  def search_analytics_frontend_question_rows(rows)
+    Array(rows).group_by { |row| search_analytics_question_bucket(row.with_indifferent_access[:questions]) }.map do |label, group|
+      [label, group.sum { |row| row.with_indifferent_access[:journeys].to_i }]
+    end
+  end
+
+  def search_analytics_question_bucket(value)
+    return "Unknown" if value.nil?
+
+    value.to_i >= 8 ? "8+" : value.to_i.to_s
+  end
+
   def search_analytics_number(value)
     number_with_delimiter(value.to_i)
   end

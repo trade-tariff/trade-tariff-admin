@@ -247,6 +247,8 @@
       </section>
     </div>
 
+    <%= render "frontend_events", frontend_events: (@search_analytics.frontend_events || {}).with_indifferent_access %>
+
     <section class="govuk-!-margin-top-6" aria-labelledby="zero-search-terms-heading">
       <h2 id="zero-search-terms-heading" class="govuk-heading-m">Zero search terms</h2>
       <% if availability.dig(:terms_complete, @term_filter) == false %>
