@@ -112,9 +112,15 @@ RSpec.describe "Search analytics dashboard" do
     expect(page).to have_css("section[aria-label='Search requests']", text: "Unavailable")
   end
 
-  [false, nil].each do |matches|
-    it "withholds unmatched costs while retaining current journey counts (#{matches.inspect})", :aggregate_failures do
-      stub_journey_analytics(costs_match_view: matches)
+  [false, nil].each do |available|
+    it "withholds legacy statuses when journeys are unavailable (#{available.inspect})", :aggregate_failures do
+      stub_journey_analytics(journey_metrics: available)
+      visit search_analytics_path(period: "24h", view: "internal")
+      expect_unavailable_metric("Search requests")
+    end
+
+    it "withholds unmatched costs while retaining current journey counts (#{available.inspect})", :aggregate_failures do
+      stub_journey_analytics(costs_match_view: available)
       visit search_analytics_path(period: "24h", view: "internal")
       expect(page).to have_css("section[aria-label='Search requests']", text: "6")
       expect(page).not_to have_css("#ai-cost-heading")
@@ -206,9 +212,24 @@ RSpec.describe "Search analytics dashboard" do
     it "shows validation errors without fabricated zero metrics", :aggregate_failures do
       stub_invalid_date_range
       visit search_analytics_path(period: "custom", from: "2026-09-03", to: "2026-09-01", view: "all")
-      expect(page).to have_content("From must be on or before To.")
-      expect(page).to have_field("From", with: "2026-09-03")
-      expect(page).not_to have_css(".search-analytics-metrics")
+      expect_accessible_date_errors
+    end
+  end
+
+  def expect_accessible_date_errors
+    expect(page).to have_field("From", with: "2026-09-03")
+    expect(page).not_to have_css(".search-analytics-metrics")
+    expect(page).to have_css("#date-range-error", text: "From must be on or before To.")
+    %w[from to].each do |name|
+      expect(page).to have_css(".govuk-error-summary a[href='##{name}']")
+      expect(page).to have_css("##{name}[aria-invalid='true'][aria-describedby~='date-range-error'].govuk-input--error")
+    end
+  end
+
+  def expect_unavailable_metric(label)
+    within("section[aria-label='#{label}']") do
+      expect(page).to have_content("Unavailable")
+      expect(page).not_to have_css(".govuk-tag, .govuk-body-s")
     end
   end
 
@@ -295,7 +316,7 @@ RSpec.describe "Search analytics dashboard" do
     expect(page).to have_content("2 of 30 complete UTC days collected")
     expect(page).to have_content("Missing days are not zero-traffic days")
     expect(page).to have_content("Range percentiles are unavailable")
-    expect(page).to have_css("section[aria-label='P90 latency']", text: "Unavailable")
+    expect_unavailable_metric("P90 latency")
     expect(page).not_to have_content("P90 cost per search")
     expect(page).not_to have_content("Average cost per search")
     expect(page).to have_content("Term rankings are unavailable")
