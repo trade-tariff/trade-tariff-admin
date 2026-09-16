@@ -234,6 +234,7 @@
         <h2 class="govuk-heading-m">Search volume</h2>
         <div class="search-analytics-chart-container">
           <canvas class="search-analytics-chart"
+                  data-x-axis-title="<%= @search_analytics.bucket_size == 'hour' ? 'Hour (UTC)' : 'Date (UTC)' %>" data-y-axis-title="Searches"
                   data-chart="<%= search_analytics_chart_payload(trends[:volume], series: { @view => @view.humanize }, bucket_size: @search_analytics.bucket_size) %>"></canvas>
         </div>
       </section>
