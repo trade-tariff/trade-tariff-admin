@@ -146,6 +146,15 @@ RSpec.describe "Search analytics dashboard" do
     expect_unavailable_metric("Search requests")
   end
 
+  %w[internal all].each do |view|
+    it "retains AI cost collection guidance for #{view}", :aggregate_failures do
+      stub_journey_analytics(view:, journey_metrics: false)
+      visit search_analytics_path(period: "24h", view:)
+      expect(page).to have_content("Search journeys and their AI costs need to be collected for this date range.")
+      expect(page).not_to have_css(".search-analytics-ai-cost", visible: :all)
+    end
+  end
+
   it "shows zero recorded costs when Internal has no AI calls", :aggregate_failures do
     stub_internal_without_ai_calls
     visit search_analytics_path(period: "24h", view: "internal")
