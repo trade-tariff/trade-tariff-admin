@@ -90,6 +90,14 @@ RSpec.describe "Search analytics dashboard" do
     expect(payload.fetch("datasets").drop(1).pluck("data")).to all(eq([1]))
   end
 
+  it "plots question-only and unknown journeys as distinct outcome series", :aggregate_failures do
+    stub_outcome_states
+    visit search_analytics_path(period: "24h", view: "internal")
+    payload = JSON.parse(all(".search-analytics-charts canvas").last["data-chart"])
+    expect(payload.fetch("datasets").pluck("label")).to eq(["Completed", "Failed", "Question only", "Unknown", "Zero result", "Selected"])
+    expect(payload.fetch("datasets").pluck("data")).to all(eq([1]))
+  end
+
   it "presents a total-cost chart and business-focused cost tables", :aggregate_failures do
     visit search_analytics_path
 
@@ -125,6 +133,14 @@ RSpec.describe "Search analytics dashboard" do
       stub_journey_analytics(journey_metrics: available)
       visit search_analytics_path(period: "24h", view: "internal")
       expect_unavailable_metric("Search requests")
+    end
+
+    it "withholds legacy step outcomes when journey outcomes are unavailable (#{available.inspect})", :aggregate_failures do
+      stub_journey_analytics(journey_outcomes: available)
+      visit search_analytics_path(period: "24h", view: "internal")
+      expect(page).to have_content("Journey outcomes have not been collected for all available days")
+      expect(page.find(".search-analytics-charts section", text: "Outcome trend")).not_to have_css("canvas")
+      expect(page).to have_css("section[aria-label='Search requests']", text: "6")
     end
 
     it "withholds unmatched costs while retaining current journey counts (#{available.inspect})", :aggregate_failures do
@@ -281,12 +297,20 @@ RSpec.describe "Search analytics dashboard" do
       .to_return(status: 200, headers: { "content-type" => "application/json" }, body: body.to_json)
   end
 
-  def stub_journey_analytics(journey_metrics: true, costs_match_view: true, view: "internal")
+  def stub_journey_analytics(journey_metrics: true, costs_match_view: true, journey_outcomes: true, view: "internal")
     body = JSON.parse(Rails.root.join("spec/fixtures/search_analytics/24h_#{view}.json").read)
-    body["data"]["attributes"]["availability"].merge!("journey_metrics" => journey_metrics, "costs_match_view" => costs_match_view)
+    body["data"]["attributes"]["availability"].merge!("journey_metrics" => journey_metrics, "costs_match_view" => costs_match_view, "journey_outcomes" => journey_outcomes)
     body["data"]["attributes"]["summary"].merge!("searches" => 6, "requests" => 32)
     body["data"]["attributes"]["journeys"] = { "count" => 6 }
     stub_api_request("/search_analytics").with(query: { period: "24h", view: })
+      .to_return(status: 200, headers: { "content-type" => "application/json" }, body: body.to_json)
+  end
+
+  def stub_outcome_states
+    body = JSON.parse(Rails.root.join("spec/fixtures/search_analytics/24h_internal.json").read)
+    body["data"]["attributes"]["summary"]["searches"] = 4
+    body["data"]["attributes"]["trends"]["outcomes"].each { |row| row.merge!(%w[completed failed nonterminal unknown zero_result selected].index_with { 1 }) }
+    stub_api_request("/search_analytics").with(query: { period: "24h", view: "internal" })
       .to_return(status: 200, headers: { "content-type" => "application/json" }, body: body.to_json)
   end
 

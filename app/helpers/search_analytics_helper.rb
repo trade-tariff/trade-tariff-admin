@@ -5,6 +5,8 @@ module SearchAnalyticsHelper
     internal: "#594d00",
     completed: "#144e81",
     failed: "#942514",
+    nonterminal: "#f47738",
+    unknown: "#505a5f",
     zero_result: "#594d00",
     selected: "#005a30",
     searches: "#144e81",
