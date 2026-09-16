@@ -11,16 +11,40 @@ RSpec.describe SearchAnalyticsHelper do
     end
   end
 
+  describe "#search_analytics_share" do
+    it "distinguishes small positive shares from zero", :aggregate_failures do
+      expect(helper.search_analytics_share(0.00008)).to eq("<0.1%")
+      expect(helper.search_analytics_share(0.001)).to eq("0.1%")
+      expect(helper.search_analytics_share(0)).to eq("0%")
+      expect(helper.search_analytics_share(0.999)).to eq("99.9%")
+    end
+  end
+
   describe "#search_analytics_latency" do
+    it "preserves subsecond latency instead of displaying zero seconds", :aggregate_failures do
+      expect(helper.search_analytics_latency(29.6)).to eq("29.6ms")
+      expect(helper.search_analytics_latency(0)).to eq("0ms")
+      expect(helper.search_analytics_latency(nil)).to eq("Unavailable")
+    end
+
     it "formats millisecond latency as seconds" do
       expect(helper.search_analytics_latency(1_800)).to eq("1.8s")
     end
   end
 
   describe "#search_analytics_cost" do
-    it "formats small dollar costs without hiding useful precision", :aggregate_failures do
-      expect(helper.search_analytics_cost(0.00150714)).to eq("US$0.001507")
-      expect(helper.search_analytics_cost(0.01)).to eq("US$0.01")
+    it "formats dollar amounts consistently to two decimal places", :aggregate_failures do
+      expect(helper.search_analytics_cost(0.313641)).to eq("$0.31")
+      expect(helper.search_analytics_cost(1)).to eq("$1.00")
+      expect(helper.search_analytics_cost("1234.565")).to eq("$1,234.57")
+      expect(helper.search_analytics_cost(0.01)).to eq("$0.01")
+    end
+
+    it "distinguishes subcent costs from zero and unavailable values", :aggregate_failures do
+      expect(helper.search_analytics_cost(0.00150714)).to eq("<$0.01")
+      expect(helper.search_analytics_cost("0.000025")).to eq("<$0.01")
+      expect(helper.search_analytics_cost(0)).to eq("$0.00")
+      expect(helper.search_analytics_cost(nil)).to eq("Unavailable")
     end
   end
 
@@ -28,19 +52,17 @@ RSpec.describe SearchAnalyticsHelper do
     let(:payload) do
       helper.search_analytics_cost_chart_payload(
         [
-          { bucket: "2026-06-10T09:00:00Z", input_cost_usd: 0.004, output_cost_usd: 0.006, embedding_cost_usd: 0.0002 },
+          { bucket: "2026-06-10T09:00:00Z", input_cost_usd: 0.004, output_cost_usd: 0.006, embedding_cost_usd: 0.0002, total_cost_usd: 0.01020014 },
         ],
       )
     end
     let(:expected_datasets) do
       [
-        include("label" => "Model input", "data" => [0.004]),
-        include("label" => "Model output", "data" => [0.006]),
-        include("label" => "Embeddings", "data" => [0.0002]),
+        include("label" => "Estimated AI cost", "data" => [0.01020014]),
       ]
     end
 
-    it "preserves fractional costs and labels each cost component" do
+    it "plots the authoritative total without rounding the underlying values" do
       expect(JSON.parse(payload).fetch("datasets")).to match(expected_datasets)
     end
   end
@@ -52,7 +74,20 @@ RSpec.describe SearchAnalyticsHelper do
         total_cost: 0.01,
       )
 
-      expect(rows).to contain_exactly(include(label: "Vector query embedding", calls: 2, total_tokens: 100, share: 0.2))
+      expect(rows).to contain_exactly(label: "Search matching preparation", calls: 2, total_cost_usd: 0.002, share: 0.2)
+    end
+  end
+
+  {
+    "interactive_search" => "AI-assisted search",
+    "interactive_search_final_answer" => "AI answer",
+    "search_query_expansion" => "Search term expansion",
+    "duplicate_question_guard" => "Duplicate question check",
+    "unrecognised_operation" => "Unrecognised operation",
+  }.each do |event_kind, label|
+    it "labels #{event_kind} as #{label}" do
+      rows = helper.search_analytics_ai_operation_rows([{ event_kind: }], total_cost: 0)
+      expect(rows.first[:label]).to eq(label)
     end
   end
 
@@ -60,8 +95,8 @@ RSpec.describe SearchAnalyticsHelper do
     let(:trend_payload) do
       helper.search_analytics_chart_payload(
         [
-          { bucket: "2026-06-10T09:00:00Z", all: 52, classic: 31 },
-          { bucket: "2026-06-10T10:00:00Z", all: 48, classic: 29 },
+          { bucket: "2026-06-09T00:00:00Z", all: 52, classic: 31 },
+          { bucket: "2026-06-10T00:00:00Z", all: 48, classic: 29 },
         ],
         series: { all: "All", classic: "Classic" },
       )
@@ -78,7 +113,7 @@ RSpec.describe SearchAnalyticsHelper do
 
     let(:expected_trend_payload) do
       {
-        "labels" => ["09:00", "10:00"],
+        "labels" => ["9 June 2026", "10 June 2026"],
         "datasets" => [
           include("label" => "All", "data" => [52, 48], "borderColor" => "#144e81", "backgroundColor" => "#144e81"),
           include("label" => "Classic", "data" => [31, 29], "borderColor" => "#005a30", "backgroundColor" => "#005a30"),
@@ -111,8 +146,16 @@ RSpec.describe SearchAnalyticsHelper do
       expect(JSON.parse(trend_payload)).to match(expected_trend_payload)
     end
 
+    it "preserves all 24 hourly points and formats their intervals", :aggregate_failures do
+      rows = (0..23).map { |hour| { bucket: Time.utc(2026, 9, 5, hour).iso8601, all: hour + 1 } }
+      payload = JSON.parse(helper.search_analytics_chart_payload(rows, series: { all: "All" }, bucket_size: "hour"))
+      expect(payload.fetch("datasets").first.fetch("data")).to eq((1..24).to_a)
+      expect(payload.fetch("labels").size).to eq(24)
+      expect(payload.fetch("labels").values_at(0, 11, 23)).to eq(["midnight to 1am", "11am to midday", "11pm to midnight"])
+    end
+
     it "labels daily buckets as dates" do
-      expect(JSON.parse(daily_payload).fetch("labels")).to eq(["10 Jun"])
+      expect(JSON.parse(daily_payload).fetch("labels")).to eq(["10 June 2026"])
     end
 
     it "omits chart series that are zero for every bucket" do
@@ -124,82 +167,26 @@ RSpec.describe SearchAnalyticsHelper do
     end
   end
 
-  describe "#search_analytics_view_summary_rows" do
-    let(:rows) do
-      helper.search_analytics_view_summary_rows(
-        {
-          classic: { searches: 710 },
-          internal: { searches: 530 },
-        },
-      )
+  describe "#search_analytics_bucket_date" do
+    it "uses a plain date for daily bins" do
+      expect(helper.search_analytics_bucket_date("2026-09-05T00:00:00Z", bucket_size: "day")).to eq("5 September 2026")
     end
 
-    it "builds proportional rows for the comparison summary" do
-      expect(rows).to contain_exactly(
-        include(label: "Classic", searches: 710, percentage: "57.3%", width: 57.3),
-        include(label: "Internal", searches: 530, percentage: "42.7%", width: 42.7),
-      )
+    it "identifies hourly intervals without changing their date" do
+      expect(helper.search_analytics_bucket_date("2026-09-05T09:00:00Z", bucket_size: "hour")).to eq("5 September 2026, 9am to 10am")
     end
   end
 
-  describe "#search_analytics_request_source_rows" do
-    let(:rows) do
-      helper.search_analytics_request_source_rows(
-        {
-          frontend: { searches: 920, failure_rate: 0.01, zero_result_rate: 0.08, selection_rate: 0.41, p90_latency_ms: 1800 },
-          backend_only: { searches: 320, failure_rate: 0.02, zero_result_rate: 0.09, selection_rate: 0.35, p90_latency_ms: 900 },
-          unknown: { searches: 5, failure_rate: 0.0, zero_result_rate: 0.2, selection_rate: 0.2, p90_latency_ms: 700 },
-          partner_api: { searches: 12, failure_rate: 0.0, zero_result_rate: 0.1, selection_rate: 0.3, p90_latency_ms: 600 },
-        },
-      )
-    end
-    let(:expected_rows) do
-      [
-        include(key: "frontend", label: "Frontend-routed", searches: 920),
-        include(key: "backend_only", label: "Direct backend / non-frontend", searches: 320),
-        include(key: "unknown", label: "Unknown", searches: 5),
-        include(key: "partner_api", label: "Partner api", searches: 12),
-      ]
+  describe "#search_analytics_date" do
+    it "presents whole reporting days without times", :aggregate_failures do
+      expect(helper.search_analytics_date("2026-09-05T00:00:00Z")).to eq("5 September 2026")
+      expect(helper.search_analytics_date("2026-09-05T17:30:00Z")).to eq("5 September 2026")
     end
 
-    it "builds ordered rows for known and unexpected request sources" do
-      expect(rows).to match(expected_rows)
-    end
-  end
-
-  describe "#search_analytics_show_view_summary?" do
-    subject(:show_view_summary) { helper.search_analytics_show_view_summary?(comparisons) }
-
-    context "when internal searches have meaningful volume" do
-      let(:comparisons) do
-        {
-          classic: { searches: 9_900 },
-          internal: { searches: 100 },
-        }
+    it "keeps reporting dates in UTC even when the application uses another timezone" do
+      Time.use_zone("Pacific/Auckland") do
+        expect(helper.search_analytics_date("2026-09-05T23:00:00Z")).to eq("5 September 2026")
       end
-
-      it "shows the summary" do
-        expect(show_view_summary).to be(true)
-      end
-    end
-
-    context "when internal searches are negligible" do
-      let(:comparisons) do
-        {
-          classic: { searches: 131_468 },
-          internal: { searches: 0 },
-        }
-      end
-
-      it "hides the summary" do
-        expect(show_view_summary).to be(false)
-      end
-    end
-  end
-
-  describe "#search_analytics_timestamp" do
-    it "formats ISO timestamps for the dashboard" do
-      expect(helper.search_analytics_timestamp("2026-06-10T09:55:00Z")).to eq("10 June 2026 at 09:55")
     end
   end
 end

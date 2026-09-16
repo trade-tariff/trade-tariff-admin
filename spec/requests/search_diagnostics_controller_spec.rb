@@ -429,9 +429,9 @@ RSpec.describe SearchDiagnosticsController do
     it "renders the complete request-correlated AI cost and token usage" do
       page = Capybara.string(rendered_page.body)
 
-      expect(page).to have_css(".govuk-summary-list__row", text: "AI input 1,500 tokens costing US$0.002000 Includes 200 cached tokens costing US$0.000020", normalize_ws: true)
-        .and have_css(".govuk-summary-list__row", text: "AI output 300 tokens costing US$0.001600", normalize_ws: true)
-        .and have_css(".govuk-summary-list__row", text: "AI total 1,800 tokens from 2 AI calls costing US$0.005100", normalize_ws: true)
+      expect(page).to have_css(".govuk-summary-list__row", text: "AI input 1,500 tokens costing $0.002000 Includes 200 cached tokens costing $0.000020", normalize_ws: true)
+        .and have_css(".govuk-summary-list__row", text: "AI output 300 tokens costing $0.001600", normalize_ws: true)
+        .and have_css(".govuk-summary-list__row", text: "AI total 1,800 tokens from 2 AI calls costing $0.005100", normalize_ws: true)
     end
 
     it "renders classic exact and fuzzy event summaries" do
@@ -608,7 +608,7 @@ RSpec.describe SearchDiagnosticsController do
       it "uses the same partial wording for the AI total" do
         expect(Capybara.string(rendered_page.body)).to have_css(
           ".govuk-summary-list__row",
-          text: "Known AI total 600 tokens from 1 AI call costing US$0.000000 (partial: 1 call with unknown pricing)",
+          text: "Known AI total 600 tokens from 1 AI call costing $0.000000 (partial: 1 call with unknown pricing)",
           normalize_ws: true,
         )
       end

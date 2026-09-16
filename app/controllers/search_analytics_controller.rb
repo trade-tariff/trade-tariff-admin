@@ -5,12 +5,13 @@ class SearchAnalyticsController < AuthenticatedController
   def index
     authorize SearchAnalytics, :index?
 
-    @period = params.fetch(:period, "24h")
-    @view = params.fetch(:view, "all")
-    @search_analytics = SearchAnalytics.fetch(period: @period, view: @view)
+    prepare_filters
+    @search_analytics = SearchAnalytics.fetch(**@analytics_params)
     prepare_improvement_terms
+  rescue Faraday::BadRequestError => e
+    render_unavailable_dashboard(date_range_error(e), status: :unprocessable_entity)
   rescue Faraday::ResourceNotFound
-    render_unavailable_dashboard("Search analytics are not available yet.")
+    render_unavailable_dashboard("No collected search analytics are available for the selected dates.")
   rescue Faraday::Error => e
     Rails.logger.error("Failed to fetch search analytics: #{e.class} #{e.message}")
     render_unavailable_dashboard("Search analytics could not be loaded.")
@@ -18,12 +19,33 @@ class SearchAnalyticsController < AuthenticatedController
 
 private
 
-  def render_unavailable_dashboard(message)
+  def prepare_filters
+    @period = %w[24h 7d 30d custom].include?(params[:period]) ? params[:period] : "24h"
+    @view = %w[all classic internal].include?(params[:view]) ? params[:view] : "all"
+    @latest_date = (Time.current.utc.to_date - 1).iso8601
+    custom = params.key?(:from) || params.key?(:to) || @period == "custom"
+    @period = "custom" if custom
+    dates = custom ? { from: params[:from], to: params[:to] } : {}
+    @analytics_params = { period: @period, view: @view }.merge(dates)
+    @to = custom ? params[:to] : @latest_date
+    @from = custom ? params[:from] : (Date.iso8601(@latest_date) - { "7d" => 6, "30d" => 29 }.fetch(@period, 0)).iso8601
+  end
+
+  def date_range_error(error)
+    body = error.response_body
+    body = JSON.parse(body) if body.is_a?(String)
+    body.is_a?(Hash) ? body.dig("errors", 0, "detail") || "Check the selected date range." : "Check the selected date range."
+  rescue JSON::ParserError
+    "Check the selected date range."
+  end
+
+  def render_unavailable_dashboard(message, status: :ok)
     flash.now[:alert] = message
+    @analytics_unavailable = true
     @search_analytics = SearchAnalytics.new(period: @period, view: @view)
     prepare_improvement_terms
 
-    render :index
+    render :index, status:
   end
 
   def prepare_improvement_terms
