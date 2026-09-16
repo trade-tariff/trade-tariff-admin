@@ -10,6 +10,21 @@
   <div class="govuk-grid-column-full">
     <h1 class="govuk-heading-l">Search dashboard</h1>
 
+    <% if @date_range_error %>
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">There is a problem</h2>
+          <div class="govuk-error-summary__body">
+            <ul class="govuk-list govuk-error-summary__list">
+              <% %w[From To].each do |label| %>
+                <li><%= link_to "#{label}: #{@date_range_error}", "##{label.downcase}" %></li>
+              <% end %>
+            </ul>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
     <div class="search-analytics-filters govuk-!-margin-bottom-5">
       <div>
         <h2 class="govuk-heading-s govuk-!-margin-bottom-2">Period</h2>
@@ -34,17 +49,19 @@
       <%= form_with url: search_analytics_path, method: :get, local: true, class: "search-analytics-date-range" do %>
         <%= hidden_field_tag :period, "custom" %>
         <%= hidden_field_tag :view, @view %>
-        <fieldset class="govuk-fieldset" aria-describedby="date-range-hint">
+        <% date_description = @date_range_error ? "date-range-hint date-range-error" : "date-range-hint" %>
+        <fieldset class="govuk-fieldset" aria-describedby="<%= date_description %>">
           <legend class="govuk-visually-hidden">Date range (UTC)</legend>
           <p id="date-range-hint" class="govuk-visually-hidden">Both dates are included, in UTC. Choose up to 366 days, ending yesterday or earlier. Missing dates will not trigger collection.</p>
-          <div class="govuk-form-group">
-            <%= label_tag :from, "From", class: "govuk-label" %>
-            <%= date_field_tag :from, @from, required: true, max: @latest_date, class: "govuk-input", aria: { describedby: "date-range-hint" } %>
-          </div>
-          <div class="govuk-form-group">
-            <%= label_tag :to, "To", class: "govuk-label" %>
-            <%= date_field_tag :to, @to, required: true, max: @latest_date, class: "govuk-input", aria: { describedby: "date-range-hint" } %>
-          </div>
+          <% if @date_range_error %>
+            <p id="date-range-error" class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> <%= @date_range_error %></p>
+          <% end %>
+          <% [[:from, @from], [:to, @to]].each do |name, date| %>
+            <div class="govuk-form-group<%= ' govuk-form-group--error' if @date_range_error %>">
+              <%= label_tag name, name.to_s.capitalize, class: "govuk-label" %>
+              <%= date_field_tag name, date, required: true, max: @latest_date, class: "govuk-input#{' govuk-input--error' if @date_range_error}", aria: { describedby: date_description, invalid: @date_range_error.present? } %>
+            </div>
+          <% end %>
           <%= submit_tag "Apply dates", class: "govuk-button" %>
         </fieldset>
       <% end %>
@@ -71,7 +88,7 @@
         ["Selection rate", search_analytics_percentage(summary[:selection_rate]), statuses[:selection_rate]],
         [availability[:latency_percentiles_approximate] ? "P90 latency (approx.)" : "P90 latency", search_analytics_latency(summary[:p90_latency_ms]), statuses[:p90_latency_ms]],
       ].each do |label, value, status| %>
-        <% status = (status || {}).with_indifferent_access %>
+        <% status = value == "Unavailable" ? {} : (status || {}).with_indifferent_access %>
         <section class="search-analytics-metric" aria-label="<%= label %>">
           <h2 class="govuk-heading-s"><%= label %></h2>
           <p class="search-analytics-metric__value"><%= value %></p>

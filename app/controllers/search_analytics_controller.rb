@@ -9,7 +9,8 @@ class SearchAnalyticsController < AuthenticatedController
     @search_analytics = SearchAnalytics.fetch(**@analytics_params)
     prepare_improvement_terms
   rescue Faraday::BadRequestError => e
-    render_unavailable_dashboard(date_range_error(e), status: :unprocessable_entity)
+    @date_range_error = date_range_error(e)
+    render_unavailable_dashboard(@date_range_error, status: :unprocessable_entity)
   rescue Faraday::ResourceNotFound
     render_unavailable_dashboard("No collected search analytics are available for the selected dates.")
   rescue Faraday::Error => e
@@ -40,7 +41,7 @@ private
   end
 
   def render_unavailable_dashboard(message, status: :ok)
-    flash.now[:alert] = message
+    flash.now[:alert] = message unless @date_range_error
     @analytics_unavailable = true
     @search_analytics = SearchAnalytics.new(period: @period, view: @view)
     prepare_improvement_terms
