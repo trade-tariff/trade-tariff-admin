@@ -242,7 +242,7 @@
         <h2 class="govuk-heading-m">Outcome trend</h2>
         <div class="search-analytics-chart-container">
           <canvas class="search-analytics-chart"
-                  data-chart="<%= search_analytics_chart_payload(trends[:outcomes], series: { completed: "Completed", failed: "Failed", zero_result: "Zero result", selected: "Selected" }, minimum_series_share: 1, bucket_size: @search_analytics.bucket_size) %>"></canvas>
+                  data-chart="<%= search_analytics_chart_payload(trends[:outcomes], series: { completed: "Completed", failed: "Failed", zero_result: "Zero result", selected: "Selected" }, bucket_size: @search_analytics.bucket_size) %>"></canvas>
         </div>
       </section>
     </div>
