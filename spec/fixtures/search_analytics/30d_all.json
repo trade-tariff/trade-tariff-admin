@@ -7,7 +7,7 @@
       "period": "30d",
       "view": "all",
       "bucket_size": "day",
-      "availability": { "journey_metrics": true, "costs_match_view": true, "latency_percentiles_approximate": true, "terms_complete": { "search_terms": true, "item_ids": true } },
+      "availability": { "journey_metrics": true, "journey_outcomes": true, "costs_match_view": true, "latency_percentiles_approximate": true, "terms_complete": { "search_terms": true, "item_ids": true } },
       "coverage": { "from": "2026-05-12", "to": "2026-06-10", "expected_days": 30, "collected_days": 30, "complete": true },
       "ai_costs": { "summary": { "total_cost_usd": 0, "assisted_searches": 0, "priced_calls": 0, "unpriced_calls": 0, "complete": true }, "trend": [], "operations": [] },
       "generated_at": "2026-06-10T09:55:00Z",

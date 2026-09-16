@@ -7,7 +7,7 @@
       "period": "7d",
       "view": "all",
       "bucket_size": "day",
-      "availability": { "journey_metrics": true, "costs_match_view": true, "latency_percentiles_approximate": true, "terms_complete": { "search_terms": true, "item_ids": true } },
+      "availability": { "journey_metrics": true, "journey_outcomes": true, "costs_match_view": true, "latency_percentiles_approximate": true, "terms_complete": { "search_terms": true, "item_ids": true } },
       "coverage": { "from": "2026-06-04", "to": "2026-06-10", "expected_days": 7, "collected_days": 7, "complete": true },
       "generated_at": "2026-06-10T09:55:00Z",
       "data_through": "2026-06-10T09:50:00Z",

@@ -124,6 +124,10 @@
                 value: { text: "Result selections divided by eligible searches. Eligible searches are classic fuzzy searches and internal searches that return ranked confidence results. Can exceed 100% when users open more than one result." },
               },
               {
+                key: { text: "Outcome trend" },
+                value: { text: "Uses the same frontend journeys as Search requests. Completed means a final backend response, not a question step. Question only and Unknown show journeys without a recognised final outcome. Selected and Zero result can overlap with other states. Outcomes are shown in the journey's observed start buckets." },
+              },
+              {
                 key: { text: "P90 latency" },
                 value: { text: "About 90% of measured searches finished within this time." },
               },
@@ -241,10 +245,15 @@
 
       <section>
         <h2 class="govuk-heading-m">Outcome trend</h2>
-        <div class="search-analytics-chart-container">
-          <canvas class="search-analytics-chart"
-                  data-chart="<%= search_analytics_chart_payload(trends[:outcomes], series: { completed: "Completed", failed: "Failed", zero_result: "Zero result", selected: "Selected" }, bucket_size: @search_analytics.bucket_size) %>"></canvas>
-        </div>
+        <% if availability[:journey_outcomes] == true %>
+          <div class="search-analytics-chart-container">
+            <canvas class="search-analytics-chart"
+                    data-x-axis-title="<%= @search_analytics.bucket_size == 'hour' ? 'Hour (UTC)' : 'Date (UTC)' %>" data-y-axis-title="Journeys"
+                    data-chart="<%= search_analytics_chart_payload(trends[:outcomes], series: { completed: "Completed", failed: "Failed", nonterminal: "Question only", unknown: "Unknown", zero_result: "Zero result", selected: "Selected" }, bucket_size: @search_analytics.bucket_size) %>"></canvas>
+          </div>
+        <% else %>
+          <p class="govuk-body">Journey outcomes have not been collected for all available days.</p>
+        <% end %>
       </section>
     </div>
 
