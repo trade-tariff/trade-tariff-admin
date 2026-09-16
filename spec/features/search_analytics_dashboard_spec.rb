@@ -128,8 +128,27 @@ RSpec.describe "Search analytics dashboard" do
     end
   end
 
-  it "shows zero recorded costs when the selected view has no AI calls", :aggregate_failures do
+  [true, false, nil].each do |available|
+    it "hides AI costs and cost notices for Classic (#{available.inspect})", :aggregate_failures do
+      stub_journey_analytics(view: "classic", costs_match_view: available)
+      visit search_analytics_path(period: "24h", view: "classic")
+      expect(page).not_to have_css(".search-analytics-ai-cost", visible: :all)
+      expect(page).not_to have_content("Matching AI cost data")
+      expect(page).to have_css("section[aria-label='Search requests']", text: "6")
+    end
+  end
+
+  it "keeps journey availability notices for Classic without referring to AI costs", :aggregate_failures do
+    stub_journey_analytics(view: "classic", journey_metrics: false)
     visit search_analytics_path(period: "24h", view: "classic")
+    expect(page).to have_content("Search journeys need to be collected")
+    expect(page).not_to have_content("AI cost")
+    expect_unavailable_metric("Search requests")
+  end
+
+  it "shows zero recorded costs when Internal has no AI calls", :aggregate_failures do
+    stub_internal_without_ai_calls
+    visit search_analytics_path(period: "24h", view: "internal")
 
     expect(page).to have_css("#ai-cost-heading", text: "AI cost")
     expect(page).to have_css("section[aria-label='Estimated AI cost']", text: "$0.00")
@@ -238,12 +257,19 @@ RSpec.describe "Search analytics dashboard" do
     expect(page).not_to have_content("Each step counts as a search request")
   end
 
-  def stub_journey_analytics(journey_metrics: true, costs_match_view: true)
-    body = JSON.parse(Rails.root.join("spec/fixtures/search_analytics/24h_internal.json").read)
+  def stub_internal_without_ai_calls
+    body = JSON.parse(Rails.root.join("spec/fixtures/search_analytics/24h_classic.json").read)
+    body["data"]["attributes"]["view"] = "internal"
+    stub_api_request("/search_analytics").with(query: { period: "24h", view: "internal" })
+      .to_return(status: 200, headers: { "content-type" => "application/json" }, body: body.to_json)
+  end
+
+  def stub_journey_analytics(journey_metrics: true, costs_match_view: true, view: "internal")
+    body = JSON.parse(Rails.root.join("spec/fixtures/search_analytics/24h_#{view}.json").read)
     body["data"]["attributes"]["availability"].merge!("journey_metrics" => journey_metrics, "costs_match_view" => costs_match_view)
     body["data"]["attributes"]["summary"].merge!("searches" => 6, "requests" => 32)
     body["data"]["attributes"]["journeys"] = { "count" => 6 }
-    stub_api_request("/search_analytics").with(query: { period: "24h", view: "internal" })
+    stub_api_request("/search_analytics").with(query: { period: "24h", view: })
       .to_return(status: 200, headers: { "content-type" => "application/json" }, body: body.to_json)
   end
 
