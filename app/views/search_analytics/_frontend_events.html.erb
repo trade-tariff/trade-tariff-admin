@@ -1,0 +1,67 @@
+<% if @view != "classic" && frontend_events.dig(:coverage, :supported) %>
+  <section class="govuk-!-margin-top-6" aria-labelledby="frontend-events-heading">
+    <h2 id="frontend-events-heading" class="govuk-heading-m">Guided search events</h2>
+    <p class="govuk-body">Recorded frontend events, not completion or abandonment rates. The same journey can appear under more than one outcome.</p>
+    <% if frontend_events[:available] %>
+      <% coverage = frontend_events.fetch(:coverage) %>
+      <p class="govuk-body">Frontend coverage: <%= coverage[:collected_days] %> of <%= coverage[:expected_days] %> complete UTC days collected.</p>
+      <% unless coverage[:complete] %>
+        <%= govuk_inset_text(text: "Frontend event coverage is incomplete. Figures describe collected days only; missing days are not zero-activity days.") %>
+      <% end %>
+      <% if frontend_events[:observed_journeys] == 0 %>
+        <p class="govuk-body">No guided-search events were recorded for these collected days. This does not establish whether frontend telemetry was available.</p>
+      <% else %>
+        <table class="govuk-table">
+          <caption class="govuk-table__caption govuk-table__caption--s">Observed page outcomes</caption>
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <% ["Outcome", "Server render events", "Browser-visible events", "Observed journeys", "Timed visible events", "Mean submission-to-visible time"].each do |heading| %>
+                <th scope="col" class="govuk-table__header"><%= heading %></th>
+              <% end %>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            <% Array(frontend_events[:outcomes]).each do |row| %>
+              <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__header"><%= row[:outcome].to_s.humanize %></th>
+                <% %i[rendered_events visible_events journeys timed_visible_events].each do |key| %>
+                  <td class="govuk-table__cell"><%= row[key].nil? ? "Unavailable" : search_analytics_number(row[key]) %></td>
+                <% end %>
+                <td class="govuk-table__cell"><%= search_analytics_latency(row[:average_navigation_ms]) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+        <p class="govuk-body-s">Server render events and browser-visible events are separate observations, not totals to add together. Timing covers recorded submissions until the next page becomes visible, not time spent deciding which result to select.</p>
+
+        <h3 class="govuk-heading-s">Recorded actions</h3>
+        <%= govuk_summary_list(rows: [
+          { key: { text: "Result selection events" }, value: { text: search_analytics_number(frontend_events.dig(:actions, :result_selected)) } },
+          { key: { text: "Don't know events" }, value: { text: search_analytics_number(frontend_events.dig(:actions, :dont_know)) } },
+        ]) %>
+        <p class="govuk-body-s">These are recorded events, not unique clicks or accepted question answers.</p>
+
+        <table class="govuk-table">
+          <caption class="govuk-table__caption govuk-table__caption--s">Reported questions per observed journey</caption>
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header">Maximum reported questions</th>
+              <th scope="col" class="govuk-table__header">Observed journeys</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            <% search_analytics_frontend_question_rows(frontend_events[:question_counts]).each do |label, count| %>
+              <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__header"><%= label %></th>
+                <td class="govuk-table__cell"><%= search_analytics_number(count) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+        <p class="govuk-body-s">Uses the largest question count reported for each observed journey in the collected dates. Unknown is not zero; this is not a count of answered questions.</p>
+      <% end %>
+    <% else %>
+      <p class="govuk-body">Frontend events have not been collected for these dates. Existing search metrics remain available. Opening this page does not start collection.</p>
+    <% end %>
+  </section>
+<% end %>
