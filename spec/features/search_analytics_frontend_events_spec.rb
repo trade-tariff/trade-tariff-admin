@@ -3,9 +3,10 @@ RSpec.describe "Frontend search event widgets" do
 
   let(:event_data) { JSON.parse(Rails.root.join("spec/fixtures/search_analytics/frontend_events.json").read) }
 
-  def stub_events(data: event_data, view: "all", period: "24h")
+  def stub_events(data: event_data, view: "all", period: "24h", journeys: nil)
     body = JSON.parse(Rails.root.join("spec/fixtures/search_analytics/#{period}_#{view}.json").read)
     body["data"]["attributes"]["frontend_events"] = data
+    body["data"]["attributes"]["journeys"] = journeys if journeys
     stub_api_request("/search_analytics").with(query: { period:, view: })
       .to_return(status: 200, headers: { "content-type" => "application/json" }, body: body.to_json)
   end
@@ -19,9 +20,9 @@ RSpec.describe "Frontend search event widgets" do
   end
 
   it "does not show guided event widgets for Classic", :aggregate_failures do
-    stub_events(view: "classic")
+    stub_events(view: "classic", journeys: { "question_counts" => [{ "questions" => 1, "journeys" => 4 }] })
     visit search_analytics_path(period: "24h", view: "classic")
-    expect(page).not_to have_css("#frontend-events-heading")
+    expect(page).to have_no_css("#frontend-events-heading").and have_no_css("#backend-questions-heading")
     expect(page).to have_content("Search volume")
   end
 

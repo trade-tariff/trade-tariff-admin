@@ -286,7 +286,7 @@
 
     <% journeys = (@search_analytics.journeys || {}).with_indifferent_access %>
     <% backend_questions = search_analytics_frontend_question_rows(journeys[:question_counts]) %>
-    <% if backend_questions.any? %>
+    <% if @view != "classic" && backend_questions.any? %>
       <section class="govuk-!-margin-top-6" aria-labelledby="backend-questions-heading">
         <h2 id="backend-questions-heading" class="govuk-heading-m">Backend questions per journey</h2>
         <p class="govuk-body">Uses the highest backend question count per journey. Unknown is separate from zero.</p>
