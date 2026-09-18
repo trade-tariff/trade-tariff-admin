@@ -39,6 +39,14 @@ RSpec.describe "Frontend search event widgets" do
     expect(page).to have_css("section[aria-label='Search requests']", text: "1,240")
   end
 
+  it "keeps existing widgets when observed sessions are absent", :aggregate_failures do
+    event_data.delete("observed_sessions")
+    stub_events
+    visit search_analytics_path
+    expect(page).to have_content("Observed journeys: 4.").and have_no_content("Observed browser sessions")
+    expect(page).to have_content("Rank 1, Strong")
+  end
+
   it "shows missing frontend collection without hiding backend metrics", :aggregate_failures do
     event_data["available"] = false
     stub_events
