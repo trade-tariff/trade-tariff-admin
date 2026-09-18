@@ -27,12 +27,17 @@ module SearchAnalyticsHelper
       row = model.with_indifferent_access
       cost = row[:total_cost_usd].to_f
       {
-        label: row[:model].presence || "Unknown",
+        label: search_analytics_unknown_model_label(row[:model]),
         calls: row[:calls].to_i,
         total_cost_usd: cost,
         share: total_cost.to_f.positive? ? cost / total_cost.to_f : 0,
       }
     end
+  end
+
+  def search_analytics_unknown_model_label(model)
+    name = model.to_s
+    name.blank? || name == "unknown" ? "Unknown" : name
   end
 
   def search_analytics_frontend_action_rows(actions)
