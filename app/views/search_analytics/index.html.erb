@@ -229,6 +229,33 @@
             </table>
           </section>
         <% end %>
+
+        <% model_rows = search_analytics_ai_model_rows(ai_costs[:models], total_cost: ai_cost_summary[:total_cost_usd]) %>
+        <% if model_rows.any? %>
+          <section class="search-analytics-ai-cost__breakdown govuk-!-margin-top-6" aria-labelledby="ai-cost-models-heading">
+            <h3 id="ai-cost-models-heading" class="govuk-heading-m">Cost by model</h3>
+            <table class="govuk-table">
+              <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                  <th scope="col" class="govuk-table__header">Model</th>
+                  <th scope="col" class="govuk-table__header govuk-table__header--numeric">Calls</th>
+                  <th scope="col" class="govuk-table__header govuk-table__header--numeric">Cost</th>
+                  <th scope="col" class="govuk-table__header govuk-table__header--numeric">Share</th>
+                </tr>
+              </thead>
+              <tbody class="govuk-table__body">
+                <% model_rows.each do |row| %>
+                  <tr class="govuk-table__row">
+                    <th scope="row" class="govuk-table__header"><%= row[:label] %></th>
+                    <td class="govuk-table__cell govuk-table__cell--numeric"><%= search_analytics_number(row[:calls]) %></td>
+                    <td class="govuk-table__cell govuk-table__cell--numeric"><%= search_analytics_cost(row[:total_cost_usd]) %></td>
+                    <td class="govuk-table__cell govuk-table__cell--numeric"><%= search_analytics_share(row[:share]) %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </section>
+        <% end %>
     </section>
     <% end %>
     <% end %>
@@ -256,6 +283,24 @@
         <% end %>
       </section>
     </div>
+
+    <% journeys = (@search_analytics.journeys || {}).with_indifferent_access %>
+    <% backend_questions = search_analytics_frontend_question_rows(journeys[:question_counts]) %>
+    <% if backend_questions.any? %>
+      <section class="govuk-!-margin-top-6" aria-labelledby="backend-questions-heading">
+        <h2 id="backend-questions-heading" class="govuk-heading-m">Backend questions per journey</h2>
+        <p class="govuk-body">Uses the highest backend question count per journey. Unknown is separate from zero.</p>
+        <div class="search-analytics-chart-container">
+          <canvas class="search-analytics-chart" data-chart-type="bar"
+                  data-x-axis-title="Backend questions" data-y-axis-title="Journeys" data-hide-legend="true" data-hide-x-grid="true"
+                  data-chart="<%= search_analytics_frontend_chart_payload(backend_questions, label: "Journeys") %>"
+                  role="img" aria-label="Backend questions per journey. View question data below for the counts."></canvas>
+        </div>
+        <%= render GovukComponent::DetailsComponent.new(summary_text: "View backend question data") do %>
+          <%= govuk_table(head: ["Maximum backend questions", "Observed journeys"], rows: backend_questions.map { |label, count| [label, search_analytics_number(count)] }) %>
+        <% end %>
+      </section>
+    <% end %>
 
     <%= render "frontend_events", frontend_events: (@search_analytics.frontend_events || {}).with_indifferent_access %>
 

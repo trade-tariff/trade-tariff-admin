@@ -67,6 +67,19 @@ RSpec.describe SearchAnalyticsHelper do
     end
   end
 
+  describe "#search_analytics_frontend_selection_rows" do
+    it "labels missing rank and confidence without dropping the event" do
+      expect(helper.search_analytics_frontend_selection_rows([{ event_count: 2 }])).to eq([["Unknown rank, Unknown", 2]])
+    end
+  end
+
+  describe "#search_analytics_ai_model_rows" do
+    it "keeps unknown model names and computes share" do
+      rows = helper.search_analytics_ai_model_rows([{ model: nil, calls: 2, total_cost_usd: 0.002 }], total_cost: 0.01)
+      expect(rows).to contain_exactly(label: "Unknown", calls: 2, total_cost_usd: 0.002, share: 0.2)
+    end
+  end
+
   describe "#search_analytics_ai_operation_rows" do
     it "adds readable labels and each operation's share of total cost" do
       rows = helper.search_analytics_ai_operation_rows(

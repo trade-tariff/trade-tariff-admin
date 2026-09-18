@@ -10,11 +10,16 @@
   },
   "generated_at": "2026-09-16T04:00:00Z",
   "observed_journeys": 4,
+  "observed_sessions": 2,
   "outcomes": [
     { "outcome": "question", "rendered_events": 3, "visible_events": 2, "journeys": 2, "timed_visible_events": 2, "average_navigation_ms": 1500.0 },
     { "outcome": "results", "rendered_events": 2, "visible_events": 0, "journeys": 2, "timed_visible_events": 0, "average_navigation_ms": null }
   ],
   "actions": { "result_selected": 3, "dont_know": 1 },
+  "selections": [
+    { "result_rank": 1, "confidence": "strong", "event_count": 2 },
+    { "result_rank": 2, "confidence": "good", "event_count": 1 }
+  ],
   "question_counts": [
     { "questions": null, "journeys": 1 },
     { "questions": 0, "journeys": 1 },

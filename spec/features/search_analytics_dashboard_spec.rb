@@ -468,7 +468,7 @@ RSpec.describe "Search analytics dashboard" do
     expect(page).not_to have_content("Volume by request source")
     expect(page).to have_content("bike seat")
     expect(page).not_to have_css("section[aria-labelledby='zero-search-terms-heading']", text: "3926909090")
-    expect(page).to have_css(".search-analytics-chart-container", count: 3)
+    expect(page).to have_css(".search-analytics-chart-container", count: 4)
     expect(page).to have_css("section[aria-labelledby='ai-cost-heading']", text: "Known AI cost")
     expect(page).to have_content("$0.03")
     expect(page).not_to have_content("Average cost per search")
@@ -489,7 +489,7 @@ RSpec.describe "Search analytics dashboard" do
     expect(page).to have_link("Next")
     expect(chart_datasets).to all(include("borderColor"))
     expect(chart_datasets.pluck("label")).not_to include("Frontend-routed", "Direct backend / non-frontend", "Unknown")
-    expect(non_empty_chart_payloads.size).to eq(3)
+    expect(non_empty_chart_payloads.size).to eq(4)
   end
 
   def expect_period_link(label, content:, query:)
@@ -511,7 +511,9 @@ RSpec.describe "Search analytics dashboard" do
     expect(page).not_to have_content("excluding analytics collection costs")
     expect(page).to have_css(".search-analytics-ai-cost__breakdown", text: "AI-assisted search")
     expect(page).to have_css(".search-analytics-ai-cost__breakdown", text: "Search matching preparation")
-    expect(page.all(".search-analytics-ai-cost__breakdown thead th").map(&:text)).to eq(%w[Operation Calls Cost Share])
+    expect(page).to have_css("#ai-cost-models-heading", text: "Cost by model")
+    expect(page).to have_css("section[aria-labelledby='ai-cost-models-heading']", text: "gpt-5.4")
+    expect(page.all("section[aria-labelledby='ai-cost-breakdown-heading'] thead th").map(&:text)).to eq(%w[Operation Calls Cost Share])
     expect(page.all(".search-analytics-ai-cost__chart details thead th", visible: :all).map { |header| header.text(:all) }).to eq(["Date and hour (UTC)", "Estimated AI cost"])
   end
 

@@ -9,6 +9,11 @@
       <% if frontend_events[:observed_journeys] == 0 %>
         <p class="govuk-body">No guided-search events were recorded for these collected days. This does not establish whether frontend telemetry was available.</p>
       <% else %>
+        <p class="govuk-body">Observed journeys: <%= search_analytics_number(frontend_events[:observed_journeys]) %>.
+          <% if frontend_events[:observed_sessions] %>
+            Observed browser sessions: <%= search_analytics_number(frontend_events[:observed_sessions]) %>.
+          <% end %>
+        </p>
         <table class="govuk-table">
           <caption class="govuk-table__caption govuk-table__caption--s">Observed page outcomes</caption>
           <thead class="govuk-table__head">
@@ -42,6 +47,12 @@
         <% end %>
         <%= render GovukComponent::DetailsComponent.new(summary_text: "View action data") do %>
           <%= govuk_table(head: ["Action", "Recorded events"], rows: actions.map { |label, count| [label, search_analytics_number(count)] }) %>
+        <% end %>
+
+        <% selections = search_analytics_frontend_selection_rows(frontend_events[:selections]) %>
+        <% if selections.any? %>
+          <h3 class="govuk-heading-s">Result selections by rank and confidence</h3>
+          <%= govuk_table(head: ["Selection", "Recorded events"], rows: selections.map { |label, count| [label, search_analytics_number(count)] }) %>
         <% end %>
 
         <% questions = search_analytics_frontend_question_rows(frontend_events[:question_counts]) %>
