@@ -12,6 +12,29 @@ module SearchAnalyticsHelper
     searches: "#144e81",
     ai_total: "#144e81",
   }.freeze
+  def search_analytics_frontend_selection_rows(selections)
+    Array(selections).map do |selection|
+      row = selection.with_indifferent_access
+      rank = row[:result_rank]
+      confidence = row[:confidence].presence&.humanize || "Unknown"
+      label = rank.nil? ? "Unknown rank, #{confidence}" : "Rank #{rank}, #{confidence}"
+      [label, row[:event_count].to_i]
+    end
+  end
+
+  def search_analytics_ai_model_rows(models, total_cost:)
+    Array(models).map do |model|
+      row = model.with_indifferent_access
+      cost = row[:total_cost_usd].to_f
+      {
+        label: row[:model].presence || "Unknown",
+        calls: row[:calls].to_i,
+        total_cost_usd: cost,
+        share: total_cost.to_f.positive? ? cost / total_cost.to_f : 0,
+      }
+    end
+  end
+
   def search_analytics_frontend_action_rows(actions)
     actions = (actions || {}).with_indifferent_access
     [["Result selections", actions[:result_selected].to_i], ["Don't know", actions[:dont_know].to_i]]
@@ -25,7 +48,7 @@ module SearchAnalyticsHelper
         data: rows.map(&:last),
         backgroundColor: pie ? ["#144e81", "#f47738"] : "#144e81",
         maxBarThickness: 72,
-      }],
+      }.merge(pie ? {} : { borderColor: "#144e81", pointBackgroundColor: "#144e81", pointBorderColor: "#144e81" })],
     }.to_json
   end
 
