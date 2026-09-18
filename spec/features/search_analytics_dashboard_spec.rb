@@ -468,6 +468,7 @@ RSpec.describe "Search analytics dashboard" do
     expect(page).not_to have_content("Volume by request source")
     expect(page).to have_content("bike seat")
     expect(page).not_to have_css("section[aria-labelledby='zero-search-terms-heading']", text: "3926909090")
+    expect(page).to have_css("#backend-questions-heading", text: "Backend questions per journey")
     expect(page).to have_css(".search-analytics-chart-container", count: 4)
     expect(page).to have_css("section[aria-labelledby='ai-cost-heading']", text: "Known AI cost")
     expect(page).to have_content("$0.03")
