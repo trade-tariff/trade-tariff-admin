@@ -74,8 +74,8 @@ RSpec.describe SearchAnalyticsHelper do
   end
 
   describe "#search_analytics_ai_model_rows" do
-    it "keeps unknown model names and computes share" do
-      rows = helper.search_analytics_ai_model_rows([{ model: nil, calls: 2, total_cost_usd: 0.002 }], total_cost: 0.01)
+    it "formats missing and unknown model names and computes share" do
+      rows = helper.search_analytics_ai_model_rows([{ model: "unknown", calls: 2, total_cost_usd: 0.002 }], total_cost: 0.01)
       expect(rows).to contain_exactly(label: "Unknown", calls: 2, total_cost_usd: 0.002, share: 0.2)
     end
   end
