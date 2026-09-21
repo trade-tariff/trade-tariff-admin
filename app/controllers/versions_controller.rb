@@ -3,16 +3,21 @@ class VersionsController < AuthenticatedController
 
   # A restore writes the record that the version belongs to. It must obey the
   # same rule as a direct edit of that record. This map gives the policy of
-  # each restorable item type. An item type that is not in the map falls back
-  # to ApplicationPolicy, which denies every action.
+  # each item type that the Admin Portal can restore. Each entry is the policy
+  # that the edit screen for that item type uses.
+  #
+  # An item type that is not in the map falls back to ApplicationPolicy, which
+  # denies every action. GoodsNomenclatureIntercept is deliberately absent: the
+  # backend can restore that type, but the Admin Portal has no screen for it,
+  # so no role may restore one from here.
   RESTORE_POLICIES = {
     "AdminConfiguration" => AdminConfigurationPolicy,
     "GoodsNomenclatureLabel" => GoodsNomenclatureLabelPolicy,
     "GoodsNomenclatureSelfText" => GoodsNomenclatureSelfTextPolicy,
+    "TariffKnowledge::CompressedNote" => TariffKnowledgeCompressedNotePolicy,
     "DescriptionIntercept" => DescriptionInterceptPolicy,
-    "GoodsNomenclatureIntercept" => DescriptionInterceptPolicy,
-    "CustomsTariffSectionNote" => SectionNotePolicy,
-    "CustomsTariffChapterNote" => ChapterNotePolicy,
+    "CustomsTariffSectionNote" => CustomsTariff::SectionNotePolicy,
+    "CustomsTariffChapterNote" => CustomsTariff::ChapterNotePolicy,
   }.freeze
 
   def index
