@@ -276,7 +276,7 @@
         <h2 class="govuk-heading-m">Outcome trend</h2>
         <% outcome_coverage = (availability[:journey_outcome_coverage] || {}).with_indifferent_access %>
         <% if availability[:journey_outcomes] == true %>
-          <% unless outcome_coverage[:complete] %>
+          <% if outcome_coverage[:complete] == false %>
             <%= govuk_inset_text(text: "Outcome figures describe collected days only. Missing days are not zero-outcome days.") %>
           <% end %>
           <div class="search-analytics-chart-container">
