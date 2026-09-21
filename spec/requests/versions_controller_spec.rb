@@ -88,6 +88,25 @@ RSpec.describe VersionsController, type: :request do
   describe "POST #restore" do
     let(:version_id) { 42 }
 
+    def lookup_response
+      {
+        status: 200,
+        headers: { "content-type" => "application/json; charset=utf-8" },
+        body: {
+          data: {
+            id: version_id.to_s,
+            type: "version",
+            attributes: {
+              item_type: "GoodsNomenclatureLabel",
+              item_id: "12345",
+              event: "update",
+              object: { "goods_nomenclature_item_id" => "0101210000" },
+            },
+          },
+        }.to_json,
+      }
+    end
+
     context "when successful" do # rubocop:disable RSpec/MultipleMemoizedHelpers
       let(:make_request) { post restore_version_path(version_id) }
       let(:restore_response) do
@@ -110,6 +129,8 @@ RSpec.describe VersionsController, type: :request do
       end
 
       before do
+        stub_api_request("/versions/#{version_id}", backend: "uk")
+          .and_return(lookup_response)
         stub_api_request("/versions/#{version_id}/restore", :post, backend: "uk")
           .and_return(restore_response)
       end
@@ -126,7 +147,7 @@ RSpec.describe VersionsController, type: :request do
       let(:make_request) { post restore_version_path(version_id) }
 
       before do
-        stub_api_request("/versions/#{version_id}/restore", :post, backend: "uk")
+        stub_api_request("/versions/#{version_id}", backend: "uk")
           .and_return(status: 404, body: { error: "Not found" }.to_json)
       end
 
@@ -138,10 +159,28 @@ RSpec.describe VersionsController, type: :request do
       end
     end
 
+    context "when the version lookup fails" do
+      let(:make_request) { post restore_version_path(version_id) }
+
+      before do
+        stub_api_request("/versions/#{version_id}", backend: "uk")
+          .and_return(status: 500, body: { error: "Server error" }.to_json)
+      end
+
+      it { is_expected.to redirect_to(versions_path) }
+
+      it "shows an error message" do
+        rendered_page
+        expect(session.dig("flash", "flashes", "alert")).to include("Failed to restore")
+      end
+    end
+
     context "when API fails" do
       let(:make_request) { post restore_version_path(version_id) }
 
       before do
+        stub_api_request("/versions/#{version_id}", backend: "uk")
+          .and_return(lookup_response)
         stub_api_request("/versions/#{version_id}/restore", :post, backend: "uk")
           .and_return(status: 500, body: { error: "Server error" }.to_json)
       end
