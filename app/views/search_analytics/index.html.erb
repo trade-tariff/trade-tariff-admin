@@ -72,8 +72,8 @@
     <% availability = (@search_analytics.availability || {}).with_indifferent_access %>
     <% if coverage[:complete] == false %>
       <%= govuk_inset_text do %>
-        Incomplete coverage: <%= coverage[:collected_days] %> of <%= coverage[:expected_days] %> complete UTC days collected.
-        Figures describe collected days only. Missing days are not zero-traffic days.
+        Incomplete coverage: <%= coverage[:collected_days] %> of <%= coverage[:expected_days] %> UTC days have stored results.
+        Some widgets may cover fewer days. Missing days are not zero-traffic days.
       <% end %>
     <% end %>
     <% if availability[:range_percentiles] == false %>
@@ -142,7 +142,7 @@
     <% if availability[:journey_metrics] && availability[:costs_match_view] != true %>
       <p class="govuk-body">Matching AI cost data is not available for the selected view.</p>
     <% end %>
-    <% if availability[:journey_metrics] && availability[:costs_match_view] == true %>
+    <% if availability[:journey_metrics] && availability[:costs_match_view] == true && search_analytics_query_collected?(coverage, :ai_cost_trend) %>
     <% if availability[:unattributed_cost_requests].to_i.positive? %>
       <p class="govuk-body">AI costs that could not be linked to search journeys in this period are not included.</p>
     <% end %>
@@ -257,6 +257,8 @@
           </section>
         <% end %>
     </section>
+    <% elsif availability[:journey_metrics] && availability[:costs_match_view] == true %>
+      <p class="govuk-body">AI cost data has not been collected for these dates. Other search metrics remain available.</p>
     <% end %>
     <% end %>
 

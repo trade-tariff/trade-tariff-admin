@@ -69,6 +69,13 @@ module SearchAnalyticsHelper
     value.to_i >= 8 ? "8+" : value.to_i.to_s
   end
 
+  def search_analytics_query_collected?(coverage, name)
+    queries = coverage.with_indifferent_access[:queries]
+    return true if queries.blank?
+
+    queries.dig(name, :collected_days).to_i.positive?
+  end
+
   def search_analytics_number(value)
     number_with_delimiter(value.to_i)
   end
