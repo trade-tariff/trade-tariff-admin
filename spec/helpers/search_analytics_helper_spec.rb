@@ -1,4 +1,15 @@
 RSpec.describe SearchAnalyticsHelper do
+  describe "#search_analytics_query_collected?" do
+    it "treats a missing queries map as collected so older payloads keep their widgets" do
+      expect(helper.search_analytics_query_collected?({ complete: false }, :ai_cost_trend)).to be(true)
+    end
+
+    it "hides a widget when that query has no collected days" do
+      coverage = { queries: { ai_cost_trend: { collected_days: 0 } } }
+      expect(helper.search_analytics_query_collected?(coverage, :ai_cost_trend)).to be(false)
+    end
+  end
+
   describe "#search_analytics_number" do
     it "formats large numbers with delimiters" do
       expect(helper.search_analytics_number(12_400)).to eq("12,400")

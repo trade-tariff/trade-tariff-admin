@@ -222,6 +222,14 @@ RSpec.describe "Search analytics dashboard" do
     expect_incomplete_analytics
   end
 
+  it "keeps other metrics when AI cost rows are absent", :aggregate_failures do
+    stub_missing_cost_query_analytics
+    visit search_analytics_path(period: "30d", view: "all")
+    expect(page).to have_css("section[aria-label='Search requests']")
+    expect(page).to have_content("AI cost data has not been collected for these dates")
+    expect(page).not_to have_css("#ai-cost-heading")
+  end
+
   context "with custom date ranges" do
     include ActiveSupport::Testing::TimeHelpers
 
@@ -374,6 +382,20 @@ RSpec.describe "Search analytics dashboard" do
     expect(improvement_term_queries).not_to be_empty
   end
 
+  def stub_missing_cost_query_analytics
+    body = JSON.parse(Rails.root.join("spec/fixtures/search_analytics/30d_all.json").read)
+    attributes = body.fetch("data").fetch("attributes")
+    attributes["coverage"] = {
+      "complete" => false,
+      "expected_days" => 30,
+      "collected_days" => 30,
+      "queries" => { "ai_cost_trend" => { "collected_days" => 0, "complete" => false } },
+    }
+    attributes["ai_costs"] = { "summary" => { "total_cost_usd" => 0, "complete" => false }, "trend" => [], "operations" => [] }
+    stub_api_request("/search_analytics").with(query: { period: "30d", view: "all" })
+      .to_return(status: 200, headers: { "content-type" => "application/json" }, body: body.to_json)
+  end
+
   def stub_incomplete_analytics
     body = JSON.parse(Rails.root.join("spec/fixtures/search_analytics/30d_all.json").read)
     attributes = body.fetch("data").fetch("attributes")
@@ -387,7 +409,8 @@ RSpec.describe "Search analytics dashboard" do
   end
 
   def expect_incomplete_analytics
-    expect(page).to have_content("2 of 30 complete UTC days collected")
+    expect(page).to have_content("2 of 30 UTC days have stored results")
+    expect(page).to have_content("Some widgets may cover fewer days")
     expect(page).to have_content("Missing days are not zero-traffic days")
     expect(page).to have_content("Range percentiles are unavailable")
     expect_unavailable_metric("P90 latency")
