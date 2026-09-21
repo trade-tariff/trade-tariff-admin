@@ -1,6 +1,25 @@
 class VersionsController < AuthenticatedController
   include VersionsHelper
 
+  # A restore writes the record that the version belongs to. It must obey the
+  # same rule as a direct edit of that record. This map gives the policy of
+  # each item type that the Admin Portal can restore. Each entry is the policy
+  # that the edit screen for that item type uses.
+  #
+  # An item type that is not in the map falls back to ApplicationPolicy, which
+  # denies every action. GoodsNomenclatureIntercept is deliberately absent: the
+  # backend can restore that type, but the Admin Portal has no screen for it,
+  # so no role may restore one from here.
+  RESTORE_POLICIES = {
+    "AdminConfiguration" => AdminConfigurationPolicy,
+    "GoodsNomenclatureLabel" => GoodsNomenclatureLabelPolicy,
+    "GoodsNomenclatureSelfText" => GoodsNomenclatureSelfTextPolicy,
+    "TariffKnowledge::CompressedNote" => TariffKnowledgeCompressedNotePolicy,
+    "DescriptionIntercept" => DescriptionInterceptPolicy,
+    "CustomsTariffSectionNote" => CustomsTariff::SectionNotePolicy,
+    "CustomsTariffChapterNote" => CustomsTariff::ChapterNotePolicy,
+  }.freeze
+
   def index
     authorize Version, :index?
 
@@ -11,7 +30,8 @@ class VersionsController < AuthenticatedController
   end
 
   def restore
-    authorize Version, :restore?
+    version = Version.find(params[:id])
+    authorize version, :update?, policy_class: RESTORE_POLICIES.fetch(version.item_type, ApplicationPolicy)
 
     response = Version.api.post("admin/versions/#{params[:id]}/restore")
     version_data = response.body["data"]
@@ -20,8 +40,12 @@ class VersionsController < AuthenticatedController
     redirect_to chapter_note_restore_path || (restored && version_item_link(restored)) || versions_path,
                 notice: "Restored successfully."
   rescue Faraday::ResourceNotFound
+    # The lookup can fail before authorize runs. There is then no record to
+    # authorise against, so tell Pundit that this request needs no policy.
+    skip_authorization
     redirect_to versions_path, alert: "Version not found."
   rescue Faraday::Error => e
+    skip_authorization
     redirect_to versions_path, alert: "Failed to restore: #{e.message.truncate(200)}"
   end
 
