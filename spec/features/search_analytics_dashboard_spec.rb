@@ -138,7 +138,7 @@ RSpec.describe "Search analytics dashboard" do
     it "withholds legacy step outcomes when journey outcomes are unavailable (#{available.inspect})", :aggregate_failures do
       stub_journey_analytics(journey_outcomes: available)
       visit search_analytics_path(period: "24h", view: "internal")
-      expect(page).to have_content("Journey outcomes have not been collected for all available days")
+      expect(page).to have_content("Journey outcomes have not been collected for these dates")
       expect(page.find(".search-analytics-charts section", text: "Outcome trend")).not_to have_css("canvas")
       expect(page).to have_css("section[aria-label='Search requests']", text: "6")
     end
@@ -150,6 +150,13 @@ RSpec.describe "Search analytics dashboard" do
       expect(page).not_to have_css("#ai-cost-heading")
       expect(page).to have_content("Matching AI cost data is not available for the selected view.")
     end
+  end
+
+  it "shows matching outcome days when outcome coverage is incomplete", :aggregate_failures do
+    stub_incomplete_outcome_analytics
+    visit search_analytics_path(period: "24h", view: "internal")
+    expect(page).to have_content("Outcome figures describe collected days only")
+    expect(page.find(".search-analytics-charts section", text: "Outcome trend")).to have_css("canvas")
   end
 
   [true, false, nil].each do |available|
@@ -311,6 +318,14 @@ RSpec.describe "Search analytics dashboard" do
     body["data"]["attributes"]["summary"].merge!("searches" => 6, "requests" => 32)
     body["data"]["attributes"]["journeys"] = { "count" => 6 }
     stub_api_request("/search_analytics").with(query: { period: "24h", view: })
+      .to_return(status: 200, headers: { "content-type" => "application/json" }, body: body.to_json)
+  end
+
+  def stub_incomplete_outcome_analytics
+    body = JSON.parse(Rails.root.join("spec/fixtures/search_analytics/24h_internal.json").read)
+    body["data"]["attributes"]["availability"]["journey_outcomes"] = true
+    body["data"]["attributes"]["availability"]["journey_outcome_coverage"] = { "complete" => false, "collected_days" => 1, "expected_days" => 2 }
+    stub_api_request("/search_analytics").with(query: { period: "24h", view: "internal" })
       .to_return(status: 200, headers: { "content-type" => "application/json" }, body: body.to_json)
   end
 

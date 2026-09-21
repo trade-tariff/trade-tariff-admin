@@ -274,14 +274,18 @@
 
       <section>
         <h2 class="govuk-heading-m">Outcome trend</h2>
+        <% outcome_coverage = (availability[:journey_outcome_coverage] || {}).with_indifferent_access %>
         <% if availability[:journey_outcomes] == true %>
+          <% unless outcome_coverage[:complete] %>
+            <%= govuk_inset_text(text: "Outcome figures describe collected days only. Missing days are not zero-outcome days.") %>
+          <% end %>
           <div class="search-analytics-chart-container">
             <canvas class="search-analytics-chart"
                     data-x-axis-title="<%= @search_analytics.bucket_size == 'hour' ? 'Hour (UTC)' : 'Date (UTC)' %>" data-y-axis-title="Journeys"
                     data-chart="<%= search_analytics_chart_payload(trends[:outcomes], series: { completed: "Completed", failed: "Failed", nonterminal: "Question only", unknown: "Unknown", zero_result: "Zero result", selected: "Selected" }, bucket_size: @search_analytics.bucket_size) %>"></canvas>
           </div>
         <% else %>
-          <p class="govuk-body">Journey outcomes have not been collected for all available days.</p>
+          <p class="govuk-body">Journey outcomes have not been collected for these dates.</p>
         <% end %>
       </section>
     </div>
