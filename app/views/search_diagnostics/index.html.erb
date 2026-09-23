@@ -2,6 +2,16 @@
   <div class="govuk-grid-column-two-thirds">
     <h1 class="govuk-heading-l">Search diagnostics</h1>
 
+    <% if @related_diagnostics %>
+      <% if params[:browser_session_id].present? %>
+        <p class="govuk-body" style="overflow-wrap: anywhere;">Browser session <%= params[:browser_session_id] %></p>
+      <% elsif params[:experiment].present? %>
+        <p class="govuk-body">Experiment <%= params[:experiment] %></p>
+      <% end %>
+      <p class="govuk-body">Select a request to open its diagnostics.</p>
+      <%= render "search_diagnostics/request_links", requests: @related_diagnostics.map { |diagnostic| { request_id: diagnostic.request_id, occurred_at: diagnostic.occurred_at, query: diagnostic.query } } %>
+    <% end %>
+
     <%= form_with url: search_diagnostics_path, method: :get do |form| %>
       <div class="govuk-form-group">
         <%= form.label :request_id, "Request ID", class: "govuk-label" %>
