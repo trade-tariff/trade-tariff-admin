@@ -20,6 +20,36 @@ RSpec.describe SearchDiagnosticsController do
       it { is_expected.to redirect_to(search_diagnostic_path("request-123")) }
     end
 
+    context "when a browser session is submitted" do
+      let(:browser_session_id) { "v1:#{'a' * 64}" }
+      let(:make_request) { get search_diagnostics_path, params: { browser_session_id: } }
+
+      before do
+        stub_api_request("/search_diagnostics")
+          .with(query: hash_including("browser_session_id" => browser_session_id))
+          .to_return jsonapi_response(
+            :search_diagnostic,
+            [
+              {
+                resource_id: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+                request_id: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+                query: "fur coat",
+                occurred_at: "2026-06-05 09:40:00.000",
+              },
+            ],
+          )
+      end
+
+      it "links each related request to its diagnostics" do
+        rendered_page
+
+        expect(response.body).to include(
+          search_diagnostic_path("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+          "fur coat",
+        )
+      end
+    end
+
     context "when unauthorised" do
       let(:current_user) { create(:user, :guest) }
 
@@ -652,6 +682,48 @@ RSpec.describe SearchDiagnosticsController do
         copy = ["Disabled", "No compressed notes", "No eligible evidence", "No omitted evidence samples were logged (3 omitted in total).", "Considered unavailable contexts; unavailable reported evidence records", "Selected unavailable contexts; unavailable reported evidence records", "No compressed note passage was added to this model prompt."]
 
         expect(Capybara.string(response.body).text.squish).to include(*copy)
+      end
+    end
+
+    context "when the diagnostic includes an experiment and browser session" do
+      let(:browser_session_id) { "v1:#{'c' * 64}" }
+      let(:make_request) { get search_diagnostic_path("session-request") }
+
+      before do
+        stub_api_request("/search_diagnostics/session-request")
+          .to_return jsonapi_response(
+            :search_diagnostic,
+            {
+              resource_id: "session-request",
+              request_id: "session-request",
+              log_group_name: "platform-logs-test",
+              start_time: "2026-06-02T10:00:00Z",
+              end_time: "2026-06-05T10:00:00Z",
+              experiment: "hmrc-users",
+              browser_session_id:,
+              related_requests: [
+                {
+                  request_id: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+                  occurred_at: "2026-06-05 09:40:00.000",
+                  query: "fur coat",
+                },
+              ],
+              events: [
+                {
+                  timestamp: "2026-06-05 09:58:58.000",
+                  event: "search_started",
+                  search_type: "interactive",
+                  fields: { query: "ladies fur coat", experiment: "hmrc-users" },
+                },
+              ],
+            },
+          )
+      end
+
+      it "links the experiment, browser session, and other requests" do
+        rendered_page
+
+        expect(response.body).to include(search_diagnostics_path(experiment: "hmrc-users"), search_diagnostics_path(browser_session_id:), search_diagnostic_path("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"))
       end
     end
 

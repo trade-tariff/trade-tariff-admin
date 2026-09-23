@@ -182,6 +182,34 @@ module SearchDiagnosticsHelper
     end
   end
 
+  def search_diagnostic_experiment(diagnostic, events)
+    diagnostic.experiment.presence ||
+      Array(events).filter_map { |event| search_diagnostic_fields(event)[:experiment].presence }.first
+  end
+
+  def search_diagnostic_related_requests(diagnostic)
+    Array(diagnostic.related_requests).filter_map do |request|
+      row = normalise_search_diagnostic_hash(request)
+      row if row.is_a?(Hash) && row[:request_id].present?
+    end
+  end
+
+  def search_diagnostic_request_path(request_id)
+    search_diagnostic_path(request_id, search_diagnostic_preserved_filters)
+  end
+
+  def search_diagnostic_experiment_path(experiment)
+    search_diagnostics_path(search_diagnostic_preserved_filters.merge(experiment:))
+  end
+
+  def search_diagnostic_browser_session_path(browser_session_id)
+    search_diagnostics_path(search_diagnostic_preserved_filters.merge(browser_session_id:))
+  end
+
+  def search_diagnostic_preserved_filters
+    params.permit(:lookback_hours, :limit).to_h.compact_blank
+  end
+
   def search_diagnostic_overview(events)
     events = Array(events).map { |event| normalise_search_diagnostic_hash(event) }
 

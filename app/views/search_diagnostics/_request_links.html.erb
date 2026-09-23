@@ -1,0 +1,25 @@
+<% if requests.blank? %>
+  <p class="govuk-body"><%= local_assigns.fetch(:empty_message, "No search requests were found in this log window.") %></p>
+<% else %>
+  <table class="govuk-table">
+    <caption class="govuk-table__caption govuk-table__caption--s">Latest <%= pluralize(requests.size, "search request") %>, up to 20</caption>
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th scope="col" class="govuk-table__header">Request ID</th>
+        <th scope="col" class="govuk-table__header">Time</th>
+        <th scope="col" class="govuk-table__header">Query</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+      <% requests.each do |request| %>
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">
+            <%= link_to request[:request_id], search_diagnostic_request_path(request[:request_id]), class: "govuk-link" %>
+          </td>
+          <td class="govuk-table__cell"><%= diagnostic_datetime(request[:occurred_at]) || "-" %></td>
+          <td class="govuk-table__cell"><%= request[:query].presence || "-" %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>
