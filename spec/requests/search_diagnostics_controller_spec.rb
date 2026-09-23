@@ -727,6 +727,23 @@ RSpec.describe SearchDiagnosticsController do
       end
     end
 
+    context "when related requests cannot be loaded" do
+      before do
+        stub_api_request("/search_diagnostics/request-123").to_return jsonapi_response(
+          :search_diagnostic,
+          { request_id: "request-123", related_requests_available: false, events: [] },
+        )
+      end
+
+      it { is_expected.to have_http_status(:ok) }
+
+      it "explains the partial failure" do
+        rendered_page
+
+        expect(response.body).to include("Related search requests could not be loaded.", "request-123")
+      end
+    end
+
     context "when the backend cannot load diagnostics" do
       before do
         stub_api_request("/search_diagnostics/request-123").to_return(status: 502, body: "", headers: {})
