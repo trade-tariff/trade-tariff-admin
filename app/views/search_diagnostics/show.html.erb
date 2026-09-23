@@ -135,6 +135,10 @@
       <% end %>
     </dl>
 
+    <% if @search_diagnostic.related_requests_available == false %>
+      <p class="govuk-body">Related search requests could not be loaded. The diagnostics for this request are still shown below.</p>
+    <% end %>
+
     <% related_requests = search_diagnostic_related_requests(@search_diagnostic) %>
     <% if @search_diagnostic.browser_session_id.present? %>
       <h2 class="govuk-heading-m">Other requests for this browser session</h2>

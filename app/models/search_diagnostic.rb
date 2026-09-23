@@ -12,6 +12,7 @@ class SearchDiagnostic
              :experiment,
              :browser_session_id,
              :related_requests,
+             :related_requests_available,
              :occurred_at,
              :query
 
