@@ -8,6 +8,9 @@
   <% elsif @export.status == "failed" %>
     <p class="govuk-body"><%= @export.error.presence || "The workbook could not be built." %></p>
     <%= link_to "Back to search analytics", search_analytics_path(view: "internal"), class: "govuk-link" %>
+  <% elsif @polling_stopped %>
+    <p class="govuk-body">The workbook is still being built. Automatic checks have stopped.</p>
+    <%= link_to "Check workbook status", search_export_workbook_path(@export.resource_id, poll: 90), class: "govuk-link" %>
   <% else %>
     <p class="govuk-body">Building the workbook for <%= @export.from %> to <%= @export.to %>. This page checks again shortly.</p>
   <% end %>

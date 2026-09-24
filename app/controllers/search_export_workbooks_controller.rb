@@ -6,26 +6,38 @@ class SearchExportWorkbooksController < AuthenticatedController
     redirect_to search_export_workbook_path(export.resource_id)
   rescue Faraday::Error => e
     status = e.response_status.to_i
-    raise unless [400, 422].include?(status)
-
-    redirect_to search_analytics_path(view: "internal", period: "custom", from: params[:from], to: params[:to]), alert: error_detail(e)
+    message = [400, 422].include?(status) ? error_detail(e) : "The workbook service is unavailable. Please try again."
+    redirect_to search_analytics_path(view: "internal", period: "custom", from: params[:from], to: params[:to]), alert: message
   end
 
   def show
     authorize SearchExportWorkbook, :show?
 
     @export = SearchExportWorkbook.find(params[:id])
-    response.set_header("Refresh", "2") if @export.pending?
+    polls = [params[:poll].to_i, 0].max
+    @polling_stopped = @export.pending? && polls >= 90
+    if @export.pending? && !@polling_stopped
+      response.set_header("Refresh", "2; url=#{search_export_workbook_path(params[:id], poll: polls + 1)}")
+    end
+  rescue Faraday::ResourceNotFound
+    render :not_found, status: :not_found
+  rescue Faraday::Error
+    render :unavailable, status: :service_unavailable
   end
 
   def download
     authorize SearchExportWorkbook, :download?
 
+    export = SearchExportWorkbook.find(params[:id])
     file = SearchExportWorkbook.download(params[:id])
     send_data file.body,
-              filename: "classifier-workbook.xlsx",
+              filename: "classifier-workbook-#{export.from}-#{export.to}.xlsx",
               type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
               disposition: "attachment"
+  rescue Faraday::ResourceNotFound
+    render :not_found, status: :not_found
+  rescue Faraday::Error
+    render :unavailable, status: :service_unavailable
   end
 
 private
