@@ -175,6 +175,9 @@ Rails.application.routes.draw do
     end
   end
   resources :search_analytics, only: %i[index]
+  resources :search_export_workbooks, only: %i[create show] do
+    get :download, on: :member
+  end
   resources :search_diagnostics, only: %i[index show], param: :request_id, constraints: { request_id: /[^\/.]+/ }
   resources :goods_nomenclature_autocomplete_results, only: %i[index]
 
@@ -201,9 +204,9 @@ Rails.application.routes.draw do
     post "updates/chapter_notes/preview", to: "updates/chapter_notes#preview", as: :customs_tariff_chapter_note_preview
 
     constraints(version: /[^\/]+/) do
-      get   "updates/:version",               to: "updates#show",          as: :customs_tariff_update
+      get   "updates/:version",               to: "updates#show", as: :customs_tariff_update
       get   "updates/:version/compare",       to: "updates/comparisons#index", as: :customs_tariff_update_comparison
-      post  "updates/:version/reimport",      to: "updates#reimport",      as: :reimport_customs_tariff_update
+      post  "updates/:version/reimport",      to: "updates#reimport", as: :reimport_customs_tariff_update
     end
 
     constraints(update_version: /[^\/]+/) do

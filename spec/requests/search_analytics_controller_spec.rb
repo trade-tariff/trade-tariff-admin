@@ -68,6 +68,36 @@ RSpec.describe SearchAnalyticsController do
       end
     end
 
+    context "with the UK internal view" do
+      let(:make_request) { get search_analytics_path, params: { period: "custom", view: "internal", from: "2026-09-20", to: "2026-09-23" } }
+
+      before { allow(TradeTariffAdmin::ServiceChooser).to receive(:uk?).and_return(true) }
+
+      it "defaults editable workbook dates to the dashboard range" do
+        rendered_page
+        page = Nokogiri::HTML(response.body)
+
+        expect(page.css("#classifier_workbook_from, #classifier_workbook_to").map { |input| input["value"] }).to eq(%w[2026-09-20 2026-09-23])
+      end
+
+      it "allows workbook dates through today without changing the analytics limit" do
+        rendered_page
+        page = Nokogiri::HTML(response.body)
+
+        expect(page.css("#classifier_workbook_to, #to").map { |input| input["max"] }.sort).to eq([(Time.current.utc.to_date - 1).iso8601, Time.current.utc.to_date.iso8601])
+      end
+    end
+
+    context "with the XI internal view" do
+      let(:make_request) { get search_analytics_path, params: { view: "internal" } }
+
+      before { allow(TradeTariffAdmin::ServiceChooser).to receive(:uk?).and_return(false) }
+
+      it "does not offer the workbook" do
+        expect(rendered_page.body).not_to include("Download classifier workbook")
+      end
+    end
+
     context "when analytics are not available yet" do
       before do
         allow(SearchAnalytics).to receive(:fetch).and_raise(Faraday::ResourceNotFound.new("missing snapshots"))

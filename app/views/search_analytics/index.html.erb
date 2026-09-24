@@ -65,6 +65,21 @@
           <%= submit_tag "Apply dates", class: "govuk-button" %>
         </fieldset>
       <% end %>
+      <% if @view == "internal" && TradeTariffAdmin::ServiceChooser.uk? %>
+        <%= form_with url: search_export_workbooks_path, method: :post, local: true, class: "govuk-!-margin-top-3" do %>
+          <fieldset class="govuk-fieldset" aria-describedby="classifier-workbook-hint">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Classifier workbook dates (UTC)</legend>
+            <p id="classifier-workbook-hint" class="govuk-hint">Starts with the dashboard dates. You can change these dates and include today. Both dates are included, up to 366 days. The workbook includes only available journeys in the selected range.</p>
+            <% [[:from, @from], [:to, @to]].each do |name, date| %>
+              <div class="govuk-form-group">
+                <%= label_tag "classifier_workbook_#{name}", name.to_s.capitalize, class: "govuk-label" %>
+                <%= date_field_tag name, date, id: "classifier_workbook_#{name}", required: true, max: Time.current.utc.to_date.iso8601, class: "govuk-input", aria: { describedby: "classifier-workbook-hint" } %>
+              </div>
+            <% end %>
+            <%= submit_tag "Download classifier workbook", class: "govuk-button govuk-button--secondary" %>
+          </fieldset>
+        <% end %>
+      <% end %>
     </div>
 
     <% unless @analytics_unavailable %>
