@@ -1,4 +1,4 @@
-RSpec.describe SearchExportWorkbooksController do
+RSpec.describe SearchExportWorkbooksController, :aggregate_failures do
   include_context "with authenticated user"
 
   let(:export) do
@@ -8,6 +8,49 @@ RSpec.describe SearchExportWorkbooksController do
   before do
     allow(SearchExportWorkbook).to receive(:create).and_return(export)
     allow(SearchExportWorkbook).to receive(:find).with("42").and_return(export)
+  end
+
+  it "stops automatic polling after three minutes" do
+    get search_export_workbook_path("42", poll: 90)
+
+    expect(response.headers["Refresh"]).to be_nil
+    expect(response.body).to include("Automatic checks have stopped", "Check workbook status")
+  end
+
+  it "shows a helpful state for a missing workbook" do
+    allow(SearchExportWorkbook).to receive(:find).with("42").and_raise(Faraday::ResourceNotFound)
+
+    get search_export_workbook_path("42")
+
+    expect(response).to have_http_status(:not_found)
+    expect(response.body).to include("Workbook not found")
+  end
+
+  it "shows a helpful state for a missing download" do
+    allow(SearchExportWorkbook).to receive(:download).and_raise(Faraday::ResourceNotFound)
+
+    get download_search_export_workbook_path("42")
+
+    expect(response).to have_http_status(:not_found)
+    expect(response.body).to include("Workbook not found")
+  end
+
+  it "handles a backend outage during creation" do
+    allow(SearchExportWorkbook).to receive(:create).and_raise(Faraday::ConnectionFailed)
+
+    post search_export_workbooks_path, params: { from: "2026-09-23", to: "2026-09-24" }
+
+    expect(response).to have_http_status(:redirect)
+    expect(flash[:alert]).to include("service is unavailable")
+  end
+
+  it "handles a backend outage during polling" do
+    allow(SearchExportWorkbook).to receive(:find).and_raise(Faraday::ConnectionFailed)
+
+    get search_export_workbook_path("42")
+
+    expect(response).to have_http_status(:service_unavailable)
+    expect(response.headers["Refresh"]).to be_nil
   end
 
   describe "POST /search_export_workbooks" do
@@ -44,7 +87,7 @@ RSpec.describe SearchExportWorkbooksController do
     end
 
     it "refreshes while queued" do
-      expect(response.headers["Refresh"]).to eq("2")
+      expect(response.headers["Refresh"]).to eq("2; url=#{search_export_workbook_path('42', poll: 1)}")
     end
 
     it "shows progress" do
@@ -101,6 +144,10 @@ RSpec.describe SearchExportWorkbooksController do
 
     it "serves the backend bytes unchanged" do
       expect(response.body.b).to eq(bytes)
+    end
+
+    it "includes the date range in the filename" do
+      expect(response.headers["Content-Disposition"]).to include("classifier-workbook-2026-09-23-2026-09-24.xlsx")
     end
 
     it "serves an Excel workbook" do
