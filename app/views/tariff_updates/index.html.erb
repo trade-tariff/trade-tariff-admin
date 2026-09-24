@@ -35,10 +35,6 @@
           <% if tariff_update.exception_class.present? %>
             <%= render "exception", tariff_update: tariff_update %>
           <% end %>
-
-          <% if tariff_update.presence_errors.present? && tariff_update.presence_errors.any?(&:present?) %>
-            <%= render "presence_errors", tariff_update: tariff_update %>
-          <% end %>
         </td>
         <td><%= l(tariff_update.issue_date, format: :tariff) %></td>
         <td><%= l(tariff_update.applied_at, format: :tariff) if tariff_update.applied_at %></td>
