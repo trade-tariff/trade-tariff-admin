@@ -506,8 +506,9 @@ RSpec.describe "Search analytics dashboard" do
     expect(page).not_to have_content("Volume by request source")
     expect(page).to have_content("bike seat")
     expect(page).not_to have_css("section[aria-labelledby='zero-search-terms-heading']", text: "3926909090")
-    expect(page).to have_css("#backend-questions-heading", text: "Backend questions per journey")
-    expect(page).to have_css(".search-analytics-chart-container", count: 4)
+    expect(page).to have_no_css("#backend-questions-heading")
+    expect(page).to have_no_content("Backend questions per journey")
+    expect(page).to have_css(".search-analytics-chart-container", count: 3)
     expect(page).to have_css("section[aria-labelledby='ai-cost-heading']", text: "Known AI cost")
     expect(page).to have_content("$0.03")
     expect(page).not_to have_content("Average cost per search")
@@ -528,7 +529,7 @@ RSpec.describe "Search analytics dashboard" do
     expect(page).to have_link("Next")
     expect(chart_datasets).to all(include("borderColor"))
     expect(chart_datasets.pluck("label")).not_to include("Frontend-routed", "Direct backend / non-frontend", "Unknown")
-    expect(non_empty_chart_payloads.size).to eq(4)
+    expect(non_empty_chart_payloads.size).to eq(3)
   end
 
   def expect_period_link(label, content:, query:)
