@@ -237,6 +237,19 @@ RSpec.describe "Search analytics dashboard" do
     expect(page).not_to have_css("#ai-cost-heading")
   end
 
+  def stub_workbook_export
+    export = SearchExportWorkbook.new(resource_id: "42", status: "queued", from: "2026-09-01", to: "2026-09-15")
+    allow(SearchExportWorkbook).to receive(:create).and_return(export)
+    allow(SearchExportWorkbook).to receive(:find).with("42").and_return(export)
+    allow(ActionController::Base).to receive(:allow_forgery_protection).and_return(true)
+  end
+
+  def submit_dates(from, to, button:)
+    fill_in "From", with: from
+    fill_in "To", with: to
+    click_button button
+  end
+
   context "with custom date ranges" do
     include ActiveSupport::Testing::TimeHelpers
 
@@ -247,18 +260,26 @@ RSpec.describe "Search analytics dashboard" do
       stub_date_range_analytics("internal")
     end
 
-    it "provides native date pickers bounded by yesterday", :aggregate_failures do
+    it "provides native date pickers bounded by today", :aggregate_failures do
       visit search_analytics_path
-      expect(page).to have_css("input#from[type='date'][max='2026-09-14'][required]")
-      expect(page).to have_css("input#to[type='date'][max='2026-09-14'][required]")
+      expect(page).to have_css("input#from[type='date'][max='2026-09-15'][required]")
+      expect(page).to have_css("input#to[type='date'][max='2026-09-15'][required]")
+    end
+
+    it "downloads using the currently entered dates without applying them first", :aggregate_failures do
+      stub_workbook_export
+      visit search_analytics_path(view: "internal")
+      submit_dates("2026-09-01", "2026-09-15", button: "Download classifier workbook")
+
+      expect(SearchExportWorkbook).to have_received(:create).with(from: "2026-09-01", to: "2026-09-15")
+      expect(page).to have_current_path(search_export_workbook_path("42"))
     end
 
     it "applies and retains the selected dates", :aggregate_failures do
       visit search_analytics_path
-      fill_in "From", with: "2026-09-01"
-      fill_in "To", with: "2026-09-03"
-      click_button "Apply dates"
+      submit_dates("2026-09-01", "2026-09-03", button: "Apply dates")
       expect_selected_date_range
+      expect(current_url).not_to include("authenticity_token")
     end
 
     it "preserves dates through pagination and term and view filters", :aggregate_failures do

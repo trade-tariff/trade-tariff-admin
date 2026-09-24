@@ -73,18 +73,16 @@ RSpec.describe SearchAnalyticsController do
 
       before { allow(TradeTariffAdmin::ServiceChooser).to receive(:uk?).and_return(true) }
 
-      it "defaults editable workbook dates to the dashboard range" do
+      it "uses one date pair for the dashboard and workbook" do
         rendered_page
-        page = Nokogiri::HTML(response.body)
-
-        expect(page.css("#classifier_workbook_from, #classifier_workbook_to").map { |input| input["value"] }).to eq(%w[2026-09-20 2026-09-23])
+        expect_shared_workbook_form
       end
 
-      it "allows workbook dates through today without changing the analytics limit" do
+      it "allows the shared date fields through today" do
         rendered_page
         page = Nokogiri::HTML(response.body)
 
-        expect(page.css("#classifier_workbook_to, #to").map { |input| input["max"] }.sort).to eq([(Time.current.utc.to_date - 1).iso8601, Time.current.utc.to_date.iso8601])
+        expect(page.css("#from, #to").map { |input| input["max"] }).to eq([Time.current.utc.to_date.iso8601] * 2)
       end
     end
 
@@ -119,6 +117,17 @@ RSpec.describe SearchAnalyticsController do
 
       it { is_expected.to have_http_status :forbidden }
     end
+  end
+
+  def expect_shared_workbook_form
+    page = Nokogiri::HTML(response.body)
+    expect(page.css("input[type=date]").map { |input| input["value"] }).to eq(%w[2026-09-20 2026-09-23])
+    button = page.at_css("button[formaction='#{search_export_workbooks_path}']")
+    expect(button["formmethod"]).to eq("post")
+    expect(button["name"]).to eq("authenticity_token")
+    expect(button["value"]).to be_present
+    expect(button.ancestors("form").first.css("input[type=date]").size).to eq(2)
+    expect(page.text).not_to include("Classifier workbook dates", "Starts with the dashboard dates")
   end
 
   def expect_dashboard_content
