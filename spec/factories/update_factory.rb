@@ -10,7 +10,6 @@ FactoryBot.define do
     file_presigned_url { "https://example.com/2022-02-06_TGB22037.xml" }
     filesize { 123_456 }
     exception_class { nil }
-    presence_errors { nil }
 
     trait :failed do
       state { "F" }
