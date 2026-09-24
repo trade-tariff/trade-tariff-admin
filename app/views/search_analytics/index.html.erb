@@ -52,33 +52,26 @@
         <% date_description = @date_range_error ? "date-range-hint date-range-error" : "date-range-hint" %>
         <fieldset class="govuk-fieldset" aria-describedby="<%= date_description %>">
           <legend class="govuk-visually-hidden">Date range (UTC)</legend>
-          <p id="date-range-hint" class="govuk-visually-hidden">Both dates are included, in UTC. Choose up to 366 days, ending yesterday or earlier. Missing dates will not trigger collection.</p>
+          <p id="date-range-hint" class="govuk-visually-hidden">Both dates are included, in UTC. Choose up to 366 days, ending today or earlier. Missing dates will not trigger collection.</p>
           <% if @date_range_error %>
             <p id="date-range-error" class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> <%= @date_range_error %></p>
           <% end %>
           <% [[:from, @from], [:to, @to]].each do |name, date| %>
             <div class="govuk-form-group<%= ' govuk-form-group--error' if @date_range_error %>">
               <%= label_tag name, name.to_s.capitalize, class: "govuk-label" %>
-              <%= date_field_tag name, date, required: true, max: @latest_date, class: "govuk-input#{' govuk-input--error' if @date_range_error}", aria: { describedby: date_description, invalid: @date_range_error.present? } %>
+              <%= date_field_tag name, date, required: true, max: Time.current.utc.to_date.iso8601, class: "govuk-input#{' govuk-input--error' if @date_range_error}", aria: { describedby: date_description, invalid: @date_range_error.present? } %>
             </div>
           <% end %>
           <%= submit_tag "Apply dates", class: "govuk-button" %>
+          <% if @view == "internal" && TradeTariffAdmin::ServiceChooser.uk? %>
+            <%= button_tag "Download classifier workbook",
+                           class: "govuk-button govuk-button--secondary",
+                           formaction: search_export_workbooks_path,
+                           formmethod: "post",
+                           name: "authenticity_token",
+                           value: form_authenticity_token(form_options: { action: search_export_workbooks_path, method: "post" }) %>
+          <% end %>
         </fieldset>
-      <% end %>
-      <% if @view == "internal" && TradeTariffAdmin::ServiceChooser.uk? %>
-        <%= form_with url: search_export_workbooks_path, method: :post, local: true, class: "govuk-!-margin-top-3" do %>
-          <fieldset class="govuk-fieldset" aria-describedby="classifier-workbook-hint">
-            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Classifier workbook dates (UTC)</legend>
-            <p id="classifier-workbook-hint" class="govuk-hint">Starts with the dashboard dates. You can change these dates and include today. Both dates are included, up to 366 days. The workbook includes only available journeys in the selected range.</p>
-            <% [[:from, @from], [:to, @to]].each do |name, date| %>
-              <div class="govuk-form-group">
-                <%= label_tag "classifier_workbook_#{name}", name.to_s.capitalize, class: "govuk-label" %>
-                <%= date_field_tag name, date, id: "classifier_workbook_#{name}", required: true, max: Time.current.utc.to_date.iso8601, class: "govuk-input", aria: { describedby: "classifier-workbook-hint" } %>
-              </div>
-            <% end %>
-            <%= submit_tag "Download classifier workbook", class: "govuk-button govuk-button--secondary" %>
-          </fieldset>
-        <% end %>
       <% end %>
     </div>
 
