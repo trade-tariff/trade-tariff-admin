@@ -122,7 +122,7 @@ RSpec.describe SearchAnalyticsController do
   def expect_shared_workbook_form
     page = Nokogiri::HTML(response.body)
     expect(page.css("input[type=date]").map { |input| input["value"] }).to eq(%w[2026-09-20 2026-09-23])
-    button = page.at_css("button[formaction='#{search_export_workbooks_path}']")
+    button = page.at_css("button[formaction='#{search_export_workbooks_path(preset: 'custom')}']")
     expect(button["formmethod"]).to eq("post")
     expect(button["name"]).to eq("authenticity_token")
     expect(button["value"]).to be_present
