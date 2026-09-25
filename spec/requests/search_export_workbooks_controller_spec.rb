@@ -10,11 +10,11 @@ RSpec.describe SearchExportWorkbooksController, :aggregate_failures do
     allow(SearchExportWorkbook).to receive(:find).with("42").and_return(export)
   end
 
-  it "stops automatic polling after three minutes" do
-    get search_export_workbook_path("42", poll: 90)
+  it "offers a manual status check without refreshing the page" do
+    get search_export_workbook_path("42")
 
     expect(response.headers["Refresh"]).to be_nil
-    expect(response.body).to include("Automatic checks have stopped", "Check workbook status")
+    expect(response.body).to include("Preparing your workbook", "Check workbook status", "23 September 2026 to 24 September 2026")
   end
 
   it "shows a helpful state for a missing workbook" do
@@ -86,16 +86,16 @@ RSpec.describe SearchExportWorkbooksController, :aggregate_failures do
       expect(response).to have_http_status(:ok)
     end
 
-    it "refreshes while queued" do
-      expect(response.headers["Refresh"]).to eq("2; url=#{search_export_workbook_path('42', poll: 1)}")
+    it "does not refresh while queued" do
+      expect(response.headers["Refresh"]).to be_nil
     end
 
     it "shows progress" do
-      expect(response.body).to include("Building the workbook")
+      expect(response.body).to include("Preparing your workbook")
     end
 
     context "when ready" do
-      let(:export) { SearchExportWorkbook.new(resource_id: "42", status: "ready", row_count: 5, omitted_count: 2) }
+      let(:export) { SearchExportWorkbook.new(resource_id: "42", status: "ready", row_count: 5, omitted_count: 2, from: "2026-09-23", to: "2026-09-24") }
 
       it "stops polling" do
         expect(response.headers["Refresh"]).to be_nil
@@ -107,7 +107,7 @@ RSpec.describe SearchExportWorkbooksController, :aggregate_failures do
     end
 
     context "when failed" do
-      let(:export) { SearchExportWorkbook.new(resource_id: "42", status: "failed", error: "Shorten the date range.") }
+      let(:export) { SearchExportWorkbook.new(resource_id: "42", status: "failed", error: "Shorten the date range.", from: "2026-09-23", to: "2026-09-24") }
 
       it "stops polling" do
         expect(response.headers["Refresh"]).to be_nil
@@ -127,6 +127,43 @@ RSpec.describe SearchExportWorkbooksController, :aggregate_failures do
 
       it "does not fetch the export" do
         expect(SearchExportWorkbook).not_to have_received(:find)
+      end
+    end
+  end
+
+  describe "GET /search_export_workbooks/:id.json" do
+    %w[queued running ready failed].each do |status|
+      context "when #{status}" do
+        let(:export) { SearchExportWorkbook.new(resource_id: "42", status:, row_count: 3, omitted_count: 0, error: "<script>error</script>") }
+
+        before { get search_export_workbook_path("42", format: :json) }
+
+        it "returns the polling state" do
+          expect(response.parsed_body["pending"]).to eq(%w[queued running].include?(status))
+        end
+
+        it "returns only the escaped status fragment" do
+          expect(response.parsed_body["html"]).not_to include("<!DOCTYPE", "<script>")
+          expect(response.headers["Refresh"]).to be_nil
+        end
+      end
+    end
+
+    context "when the export expires" do
+      before { allow(SearchExportWorkbook).to receive(:find).and_raise(Faraday::ResourceNotFound) }
+
+      it "returns not found" do
+        get search_export_workbook_path("42", format: :json)
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+
+    context "when the backend is unavailable" do
+      before { allow(SearchExportWorkbook).to receive(:find).and_raise(Faraday::ConnectionFailed) }
+
+      it "returns unavailable" do
+        get search_export_workbook_path("42", format: :json)
+        expect(response).to have_http_status(:service_unavailable)
       end
     end
   end

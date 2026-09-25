@@ -1,17 +1,12 @@
 <% content_for :title, "Classifier workbook" %>
 
-<div class="govuk-width-container">
+<div class="govuk-width-container"
+     data-controller="workbook"
+     data-workbook-pending-value="<%= @export.pending? %>"
+     data-workbook-url-value="<%= search_export_workbook_path(@export.resource_id, format: :json) %>">
   <h1 class="govuk-heading-l">Classifier workbook</h1>
-  <% if @export.ready? %>
-    <p class="govuk-body">The workbook is ready. It contains <%= @export.row_count %> journeys. Omitted journeys: <%= @export.omitted_count %>.</p>
-    <%= link_to "Download workbook", download_search_export_workbook_path(@export.resource_id), class: "govuk-button" %>
-  <% elsif @export.status == "failed" %>
-    <p class="govuk-body"><%= @export.error.presence || "The workbook could not be built." %></p>
-    <%= link_to "Back to search analytics", search_analytics_path(view: "internal"), class: "govuk-link" %>
-  <% elsif @polling_stopped %>
-    <p class="govuk-body">The workbook is still being built. Automatic checks have stopped.</p>
-    <%= link_to "Check workbook status", search_export_workbook_path(@export.resource_id, poll: 90), class: "govuk-link" %>
-  <% else %>
-    <p class="govuk-body">Building the workbook for <%= @export.from %> to <%= @export.to %>. This page checks again shortly.</p>
-  <% end %>
+  <p class="govuk-body"><%= workbook_date_label(@export, params[:preset]) %></p>
+  <div data-workbook-target="status" role="status" aria-live="polite">
+    <%= render "status" %>
+  </div>
 </div>

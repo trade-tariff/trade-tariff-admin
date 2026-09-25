@@ -1,0 +1,10 @@
+<% if @export.ready? %>
+  <p class="govuk-body">The workbook is ready. It contains <%= @export.row_count %> journeys. Omitted journeys: <%= @export.omitted_count %>.</p>
+  <%= link_to "Download workbook", download_search_export_workbook_path(@export.resource_id), class: "govuk-button" %>
+<% elsif @export.status == "failed" %>
+  <p class="govuk-body"><%= @export.error.presence || "The workbook could not be built." %></p>
+  <%= link_to "Back to search analytics", search_analytics_path(view: "internal"), class: "govuk-link" %>
+<% else %>
+  <p class="govuk-body" data-workbook-target="message">Preparing your workbook…</p>
+  <%= link_to "Check workbook status", search_export_workbook_path(@export.resource_id, preset: params[:preset].presence), class: "govuk-link" %>
+<% end %>

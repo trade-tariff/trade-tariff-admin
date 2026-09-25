@@ -272,7 +272,7 @@ RSpec.describe "Search analytics dashboard" do
       submit_dates("2026-09-01", "2026-09-15", button: "Download classifier workbook")
 
       expect(SearchExportWorkbook).to have_received(:create).with(from: "2026-09-01", to: "2026-09-15")
-      expect(page).to have_current_path(search_export_workbook_path("42"))
+      expect(page).to have_current_path(search_export_workbook_path("42", preset: "24h"))
     end
 
     it "applies and retains the selected dates", :aggregate_failures do
