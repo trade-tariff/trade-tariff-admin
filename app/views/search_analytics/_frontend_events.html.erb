@@ -17,26 +17,24 @@
         <% if frontend_events[:observed_sessions] %>
           <p class="govuk-body-s">A browser session is not a search or a person.</p>
         <% end %>
-        <p class="govuk-body-s">Page events count pages, not searches.</p>
-        <table class="govuk-table">
-          <caption class="govuk-table__caption govuk-table__caption--s">Observed page outcomes</caption>
-          <thead class="govuk-table__head">
-            <tr class="govuk-table__row">
-              <% ["Outcome", "Page events", "Average wait for page"].each do |heading| %>
-                <th scope="col" class="govuk-table__header"><%= heading %></th>
-              <% end %>
-            </tr>
-          </thead>
-          <tbody class="govuk-table__body">
-            <% Array(frontend_events[:outcomes]).each do |row| %>
-              <tr class="govuk-table__row">
-                <th scope="row" class="govuk-table__header"><%= row[:outcome].to_s.humanize %></th>
-                <td class="govuk-table__cell"><%= row[:rendered_events].nil? ? "Unavailable" : search_analytics_number(row[:rendered_events]) %></td>
-                <td class="govuk-table__cell"><%= search_analytics_latency(row[:average_navigation_ms]) %></td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
+        <% if frontend_events[:outcomes] %>
+          <p class="govuk-body-s">Page events count pages, not searches.</p>
+          <% outcome_rows = Array(frontend_events[:outcomes]).map(&:with_indifferent_access) %>
+          <% outcome_counts = outcome_rows.map { |row| search_analytics_optional_count(row[:rendered_events]) } %>
+          <%= render "count_share_table",
+                table_id: "page-outcomes-table",
+                caption: "Observed page outcomes",
+                label_heading: "Outcome",
+                count_heading: "Page events",
+                share_heading: "Share of page events",
+                extra_heading: "Average wait for page",
+                labels: outcome_rows.map { |row| row[:outcome].to_s.humanize },
+                counts: outcome_counts,
+                extras: outcome_rows.map { |row| search_analytics_latency(row[:average_navigation_ms]) },
+                total_extra: "Not applicable",
+                extra_note: "The total row does not include average wait.",
+                summary: search_analytics_count_summary(outcome_counts, unit: "page events") %>
+        <% end %>
 
         <% actions = search_analytics_frontend_action_rows(frontend_events[:actions]) %>
         <h3 class="govuk-heading-s">Recorded actions</h3>
@@ -54,25 +52,43 @@
           <%= govuk_table(head: ["Action", "Recorded events"], rows: actions.map { |label, count| [label, search_analytics_number(count)] }) %>
         <% end %>
 
-        <% selections = search_analytics_frontend_selection_rows(frontend_events[:selections]) %>
-        <% if selections.any? %>
+        <% if frontend_events[:selections] %>
+          <% selections = search_analytics_frontend_selection_rows(frontend_events[:selections]) %>
+          <% selection_counts = selections.map(&:last) %>
           <h3 class="govuk-heading-s">Result selections by rank and confidence</h3>
           <p class="govuk-body-s">These rows count commodity result clicks, not searches.</p>
-          <%= govuk_table(head: ["Selection", "Recorded events"], rows: selections.map { |label, count| [label, search_analytics_number(count)] }) %>
+          <%= render "count_share_table",
+                table_id: "selection-rank-table",
+                label_heading: "Selection",
+                count_heading: "Recorded events",
+                share_heading: "Share of recorded selection events",
+                labels: selections.map(&:first),
+                counts: selection_counts,
+                summary: search_analytics_count_summary(selection_counts, unit: "recorded selection events") %>
         <% end %>
 
-        <% questions = search_analytics_frontend_question_rows(frontend_events[:question_counts]) %>
-        <h3 class="govuk-heading-s">Reported questions per journey</h3>
-        <p class="govuk-body-s">Each observed journey appears once, using its highest reported question count.</p>
-        <div class="search-analytics-chart-container">
-          <canvas class="search-analytics-chart" data-chart-type="bar"
-                  data-x-axis-title="Reported questions" data-y-axis-title="Journeys" data-hide-legend="true" data-hide-x-grid="true"
-                  data-chart="<%= search_analytics_frontend_chart_payload(questions, label: "Journeys") %>"
-                  role="img" aria-label="Reported questions per journey. View question data below for the counts."></canvas>
-        </div>
-        <%= render GovukComponent::DetailsComponent.new(summary_text: "View question data") do %>
-          <%= govuk_table(head: ["Maximum reported questions", "Observed journeys"], rows: questions.map { |label, count| [label, search_analytics_number(count)] }) %>
-          <p class="govuk-body-s">Uses the highest reported count per journey. Unknown is separate from zero.</p>
+        <% if frontend_events[:question_counts] %>
+          <% questions = search_analytics_frontend_question_rows(frontend_events[:question_counts]) %>
+          <% question_counts = questions.map(&:last) %>
+          <h3 class="govuk-heading-s">Reported questions per journey</h3>
+          <p class="govuk-body-s">Each observed journey appears once, using its highest reported question count.</p>
+          <div class="search-analytics-chart-container">
+            <canvas class="search-analytics-chart" data-chart-type="bar"
+                    data-x-axis-title="Reported questions" data-y-axis-title="Journeys" data-hide-legend="true" data-hide-x-grid="true"
+                    data-chart="<%= search_analytics_frontend_chart_payload(questions, label: "Journeys") %>"
+                    role="img" aria-label="Reported questions per journey. View question data below for the counts."></canvas>
+          </div>
+          <%= render GovukComponent::DetailsComponent.new(summary_text: "View question data") do %>
+            <%= render "count_share_table",
+                  table_id: "question-distribution-table",
+                  label_heading: "Maximum reported questions",
+                  count_heading: "Observed journeys",
+                  share_heading: "Share of reported journeys",
+                  labels: questions.map(&:first),
+                  counts: question_counts,
+                  extra_note: "Uses the highest reported count per journey. Unknown is separate from zero.",
+                  summary: search_analytics_count_summary(question_counts, unit: "reported journeys") %>
+          <% end %>
         <% end %>
       <% end %>
     <% else %>
