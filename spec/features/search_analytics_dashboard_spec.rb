@@ -446,7 +446,7 @@ RSpec.describe "Search analytics dashboard" do
 
   def expect_incomplete_analytics
     expect(page).to have_content("2 of 30 UTC days have stored results")
-    expect(page).to have_content("Some widgets may cover fewer days")
+    expect(page).to have_content("Charts can cover different days")
     expect(page).to have_content("Missing days are not zero-traffic days")
     expect(page).to have_content("Range percentiles are unavailable")
     expect_unavailable_metric("P90 latency")

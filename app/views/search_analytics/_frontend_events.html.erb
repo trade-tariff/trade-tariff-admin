@@ -14,6 +14,10 @@
             Observed browser sessions: <%= search_analytics_number(frontend_events[:observed_sessions]) %>.
           <% end %>
         </p>
+        <% if frontend_events[:observed_sessions] %>
+          <p class="govuk-body-s">A browser session is not a search or a person.</p>
+        <% end %>
+        <p class="govuk-body-s">Page events count pages, not searches.</p>
         <table class="govuk-table">
           <caption class="govuk-table__caption govuk-table__caption--s">Observed page outcomes</caption>
           <thead class="govuk-table__head">
@@ -36,6 +40,7 @@
 
         <% actions = search_analytics_frontend_action_rows(frontend_events[:actions]) %>
         <h3 class="govuk-heading-s">Recorded actions</h3>
+        <p class="govuk-body-s">Result selections are commodity result clicks, not answers to offered questions.</p>
         <% if actions.sum(&:last).positive? %>
           <div class="search-analytics-chart-container search-analytics-actions-chart">
             <canvas class="search-analytics-chart" data-chart-type="pie"
@@ -52,11 +57,13 @@
         <% selections = search_analytics_frontend_selection_rows(frontend_events[:selections]) %>
         <% if selections.any? %>
           <h3 class="govuk-heading-s">Result selections by rank and confidence</h3>
+          <p class="govuk-body-s">These rows count commodity result clicks, not searches.</p>
           <%= govuk_table(head: ["Selection", "Recorded events"], rows: selections.map { |label, count| [label, search_analytics_number(count)] }) %>
         <% end %>
 
         <% questions = search_analytics_frontend_question_rows(frontend_events[:question_counts]) %>
         <h3 class="govuk-heading-s">Reported questions per journey</h3>
+        <p class="govuk-body-s">Each observed journey appears once, using its highest reported question count.</p>
         <div class="search-analytics-chart-container">
           <canvas class="search-analytics-chart" data-chart-type="bar"
                   data-x-axis-title="Reported questions" data-y-axis-title="Journeys" data-hide-legend="true" data-hide-x-grid="true"

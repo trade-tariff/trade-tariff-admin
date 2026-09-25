@@ -117,6 +117,116 @@ RSpec.describe SearchAnalyticsController do
 
       it { is_expected.to have_http_status :forbidden }
     end
+
+    it "explains search-start counts without guided events" do
+      rendered_page
+
+      expect_search_start_explanation(guided_events: false)
+    end
+
+    %w[all internal].each do |analytics_view|
+      context "with guided events on the #{analytics_view} view" do
+        let(:make_request) { get search_analytics_path, params: { view: analytics_view } }
+
+        before { analytics.assign_attributes(frontend_events: guided_frontend_events) }
+
+        it "explains guided counts separately from search requests" do
+          rendered_page
+
+          expect_guided_count_explanations
+        end
+      end
+    end
+
+    context "with classic view and guided event data" do
+      let(:make_request) { get search_analytics_path, params: { view: "classic" } }
+
+      before { analytics.assign_attributes(frontend_events: guided_frontend_events) }
+
+      it "keeps guided-event explanations off the classic view" do
+        rendered_page
+
+        expect_search_start_explanation(guided_events: false)
+      end
+    end
+
+    context "when coverage is incomplete" do
+      let(:make_request) { get search_analytics_path, params: { view: "internal" } }
+
+      before do
+        analytics.assign_attributes(
+          coverage: { complete: false, collected_days: 30, expected_days: 30 },
+          availability: {
+            journey_metrics: true,
+            costs_match_view: true,
+            journey_outcomes: true,
+            journey_outcome_coverage: { complete: false },
+          },
+          frontend_events: guided_frontend_events(complete: false),
+        )
+      end
+
+      it "explains that charts can cover different days" do
+        rendered_page
+
+        expect_partial_coverage_explanation
+      end
+    end
+  end
+
+  def expect_search_start_explanation(guided_events:)
+    aggregate_failures do
+      expect(response.body).to include("Search requests count searches with a recorded start")
+      expect(response.body).to include("Several questions in one search count once.")
+      expect(response.body).to include("One search can appear in more than one time period")
+      expect(response.body).to include("Selected and Zero result can overlap the other lines")
+      expect(response.body).to include("Question only does not show that the user left")
+      if guided_events
+        expect(response.body).to include("Observed journeys count searches with a recorded guided page or click")
+        expect(response.body).to include("These totals can differ.")
+      else
+        expect(response.body).not_to include("Observed journeys count searches")
+        expect(response.body).not_to include("commodity result clicks")
+      end
+    end
+  end
+
+  def expect_guided_count_explanations
+    expect_search_start_explanation(guided_events: true)
+    expect_guided_event_units
+  end
+
+  def expect_guided_event_units
+    aggregate_failures do
+      expect(response.body).to include("commodity result clicks, not answers to offered questions")
+      expect(response.body).to include("Page events count pages, not searches.")
+      expect(response.body).to include("A browser session is not a search or a person.")
+      expect(response.body).to include("These rows count commodity result clicks, not searches.")
+      expect(response.body).to include("Each observed journey appears once, using its highest reported question count.")
+    end
+  end
+
+  def expect_partial_coverage_explanation
+    aggregate_failures do
+      expect(response.body).to include("30 of 30 UTC days have stored results")
+      expect(response.body).to include("Charts can cover different days.")
+      expect(response.body).to include("Missing days are not zero-traffic days")
+      expect(response.body).to include("missing days are not zero-activity days")
+      expect(response.body).to include("Missing days are not zero-outcome days")
+    end
+  end
+
+  def guided_frontend_events(complete: true)
+    {
+      available: true,
+      observed_journeys: 4,
+      observed_sessions: 2,
+      coverage: { supported: true, complete: complete },
+      outcomes: [{ outcome: "question", rendered_events: 3, average_navigation_ms: 1_500 }],
+      actions: { result_selected: 3, dont_know: 1 },
+      selections: [{ result_rank: 1, confidence: "strong", event_count: 3 }],
+      question_counts: [{ questions: 1, journeys: 4 }],
+    }
   end
 
   def expect_shared_workbook_form
