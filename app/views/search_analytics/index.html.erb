@@ -81,7 +81,8 @@
     <% if coverage[:complete] == false %>
       <%= govuk_inset_text do %>
         Incomplete coverage: <%= coverage[:collected_days] %> of <%= coverage[:expected_days] %> UTC days have stored results.
-        Some widgets may cover fewer days. Missing days are not zero-traffic days.
+        Charts can cover different days.
+        Missing days are not zero-traffic days.
       <% end %>
     <% end %>
     <% if availability[:range_percentiles] == false %>
@@ -110,6 +111,14 @@
       <% end %>
     </div>
 
+    <% guided_events = @view != "classic" && (@search_analytics.frontend_events || {}).with_indifferent_access.dig(:coverage, :supported) %>
+    <p class="govuk-body-s">
+      Search requests count searches with a recorded start. Several questions in one search count once.
+      <% if guided_events %>
+        Observed journeys count searches with a recorded guided page or click. These totals can differ.
+      <% end %>
+    </p>
+
     <%= render GovukComponent::DetailsComponent.new(summary_text: "How these metrics are calculated", classes: "govuk-!-margin-top-4") do %>
       <%= govuk_summary_list(
             borders: false,
@@ -133,7 +142,7 @@
               },
               {
                 key: { text: "Outcome trend" },
-                value: { text: "Uses the same frontend journeys as Search requests. Completed means a final backend response, not a question step. Question only and Unknown show journeys without a recognised final outcome. Selected and Zero result can overlap with other states. Outcomes are shown in the journey's observed start buckets." },
+                value: { text: "Uses the same searches as Search requests. Completed means a final backend response, not a question step. Question only and Unknown show journeys without a recognised final outcome. Selected and Zero result can overlap with other states. Outcomes are shown in the journey's observed start buckets." },
               },
               {
                 key: { text: "P90 latency" },
@@ -273,6 +282,7 @@
     <div class="search-analytics-charts govuk-!-margin-top-6">
       <section>
         <h2 class="govuk-heading-m">Search volume</h2>
+        <p class="govuk-body-s">Same searches as Search requests. One search can appear in more than one time period, so adding the points can differ from the period total.</p>
         <div class="search-analytics-chart-container">
           <canvas class="search-analytics-chart"
                   data-x-axis-title="<%= @search_analytics.bucket_size == 'hour' ? 'Hour (UTC)' : 'Date (UTC)' %>" data-y-axis-title="Searches"
@@ -282,6 +292,7 @@
 
       <section>
         <h2 class="govuk-heading-m">Outcome trend</h2>
+        <p class="govuk-body-s">Selected and Zero result can overlap the other lines. Question only does not show that the user left.</p>
         <% outcome_coverage = (availability[:journey_outcome_coverage] || {}).with_indifferent_access %>
         <% if availability[:journey_outcomes] == true %>
           <% if outcome_coverage[:complete] == false %>
