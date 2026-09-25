@@ -82,6 +82,58 @@ RSpec.describe SearchAnalyticsHelper do
     it "labels missing rank and confidence without dropping the event" do
       expect(helper.search_analytics_frontend_selection_rows([{ event_count: 2 }])).to eq([["Unknown rank, Unknown", 2]])
     end
+
+    it "keeps a missing event count unavailable" do
+      expect(helper.search_analytics_frontend_selection_rows([{ result_rank: 1, confidence: "strong" }])).to eq([["Rank 1, Strong", nil]])
+    end
+  end
+
+  describe "#search_analytics_frontend_question_rows" do
+    it "keeps a known unknown-question count" do
+      rows = helper.search_analytics_frontend_question_rows([{ questions: nil, journeys: 2 }, { questions: 0, journeys: 1 }])
+      expect(rows).to eq([["Unknown", 2], ["0", 1]])
+    end
+
+    it "keeps a bucket unavailable when any contributor is missing" do
+      rows = helper.search_analytics_frontend_question_rows([{ questions: 8, journeys: nil }, { questions: 9, journeys: 4 }])
+      expect(rows).to eq([["8+", nil]])
+    end
+  end
+
+  describe "#search_analytics_count_summary" do
+    it "uses the supplied counts as the only base" do
+      summary = helper.search_analytics_count_summary([3, 2], unit: "page events")
+      expect(summary).to include(total: 5, total_label: "Total", total_share: "100%", shares: ["60%", "40%"])
+    end
+
+    it "labels 100% when rounded shares do not add to 100" do
+      summary = helper.search_analytics_count_summary([1, 1, 1], unit: "recorded selection events")
+      expect(summary).to include(total: 3, total_share: "100%", shares: ["33.3%", "33.3%", "33.3%"])
+    end
+
+    it "does not divide when every count is zero" do
+      summary = helper.search_analytics_count_summary([0, 0], unit: "reported journeys")
+      expect(summary).to include(total: 0, total_share: "Not applicable", shares: ["Not applicable", "Not applicable"])
+    end
+
+    it "does not divide an empty table" do
+      summary = helper.search_analytics_count_summary([], unit: "page events")
+      expect(summary).to include(total: 0, total_share: "Not applicable", shares: [])
+    end
+
+    it "does not percentage a table with a missing count" do
+      summary = helper.search_analytics_count_summary([3, nil], unit: "page events")
+      expect(summary).to include(total: nil, total_label: "Total", total_share: "Unavailable", shares: %w[Unavailable Unavailable])
+    end
+
+    it "does not treat a fully unavailable table as zero" do
+      summary = helper.search_analytics_count_summary([nil, nil], unit: "recorded selection events")
+      expect(summary).to include(total: nil, total_share: "Unavailable", shares: %w[Unavailable Unavailable])
+    end
+
+    it "renders a missing total as unavailable" do
+      expect(helper.search_analytics_count_text(nil)).to eq("Unavailable")
+    end
   end
 
   describe "#search_analytics_ai_model_rows" do

@@ -18,7 +18,7 @@ module SearchAnalyticsHelper
       rank = row[:result_rank]
       confidence = row[:confidence].presence&.humanize || "Unknown"
       label = rank.nil? ? "Unknown rank, #{confidence}" : "Rank #{rank}, #{confidence}"
-      [label, row[:event_count].to_i]
+      [label, search_analytics_optional_count(row[:event_count])]
     end
   end
 
@@ -59,8 +59,54 @@ module SearchAnalyticsHelper
 
   def search_analytics_frontend_question_rows(rows)
     Array(rows).group_by { |row| search_analytics_question_bucket(row.with_indifferent_access[:questions]) }.map do |label, group|
-      [label, group.sum { |row| row.with_indifferent_access[:journeys].to_i }]
+      counts = group.map { |row| search_analytics_optional_count(row.with_indifferent_access[:journeys]) }
+      [label, counts.any?(&:nil?) ? nil : counts.sum]
     end
+  end
+
+  def search_analytics_optional_count(value)
+    return if value.nil? || value == ""
+
+    value.to_i
+  end
+
+  def search_analytics_count_text(count)
+    count.nil? ? "Unavailable" : search_analytics_number(count)
+  end
+
+  def search_analytics_count_summary(counts, unit:)
+    counts = Array(counts)
+    return search_analytics_incomplete_count_summary(counts, unit) if counts.any?(&:nil?)
+    return search_analytics_zero_count_summary(counts, unit) if counts.empty? || counts.all?(&:zero?)
+
+    total = counts.sum
+    {
+      total:,
+      total_label: "Total",
+      total_share: "100%",
+      shares: counts.map { |count| search_analytics_share(count.to_f / total) },
+      base_note: "Percentages use the sum of #{unit} in this table, not search requests.",
+    }
+  end
+
+  def search_analytics_incomplete_count_summary(counts, unit)
+    {
+      total: nil,
+      total_label: "Total",
+      total_share: "Unavailable",
+      shares: Array.new(counts.size, "Unavailable"),
+      base_note: "Percentages are not calculated because one or more #{unit} are unavailable. Unavailable is not zero.",
+    }
+  end
+
+  def search_analytics_zero_count_summary(counts, unit)
+    {
+      total: 0,
+      total_label: "Total",
+      total_share: "Not applicable",
+      shares: Array.new(counts.size, "Not applicable"),
+      base_note: "This table has no #{unit}, so percentages are not calculated.",
+    }
   end
 
   def search_analytics_question_bucket(value)
