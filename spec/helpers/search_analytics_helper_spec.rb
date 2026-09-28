@@ -22,6 +22,14 @@ RSpec.describe SearchAnalyticsHelper do
     end
   end
 
+  describe "#search_analytics_outcome_rate_chart_payload" do
+    it "uses a distinct neutral colour for each outcome concept" do
+      rows = [{ key: "results", label: "Results", percentage: 50 }, { key: "error", label: "Error", percentage: 50 }]
+      colours = JSON.parse(helper.search_analytics_outcome_rate_chart_payload(rows)).dig("datasets", 0, "backgroundColor")
+      expect(colours).to eq(["#005a30", "#942514"])
+    end
+  end
+
   describe "#search_analytics_outcome_rate_percentage" do
     it "keeps a nil rate unavailable and does not scale an already-percent value", :aggregate_failures do
       expect(helper.search_analytics_outcome_rate_percentage(nil)).to eq("Unavailable")

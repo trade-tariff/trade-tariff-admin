@@ -223,8 +223,24 @@
 
 .search-analytics-charts {
   display: grid;
+  align-items: start;
   gap: govuk.govuk-spacing(6);
   grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+
+  > section {
+    display: grid;
+    grid-template-rows: 3.5rem 18rem auto;
+  }
+
+  > section > .govuk-heading-m {
+    grid-row: 1;
+    margin-bottom: 0;
+  }
+
+  > section > .search-analytics-chart-container {
+    grid-row: 2;
+    height: 18rem;
+  }
 }
 
 .search-analytics-chart-container {

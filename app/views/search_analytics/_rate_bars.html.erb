@@ -4,16 +4,11 @@
 <% rates_available = population[:available] == true && population[:percentage_status] == "available" %>
 <section aria-labelledby="<%= heading_id %>">
   <<%= heading_tag %> id="<%= heading_id %>" class="<%= heading_class %>"><%= heading %></<%= heading_tag %>>
-  <p class="govuk-body-s"><%= description %></p>
   <% if population[:supported] == false %>
     <p class="govuk-body">These rates are not available for this view.</p>
   <% elsif population[:available] != true %>
     <p class="govuk-body"><%= missing_message %></p>
   <% else %>
-    <p class="govuk-body-s">Denominator: <%= denominator_label %><% unless population[:denominator].nil? %> (<%= search_analytics_number(population[:denominator]) %>)<% end %>.</p>
-    <% if coverage[:complete] == false %>
-      <%= govuk_inset_text(text: "These rates use fresh collected days only. Missing, stale, and unprojected days are not zero and are not abandonment.") %>
-    <% end %>
     <% if rates_available %>
       <div class="search-analytics-chart-container <%= chart_class %>">
         <canvas class="search-analytics-chart"
@@ -30,6 +25,13 @@
     <% else %>
       <p class="govuk-body"><%= empty_message %></p>
     <% end %>
+    <% if coverage[:complete] == false %>
+      <%= govuk_inset_text(text: "These rates use fresh collected days only. Missing, stale, and unprojected days are not zero and are not abandonment.") %>
+    <% end %>
+    <% if description.present? %>
+      <p class="govuk-body-s"><%= description %></p>
+    <% end %>
+    <p class="govuk-body-s">Denominator: <%= denominator_label %><% unless population[:denominator].nil? %> (<%= search_analytics_number(population[:denominator]) %>)<% end %>.</p>
     <%= render GovukComponent::DetailsComponent.new(summary_text: details_summary) do %>
       <table class="govuk-table">
         <caption class="govuk-table__caption govuk-table__caption--s"><%= table_caption %></caption>
