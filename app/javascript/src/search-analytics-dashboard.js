@@ -69,9 +69,10 @@ document.addEventListener('DOMContentLoaded', () => {
             grid: { display: canvas.dataset.hideXGrid !== 'true' },
             ticks: {
               autoSkip: canvas.dataset.showAllTicks !== 'true',
-              maxRotation: canvas.dataset.showAllTicks === 'true' ? 40 : 0,
+              maxRotation: 0,
               minRotation: 0,
-              maxTicksLimit: canvas.dataset.showAllTicks === 'true' ? 12 : 8,
+              padding: 4,
+              ...(canvas.dataset.showAllTicks === 'true' ? { font: { size: 11 } } : { maxTicksLimit: 8 }),
             },
           },
           y: {

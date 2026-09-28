@@ -85,10 +85,18 @@ module SearchAnalyticsHelper
     end
   end
 
+  def search_analytics_outcome_rate_axis_label(label)
+    words = label.to_s.split
+    return label if words.length < 2
+
+    midpoint = (words.length / 2.0).ceil
+    [words.first(midpoint).join(" "), words.drop(midpoint).join(" ")]
+  end
+
   def search_analytics_outcome_rate_chart_payload(rows)
     colours = rows.map { |row| OUTCOME_RATE_COLOURS.fetch(row[:key], "#144e81") }
     {
-      labels: rows.map { |row| row[:label] },
+      labels: rows.map { |row| search_analytics_outcome_rate_axis_label(row[:label]) },
       datasets: [{
         label: "Rate",
         data: rows.map { |row| row[:percentage].nil? ? nil : row[:percentage].to_f },
