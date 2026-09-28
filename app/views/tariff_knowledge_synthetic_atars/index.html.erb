@@ -11,22 +11,16 @@
   <%= link_to "Import from a spreadsheet", import_tariff_knowledge_synthetic_atars_path, class: "govuk-button govuk-button--secondary" %>
 </div>
 
-<%= form_with url: tariff_knowledge_synthetic_atars_path, method: :get, local: true do %>
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-one-third">
-      <div class="govuk-form-group">
-        <label class="govuk-label govuk-label--s" for="synthetic-atar-search">Search</label>
-        <div id="synthetic-atar-search-hint" class="govuk-hint">Matches the real user search or the description.</div>
-        <input class="govuk-input" id="synthetic-atar-search" name="q" type="text" value="<%= params[:q] %>" aria-describedby="synthetic-atar-search-hint">
-      </div>
-    </div>
-    <div class="govuk-grid-column-one-quarter">
-      <div class="govuk-form-group">
-        <label class="govuk-label govuk-label--s" for="synthetic-atar-chapter">Chapter</label>
-        <div id="synthetic-atar-chapter-hint" class="govuk-hint">For example 01</div>
-        <input class="govuk-input govuk-input--width-3" id="synthetic-atar-chapter" name="chapter" type="text" value="<%= params[:chapter] %>" aria-describedby="synthetic-atar-chapter-hint">
-      </div>
-    </div>
+<%= form_with url: tariff_knowledge_synthetic_atars_path, method: :get, local: true, html: { class: "synthetic-atar-filters" } do %>
+  <div class="govuk-form-group">
+    <label class="govuk-label govuk-label--s" for="synthetic-atar-search">Search</label>
+    <div id="synthetic-atar-search-hint" class="govuk-hint">Matches the real user search or the description.</div>
+    <input class="govuk-input govuk-input--width-20" id="synthetic-atar-search" name="q" type="text" value="<%= params[:q] %>" aria-describedby="synthetic-atar-search-hint">
+  </div>
+  <div class="govuk-form-group">
+    <label class="govuk-label govuk-label--s" for="synthetic-atar-chapter">Chapter</label>
+    <div id="synthetic-atar-chapter-hint" class="govuk-hint">For example 01</div>
+    <input class="govuk-input govuk-input--width-3" id="synthetic-atar-chapter" name="chapter" type="text" value="<%= params[:chapter] %>" aria-describedby="synthetic-atar-chapter-hint">
   </div>
   <button type="submit" class="govuk-button govuk-button--secondary">Filter</button>
 <% end %>

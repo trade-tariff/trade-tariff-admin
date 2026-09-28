@@ -99,6 +99,13 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
       expect(page).to have_link("New synthetic ATaR", href: new_tariff_knowledge_synthetic_atar_path)
     end
 
+    it "keeps the search and chapter filters on the same row" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_css(".synthetic-atar-filters #synthetic-atar-search")
+      expect(page).to have_css(".synthetic-atar-filters #synthetic-atar-chapter")
+    end
+
     context "with search and chapter filters" do
       let(:make_request) { get tariff_knowledge_synthetic_atars_path(q: "plastic", chapter: "39") }
 
