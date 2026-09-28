@@ -1,0 +1,65 @@
+<h1 class="govuk-heading-l">Synthetic ATaRs</h1>
+
+<p class="govuk-body">
+  A synthetic ATaR is a product description written by HMRC analysts. Each one starts from a real search
+  that traders typed into the Online Trade Tariff, and gives the full description and the correct commodity code.
+  The evaluation tools use them, alongside real ATaRs, to build sets of test searches.
+</p>
+
+<div class="govuk-button-group govuk-!-margin-bottom-6">
+  <%= link_to "New synthetic ATaR", new_tariff_knowledge_synthetic_atar_path, class: "govuk-button" %>
+</div>
+
+<%= form_with url: tariff_knowledge_synthetic_atars_path, method: :get, local: true do %>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-one-third">
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="synthetic-atar-search">Search</label>
+        <div id="synthetic-atar-search-hint" class="govuk-hint">Matches the real user search or the description.</div>
+        <input class="govuk-input" id="synthetic-atar-search" name="q" type="text" value="<%= params[:q] %>" aria-describedby="synthetic-atar-search-hint">
+      </div>
+    </div>
+    <div class="govuk-grid-column-one-quarter">
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="synthetic-atar-chapter">Chapter</label>
+        <div id="synthetic-atar-chapter-hint" class="govuk-hint">For example 01</div>
+        <input class="govuk-input govuk-input--width-3" id="synthetic-atar-chapter" name="chapter" type="text" value="<%= params[:chapter] %>" aria-describedby="synthetic-atar-chapter-hint">
+      </div>
+    </div>
+  </div>
+  <button type="submit" class="govuk-button govuk-button--secondary">Filter</button>
+<% end %>
+
+<% if @synthetic_atars.any? %>
+  <table class="govuk-table">
+    <caption class="govuk-table__caption govuk-table__caption--s"><%= pluralize(@synthetic_atars.total_count, "synthetic ATaR") %></caption>
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th class="govuk-table__header" scope="col">Chapter</th>
+        <th class="govuk-table__header" scope="col">Real user search</th>
+        <th class="govuk-table__header" scope="col">Times searched</th>
+        <th class="govuk-table__header" scope="col">Commodity code</th>
+        <th class="govuk-table__header" scope="col">Description</th>
+        <th class="govuk-table__header" scope="col">Completed by</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+      <% @synthetic_atars.each do |synthetic_atar| %>
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell"><%= synthetic_atar.chapter %></td>
+          <td class="govuk-table__cell"><%= link_to synthetic_atar.real_user_search, tariff_knowledge_synthetic_atar_path(synthetic_atar), class: "govuk-link" %></td>
+          <td class="govuk-table__cell"><%= synthetic_atar.times_searched_label %></td>
+          <td class="govuk-table__cell"><%= synthetic_atar.goods_nomenclature_item_id %></td>
+          <td class="govuk-table__cell"><%= synthetic_atar.description_summary %></td>
+          <td class="govuk-table__cell"><%= synthetic_atar.completed_by.presence || "-" %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <%= paginate @synthetic_atars %>
+<% else %>
+  <div class="govuk-inset-text">
+    <p class="govuk-body">No synthetic ATaRs found.</p>
+  </div>
+<% end %>

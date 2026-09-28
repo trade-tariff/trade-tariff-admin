@@ -16,6 +16,7 @@ class VersionsController < AuthenticatedController
     "GoodsNomenclatureSelfText" => GoodsNomenclatureSelfTextPolicy,
     "TariffKnowledge::CompressedNote" => TariffKnowledgeCompressedNotePolicy,
     "DescriptionIntercept" => DescriptionInterceptPolicy,
+    "TariffKnowledge::SyntheticAtar" => TariffKnowledgeSyntheticAtarPolicy,
     "CustomsTariffSectionNote" => CustomsTariff::SectionNotePolicy,
     "CustomsTariffChapterNote" => CustomsTariff::ChapterNotePolicy,
   }.freeze

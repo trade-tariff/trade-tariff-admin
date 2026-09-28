@@ -107,6 +107,21 @@ RSpec.describe "Version restore authorisation", type: :request do
     it { is_expected.to have_http_status :forbidden }
   end
 
+  # Synthetic ATaRs: TECHNICAL_OPERATOR only, the same as a direct edit of one.
+  context "when a technical operator restores a synthetic ATaR version" do
+    let(:current_user) { create(:user, :technical_operator) }
+    let(:item_type) { "TariffKnowledge::SyntheticAtar" }
+
+    it { is_expected.to have_http_status :redirect }
+  end
+
+  context "when an hmrc admin restores a synthetic ATaR version" do
+    let(:current_user) { create(:user, :hmrc_admin) }
+    let(:item_type) { "TariffKnowledge::SyntheticAtar" }
+
+    it { is_expected.to have_http_status :forbidden }
+  end
+
   # Compressed notes: TECHNICAL_OPERATOR only. The compressed note page offers
   # a restore control, so the portal must authorise the type. The backend does
   # not accept the type, so the restore then fails there. See gap 12.

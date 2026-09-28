@@ -174,6 +174,11 @@ Rails.application.routes.draw do
       post :bulk_import
     end
   end
+  resources :tariff_knowledge_synthetic_atars, only: %i[index new create show edit update destroy] do
+    member do
+      get :delete, action: :confirm_destroy
+    end
+  end
   resources :search_analytics, only: %i[index]
   resources :search_export_workbooks, only: %i[create show] do
     get :download, on: :member

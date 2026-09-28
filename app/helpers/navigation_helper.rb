@@ -97,6 +97,13 @@ module NavigationHelper
             service: :uk,
           ),
           NavigationItem.new(
+            text: "Synthetic ATaRs",
+            href: tariff_knowledge_synthetic_atars_path,
+            policy_class: TariffKnowledgeSyntheticAtar,
+            active_when: /\/tariff_knowledge_synthetic_atars/,
+            service: :uk,
+          ),
+          NavigationItem.new(
             text: "Search dashboard",
             href: search_analytics_path,
             policy_class: SearchAnalytics,

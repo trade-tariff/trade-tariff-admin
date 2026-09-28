@@ -1,0 +1,70 @@
+<%= govuk_breadcrumbs "Synthetic ATaRs": tariff_knowledge_synthetic_atars_path %>
+
+<%= render "versions/version_banner",
+           record: @synthetic_atar,
+           current_path: tariff_knowledge_synthetic_atar_path(@synthetic_atar),
+           type_name: "synthetic ATaR" %>
+
+<span class="govuk-caption-l">Synthetic ATaR</span>
+<h1 class="govuk-heading-l"><%= @synthetic_atar.real_user_search %></h1>
+
+<dl class="govuk-summary-list govuk-!-margin-bottom-6">
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Chapter</dt>
+    <dd class="govuk-summary-list__value"><%= @synthetic_atar.chapter %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Commodity code</dt>
+    <dd class="govuk-summary-list__value"><%= @synthetic_atar.goods_nomenclature_item_id %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Full product description</dt>
+    <dd class="govuk-summary-list__value"><%= simple_format(@synthetic_atar.description) %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Notes</dt>
+    <dd class="govuk-summary-list__value"><%= @synthetic_atar.notes.present? ? simple_format(@synthetic_atar.notes) : "None" %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Times searched</dt>
+    <dd class="govuk-summary-list__value"><%= @synthetic_atar.times_searched_label %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Likely heading</dt>
+    <dd class="govuk-summary-list__value"><%= @synthetic_atar.likely_heading.presence || "None" %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Completed by</dt>
+    <dd class="govuk-summary-list__value"><%= @synthetic_atar.completed_by.presence || "None" %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Created</dt>
+    <dd class="govuk-summary-list__value"><%= @synthetic_atar.formatted_created_at %></dd>
+  </div>
+</dl>
+
+<% if @synthetic_atar.current? && (policy(@synthetic_atar).update? || policy(@synthetic_atar).destroy?) %>
+  <div class="govuk-button-group">
+    <% if policy(@synthetic_atar).update? %>
+      <%= govuk_button_link_to "Edit", edit_tariff_knowledge_synthetic_atar_path(@synthetic_atar) %>
+    <% end %>
+    <% if policy(@synthetic_atar).destroy? %>
+      <%= govuk_button_link_to "Delete synthetic ATaR",
+                               delete_tariff_knowledge_synthetic_atar_path(@synthetic_atar),
+                               warning: true %>
+    <% end %>
+  </div>
+<% end %>
+
+<% if @versions.present? %>
+  <%= render "versions/history_section",
+             versions: @versions,
+             view_path_helper: ->(v) { tariff_knowledge_synthetic_atar_path(@synthetic_atar, oid: v.resource_id) },
+             restore_path_helper: ->(v) { restore_version_path(v.resource_id) },
+             can_restore: policy(@synthetic_atar).update?,
+             current_oid: @synthetic_atar.version_oid %>
+<% end %>
+
+<%= render "versions/version_navigation",
+           record: @synthetic_atar,
+           version_path_helper: ->(oid) { tariff_knowledge_synthetic_atar_path(@synthetic_atar, oid: oid) } %>
