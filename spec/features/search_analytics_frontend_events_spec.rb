@@ -105,8 +105,7 @@ RSpec.describe "Frontend search event widgets" do
     payload = JSON.parse(canvas["data-chart"])
     expect(payload["labels"]).to eq(["Question answer rate", "Question \"I don't know\" rate", "Question abandonment rate"])
     expect(payload["datasets"].first["data"]).to eq([60.0, 20.0, 20.0])
-    table = page.find("table", text: "Question outcome rates")
-    expect(table.text).to include("Question answer rate", "6", "60%", "Question abandonment rate", "2", "20%")
+    expect(page.find("details", text: "View question outcome data", visible: :all).text(:all)).to include("Question answer rate", "6", "60%", "Question abandonment rate", "2", "20%")
     expect(page).not_to have_css("canvas[data-chart-type='pie']")
   end
 

@@ -115,7 +115,7 @@ RSpec.describe "Search analytics dashboard" do
     visit search_analytics_path(period: "24h", view: "internal")
     expect(page).to have_content("No journeys started on the collected days. Rates are unavailable.")
     expect(page).not_to have_css("#journey-outcome-rates ~ .search-analytics-chart-container canvas")
-    expect(page.find("table", text: "Journey outcome rates")).to have_content("Unavailable")
+    expect(page.find("details", text: "View outcome data", visible: :all).text(:all)).to include("Unavailable")
   end
 
   it "presents a total-cost chart and business-focused cost tables", :aggregate_failures do
@@ -418,12 +418,12 @@ RSpec.describe "Search analytics dashboard" do
   end
 
   def expect_guided_outcome_rates
-    expect(page).to have_css("#journey-outcome-rates", text: "Journey outcome rates")
+    expect(page).to have_css("#journey-outcome-rates", text: "Outcome rates")
     expect(page).to have_content("journeys started").and have_content("last recorded outcome")
     payload = JSON.parse(page.find("#journey-outcome-rates ~ .search-analytics-chart-container canvas")["data-chart"])
     expect(payload.fetch("labels")).to eq(["Results", "I don't know", "No results", "Unknown results", "Blocking guidance", "Error", "Abandonment"])
     expect(payload.dig("datasets", 0, "data")).to eq([50.0, 10.0, 10.0, 10.0, 10.0, 5.0, 5.0])
-    expect(page.find("table", text: "Journey outcome rates")).to have_content("Abandonment").and have_content("50%")
+    expect(page.find("details", text: "View outcome data", visible: :all).text(:all)).to include("Abandonment", "50%")
     expect(page).not_to have_css("h2", text: "Outcome trend")
   end
 
