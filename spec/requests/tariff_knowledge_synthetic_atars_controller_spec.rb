@@ -3,6 +3,7 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
   subject(:rendered_page) { make_request && response }
 
   include_context "with authenticated user"
+  include XlsxWorkbookHelper
 
   let(:current_user) { create(:user, :technical_operator) }
   let(:synthetic_atar_id) { "12" }
@@ -134,6 +135,134 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
       it "shows an empty list and a warning instead of an error page" do
         expect(rendered_page).to have_http_status(:success)
         expect(rendered_page.body).to include("Synthetic ATaRs could not be loaded. Try again.")
+      end
+    end
+
+    context "when the user is not a technical operator" do
+      let(:current_user) { create(:user, :hmrc_admin) }
+
+      it { is_expected.to have_http_status :forbidden }
+    end
+  end
+
+  describe "GET #import" do
+    let(:make_request) { get import_tariff_knowledge_synthetic_atars_path }
+
+    it { is_expected.to have_http_status :success }
+
+    it "explains the import and shows the upload form" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_css("h1", text: "Import synthetic ATaRs")
+      expect(page).to have_text("Classifications")
+      expect(page).to have_text("Only rows with the status Done")
+      expect(page).to have_link("Download an example file with the column headings", href: example_import_tariff_knowledge_synthetic_atars_path)
+      expect(page).to have_field("Import file", type: "file")
+      expect(page).to have_button("Import synthetic ATaRs")
+    end
+
+    context "when the user is not a technical operator" do
+      let(:current_user) { create(:user, :hmrc_admin) }
+
+      it { is_expected.to have_http_status :forbidden }
+    end
+  end
+
+  describe "GET #example_import" do
+    let(:make_request) { get example_import_tariff_knowledge_synthetic_atars_path }
+
+    it "downloads a CSV with only the column headings" do
+      expect(rendered_page).to have_http_status(:success)
+      expect(rendered_page.headers["Content-Type"]).to include("text/csv")
+      expect(rendered_page.body).to eq("Chapter,Real user search,Times searched,Likely heading,Full product description,Commodity code (10 digits),Status,Completed by,Notes\n")
+    end
+  end
+
+  describe "POST #bulk_import" do
+    let(:csv_text) do
+      <<~CSV
+        Chapter,Real user search,Full product description,Commodity code (10 digits),Status
+        39,plastic box,A plastic box.,3924100000,Done
+      CSV
+    end
+    let(:upload) { Rack::Test::UploadedFile.new(StringIO.new(csv_text), "text/csv", original_filename: "synthetic-atars.csv") }
+    let(:make_request) do
+      post bulk_import_tariff_knowledge_synthetic_atars_path, params: { tariff_knowledge_synthetic_atar_import: { file: upload } }
+    end
+
+    def backend_accepts_csv(csv)
+      stub_api_request("/tariff_knowledge_synthetic_atars/bulk_import", :post)
+        .with { |request| Rack::Utils.parse_nested_query(request.body).dig("data", "attributes", "csv") == csv }
+        .and_return(
+          status: 201,
+          headers: json_headers,
+          body: { data: { type: "tariff_knowledge_synthetic_atar_bulk_import", attributes: { created: 1, updated: 2, unchanged: 3, skipped: 4, total: 6 } } }.to_json,
+        )
+    end
+
+    context "with a CSV file the backend accepts" do
+      before { backend_accepts_csv(csv_text) }
+
+      it { is_expected.to redirect_to(tariff_knowledge_synthetic_atars_path) }
+
+      it "reports the counts" do
+        rendered_page
+
+        expect(session.dig("flash", "flashes", "notice")).to eq("Imported 6 synthetic ATaRs: 1 created, 2 updated, 3 unchanged. 4 rows skipped because they are not finished.")
+      end
+    end
+
+    context "with a workbook that has several sheets" do
+      let(:upload) do
+        xlsx_upload([
+          xlsx_sheet("Instructions", [["Read this first"]], 1),
+          xlsx_sheet("Classifications", [["Chapter", "Real user search", "Full product description", "Commodity code (10 digits)", "Status"], ["39", "plastic box", "A plastic box.", "3924100000", "Done"]], 2),
+          xlsx_sheet("Progress", [["Total rows"]], 3),
+        ])
+      end
+
+      before { backend_accepts_csv(csv_text) }
+
+      it "sends the Classifications sheet to the backend as CSV" do
+        expect(rendered_page).to redirect_to(tariff_knowledge_synthetic_atars_path)
+      end
+    end
+
+    context "when the workbook has no Classifications sheet" do
+      let(:upload) { xlsx_upload([xlsx_sheet("Instructions", [["Read this first"]], 1)]) }
+
+      it "shows the problem and does not call the backend" do
+        expect(rendered_page).to have_http_status(:unprocessable_content)
+        expect(rendered_page.body).to include("The workbook has no sheet called &quot;Classifications&quot;.")
+      end
+    end
+
+    context "when no file is chosen" do
+      let(:make_request) { post bulk_import_tariff_knowledge_synthetic_atars_path }
+
+      it "asks for a file" do
+        expect(rendered_page).to have_http_status(:unprocessable_content)
+        expect(rendered_page.body).to include("Choose a CSV or XLSX file to upload.")
+      end
+    end
+
+    context "when the backend rejects the rows" do
+      before do
+        stub_api_request("/tariff_knowledge_synthetic_atars/bulk_import", :post)
+          .and_return(
+            status: 422,
+            headers: json_headers,
+            body: { errors: [{ detail: "Line 3: Commodity code must be exactly 10 digits (check that a leading zero has not been dropped)" }, { detail: "Line 9: Real user search appears more than once in the file (first on line 4)" }] }.to_json,
+          )
+      end
+
+      it "lists every problem and says that nothing was imported" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(rendered_page).to have_http_status(:unprocessable_content)
+        expect(page).to have_css(".govuk-error-summary", text: "Nothing was imported")
+        expect(page).to have_css(".govuk-error-summary li", text: "Line 3: Commodity code must be exactly 10 digits")
+        expect(page).to have_css(".govuk-error-summary li", text: "Line 9: Real user search appears more than once")
       end
     end
 

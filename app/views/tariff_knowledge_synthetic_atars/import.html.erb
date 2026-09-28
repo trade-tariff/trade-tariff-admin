@@ -1,0 +1,104 @@
+<%= govuk_breadcrumbs "Synthetic ATaRs": tariff_knowledge_synthetic_atars_path %>
+
+<h1 class="govuk-heading-l">Import synthetic ATaRs</h1>
+
+<% if @import_errors.present? %>
+  <div class="govuk-error-summary" data-module="govuk-error-summary">
+    <div role="alert">
+      <h2 class="govuk-error-summary__title">There is a problem with the import</h2>
+      <div class="govuk-error-summary__body">
+        <p class="govuk-body">Nothing was imported. Fix the problems below in the file, then upload it again.</p>
+        <ul class="govuk-list govuk-error-summary__list">
+          <% @import_errors.each do |error| %>
+            <li><%= error["detail"] || error[:detail] || error.to_s %></li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <p class="govuk-body">Upload the spreadsheet that the HMRC analysts filled in.</p>
+
+    <ul class="govuk-list govuk-list--bullet">
+      <li>An XLSX file is read from its sheet called <strong><%= TariffKnowledgeSyntheticAtarsController::IMPORT_SHEET_NAME %></strong>. A CSV file needs the same columns.</li>
+      <li>Only rows with the status <strong>Done</strong>, a description and a commodity code are imported. Other rows are skipped and counted.</li>
+      <li>A row whose real user search already exists updates that synthetic ATaR. Capital letters and extra spaces are ignored. Any other row adds a new one.</li>
+      <li>If any row has a problem, nothing is imported. Every problem is listed with its line number, which is the row number in the spreadsheet.</li>
+      <li>Importing the same file again changes nothing.</li>
+    </ul>
+
+    <table class="govuk-table govuk-table--small-text-until-tablet">
+      <caption class="govuk-table__caption govuk-table__caption--s">Columns</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th class="govuk-table__header" scope="col">Column</th>
+          <th class="govuk-table__header" scope="col">Needed</th>
+          <th class="govuk-table__header" scope="col">Notes</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">Chapter</td>
+          <td class="govuk-table__cell">Yes</td>
+          <td class="govuk-table__cell">Two digits, for example 01.</td>
+        </tr>
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">Real user search</td>
+          <td class="govuk-table__cell">Yes</td>
+          <td class="govuk-table__cell">Identifies the record. A search that still shows the "(no real search available...)" placeholder is refused.</td>
+        </tr>
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">Full product description</td>
+          <td class="govuk-table__cell">Yes</td>
+          <td class="govuk-table__cell">All the facts needed to classify the product.</td>
+        </tr>
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">Commodity code (10 digits)</td>
+          <td class="govuk-table__cell">Yes</td>
+          <td class="govuk-table__cell">Exactly 10 digits. Keep any leading zero.</td>
+        </tr>
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">Status</td>
+          <td class="govuk-table__cell">Yes</td>
+          <td class="govuk-table__cell">Only <strong>Done</strong> rows are imported.</td>
+        </tr>
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">Times searched, Likely heading, Completed by, Notes</td>
+          <td class="govuk-table__cell">No</td>
+          <td class="govuk-table__cell">Stored when the column is in the file.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="govuk-body">
+      Columns are matched by their first words, so a hint at the end of a column name, such as
+      "(May-Aug 2026)", does not matter. Other columns, such as Row, Chapter title and Heading description, are ignored.
+    </p>
+
+    <p class="govuk-body">
+      <%= link_to "Download an example file with the column headings", example_import_tariff_knowledge_synthetic_atars_path, class: "govuk-link" %>
+    </p>
+
+    <%= form_with url: bulk_import_tariff_knowledge_synthetic_atars_path,
+                  scope: :tariff_knowledge_synthetic_atar_import,
+                  multipart: true,
+                  method: :post do |f| %>
+      <div class="govuk-form-group">
+        <%= f.label :file, "Import file", class: "govuk-label govuk-label--s" %>
+        <div id="synthetic-atar-import-file-hint" class="govuk-hint">A CSV file, or an XLSX file with a sheet called <%= TariffKnowledgeSyntheticAtarsController::IMPORT_SHEET_NAME %>.</div>
+        <%= f.file_field :file,
+                         class: "govuk-file-upload",
+                         aria: { describedby: "synthetic-atar-import-file-hint" },
+                         accept: ".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" %>
+      </div>
+
+      <div class="govuk-button-group">
+        <%= f.submit "Import synthetic ATaRs", class: "govuk-button", data: { module: "govuk-button", prevent_double_click: "true" } %>
+        <%= link_to "Cancel", tariff_knowledge_synthetic_atars_path, class: "govuk-link" %>
+      </div>
+    <% end %>
+  </div>
+</div>

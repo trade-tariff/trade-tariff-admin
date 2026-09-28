@@ -178,6 +178,12 @@ Rails.application.routes.draw do
     member do
       get :delete, action: :confirm_destroy
     end
+
+    collection do
+      get :import
+      get :example_import
+      post :bulk_import
+    end
   end
   resources :search_analytics, only: %i[index]
   resources :search_export_workbooks, only: %i[create show] do

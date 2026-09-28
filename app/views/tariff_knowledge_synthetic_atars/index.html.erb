@@ -8,6 +8,7 @@
 
 <div class="govuk-button-group govuk-!-margin-bottom-6">
   <%= link_to "New synthetic ATaR", new_tariff_knowledge_synthetic_atar_path, class: "govuk-button" %>
+  <%= link_to "Import from a spreadsheet", import_tariff_knowledge_synthetic_atars_path, class: "govuk-button govuk-button--secondary" %>
 </div>
 
 <%= form_with url: tariff_knowledge_synthetic_atars_path, method: :get, local: true do %>
@@ -60,6 +61,6 @@
   <%= paginate @synthetic_atars %>
 <% else %>
   <div class="govuk-inset-text">
-    <p class="govuk-body">No synthetic ATaRs found.</p>
+    <p class="govuk-body">No synthetic ATaRs found. Add one, or import the analysts' spreadsheet.</p>
   </div>
 <% end %>

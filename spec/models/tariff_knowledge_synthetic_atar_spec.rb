@@ -43,5 +43,25 @@ RSpec.describe TariffKnowledgeSyntheticAtar do
       expect(described_class.new(times_searched: nil).times_searched_label).to eq("-")
     end
   end
+
+  describe TariffKnowledgeSyntheticAtar::BulkImportResult do
+    it "summarises the counts" do
+      result = described_class.new(created: 2, updated: 1, unchanged: 3, skipped: 470)
+
+      expect(result).to be_success
+      expect(result.total).to eq(6)
+      expect(result.message).to eq("Imported 6 synthetic ATaRs: 2 created, 1 updated, 3 unchanged. 470 rows skipped because they are not finished.")
+    end
+
+    it "uses the singular for one" do
+      result = described_class.new(created: 1, skipped: 1)
+
+      expect(result.message).to eq("Imported 1 synthetic ATaR: 1 created, 0 updated, 0 unchanged. 1 row skipped because they are not finished.")
+    end
+
+    it "is not a success when there are errors" do
+      expect(described_class.new(errors: [{ "detail" => "Line 2: something is wrong" }])).not_to be_success
+    end
+  end
 end
 # rubocop:enable RSpec/MultipleExpectations

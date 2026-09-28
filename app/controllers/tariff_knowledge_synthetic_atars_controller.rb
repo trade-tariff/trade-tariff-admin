@@ -1,4 +1,18 @@
 class TariffKnowledgeSyntheticAtarsController < AuthenticatedController
+  # The analysts' workbook has several tabs. The data is on this one.
+  IMPORT_SHEET_NAME = "Classifications".freeze
+  EXAMPLE_IMPORT_HEADERS = [
+    "Chapter",
+    "Real user search",
+    "Times searched",
+    "Likely heading",
+    "Full product description",
+    "Commodity code (10 digits)",
+    "Status",
+    "Completed by",
+    "Notes",
+  ].freeze
+
   rescue_from Faraday::ResourceNotFound, with: :redirect_synthetic_atar_not_found
 
   before_action :load_synthetic_atar, only: %i[show edit update confirm_destroy destroy]
@@ -61,7 +75,39 @@ class TariffKnowledgeSyntheticAtarsController < AuthenticatedController
     redirect_to tariff_knowledge_synthetic_atars_path, notice: "Synthetic ATaR deleted successfully."
   end
 
+  def import
+    authorize TariffKnowledgeSyntheticAtar, :create?
+  end
+
+  def bulk_import
+    authorize TariffKnowledgeSyntheticAtar, :create?
+
+    file_result = SpreadsheetImportFile.new(import_file, sheet_name: IMPORT_SHEET_NAME).call
+    if file_result.success?
+      import_result = TariffKnowledgeSyntheticAtar.bulk_import(file_result.csv_content)
+      return redirect_to tariff_knowledge_synthetic_atars_path, notice: import_result.message if import_result.success?
+
+      @import_errors = import_result.errors
+    else
+      @import_errors = file_result.errors
+    end
+
+    render :import, status: :unprocessable_content
+  end
+
+  def example_import
+    authorize TariffKnowledgeSyntheticAtar, :index?
+
+    send_data CSV.generate_line(EXAMPLE_IMPORT_HEADERS),
+              filename: "synthetic-atars-example.csv",
+              type: "text/csv"
+  end
+
 private
+
+  def import_file
+    params.dig(:tariff_knowledge_synthetic_atar_import, :file)
+  end
 
   def load_synthetic_atar
     @synthetic_atar = TariffKnowledgeSyntheticAtar.find(params[:id], params[:oid].present? ? { oid: params[:oid] } : {})
