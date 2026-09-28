@@ -278,6 +278,7 @@
                   data-x-axis-title="<%= @search_analytics.bucket_size == 'hour' ? 'Hour (UTC)' : 'Date (UTC)' %>" data-y-axis-title="Searches"
                   data-chart="<%= search_analytics_chart_payload(trends[:volume], series: { @view => @view.humanize }, bucket_size: @search_analytics.bucket_size) %>"></canvas>
         </div>
+        <p class="govuk-body-s">Each bar is searches in that <%= @search_analytics.bucket_size == 'hour' ? 'hour' : 'day' %>. A search active in two <%= @search_analytics.bucket_size == 'hour' ? 'hours' : 'days' %> is counted in both, so the bars do not add up to Search requests.</p>
       </section>
 
       <% if @view == "all" %>
@@ -293,6 +294,7 @@
                     data-x-axis-title="<%= @search_analytics.bucket_size == 'hour' ? 'Hour (UTC)' : 'Date (UTC)' %>" data-y-axis-title="Journeys"
                     data-chart="<%= search_analytics_chart_payload(trends[:outcomes], series: { completed: "Completed", failed: "Failed", nonterminal: "Question only", unknown: "Unknown", zero_result: "Zero result", selected: "Selected" }, bucket_size: @search_analytics.bucket_size) %>"></canvas>
           </div>
+          <p class="govuk-body-s">Completed, Question only and Unknown do not overlap. Selected and Zero result can overlap those states.</p>
         <% else %>
           <p class="govuk-body">Journey outcomes have not been collected for these dates.</p>
         <% end %>
