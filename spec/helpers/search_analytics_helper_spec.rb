@@ -22,6 +22,14 @@ RSpec.describe SearchAnalyticsHelper do
     end
   end
 
+  describe "#search_analytics_outcome_rate_percentage" do
+    it "keeps a nil rate unavailable and does not scale an already-percent value", :aggregate_failures do
+      expect(helper.search_analytics_outcome_rate_percentage(nil)).to eq("Unavailable")
+      expect(helper.search_analytics_outcome_rate_percentage(0)).to eq("0%")
+      expect(helper.search_analytics_outcome_rate_percentage(33.3)).to eq("33.3%")
+    end
+  end
+
   describe "#search_analytics_share" do
     it "distinguishes small positive shares from zero", :aggregate_failures do
       expect(helper.search_analytics_share(0.00008)).to eq("<0.1%")

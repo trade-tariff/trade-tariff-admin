@@ -59,6 +59,14 @@ test('retains subcent data while using cent-resolution axis ticks', () => {
   assert.equal(chart.options.scales.y.stacked, false);
 });
 
+test('formats outcome rate axes as percentages and keeps a zero bar beside a positive rate', () => {
+  const chart = renderChart([0, 100], false, 'bar', { yAxisFormat: 'percent' });
+  assert.equal(chart.options.scales.y.ticks.callback(0), '0%');
+  assert.equal(chart.options.scales.y.ticks.callback(33.3), '33.3%');
+  assert.equal(chart.options.scales.y.ticks.callback(null), 'Unavailable');
+  assert.deepEqual(Array.from(chart.data.datasets[0].data), [0, 100]);
+});
+
 test('leaves count charts on integer axes', () => {
   const chart = renderChart([12], false);
   assert.equal(chart.options.scales.y.ticks.precision, 0);

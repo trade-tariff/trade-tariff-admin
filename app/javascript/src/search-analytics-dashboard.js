@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const payload = JSON.parse(canvas.dataset.chart || '{}');
     const requestedType = canvas.dataset.chartType || 'line';
     const currencyAxis = canvas.dataset.yAxisFormat === 'currency';
+    const percentAxis = canvas.dataset.yAxisFormat === 'percent';
     const stacked = canvas.dataset.stacked === 'true';
     const currency = new Intl.NumberFormat('en-GB', {
       style: 'currency',
@@ -20,6 +21,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return 'Unavailable';
       }
       return amount > 0 && amount < 0.01 ? '<$0.01' : currency.format(amount);
+    };
+    const formatPercent = (value) => {
+      const amount = Number(value);
+      if (value === null || value === undefined || !Number.isFinite(amount)) {
+        return 'Unavailable';
+      }
+      return `${amount.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 1 })}%`;
     };
 
     if (!payload.labels || !payload.datasets) {
@@ -70,7 +78,10 @@ document.addEventListener('DOMContentLoaded', () => {
             stacked,
             title: { display: Boolean(canvas.dataset.yAxisTitle), text: canvas.dataset.yAxisTitle },
             ticks: {
-              ...(currencyAxis ? { precision: 2, callback: formatCost } : { precision: 0 }),
+              ...(currencyAxis ? { precision: 2, callback: formatCost } : {}),
+              ...(percentAxis ? { callback: formatPercent } : {}),
+              ...(!currencyAxis && !percentAxis ? { precision: 0 } : {}),
+
             },
           },
         },
@@ -79,9 +90,12 @@ document.addEventListener('DOMContentLoaded', () => {
             display: canvas.dataset.hideLegend !== 'true',
             position: 'bottom',
           },
-          tooltip: currencyAxis ? {
+          tooltip: currencyAxis || percentAxis ? {
             callbacks: {
-              label: (context) => `${context.dataset.label}: ${formatCost(context.parsed.y)}`,
+              label: (context) => {
+                const formatted = currencyAxis ? formatCost(context.parsed.y) : formatPercent(context.parsed.y);
+                return `${context.dataset.label}: ${formatted}`;
+              },
             },
           } : {},
         },

@@ -40,6 +40,68 @@ module SearchAnalyticsHelper
     name.blank? || name == "unknown" ? "Unknown" : name
   end
 
+  GUIDED_OUTCOME_RATE_LABELS = {
+    "results" => "Results",
+    "dont_know" => "I don't know",
+    "no_results" => "No results",
+    "unknown_results" => "Unknown results",
+    "blocking_guidance" => "Blocking guidance",
+    "error" => "Error",
+    "abandonment" => "Abandonment",
+  }.freeze
+  CLASSIC_OUTCOME_RATE_LABELS = {
+    "results" => "Results",
+    "no_results" => "No results",
+  }.freeze
+  QUESTION_OUTCOME_RATE_LABELS = {
+    "server_accepted" => "Question answer rate",
+    "dont_know" => "Question \"I don't know\" rate",
+    "unanswered" => "Question abandonment rate",
+  }.freeze
+
+  def search_analytics_outcome_rate_rows(population, labels)
+    population = (population || {}).with_indifferent_access
+    counts = population[:counts]&.with_indifferent_access
+    percentages = population[:percentages]&.with_indifferent_access
+    labels.map do |key, label|
+      {
+        label: label,
+        count: counts ? counts[key].to_i : nil,
+        percentage: percentages ? percentages[key] : nil,
+      }
+    end
+  end
+
+  def search_analytics_outcome_rate_chart_payload(rows)
+    {
+      labels: rows.map { |row| row[:label] },
+      datasets: [{
+        label: "Rate",
+        data: rows.map { |row| row[:percentage].nil? ? nil : row[:percentage].to_f },
+        backgroundColor: "#144e81",
+        borderColor: "#144e81",
+        maxBarThickness: 72,
+      }],
+    }.to_json
+  end
+
+  def search_analytics_outcome_rate_percentage(value)
+    return "Unavailable" if value.nil?
+
+    number_to_percentage(value.to_f, precision: 1, strip_insignificant_zeros: true)
+  end
+
+  def search_analytics_outcome_definition(view)
+    case view
+    when "internal"
+      "Each started journey counts once. If it reaches more than one terminating outcome on the same UTC day, the last recorded outcome is used. Rates use journeys started as the denominator. Abandonment is a started journey with no terminating outcome that day. A journey that ends on a later day can count as abandoned on the start day. Missing collection is not abandonment. When no journeys start, rates are unavailable."
+    when "classic"
+      "Results and No results are shares of completed frontend fuzzy searches. Exact matches are excluded. No results means the total result count is 0. These figures do not prove that a results page was visible. There is no classic abandonment rate. When no fuzzy searches complete, rates are unavailable."
+    else
+      "Uses the same frontend journeys as Search requests. Completed means a final backend response, not a question step. Question only and Unknown show journeys without a recognised final outcome. Selected and Zero result can overlap with other states. Outcomes are shown in the journey's observed start buckets."
+    end
+  end
+
   def search_analytics_frontend_action_rows(actions)
     actions = (actions || {}).with_indifferent_access
     [["Result selections", actions[:result_selected].to_i], ["Don't know", actions[:dont_know].to_i]]

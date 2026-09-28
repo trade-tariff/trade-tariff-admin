@@ -3,9 +3,10 @@ RSpec.describe "Frontend search event widgets" do
 
   let(:event_data) { JSON.parse(Rails.root.join("spec/fixtures/search_analytics/frontend_events.json").read) }
 
-  def stub_events(data: event_data, view: "all", period: "24h", journeys: nil)
+  def stub_events(data: event_data, view: "all", period: "24h", journeys: nil, question_outcomes: nil)
     body = JSON.parse(Rails.root.join("spec/fixtures/search_analytics/#{period}_#{view}.json").read)
     body["data"]["attributes"]["frontend_events"] = data
+    body["data"]["attributes"]["question_outcomes"] = question_outcomes || default_question_outcomes
     body["data"]["attributes"]["journeys"] = journeys if journeys
     stub_api_request("/search_analytics").with(query: { period:, view: })
       .to_return(status: 200, headers: { "content-type" => "application/json" }, body: body.to_json)
@@ -76,12 +77,10 @@ RSpec.describe "Frontend search event widgets" do
     expect_question_chart
   end
 
-  it "shows an empty state instead of a blank actions pie", :aggregate_failures do
-    event_data["actions"] = { "result_selected" => 0, "dont_know" => 0 }
-    stub_events
+  it "shows unavailable question rates instead of a blank actions pie", :aggregate_failures do
+    stub_events(question_outcomes: empty_question_outcomes)
     visit search_analytics_path
-    expect(page).to have_content("No actions recorded.")
-    expect(page).not_to have_css("canvas[data-chart-type='pie']")
+    expect_unavailable_question_rates
   end
 
   def expect_event_tables
@@ -100,16 +99,49 @@ RSpec.describe "Frontend search event widgets" do
   end
 
   def expect_action_chart
-    canvas = page.find(".search-analytics-actions-chart canvas[data-chart-type='pie'][role='img']")
+    expect(page).to have_css("#question-outcome-rates", text: "Question outcome rates")
+    expect(page).to have_content("questions shown")
+    canvas = page.find("#question-outcome-rates ~ .search-analytics-chart-container canvas[data-chart-type='bar'][data-y-axis-format='percent']")
     payload = JSON.parse(canvas["data-chart"])
-    expect(payload["labels"]).to eq(["Result selections", "Don't know"])
-    expect(payload["datasets"].first["data"]).to eq([3, 1])
-    table = page.find("details", text: "View action data").find("table", visible: :all)
-    expect(table.text(:all)).to include("Result selections", "Don't know", "3", "1")
+    expect(payload["labels"]).to eq(["Question answer rate", "Question \"I don't know\" rate", "Question abandonment rate"])
+    expect(payload["datasets"].first["data"]).to eq([60.0, 20.0, 20.0])
+    table = page.find("table", text: "Question outcome rates")
+    expect(table.text).to include("Question answer rate", "6", "60%", "Question abandonment rate", "2", "20%")
+    expect(page).not_to have_css("canvas[data-chart-type='pie']")
+  end
+
+  def empty_question_outcomes
+    {
+      "supported" => true,
+      "available" => true,
+      "denominator" => 0,
+      "counts" => { "server_accepted" => 0, "dont_know" => 0, "unanswered" => 0 },
+      "percentages" => nil,
+      "percentage_status" => "unavailable",
+      "coverage" => { "complete" => true },
+    }
+  end
+
+  def expect_unavailable_question_rates
+    expect(page).to have_content("No questions were shown on the collected days. Rates are unavailable.")
+    expect(page).not_to have_css("#question-outcome-rates ~ .search-analytics-chart-container canvas")
+    expect(page).not_to have_css("canvas[data-chart-type='pie']")
+  end
+
+  def default_question_outcomes
+    {
+      "supported" => true,
+      "available" => true,
+      "denominator" => 10,
+      "counts" => { "server_accepted" => 6, "dont_know" => 2, "unanswered" => 2 },
+      "percentages" => { "server_accepted" => 60.0, "dont_know" => 20.0, "unanswered" => 20.0 },
+      "percentage_status" => "available",
+      "coverage" => { "complete" => true },
+    }
   end
 
   def expect_question_chart
-    canvas = page.find("section[aria-labelledby='frontend-events-heading'] canvas[data-chart-type='bar'][role='img']")
+    canvas = page.find("canvas[data-x-axis-title='Reported questions'][data-chart-type='bar'][role='img']")
     payload = JSON.parse(canvas["data-chart"])
     expect([canvas["data-x-axis-title"], canvas["data-y-axis-title"], canvas["data-hide-legend"]]).to eq(["Reported questions", "Journeys", "true"])
     expect(payload["labels"]).to eq(["Unknown", "0", "8+"])
