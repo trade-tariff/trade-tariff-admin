@@ -27,6 +27,9 @@ class TariffKnowledgeSyntheticAtar
     )
   rescue Faraday::UnprocessableEntityError => e
     BulkImportResult.new(errors: Array(handle_body(e.response)["errors"]))
+  rescue Faraday::Error => e
+    Rails.logger.error("Failed to bulk import synthetic ATaRs: #{e.message}")
+    BulkImportResult.new(errors: [{ "detail" => "The import could not be completed. Check the list before you try again. Uploading the same file again is safe." }])
   end
 
   def self.bulk_import_payload(csv_content)

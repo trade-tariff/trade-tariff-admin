@@ -266,6 +266,19 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
       end
     end
 
+    context "when the backend cannot be reached" do
+      before do
+        stub_api_request("/tariff_knowledge_synthetic_atars/bulk_import", :post).to_raise(Faraday::ConnectionFailed)
+      end
+
+      it "shows a clear message instead of a generic error page" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(rendered_page).to have_http_status(:unprocessable_content)
+        expect(page).to have_css(".govuk-error-summary", text: "The import could not be completed. Check the list before you try again. Uploading the same file again is safe.")
+      end
+    end
+
     context "when the user is not a technical operator" do
       let(:current_user) { create(:user, :hmrc_admin) }
 
