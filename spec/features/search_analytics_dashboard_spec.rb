@@ -421,7 +421,7 @@ RSpec.describe "Search analytics dashboard" do
     expect(page).to have_css("#journey-outcome-rates", text: "Journey outcome rates")
     expect(page).to have_content("journeys started").and have_content("last recorded outcome")
     payload = JSON.parse(page.find("#journey-outcome-rates ~ .search-analytics-chart-container canvas")["data-chart"])
-    expect(payload.fetch("labels")).to eq(["Results", "I don't know", "No results", "Unknown results", "Blocking guidance", "Error", "Abandonment"])
+    expect(payload.fetch("labels")).to eq(["Results", ["I don't", "know"], %w[No results], %w[Unknown results], %w[Blocking guidance], "Error", "Abandonment"])
     expect(payload.dig("datasets", 0, "data")).to eq([50.0, 10.0, 10.0, 10.0, 10.0, 5.0, 5.0])
     expect(page.find("details", text: "View outcome data", visible: :all).text(:all)).to include("Abandonment", "50%")
     expect(page).not_to have_css("h2", text: "Outcome trend")
@@ -431,7 +431,7 @@ RSpec.describe "Search analytics dashboard" do
     expect(page).to have_content("completed fuzzy searches")
     expect(page).to have_content("do not prove that a results page was visible")
     payload = JSON.parse(page.find("#journey-outcome-rates ~ .search-analytics-chart-container canvas")["data-chart"])
-    expect(payload.fetch("labels")).to eq(["Results", "No results"])
+    expect(payload.fetch("labels")).to eq(["Results", %w[No results]])
     expect(payload.dig("datasets", 0, "data")).to eq([75.0, 25.0])
     expect(page).not_to have_content("Abandonment")
   end
