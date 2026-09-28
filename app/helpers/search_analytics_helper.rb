@@ -56,7 +56,7 @@ module SearchAnalyticsHelper
   QUESTION_OUTCOME_RATE_LABELS = {
     "server_accepted" => "Answered",
     "dont_know" => "I don't know",
-    "unanswered" => "Unanswered",
+    "unanswered" => "Abandonment",
   }.freeze
 
   OUTCOME_RATE_COLOURS = {
