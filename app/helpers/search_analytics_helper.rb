@@ -54,9 +54,9 @@ module SearchAnalyticsHelper
     "no_results" => "No results",
   }.freeze
   QUESTION_OUTCOME_RATE_LABELS = {
-    "server_accepted" => "Question answer rate",
-    "dont_know" => "Question \"I don't know\" rate",
-    "unanswered" => "Question abandonment rate",
+    "server_accepted" => "Answered",
+    "dont_know" => "I don't know",
+    "unanswered" => "Unanswered",
   }.freeze
 
   def search_analytics_outcome_rate_rows(population, labels)

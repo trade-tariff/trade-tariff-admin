@@ -418,7 +418,7 @@ RSpec.describe "Search analytics dashboard" do
   end
 
   def expect_guided_outcome_rates
-    expect(page).to have_css("#journey-outcome-rates", text: "Outcome rates")
+    expect(page).to have_css("#journey-outcome-rates", text: "Journey outcome rates")
     expect(page).to have_content("journeys started").and have_content("last recorded outcome")
     payload = JSON.parse(page.find("#journey-outcome-rates ~ .search-analytics-chart-container canvas")["data-chart"])
     expect(payload.fetch("labels")).to eq(["Results", "I don't know", "No results", "Unknown results", "Blocking guidance", "Error", "Abandonment"])

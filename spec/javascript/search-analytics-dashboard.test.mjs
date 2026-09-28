@@ -59,6 +59,12 @@ test('retains subcent data while using cent-resolution axis ticks', () => {
   assert.equal(chart.options.scales.y.stacked, false);
 });
 
+test('shows every category tick when the chart asks for all labels', () => {
+  const chart = renderChart([10, 20, 30], false, 'bar', { showAllTicks: 'true', yAxisFormat: 'percent' });
+  assert.equal(chart.options.scales.x.ticks.autoSkip, false);
+  assert.equal(chart.options.scales.x.ticks.maxTicksLimit, 12);
+});
+
 test('formats outcome rate axes as percentages and keeps a zero bar beside a positive rate', () => {
   const chart = renderChart([0, 100], false, 'bar', { yAxisFormat: 'percent' });
   assert.equal(chart.options.scales.y.ticks.callback(0), '0%');
