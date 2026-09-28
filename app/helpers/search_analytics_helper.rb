@@ -59,12 +59,25 @@ module SearchAnalyticsHelper
     "unanswered" => "Unanswered",
   }.freeze
 
+  OUTCOME_RATE_COLOURS = {
+    "results" => "#005a30",
+    "server_accepted" => "#005a30",
+    "dont_know" => "#f47738",
+    "no_results" => "#594d00",
+    "unknown_results" => "#505a5f",
+    "blocking_guidance" => "#144e81",
+    "error" => "#942514",
+    "abandonment" => "#6f777b",
+    "unanswered" => "#6f777b",
+  }.freeze
+
   def search_analytics_outcome_rate_rows(population, labels)
     population = (population || {}).with_indifferent_access
     counts = population[:counts]&.with_indifferent_access
     percentages = population[:percentages]&.with_indifferent_access
     labels.map do |key, label|
       {
+        key: key,
         label: label,
         count: counts ? counts[key].to_i : nil,
         percentage: percentages ? percentages[key] : nil,
@@ -73,13 +86,14 @@ module SearchAnalyticsHelper
   end
 
   def search_analytics_outcome_rate_chart_payload(rows)
+    colours = rows.map { |row| OUTCOME_RATE_COLOURS.fetch(row[:key], "#144e81") }
     {
       labels: rows.map { |row| row[:label] },
       datasets: [{
         label: "Rate",
         data: rows.map { |row| row[:percentage].nil? ? nil : row[:percentage].to_f },
-        backgroundColor: "#144e81",
-        borderColor: "#144e81",
+        backgroundColor: colours,
+        borderColor: colours,
         maxBarThickness: 72,
       }],
     }.to_json
