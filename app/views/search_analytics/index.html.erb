@@ -132,7 +132,7 @@
                 value: { text: "Result selections divided by eligible searches. Eligible searches are classic fuzzy searches and internal searches that return ranked confidence results. Can exceed 100% when users open more than one result." },
               },
               {
-                key: { text: @view == "all" ? "Outcome trend" : "Outcome rates" },
+                key: { text: @view == "all" ? "Outcome trend" : (@view == "internal" ? "Journey outcome rates" : "Outcome rates") },
                 value: { text: search_analytics_outcome_definition(@view) },
               },
               {
@@ -302,7 +302,8 @@
         <%= render "rate_bars",
               population: outcome_population,
               labels: @view == "classic" ? SearchAnalyticsHelper::CLASSIC_OUTCOME_RATE_LABELS : SearchAnalyticsHelper::GUIDED_OUTCOME_RATE_LABELS,
-              heading: "Outcome rates",
+              heading: @view == "internal" ? "Journey outcome rates" : "Outcome rates",
+              description: @view == "internal" ? "Each started journey counts once, using its last recorded final outcome that UTC day. Abandonment means no final outcome was recorded that day, not missing collection." : "Shares of completed fuzzy searches. Exact matches are excluded.",
               heading_id: "journey-outcome-rates",
               heading_tag: "h2",
               heading_class: "govuk-heading-m",
@@ -310,7 +311,7 @@
               details_summary: "View outcome data",
               missing_message: "Journey outcome rates have not been collected for these dates.",
               empty_message: @view == "classic" ? "No completed fuzzy searches were recorded on the collected days. Rates are unavailable." : "No journeys started on the collected days. Rates are unavailable.",
-              table_caption: "Outcome rates",
+              table_caption: @view == "internal" ? "Journey outcome rates" : "Outcome rates",
               count_heading: @view == "classic" ? "Searches" : "Journeys",
               denominator_label: @view == "classic" ? "completed fuzzy searches" : "journeys started" %>
       <% end %>

@@ -14,6 +14,7 @@
             Observed browser sessions: <%= search_analytics_number(frontend_events[:observed_sessions]) %>.
           <% end %>
         </p>
+        <p class="govuk-body-s">Page events can repeat within a journey. Average wait measures time until the page was visible, not time spent on the page.</p>
         <table class="govuk-table">
           <caption class="govuk-table__caption govuk-table__caption--s">Observed page outcomes</caption>
           <thead class="govuk-table__head">
@@ -38,6 +39,7 @@
               population: (@search_analytics.question_outcomes || {}),
               labels: SearchAnalyticsHelper::QUESTION_OUTCOME_RATE_LABELS,
               heading: "Question outcome rates",
+              description: "Each shown question counts once: an answer accepted by the server, 'I don't know', or no recorded answer (Unanswered). These are question outcomes, not journey outcomes.",
               heading_id: "question-outcome-rates",
               heading_tag: "h3",
               heading_class: "govuk-heading-s",

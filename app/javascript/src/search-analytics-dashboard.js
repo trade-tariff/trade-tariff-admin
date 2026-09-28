@@ -68,9 +68,10 @@ document.addEventListener('DOMContentLoaded', () => {
             title: { display: Boolean(canvas.dataset.xAxisTitle), text: canvas.dataset.xAxisTitle },
             grid: { display: canvas.dataset.hideXGrid !== 'true' },
             ticks: {
-              autoSkip: true,
-              maxRotation: 0,
-              maxTicksLimit: 8,
+              autoSkip: canvas.dataset.showAllTicks !== 'true',
+              maxRotation: canvas.dataset.showAllTicks === 'true' ? 40 : 0,
+              minRotation: 0,
+              maxTicksLimit: canvas.dataset.showAllTicks === 'true' ? 12 : 8,
             },
           },
           y: {
