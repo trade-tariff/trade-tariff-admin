@@ -17,6 +17,8 @@ class SearchAnalytics
              :request_sources,
              :ai_costs,
              :frontend_events,
+             :outcome_rates,
+             :question_outcomes,
              :suggestions,
              :improvement_terms
 

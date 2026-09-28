@@ -82,20 +82,40 @@ RSpec.describe "Search analytics dashboard" do
     end
   end
 
-  it "retains rare non-zero failures, zero results and selections in the outcome trend", :aggregate_failures do
+  it "retains rare non-zero failures, zero results and selections in the All outcome trend", :aggregate_failures do
     stub_rare_outcomes
-    visit search_analytics_path(period: "24h", view: "internal")
+    visit search_analytics_path(period: "24h", view: "all")
     payload = JSON.parse(all(".search-analytics-charts canvas").last["data-chart"])
     expect(payload.fetch("datasets").pluck("label")).to eq(["Completed", "Failed", "Zero result", "Selected"])
     expect(payload.fetch("datasets").drop(1).pluck("data")).to all(eq([1]))
   end
 
-  it "plots question-only and unknown journeys as distinct outcome series", :aggregate_failures do
+  it "plots question-only and unknown journeys as distinct outcome series on All", :aggregate_failures do
     stub_outcome_states
-    visit search_analytics_path(period: "24h", view: "internal")
+    visit search_analytics_path(period: "24h", view: "all")
     payload = JSON.parse(all(".search-analytics-charts canvas").last["data-chart"])
     expect(payload.fetch("datasets").pluck("label")).to eq(["Completed", "Failed", "Question only", "Unknown", "Zero result", "Selected"])
-    expect(payload.fetch("datasets").pluck("data")).to all(eq([1]))
+    expect(payload.fetch("datasets").pluck("data")).to all(eq([1, 1]))
+  end
+
+  it "replaces the Internal outcome trend with journey outcome rates", :aggregate_failures do
+    stub_guided_outcome_rates
+    visit search_analytics_path(period: "24h", view: "internal")
+    expect_guided_outcome_rates
+  end
+
+  it "shows classic fuzzy outcome rates without an abandonment bar", :aggregate_failures do
+    stub_classic_outcome_rates
+    visit search_analytics_path(period: "24h", view: "classic")
+    expect_classic_outcome_rates
+  end
+
+  it "shows unavailable journey rates instead of zero when no journeys start", :aggregate_failures do
+    stub_guided_outcome_rates(denominator: 0)
+    visit search_analytics_path(period: "24h", view: "internal")
+    expect(page).to have_content("No journeys started on the collected days. Rates are unavailable.")
+    expect(page).not_to have_css("#journey-outcome-rates ~ .search-analytics-chart-container canvas")
+    expect(page.find("table", text: "Journey outcome rates")).to have_content("Unavailable")
   end
 
   it "presents a total-cost chart and business-focused cost tables", :aggregate_failures do
@@ -138,8 +158,8 @@ RSpec.describe "Search analytics dashboard" do
     it "withholds legacy step outcomes when journey outcomes are unavailable (#{available.inspect})", :aggregate_failures do
       stub_journey_analytics(journey_outcomes: available)
       visit search_analytics_path(period: "24h", view: "internal")
-      expect(page).to have_content("Journey outcomes have not been collected for these dates")
-      expect(page.find(".search-analytics-charts section", text: "Outcome trend")).not_to have_css("canvas")
+      expect(page).to have_content("Journey outcome rates have not been collected for these dates")
+      expect(page).not_to have_css("#journey-outcome-rates ~ .search-analytics-chart-container canvas")
       expect(page).to have_css("section[aria-label='Search requests']", text: "6")
     end
 
@@ -154,9 +174,16 @@ RSpec.describe "Search analytics dashboard" do
 
   it "shows matching outcome days when outcome coverage is incomplete", :aggregate_failures do
     stub_incomplete_outcome_analytics
-    visit search_analytics_path(period: "24h", view: "internal")
+    visit search_analytics_path(period: "24h", view: "all")
     expect(page).to have_content("Outcome figures describe collected days only")
     expect(page.find(".search-analytics-charts section", text: "Outcome trend")).to have_css("canvas")
+  end
+
+  it "does not treat incomplete guided collection as abandonment", :aggregate_failures do
+    stub_guided_outcome_rates(complete: false)
+    visit search_analytics_path(period: "24h", view: "internal")
+    expect(page).to have_content("Missing, stale, and unprojected days are not zero and are not abandonment.")
+    expect(page).to have_css("#journey-outcome-rates ~ .search-analytics-chart-container canvas")
   end
 
   [true, false, nil].each do |available|
@@ -343,25 +370,84 @@ RSpec.describe "Search analytics dashboard" do
   end
 
   def stub_incomplete_outcome_analytics
-    body = JSON.parse(Rails.root.join("spec/fixtures/search_analytics/24h_internal.json").read)
+    body = JSON.parse(Rails.root.join("spec/fixtures/search_analytics/24h_all.json").read)
     body["data"]["attributes"]["availability"]["journey_outcomes"] = true
     body["data"]["attributes"]["availability"]["journey_outcome_coverage"] = { "complete" => false, "collected_days" => 1, "expected_days" => 2 }
+    stub_api_request("/search_analytics").with(query: { period: "24h", view: "all" })
+      .to_return(status: 200, headers: { "content-type" => "application/json" }, body: body.to_json)
+  end
+
+  def stub_guided_outcome_rates(denominator: 20, complete: true)
+    body = JSON.parse(Rails.root.join("spec/fixtures/search_analytics/24h_internal.json").read)
+    counts = denominator.zero? ? guided_rate_keys.index_with { 0 } : { "results" => 10, "dont_know" => 2, "no_results" => 2, "unknown_results" => 2, "blocking_guidance" => 2, "error" => 1, "abandonment" => 1 }
+    percentages = denominator.zero? ? nil : { "results" => 50.0, "dont_know" => 10.0, "no_results" => 10.0, "unknown_results" => 10.0, "blocking_guidance" => 10.0, "error" => 5.0, "abandonment" => 5.0 }
+    body["data"]["attributes"]["outcome_rates"] = {
+      "guided" => {
+        "supported" => true,
+        "available" => true,
+        "denominator" => denominator,
+        "counts" => counts,
+        "percentages" => percentages,
+        "percentage_status" => denominator.zero? ? "unavailable" : "available",
+        "coverage" => { "complete" => complete },
+      },
+    }
     stub_api_request("/search_analytics").with(query: { period: "24h", view: "internal" })
       .to_return(status: 200, headers: { "content-type" => "application/json" }, body: body.to_json)
   end
 
+  def stub_classic_outcome_rates
+    body = JSON.parse(Rails.root.join("spec/fixtures/search_analytics/24h_classic.json").read)
+    body["data"]["attributes"]["outcome_rates"] = {
+      "classic" => {
+        "supported" => true,
+        "available" => true,
+        "denominator" => 8,
+        "counts" => { "results" => 6, "no_results" => 2 },
+        "percentages" => { "results" => 75.0, "no_results" => 25.0 },
+        "percentage_status" => "available",
+        "coverage" => { "complete" => true },
+      },
+    }
+    stub_api_request("/search_analytics").with(query: { period: "24h", view: "classic" })
+      .to_return(status: 200, headers: { "content-type" => "application/json" }, body: body.to_json)
+  end
+
+  def guided_rate_keys
+    %w[results dont_know no_results unknown_results blocking_guidance error abandonment]
+  end
+
+  def expect_guided_outcome_rates
+    expect(page).to have_css("#journey-outcome-rates", text: "Journey outcome rates")
+    expect(page).to have_content("journeys started").and have_content("last recorded outcome")
+    payload = JSON.parse(page.find("#journey-outcome-rates ~ .search-analytics-chart-container canvas")["data-chart"])
+    expect(payload.fetch("labels")).to eq(["Results", "I don't know", "No results", "Unknown results", "Blocking guidance", "Error", "Abandonment"])
+    expect(payload.dig("datasets", 0, "data")).to eq([50.0, 10.0, 10.0, 10.0, 10.0, 5.0, 5.0])
+    expect(page.find("table", text: "Journey outcome rates")).to have_content("Abandonment").and have_content("50%")
+    expect(page).not_to have_css("h2", text: "Outcome trend")
+  end
+
+  def expect_classic_outcome_rates
+    expect(page).to have_content("completed fuzzy searches")
+    expect(page).to have_content("do not prove that a results page was visible")
+    payload = JSON.parse(page.find("#journey-outcome-rates ~ .search-analytics-chart-container canvas")["data-chart"])
+    expect(payload.fetch("labels")).to eq(["Results", "No results"])
+    expect(payload.dig("datasets", 0, "data")).to eq([75.0, 25.0])
+    expect(page).not_to have_content("Abandonment")
+  end
+
   def stub_outcome_states
-    body = JSON.parse(Rails.root.join("spec/fixtures/search_analytics/24h_internal.json").read)
+    body = JSON.parse(Rails.root.join("spec/fixtures/search_analytics/24h_all.json").read)
     body["data"]["attributes"]["summary"]["searches"] = 4
     body["data"]["attributes"]["trends"]["outcomes"].each { |row| row.merge!(%w[completed failed nonterminal unknown zero_result selected].index_with { 1 }) }
-    stub_api_request("/search_analytics").with(query: { period: "24h", view: "internal" })
+    stub_api_request("/search_analytics").with(query: { period: "24h", view: "all" })
       .to_return(status: 200, headers: { "content-type" => "application/json" }, body: body.to_json)
   end
 
   def stub_rare_outcomes
     body = JSON.parse(Rails.root.join("spec/fixtures/search_analytics/24h_internal.json").read)
     body["data"]["attributes"]["trends"]["outcomes"].each { |row| row.merge!("completed" => 1000, "failed" => 1, "zero_result" => 1, "selected" => 1) }
-    stub_api_request("/search_analytics").with(query: { period: "24h", view: "internal" })
+    stub_api_request("/search_analytics").with(query: { period: "24h", view: "all" })
       .to_return(status: 200, headers: { "content-type" => "application/json" }, body: body.to_json)
   end
 

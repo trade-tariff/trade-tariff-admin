@@ -1,0 +1,52 @@
+<% population = (population || {}).with_indifferent_access %>
+<% coverage = (population[:coverage] || {}).with_indifferent_access %>
+<% rows = search_analytics_outcome_rate_rows(population, labels) %>
+<% rates_available = population[:available] == true && population[:percentage_status] == "available" %>
+<section aria-labelledby="<%= heading_id %>">
+  <<%= heading_tag %> id="<%= heading_id %>" class="<%= heading_class %>"><%= heading %></<%= heading_tag %>>
+  <p class="govuk-body"><%= explanation %></p>
+  <% if population[:supported] == false %>
+    <p class="govuk-body">These rates are not available for this view.</p>
+  <% elsif population[:available] != true %>
+    <p class="govuk-body"><%= missing_message %></p>
+  <% else %>
+    <% if coverage[:complete] == false %>
+      <%= govuk_inset_text(text: "These rates use fresh collected days only. Missing, stale, and unprojected days are not zero and are not abandonment.") %>
+    <% end %>
+    <% if rates_available %>
+      <div class="search-analytics-chart-container">
+        <canvas class="search-analytics-chart"
+                data-chart-type="bar"
+                data-y-axis-format="percent"
+                data-x-axis-title="Outcome"
+                data-y-axis-title="Rate (%)"
+                data-hide-legend="true"
+                data-chart="<%= search_analytics_outcome_rate_chart_payload(rows) %>"
+                role="img"
+                aria-label="<%= heading %>. The table below gives the counts and rates."></canvas>
+      </div>
+    <% else %>
+      <p class="govuk-body"><%= empty_message %></p>
+    <% end %>
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--s"><%= table_caption %></caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">Outcome</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric"><%= count_heading %></th>
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">Rate</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        <% rows.each do |row| %>
+          <tr class="govuk-table__row">
+            <th scope="row" class="govuk-table__header"><%= row[:label] %></th>
+            <td class="govuk-table__cell govuk-table__cell--numeric"><%= row[:count].nil? ? "Unavailable" : search_analytics_number(row[:count]) %></td>
+            <td class="govuk-table__cell govuk-table__cell--numeric"><%= search_analytics_outcome_rate_percentage(row[:percentage]) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+    <p class="govuk-body-s">Denominator: <%= denominator_label %><% unless population[:denominator].nil? %> (<%= search_analytics_number(population[:denominator]) %>)<% end %>.</p>
+  <% end %>
+</section>

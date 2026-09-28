@@ -132,8 +132,8 @@
                 value: { text: "Result selections divided by eligible searches. Eligible searches are classic fuzzy searches and internal searches that return ranked confidence results. Can exceed 100% when users open more than one result." },
               },
               {
-                key: { text: "Outcome trend" },
-                value: { text: "Uses the same frontend journeys as Search requests. Completed means a final backend response, not a question step. Question only and Unknown show journeys without a recognised final outcome. Selected and Zero result can overlap with other states. Outcomes are shown in the journey's observed start buckets." },
+                key: { text: @view == "all" ? "Outcome trend" : "Journey outcome rates" },
+                value: { text: search_analytics_outcome_definition(@view) },
               },
               {
                 key: { text: "P90 latency" },
@@ -280,6 +280,7 @@
         </div>
       </section>
 
+      <% if @view == "all" %>
       <section>
         <h2 class="govuk-heading-m">Outcome trend</h2>
         <% outcome_coverage = (availability[:journey_outcome_coverage] || {}).with_indifferent_access %>
@@ -296,6 +297,22 @@
           <p class="govuk-body">Journey outcomes have not been collected for these dates.</p>
         <% end %>
       </section>
+      <% else %>
+        <% outcome_population = (@search_analytics.outcome_rates || {}).with_indifferent_access.fetch(@view == "classic" ? :classic : :guided, {}) %>
+        <%= render "rate_bars",
+              population: outcome_population,
+              labels: @view == "classic" ? SearchAnalyticsHelper::CLASSIC_OUTCOME_RATE_LABELS : SearchAnalyticsHelper::GUIDED_OUTCOME_RATE_LABELS,
+              heading: "Journey outcome rates",
+              heading_id: "journey-outcome-rates",
+              heading_tag: "h2",
+              heading_class: "govuk-heading-m",
+              explanation: search_analytics_outcome_definition(@view),
+              missing_message: "Journey outcome rates have not been collected for these dates.",
+              empty_message: @view == "classic" ? "No completed fuzzy searches were recorded on the collected days. Rates are unavailable." : "No journeys started on the collected days. Rates are unavailable.",
+              table_caption: "Journey outcome rates",
+              count_heading: @view == "classic" ? "Searches" : "Journeys",
+              denominator_label: @view == "classic" ? "completed fuzzy searches" : "journeys started" %>
+      <% end %>
     </div>
 
     <%= render "frontend_events", frontend_events: (@search_analytics.frontend_events || {}).with_indifferent_access %>
