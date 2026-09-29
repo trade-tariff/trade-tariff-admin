@@ -1,6 +1,7 @@
 class SearchDiagnostic
   include ApiEntity
 
+  REQUEST_ID_FORMAT = /\A[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\z/i
   BROWSER_SESSION_ID_FORMAT = /\Av1:[0-9a-f]{64}\z/
   EXPERIMENT_FORMAT = /\A[A-Za-z0-9][A-Za-z0-9_-]{0,63}\z/
 

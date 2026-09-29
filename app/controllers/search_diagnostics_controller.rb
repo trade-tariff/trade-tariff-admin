@@ -2,13 +2,18 @@ class SearchDiagnosticsController < AuthenticatedController
   def index
     authorize SearchDiagnostic, :index?
 
-    if request_id.present?
-      redirect_to search_diagnostic_path(request_id, preserved_filters)
+    if search_reference.present?
+      target = target_for(search_reference)
+      return redirect_to(search_diagnostics_path, alert: invalid_reference_alert) if target.blank?
+
+      redirect_to target
       return
     end
 
     return if browser_session_id.blank? && experiment.blank?
-    return redirect_to search_diagnostics_path, alert: "Enter a valid browser session or experiment." unless valid_correlation_filter?
+    return redirect_to search_diagnostics_path, alert: invalid_reference_alert unless valid_correlation_filter?
+
+    @list_window = params[:lookback_hours].present? ? "the last #{params[:lookback_hours]} hours" : "today"
 
     @related_diagnostics = SearchDiagnostic.collection(correlation_params)
   rescue Faraday::Error => e
@@ -32,6 +37,25 @@ private
 
   def request_id
     params[:request_id].to_s.strip
+  end
+
+  def search_reference
+    params[:search_reference].to_s.strip.presence || params[:request_id].to_s.strip.presence
+  end
+
+  def target_for(reference)
+    case reference
+    when SearchDiagnostic::REQUEST_ID_FORMAT
+      search_diagnostic_path(reference, preserved_filters)
+    when SearchDiagnostic::BROWSER_SESSION_ID_FORMAT
+      search_diagnostics_path({ browser_session_id: reference }.merge(preserved_filters))
+    when SearchDiagnostic::EXPERIMENT_FORMAT
+      search_diagnostics_path({ experiment: reference }.merge(preserved_filters))
+    end
+  end
+
+  def invalid_reference_alert
+    "Enter a valid request ID, browser session, or experiment."
   end
 
   def search_params
@@ -61,6 +85,14 @@ private
     {
       browser_session_id: browser_session_id.presence,
       experiment: experiment.presence,
+      lookback_hours: default_lookback_hours,
     }.merge(preserved_filters).compact_blank
+  end
+
+  def default_lookback_hours
+    return if params[:lookback_hours].present?
+
+    now = Time.zone.now
+    [((now - now.beginning_of_day) / 1.hour).ceil, 1].max
   end
 end

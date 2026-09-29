@@ -11,22 +11,56 @@ RSpec.describe SearchDiagnosticsController do
     it "renders the search form" do
       rendered_page
 
-      expect(response.body).to include("Search diagnostics", "Request ID", "Find diagnostics")
+      expect(response.body).to include("Search diagnostics", "Request ID, browser session, or experiment", "Find diagnostics")
     end
 
     context "when a request id is submitted" do
-      let(:make_request) { get search_diagnostics_path, params: { request_id: " request-123 " } }
+      let(:request_id) { "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee" }
+      let(:make_request) { get search_diagnostics_path, params: { search_reference: " #{request_id} " } }
 
-      it { is_expected.to redirect_to(search_diagnostic_path("request-123")) }
+      it { is_expected.to redirect_to(search_diagnostic_path(request_id)) }
+    end
+
+    context "when a legacy request id param is submitted" do
+      let(:request_id) { "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee" }
+      let(:make_request) { get search_diagnostics_path, params: { request_id: request_id } }
+
+      it { is_expected.to redirect_to(search_diagnostic_path(request_id)) }
+    end
+
+    context "when a browser session id is submitted" do
+      let(:browser_session_id) { "v1:#{'a' * 64}" }
+      let(:make_request) { get search_diagnostics_path, params: { search_reference: browser_session_id } }
+
+      it { is_expected.to redirect_to(search_diagnostics_path(browser_session_id:)) }
+    end
+
+    context "when an experiment is submitted" do
+      let(:make_request) { get search_diagnostics_path, params: { search_reference: "ai-search-2026" } }
+
+      it { is_expected.to redirect_to(search_diagnostics_path(experiment: "ai-search-2026")) }
+    end
+
+    context "when an invalid reference is submitted" do
+      let(:make_request) { get search_diagnostics_path, params: { search_reference: "not a valid reference!" } }
+
+      it { is_expected.to redirect_to(search_diagnostics_path) }
+
+      it "shows an alert" do
+        rendered_page
+
+        expect(flash[:alert]).to eq("Enter a valid request ID, browser session, or experiment.")
+      end
     end
 
     context "when a browser session is submitted" do
       let(:browser_session_id) { "v1:#{'a' * 64}" }
+      let(:today_lookback_hours) { [((Time.zone.now - Time.zone.now.beginning_of_day) / 1.hour).ceil, 1].max }
       let(:make_request) { get search_diagnostics_path, params: { browser_session_id: } }
 
       before do
         stub_api_request("/search_diagnostics")
-          .with(query: hash_including("browser_session_id" => browser_session_id))
+          .with(query: hash_including("browser_session_id" => browser_session_id, "lookback_hours" => today_lookback_hours.to_s))
           .to_return jsonapi_response(
             :search_diagnostic,
             [
@@ -47,6 +81,29 @@ RSpec.describe SearchDiagnosticsController do
           search_diagnostic_path("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
           "fur coat",
         )
+      end
+
+      it "defaults the list window to the current day" do
+        rendered_page
+
+        expect(response.body).to include("Showing requests from today.")
+      end
+    end
+
+    context "when an explicit lookback window is submitted" do
+      let(:browser_session_id) { "v1:#{'a' * 64}" }
+      let(:make_request) { get search_diagnostics_path, params: { browser_session_id:, lookback_hours: 48 } }
+
+      before do
+        stub_api_request("/search_diagnostics")
+          .with(query: hash_including("browser_session_id" => browser_session_id, "lookback_hours" => "48"))
+          .to_return jsonapi_response(:search_diagnostic, [])
+      end
+
+      it "shows the requested window" do
+        rendered_page
+
+        expect(response.body).to include("Showing requests from the last 48 hours.")
       end
     end
 
