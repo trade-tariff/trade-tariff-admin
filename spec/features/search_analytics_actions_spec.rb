@@ -27,7 +27,7 @@ RSpec.describe "Search activity breakdown" do
 
     expect(page).to have_css("section[aria-label='Failure rate']", text: "1.2%")
     expect(page).to have_content("not clicks on its results")
-    expect(page.text(:all)).to include("whether the user selects it or submits matching text", "including direct code lookups")
+    expect(page.text(:all)).to include("through a typed code or a matching suggestion", "such as a title or chemical number", "codes that do not resolve directly")
   end
 
   context "with partial action coverage" do
