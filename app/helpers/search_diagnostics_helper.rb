@@ -195,7 +195,11 @@ module SearchDiagnosticsHelper
   end
 
   def search_diagnostic_request_path(request_id)
-    search_diagnostic_path(request_id, search_diagnostic_preserved_filters)
+    search_diagnostic_path(request_id, search_diagnostic_return_filters)
+  end
+
+  def search_diagnostics_back_path
+    search_diagnostics_path(search_diagnostic_return_filters)
   end
 
   def search_diagnostic_experiment_path(experiment)
@@ -208,6 +212,14 @@ module SearchDiagnosticsHelper
 
   def search_diagnostic_preserved_filters
     params.permit(:lookback_hours, :limit).to_h.compact_blank
+  end
+
+  def search_diagnostic_return_filters
+    filters = search_diagnostic_preserved_filters
+    return filters.merge(browser_session_id: params[:browser_session_id]) if params[:browser_session_id].present?
+    return filters.merge(experiment: params[:experiment]) if params[:experiment].present?
+
+    filters
   end
 
   def search_diagnostic_overview(events)

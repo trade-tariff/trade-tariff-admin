@@ -4,21 +4,21 @@ class SearchDiagnosticsController < AuthenticatedController
 
     if search_reference.present?
       target = target_for(search_reference)
-      return redirect_to(search_diagnostics_path, alert: invalid_reference_alert) if target.blank?
+      return redirect_to(search_diagnostics_path(preserved_filters), alert: invalid_reference_alert) if target.blank?
 
       redirect_to target
       return
     end
 
     return if browser_session_id.blank? && experiment.blank?
-    return redirect_to search_diagnostics_path, alert: invalid_reference_alert unless valid_correlation_filter?
+    return redirect_to search_diagnostics_path(preserved_filters), alert: invalid_reference_alert unless valid_correlation_filter?
 
-    @list_window = params[:lookback_hours].present? ? "the last #{params[:lookback_hours]} hours" : "today"
-
-    @related_diagnostics = SearchDiagnostic.collection(correlation_params)
+    @list_window = explicit_lookback_hours ? "the last #{explicit_lookback_hours} hours" : "today"
+    @applied_lookback_hours = applied_lookback_hours
+    @related_diagnostics = current_day_requests(SearchDiagnostic.collection(correlation_params))
   rescue Faraday::Error => e
     Rails.logger.error("Failed to fetch related search diagnostics: #{e.class} #{e.message}")
-    redirect_to search_diagnostics_path, alert: "Related search requests could not be loaded."
+    redirect_to search_diagnostics_path(preserved_filters), alert: "Related search requests could not be loaded."
   end
 
   def show
@@ -85,14 +85,44 @@ private
     {
       browser_session_id: browser_session_id.presence,
       experiment: experiment.presence,
-      lookback_hours: default_lookback_hours,
-    }.merge(preserved_filters).compact_blank
+      lookback_hours: applied_lookback_hours,
+    }.merge(preserved_filters.except("lookback_hours", :lookback_hours)).compact_blank
   end
 
-  def default_lookback_hours
-    return if params[:lookback_hours].present?
+  def applied_lookback_hours
+    explicit_lookback_hours || current_day_lookback_hours
+  end
 
-    now = Time.zone.now
-    [((now - now.beginning_of_day) / 1.hour).ceil, 1].max
+  def explicit_lookback_hours
+    return if params[:lookback_hours].blank?
+
+    Integer(params[:lookback_hours]).clamp(SearchDiagnostic::MIN_LOOKBACK_HOURS, SearchDiagnostic::MAX_LOOKBACK_HOURS)
+  rescue ArgumentError, TypeError
+    nil
+  end
+
+  def current_day_lookback_hours
+    elapsed_hours = ((Time.zone.now - current_day_start) / 1.hour).ceil
+
+    elapsed_hours.clamp(SearchDiagnostic::MIN_LOOKBACK_HOURS, SearchDiagnostic::MAX_LOOKBACK_HOURS)
+  end
+
+  def current_day_start
+    ActiveSupport::TimeZone[SearchDiagnostic::OPERATOR_TIME_ZONE].now.beginning_of_day
+  end
+
+  def current_day_requests(diagnostics)
+    return diagnostics if explicit_lookback_hours
+
+    diagnostics.select { |diagnostic| current_day_request?(diagnostic.occurred_at) }
+  end
+
+  def current_day_request?(occurred_at)
+    parsed = Time.zone.parse(occurred_at.to_s)
+    return true if parsed.blank?
+
+    parsed >= current_day_start
+  rescue ArgumentError
+    true
   end
 end

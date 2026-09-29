@@ -55,8 +55,15 @@ RSpec.describe SearchDiagnosticsController do
 
     context "when a browser session is submitted" do
       let(:browser_session_id) { "v1:#{'a' * 64}" }
-      let(:today_lookback_hours) { [((Time.zone.now - Time.zone.now.beginning_of_day) / 1.hour).ceil, 1].max }
+      let(:today_lookback_hours) do
+        elapsed_hours = ((Time.zone.now - ActiveSupport::TimeZone["London"].now.beginning_of_day) / 1.hour).ceil
+        elapsed_hours.clamp(SearchDiagnostic::MIN_LOOKBACK_HOURS, SearchDiagnostic::MAX_LOOKBACK_HOURS)
+      end
       let(:make_request) { get search_diagnostics_path, params: { browser_session_id: } }
+
+      include ActiveSupport::Testing::TimeHelpers
+
+      around { |example| travel_to(Time.utc(2026, 6, 5, 10, 30)) { example.run } }
 
       before do
         stub_api_request("/search_diagnostics")
@@ -104,6 +111,72 @@ RSpec.describe SearchDiagnosticsController do
         rendered_page
 
         expect(response.body).to include("Showing requests from the last 48 hours.")
+      end
+
+      it "keeps the window when the operator searches again" do
+        rendered_page
+
+        expect(response.body).to include('name="lookback_hours"', 'value="48"')
+      end
+    end
+
+    context "when the lookback window is outside the backend range" do
+      let(:browser_session_id) { "v1:#{'a' * 64}" }
+      let(:make_request) { get search_diagnostics_path, params: { browser_session_id:, lookback_hours: 999 } }
+
+      before do
+        stub_api_request("/search_diagnostics")
+          .with(query: hash_including("browser_session_id" => browser_session_id, "lookback_hours" => "168"))
+          .to_return jsonapi_response(:search_diagnostic, [])
+      end
+
+      it "shows the window the backend will search" do
+        rendered_page
+
+        expect(response.body).to include("Showing requests from the last 168 hours.", 'value="168"')
+      end
+    end
+
+    context "when the current day query also covers the previous evening" do
+      let(:browser_session_id) { "v1:#{'b' * 64}" }
+      let(:make_request) { get search_diagnostics_path, params: { browser_session_id: } }
+
+      include ActiveSupport::Testing::TimeHelpers
+
+      around { |example| travel_to(Time.utc(2026, 6, 5, 0, 30)) { example.run } }
+
+      before do
+        stub_api_request("/search_diagnostics")
+          .with(query: hash_including("lookback_hours" => "2"))
+          .to_return jsonapi_response(
+            :search_diagnostic,
+            [
+              {
+                resource_id: "11111111-2222-3333-4444-555555555555",
+                request_id: "11111111-2222-3333-4444-555555555555",
+                query: "yesterday coat",
+                occurred_at: "2026-06-04 22:00:00.000",
+              },
+              {
+                resource_id: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+                request_id: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+                query: "today shoes",
+                occurred_at: "2026-06-04 23:30:00.000",
+              },
+            ],
+          )
+      end
+
+      it "keeps a request from the current London day" do
+        rendered_page
+
+        expect(response.body).to include("today shoes")
+      end
+
+      it "drops a request from the previous London day" do
+        rendered_page
+
+        expect(response.body).not_to include("yesterday coat")
       end
     end
 
@@ -500,6 +573,16 @@ RSpec.describe SearchDiagnosticsController do
     let(:make_request) { get search_diagnostic_path("request-123") }
 
     it { is_expected.to have_http_status :success }
+
+    it "returns to the experiment list that opened the request" do
+      stub_api_request("/search_diagnostics/request-123")
+        .with(query: hash_including("lookback_hours" => "48"))
+        .to_return jsonapi_response(:search_diagnostic, { resource_id: "request-123", request_id: "request-123", events: [] })
+
+      get search_diagnostic_path("request-123", experiment: "ai-search-2026", lookback_hours: 48)
+
+      expect(response.body).to include("experiment=ai-search-2026", "lookback_hours=48")
+    end
 
     it "renders the diagnostics journey shell" do
       rendered_page

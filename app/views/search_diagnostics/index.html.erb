@@ -16,8 +16,14 @@
       <div class="govuk-form-group">
         <%= form.label :search_reference, "Request ID, browser session, or experiment", class: "govuk-label" %>
         <div id="search-reference-hint" class="govuk-hint">
-          Enter a request ID, browser session ID, or experiment name. Experiment and session lists show requests from today, up to 20.
+          Enter a request ID, browser session ID, or experiment name. By default, experiment and session lists show requests from today, up to 20.
         </div>
+        <% if @applied_lookback_hours.present? && params[:lookback_hours].present? %>
+          <%= form.hidden_field :lookback_hours, value: @applied_lookback_hours %>
+        <% end %>
+        <% if params[:limit].present? %>
+          <%= form.hidden_field :limit, value: params[:limit] %>
+        <% end %>
         <%= form.text_field :search_reference,
               value: params[:search_reference],
               class: "govuk-input",
