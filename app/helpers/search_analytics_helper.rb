@@ -206,6 +206,8 @@ module SearchAnalyticsHelper
   end
 
   def search_analytics_percentage(value)
+    return "Unavailable" if value.nil?
+
     number_to_percentage(value.to_f * 100, precision: 1, strip_insignificant_zeros: true)
   end
 
