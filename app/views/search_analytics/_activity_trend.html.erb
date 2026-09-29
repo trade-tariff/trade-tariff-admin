@@ -1,0 +1,48 @@
+<% rows = Array(actions[:trend]).map(&:with_indifferent_access) %>
+<section aria-labelledby="activity-trend-heading">
+  <h2 id="activity-trend-heading" class="govuk-heading-m">Search activity over time</h2>
+  <% if rows.any? %>
+    <div class="search-analytics-chart-container">
+      <canvas class="search-analytics-chart"
+              role="img"
+              aria-label="Navigation, Search and Unclassified journeys over time. Values are in the data table below."
+              aria-describedby="activity-trend-description"
+              data-chart-type="bar"
+              data-stacked="true"
+              data-keep-zero-series="true"
+              data-x-axis-title="<%= @search_analytics.bucket_size == 'hour' ? 'Hour (UTC)' : 'Date (UTC)' %>"
+              data-y-axis-title="Journeys"
+              data-chart="<%= search_analytics_action_chart_payload(rows, bucket_size: @search_analytics.bucket_size) %>">
+        Use the search activity data table below for counts and unavailable breakdowns.
+      </canvas>
+    </div>
+    <p id="activity-trend-description" class="govuk-body-s">Each bar counts distinct journeys in that <%= @search_analytics.bucket_size == 'hour' ? 'hour' : 'day' %>. A journey active in more than one bucket counts in each, so bars do not add up to Total journeys. Unclassified includes missing or conflicting action evidence.</p>
+    <%= render GovukComponent::DetailsComponent.new(summary_text: "View search activity data", classes: "govuk-!-margin-top-3") do %>
+      <div class="search-analytics-table-scroll" role="region" aria-label="Search activity data" tabindex="0">
+        <table class="govuk-table">
+          <caption class="govuk-table__caption govuk-table__caption--s">Search activity by <%= @search_analytics.bucket_size == 'hour' ? 'hour' : 'day' %> (UTC)</caption>
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header"><%= @search_analytics.bucket_size == 'hour' ? 'Date and hour (UTC)' : 'Date (UTC)' %></th>
+              <% ["Total journeys", *SearchAnalyticsHelper::SEARCH_ACTION_LABELS.values].each do |label| %>
+                <th scope="col" class="govuk-table__header govuk-table__header--numeric"><%= label %></th>
+              <% end %>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            <% rows.each do |row| %>
+              <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__header"><%= search_analytics_bucket_date(row[:bucket], bucket_size: @search_analytics.bucket_size) %></th>
+                <% [:total, *SearchAnalyticsHelper::SEARCH_ACTION_LABELS.keys].each do |key| %>
+                  <td class="govuk-table__cell govuk-table__cell--numeric"><%= search_analytics_action_count(row[key]) %></td>
+                <% end %>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  <% else %>
+    <p class="govuk-body">No stored journey counts are available to plot for these dates.</p>
+  <% end %>
+</section>

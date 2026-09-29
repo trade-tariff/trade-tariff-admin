@@ -8,6 +8,7 @@ class SearchAnalytics
              :generated_at,
              :data_through,
              :summary,
+             :actions,
              :journeys,
              :coverage,
              :availability,

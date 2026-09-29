@@ -52,7 +52,7 @@ RSpec.describe SearchAnalyticsController do
       expect(SearchAnalytics).to have_received(:fetch).with(period: "24h", view: "all")
     end
 
-    it "renders filters and the five top metrics" do
+    it "renders filters and activity metrics" do
       rendered_page
 
       expect_dashboard_content
@@ -133,7 +133,7 @@ RSpec.describe SearchAnalyticsController do
   def expect_dashboard_content
     expect(response.body).to include("24 hours", "7 days", "30 days", "All", "Classic", "Internal")
     expect(response.body).not_to include("Suggestions")
-    expect(response.body).to include("Search requests", "1,240")
+    expect(response.body).to include("Total journeys", "1,240")
     expect(response.body).to include("Failure rate", "1.2%")
     expect(response.body).to include("Zero-result rate", "8.4%")
     expect(response.body).to include("Selection rate", "41%")

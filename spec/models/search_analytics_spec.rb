@@ -29,6 +29,7 @@ RSpec.describe SearchAnalytics do
               searches: 1_240,
               failure_rate: 0.012,
             },
+            actions: { available: true, summary: { total: 1_240, navigation: 400, search: 800, unclassified: 40 } },
             trends: {
               volume: [
                 { bucket: "2026-06-10T09:00:00Z", all: 52 },
@@ -51,6 +52,10 @@ RSpec.describe SearchAnalytics do
 
     it "parses the summary payload" do
       expect(analytics.summary[:searches]).to eq(1_240)
+    end
+
+    it "parses the action breakdown" do
+      expect(analytics.actions[:summary]).to include(total: 1_240, navigation: 400, search: 800, unclassified: 40)
     end
 
     it "parses the trend payload" do

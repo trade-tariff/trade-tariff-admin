@@ -10,6 +10,9 @@ module SearchAnalyticsHelper
     zero_result: "#594d00",
     selected: "#005a30",
     searches: "#144e81",
+    navigation: "#144e81",
+    search: "#005a30",
+    unclassified: "#505a5f",
     ai_total: "#144e81",
   }.freeze
   def search_analytics_frontend_selection_rows(selections)
@@ -120,7 +123,7 @@ module SearchAnalyticsHelper
     when "classic"
       "Results and No results are shares of completed frontend fuzzy searches. Exact matches are excluded. No results means the total result count is 0. These figures do not prove that a results page was visible. There is no classic abandonment rate. When no fuzzy searches complete, rates are unavailable."
     else
-      "Uses the same frontend journeys as Search requests. Completed means a final backend response, not a question step. Question only and Unknown show journeys without a recognised final outcome. Selected and Zero result can overlap with other states. Outcomes are shown in the journey's observed start buckets."
+      "Uses the same frontend journeys as Total journeys. Completed means a final backend response, not a question step. Question only and Unknown show journeys without a recognised final outcome. Selected and Zero result can overlap with other states. Outcomes are shown in the journey's observed start buckets."
     end
   end
 
@@ -158,6 +161,44 @@ module SearchAnalyticsHelper
     return true if queries.blank?
 
     queries.dig(name, :collected_days).to_i.positive?
+  end
+
+  SEARCH_ACTION_LABELS = { navigation: "Navigation", search: "Search", unclassified: "Unclassified" }.freeze
+
+  def search_analytics_actions(analytics)
+    return analytics.actions.with_indifferent_access if analytics.actions.present?
+
+    available = analytics.availability&.dig(:journey_metrics)
+    total = analytics.summary&.dig(:searches) if available
+    {
+      available: false,
+      summary: { total:, navigation: nil, search: nil, unclassified: total },
+      trend: if available
+               Array(analytics.trends&.dig(:volume)).map do |row|
+                 row = row.with_indifferent_access
+                 { bucket: row[:bucket], total: row[analytics.view], navigation: nil, search: nil, unclassified: row[analytics.view] }
+               end
+             else
+               []
+             end,
+    }.with_indifferent_access
+  end
+
+  def search_analytics_action_count(value)
+    value.nil? ? "Unavailable" : search_analytics_number(value)
+  end
+
+  def search_analytics_action_chart_payload(rows, bucket_size:)
+    rows = Array(rows).map(&:with_indifferent_access)
+    {
+      labels: rows.map { |row| search_analytics_bucket_label(row[:bucket], bucket_size:) },
+      datasets: SEARCH_ACTION_LABELS.filter_map do |key, label|
+        data = rows.map { |row| row[key] }
+        next if data.all?(&:nil?)
+
+        { label:, data: }.merge(search_analytics_chart_series_style(key))
+      end,
+    }.to_json
   end
 
   def search_analytics_number(value)

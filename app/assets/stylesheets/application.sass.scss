@@ -220,7 +220,7 @@
 .search-analytics-metrics {
   display: grid;
   gap: govuk.govuk-spacing(3);
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
 }
 
 .search-analytics-metric {
@@ -237,11 +237,13 @@
   display: grid;
   align-items: start;
   gap: govuk.govuk-spacing(6);
-  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
 
   > section {
+    min-width: 0;
     display: grid;
-    grid-template-rows: 3.5rem 18rem auto;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(3.5rem, auto) auto;
   }
 
   > section > .govuk-heading-m {
@@ -252,6 +254,29 @@
   > section > .search-analytics-chart-container {
     grid-row: 2;
     height: 18rem;
+  }
+}
+
+.search-analytics-activity {
+  border: 1px solid govuk.govuk-colour("black", $variant: "tint-80");
+  padding: govuk.govuk-spacing(4);
+
+  .search-analytics-metric {
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .govuk-inset-text {
+    margin-bottom: 0;
+  }
+}
+
+.search-analytics-table-scroll {
+  overflow-x: auto;
+
+  &:focus-visible {
+    outline: 3px solid govuk.govuk-colour("yellow");
+    box-shadow: inset 0 0 0 2px govuk.govuk-colour("black");
   }
 }
 

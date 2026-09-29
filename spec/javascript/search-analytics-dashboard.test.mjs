@@ -106,6 +106,14 @@ test('keeps a single-category pie and skips an empty action pie', () => {
   assert.equal(renderChart([0, 0], false, 'pie'), undefined);
 });
 
+test('preserves observed zero action counts and unknown buckets in stacked charts', () => {
+  const chart = renderChart([null, 0], false, 'bar', { keepZeroSeries: 'true', stacked: 'true' });
+  assert.deepEqual(Array.from(chart.data.datasets[0].data), [null, 0]);
+  assert.equal(chart.options.scales.x.stacked, true);
+  assert.equal(chart.options.scales.y.stacked, true);
+  assert.equal(chart.options.plugins.legend.display, true);
+});
+
 test('does not create a chart for an entirely zero-cost dataset', () => {
   assert.equal(renderChart([0, 0]), undefined);
 });
