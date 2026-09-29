@@ -4,6 +4,9 @@ class SearchDiagnostic
   REQUEST_ID_FORMAT = /\A[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\z/i
   BROWSER_SESSION_ID_FORMAT = /\Av1:[0-9a-f]{64}\z/
   EXPERIMENT_FORMAT = /\A[A-Za-z0-9][A-Za-z0-9_-]{0,63}\z/
+  MIN_LOOKBACK_HOURS = 1
+  MAX_LOOKBACK_HOURS = 168
+  OPERATOR_TIME_ZONE = "London".freeze
 
   attributes :request_id,
              :log_group_name,
