@@ -4,6 +4,7 @@ RSpec.describe "Search-only zero-result rate" do
   let(:rate) { 0.6 }
   let(:search_only) { true }
   let(:coverage) { { complete: false, collected_days: 2, expected_days: 7 } }
+  let(:standalone) { false }
 
   before do
     body = JSON.parse(Rails.root.join("spec/fixtures/search_analytics/24h_all.json").read)
@@ -13,6 +14,11 @@ RSpec.describe "Search-only zero-result rate" do
       zero_result_rate_search_only: search_only,
       zero_result_rate_coverage: coverage,
     )
+    if standalone
+      attributes["summary"].merge!("searches" => nil, "failure_rate" => nil, "selection_rate" => nil, "p90_latency_ms" => nil)
+      attributes["availability"].merge!("journey_metrics" => false, "costs_match_view" => false)
+      attributes["actions"] = { "available" => false, "summary" => nil, "trend" => [] }
+    end
     stub_api_request("/search_analytics").with(query: { period: "24h", view: "all" })
       .to_return(status: 200, body: body.to_json, headers: { "content-type" => "application/json" })
     visit search_analytics_path
@@ -24,6 +30,18 @@ RSpec.describe "Search-only zero-result rate" do
     expect(page).to have_css(".govuk-summary-list__row", text: "Exact matches, intermediate questions and failed or degraded requests are excluded.", visible: :all)
     expect(page).to have_css(".govuk-summary-list__row", text: "Results at any tariff level count as items.", visible: :all)
     expect(page).to have_css(".govuk-summary-list__row", text: "The rate counts frontend search responses, not unique journeys.", visible: :all)
+  end
+
+  context "with only zero-result data" do
+    let(:standalone) { true }
+
+    it "shows the rate while leaving unrelated metrics unavailable", :aggregate_failures do
+      expect(page).to have_css("section[aria-label='Zero-result rate']", text: "60%")
+      ["Total journeys", "Failure rate", "Selection rate", "P90 latency (approx.)"].each do |label|
+        expect(page).to have_css("section[aria-label='#{label}']", text: "Unavailable")
+      end
+      expect(page).not_to have_css("#ai-cost-heading")
+    end
   end
 
   context "with no empty results" do
