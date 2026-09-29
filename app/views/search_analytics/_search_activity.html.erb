@@ -3,7 +3,7 @@
 
 <section class="search-analytics-activity govuk-!-margin-bottom-6" aria-labelledby="search-activity-heading">
   <h2 id="search-activity-heading" class="govuk-heading-m">Search activity</h2>
-  <p class="govuk-body">Frontend journeys in the selected period and view. Navigation matches a suggestion; Search does not. These describe how a journey starts, not clicks on its results.</p>
+  <p class="govuk-body">Frontend journeys in the selected period and view. Navigation resolves a typed code or suggestion to one tariff item. Search has no accepted exact match. These describe how a journey starts, not clicks on its results.</p>
 
   <div class="search-analytics-metrics">
     <% { total: "Total journeys" }.merge(SearchAnalyticsHelper::SEARCH_ACTION_LABELS).each do |key, label| %>
