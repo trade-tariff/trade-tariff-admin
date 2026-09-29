@@ -24,7 +24,7 @@ RSpec.describe "Frontend search event widgets" do
     stub_events(view: "classic", journeys: { "question_counts" => [{ "questions" => 1, "journeys" => 4 }] })
     visit search_analytics_path(period: "24h", view: "classic")
     expect(page).to have_no_css("#frontend-events-heading").and have_no_css("#backend-questions-heading")
-    expect(page).to have_content("Search volume")
+    expect(page).to have_content("Search activity over time")
   end
 
   it "does not show guided event widgets for an unsupported service", :aggregate_failures do
@@ -38,7 +38,7 @@ RSpec.describe "Frontend search event widgets" do
     stub_events(data: nil)
     visit search_analytics_path
     expect(page).not_to have_css("#frontend-events-heading")
-    expect(page).to have_css("section[aria-label='Search requests']", text: "1,240")
+    expect(page).to have_css("section[aria-label='Total journeys']", text: "1,240")
   end
 
   it "keeps existing widgets when observed sessions are absent", :aggregate_failures do
@@ -152,7 +152,7 @@ RSpec.describe "Frontend search event widgets" do
   def expect_missing_frontend_data
     expect(page).to have_content("Frontend events have not been collected for these dates")
     expect(page).to have_content("Opening this page does not start collection")
-    expect(page).to have_css("section[aria-label='Search requests']", text: "1,240")
+    expect(page).to have_css("section[aria-label='Total journeys']", text: "1,240")
     within("section[aria-labelledby='frontend-events-heading']") { expect(page).not_to have_css("table") }
   end
 

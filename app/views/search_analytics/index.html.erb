@@ -88,9 +88,11 @@
       <p class="govuk-body">Range percentiles are unavailable because daily percentiles cannot be combined accurately.</p>
     <% end %>
 
+    <% actions = search_analytics_actions(@search_analytics) %>
+    <%= render "search_activity", actions: %>
+
     <div class="search-analytics-metrics">
       <% [
-        ["Search requests", availability[:journey_metrics] ? search_analytics_number(summary[:searches]) : "Unavailable", statuses[:searches]],
         ["Failure rate", search_analytics_percentage(summary[:failure_rate]), statuses[:failure_rate]],
         ["Zero-result rate", search_analytics_percentage(summary[:zero_result_rate]), statuses[:zero_result_rate]],
         ["Selection rate", search_analytics_percentage(summary[:selection_rate]), statuses[:selection_rate]],
@@ -116,8 +118,20 @@
             classes: "search-analytics-metric-definitions",
             rows: [
               {
-                key: { text: "Search requests" },
-                value: { text: "Distinct request IDs with search activity in the selected period and view. Repeated questions and answers count as one journey." },
+                key: { text: "Total journeys" },
+                value: { text: "Distinct request IDs with search activity in the selected period and view. Repeated questions and answers count as one journey. This includes Navigation, Search and Unclassified journeys." },
+              },
+              {
+                key: { text: "Navigation" },
+                value: { text: "A journey that matches a search suggestion, whether the user selects it or submits matching text." },
+              },
+              {
+                key: { text: "Search" },
+                value: { text: "A journey without a matching suggestion, including direct code lookups, fuzzy searches and AI-assisted searches." },
+              },
+              {
+                key: { text: "Unclassified" },
+                value: { text: "Journeys with missing or conflicting action evidence. Historical totals stay available, but old data cannot supply the Navigation and Search split. Selecting a result does not count as Navigation." },
               },
               {
                 key: { text: "Failure rate" },
@@ -271,15 +285,7 @@
     <% end %>
 
     <div class="search-analytics-charts govuk-!-margin-top-6">
-      <section>
-        <h2 class="govuk-heading-m">Search volume</h2>
-        <div class="search-analytics-chart-container">
-          <canvas class="search-analytics-chart"
-                  data-x-axis-title="<%= @search_analytics.bucket_size == 'hour' ? 'Hour (UTC)' : 'Date (UTC)' %>" data-y-axis-title="Searches"
-                  data-chart="<%= search_analytics_chart_payload(trends[:volume], series: { @view => @view.humanize }, bucket_size: @search_analytics.bucket_size) %>"></canvas>
-        </div>
-        <p class="govuk-body-s">Each bar is searches in that <%= @search_analytics.bucket_size == 'hour' ? 'hour' : 'day' %>. A search active in two <%= @search_analytics.bucket_size == 'hour' ? 'hours' : 'days' %> is counted in both, so the bars do not add up to Search requests.</p>
-      </section>
+      <%= render "activity_trend", actions: %>
 
       <% if @view == "all" %>
       <section>

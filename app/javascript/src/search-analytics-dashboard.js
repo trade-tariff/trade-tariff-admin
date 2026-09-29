@@ -34,9 +34,11 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    payload.datasets = payload.datasets.filter((dataset) => (
-      dataset.data || []
-    ).some((value) => Number(value) !== 0));
+    if (canvas.dataset.keepZeroSeries !== 'true') {
+      payload.datasets = payload.datasets.filter((dataset) => (
+        dataset.data || []
+      ).some((value) => Number(value) !== 0));
+    }
 
     if (payload.datasets.length === 0) {
       return;

@@ -34,8 +34,8 @@ RSpec.describe "Search analytics dashboard" do
 
   it "normalises unknown period and view values", :aggregate_failures do
     visit search_analytics_path(period: "invalid", view: "invalid")
-    expect(page).to have_css("section[aria-label='Search requests']", text: "1,240")
-    expect(JSON.parse(find(".search-analytics-charts canvas", match: :first)["data-chart"]).fetch("datasets").pluck("label")).to eq(%w[All])
+    expect(page).to have_css("section[aria-label='Total journeys']", text: "1,240")
+    expect(JSON.parse(find(".search-analytics-charts canvas", match: :first)["data-chart"]).fetch("datasets").pluck("label")).to eq(%w[Unclassified])
   end
 
   it "shows missing data without fabricated zero metrics", :aggregate_failures do
@@ -74,9 +74,9 @@ RSpec.describe "Search analytics dashboard" do
         it "plots only the selected view and retains hourly intervals", :aggregate_failures do
           payload = JSON.parse(find(".search-analytics-charts canvas", match: :first)["data-chart"])
 
-          expect(payload.fetch("datasets")).to match([a_hash_including("label" => view.humanize, "data" => [volume_counts.fetch(view)] * 2)])
+          expect(payload.fetch("datasets")).to match([a_hash_including("label" => "Unclassified", "data" => [volume_counts.fetch(view)] * 2)])
           expect(payload.fetch("labels")).to eq(["8am to 9am", "9am to 10am"])
-          expect(page).to have_css("h2", text: "Search volume")
+          expect(page).to have_css("h2", text: "Search activity over time")
         end
       end
     end
@@ -132,10 +132,10 @@ RSpec.describe "Search analytics dashboard" do
     expect(table.text(:all)).not_to include("00:00", " at ", "Date and time")
   end
 
-  it "aligns AI cost with search requests without introducing journey breakdowns", :aggregate_failures do
+  it "aligns AI cost with total journeys", :aggregate_failures do
     stub_journey_analytics
     visit search_analytics_path(period: "24h", view: "internal")
-    expect(page).to have_css("section[aria-label='Search requests']", text: "6")
+    expect(page).to have_css("section[aria-label='Total journeys']", text: "6")
     expect(page).to have_css("#ai-cost-heading", text: "AI cost")
     expect_no_journey_breakdown
   end
@@ -145,14 +145,14 @@ RSpec.describe "Search analytics dashboard" do
     visit search_analytics_path(period: "24h", view: "internal")
     expect(page).not_to have_css("#ai-cost-heading")
     expect(page).to have_content("Older request counts are not journey counts")
-    expect(page).to have_css("section[aria-label='Search requests']", text: "Unavailable")
+    expect(page).to have_css("section[aria-label='Total journeys']", text: "Unavailable")
   end
 
   [false, nil].each do |available|
     it "withholds legacy statuses when journeys are unavailable (#{available.inspect})", :aggregate_failures do
       stub_journey_analytics(journey_metrics: available)
       visit search_analytics_path(period: "24h", view: "internal")
-      expect_unavailable_metric("Search requests")
+      expect_unavailable_metric("Total journeys")
     end
 
     it "withholds legacy step outcomes when journey outcomes are unavailable (#{available.inspect})", :aggregate_failures do
@@ -160,13 +160,13 @@ RSpec.describe "Search analytics dashboard" do
       visit search_analytics_path(period: "24h", view: "internal")
       expect(page).to have_content("Journey outcome rates have not been collected for these dates")
       expect(page).not_to have_css("#journey-outcome-rates ~ .search-analytics-chart-container canvas")
-      expect(page).to have_css("section[aria-label='Search requests']", text: "6")
+      expect(page).to have_css("section[aria-label='Total journeys']", text: "6")
     end
 
     it "withholds unmatched costs while retaining current journey counts (#{available.inspect})", :aggregate_failures do
       stub_journey_analytics(costs_match_view: available)
       visit search_analytics_path(period: "24h", view: "internal")
-      expect(page).to have_css("section[aria-label='Search requests']", text: "6")
+      expect(page).to have_css("section[aria-label='Total journeys']", text: "6")
       expect(page).not_to have_css("#ai-cost-heading")
       expect(page).to have_content("Matching AI cost data is not available for the selected view.")
     end
@@ -192,7 +192,7 @@ RSpec.describe "Search analytics dashboard" do
       visit search_analytics_path(period: "24h", view: "classic")
       expect(page).not_to have_css(".search-analytics-ai-cost", visible: :all)
       expect(page).not_to have_content("Matching AI cost data")
-      expect(page).to have_css("section[aria-label='Search requests']", text: "6")
+      expect(page).to have_css("section[aria-label='Total journeys']", text: "6")
     end
   end
 
@@ -201,7 +201,7 @@ RSpec.describe "Search analytics dashboard" do
     visit search_analytics_path(period: "24h", view: "classic")
     expect(page).to have_content("Search journeys need to be collected")
     expect(page).not_to have_content("AI cost")
-    expect_unavailable_metric("Search requests")
+    expect_unavailable_metric("Total journeys")
   end
 
   %w[internal all].each do |view|
@@ -259,7 +259,7 @@ RSpec.describe "Search analytics dashboard" do
   it "keeps other metrics when AI cost rows are absent", :aggregate_failures do
     stub_missing_cost_query_analytics
     visit search_analytics_path(period: "30d", view: "all")
-    expect(page).to have_css("section[aria-label='Search requests']")
+    expect(page).to have_css("section[aria-label='Total journeys']")
     expect(page).to have_content("AI cost data has not been collected for these dates")
     expect(page).not_to have_css("#ai-cost-heading")
   end
@@ -593,7 +593,7 @@ RSpec.describe "Search analytics dashboard" do
 
   def expect_default_dashboard_content
     expect(page).to have_content("Search dashboard")
-    expect(page).to have_content("Search requests")
+    expect(page).to have_content("Total journeys")
     expect(page).to have_content("1,240")
     expect(page).to have_content("Failure rate")
     expect(page).to have_content("1.2%")
