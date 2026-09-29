@@ -1,51 +1,95 @@
 # Trade Tariff Admin
 
-The admin interface for the the Trade Tariff, to be used with:
+Trade Tariff Admin is the staff interface for the Online Trade Tariff. It is a
+Ruby on Rails application for managing tariff content, search references, news,
+Green Lanes assessments and data updates. It also provides search analytics and
+diagnostics.
 
-* [Trade Tariff Backend](https://github.com/alphagov/trade-tariff-backend)
-* [Trade Tariff Frontend](https://github.com/alphagov/trade-tariff-frontend)
+Most tariff data is read and changed through
+[Trade Tariff Backend](https://github.com/trade-tariff/trade-tariff-backend).
+Admin has its own PostgreSQL database for application records. It is not the
+[public tariff service](https://www.gov.uk/trade-tariff), which is built
+in [Trade Tariff Frontend](https://github.com/trade-tariff/trade-tariff-frontend).
 
-Please ensure the backend API is running and properly configured in the
-environment files, see the backend's [README](https://github.com/trade-tariff/trade-tariff-backend/blob/main/README.md)
+## Run locally
 
-## Dependencies
+### Prerequisites
 
-> Make sure you install and enable all pre-commit hooks https://pre-commit.com/
+- Ruby at the version in [.ruby-version](.ruby-version) and Bundler.
+- Node.js and Yarn for the CSS build and JavaScript checks.
+- PostgreSQL, with a local user that can create development and test databases.
+- A local Trade Tariff Backend with tariff data for the journeys you need.
 
-* Ruby (see .ruby-version for current version)
-* NodeJS
-* PostgreSQL
+Clone this repository, or follow the [fork workflow](CONTRIBUTING.md#fork-and-branch)
+if you want to contribute without write access.
 
-## Development
+### Configure the application
 
-## Setup
+Keep local overrides in `.env.development.local`, not in the tracked defaults in
+[.env.development](.env.development). Do not use production credentials or APIs
+for local development.
 
+`API_SERVICE_BACKEND_URL_OPTIONS` maps `uk` and `xi` to backend service roots.
+Unlike the frontend, Admin expects URLs **without** `/api`, for example
+`http://localhost:3000/uk`. Only enable services you have running locally.
+
+[config/database.yml](config/database.yml) reads `PGHOST`, `DB_USER` and optional
+`PGPASSWORD`. The default host is `localhost` and the default user is `postgres`.
+The databases are `tariff_admin_development` and `tariff_admin_test`.
+
+Authentication defaults to passwordless sign-in through
+[Identity](https://github.com/trade-tariff/identity). This requires a configured
+Identity consumer and matching `IDENTITY_BASE_URL`, `IDENTITY_CONSUMER`,
+`IDENTITY_COGNITO_JWKS_URL` and `IDENTITY_ENCRYPTION_SECRET`. Keep secrets out of Git.
+For isolated local development, `AUTH_STRATEGY=basic` uses a local
+`BASIC_PASSWORD`. Do not change authentication on a shared environment to bypass
+access controls.
+
+### Set up and start
+
+```sh
+yarn install --frozen-lockfile
+bin/setup --skip-server
+bin/dev
 ```
-$ bin/setup
+
+`bin/setup` installs Ruby dependencies and prepares the database. Without
+`--skip-server`, it also starts the application. `bin/dev` runs Rails and the CSS
+watcher. Open <http://localhost:3003>.
+
+## Run checks
+
+With the test database available:
+
+```sh
+yarn build:css
+RAILS_ENV=test bin/rails assets:precompile
+RAILS_ENV=test bin/rails db:prepare
+bundle exec rspec
+yarn test
+bundle exec rubocop
+bundle exec brakeman
 ```
 
-By default the app uses `postgres://localhost/tariff_admin_development` for development
-and `postgres://localhost/tariff_admin_test` for test. The Rails config follows
-the backend pattern and reads `PGHOST`, `DB_USER`, and optional `PGPASSWORD` for
-development and test, while production uses `DATABASE_URL`.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for hooks and pull requests.
+[GitHub Actions](.github/workflows/ci.yml) defines the CI checks.
 
-## Run Trade Tariff Admin
+## Find your way around
 
-```
-$ bundle exec rails s
-```
+- [Routes](config/routes.rb): the staff journeys and available actions.
+- [Controllers](app/controllers/) and [views](app/views/): page behaviour.
+- [Models](app/models/): API-backed entities and local records.
+- [Backend service selection](lib/trade_tariff_admin/service_chooser.rb): UK and XI configuration.
+- [Deployment workflows](.github/workflows/): deployments to AWS, for maintainers.
 
-## Run the test suite
+## Contribute
 
-```
-$ bundle exec rspec
-```
+Read [CONTRIBUTING.md](CONTRIBUTING.md) for reporting bugs, making a fork,
+submitting changes and reporting security issues privately.
 
-## Authentication configuration
+## Licence
 
-* `AUTH_STRATEGY` controls auth mode: `passwordless` (default) or `basic` (requires `BASIC_PASSWORD`).
-* Passwordless auth also uses `IDENTITY_BASE_URL` (default `http://localhost:3005`), `IDENTITY_CONSUMER` (default `admin`), optional `IDENTITY_COGNITO_JWKS_URL`, and `IDENTITY_ENCRYPTION_SECRET`.
-
-## Deployment to GOV PaaS
-
-Deployments are handled via CI
+The code and associated documentation are available under the
+[MIT licence](LICENSE.md), with the existing Crown copyright notice.
+Keep the licence and copyright notice when you reuse the software.
+Third-party dependencies and assets retain their own licences.
