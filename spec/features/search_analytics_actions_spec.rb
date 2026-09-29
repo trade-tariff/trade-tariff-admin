@@ -26,7 +26,7 @@ RSpec.describe "Search activity breakdown" do
     visit search_analytics_path
 
     expect(page).to have_css("section[aria-label='Failure rate']", text: "1.2%")
-    expect(page).to have_content("not clicks on its results")
+    expect(page).to have_content("Search resolves to a list of items that a user can pick from.")
     expect(page.text(:all)).to include("through a typed code or a matching suggestion", "such as a title or chemical number", "codes that do not resolve directly")
   end
 
