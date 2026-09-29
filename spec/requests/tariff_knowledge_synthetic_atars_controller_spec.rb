@@ -88,6 +88,14 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
 
     it { is_expected.to have_http_status :success }
 
+    context "when the XI service is selected" do
+      before { allow(TradeTariffAdmin::ServiceChooser).to receive(:service_choice).and_return "xi" }
+
+      it "is not reachable, even by going straight to the address" do
+        expect(rendered_page).to have_http_status :not_found
+      end
+    end
+
     it "lists the synthetic ATaRs" do
       page = Capybara.string(rendered_page.body)
 

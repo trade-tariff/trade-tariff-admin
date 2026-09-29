@@ -1,4 +1,6 @@
 class TariffKnowledgeSyntheticAtarsController < AuthenticatedController
+  include UkOnly
+
   # The analysts' workbook has several tabs. The data is on this one.
   IMPORT_SHEET_NAME = "Classifications".freeze
   EXAMPLE_IMPORT_HEADERS = [
