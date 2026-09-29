@@ -1,0 +1,22 @@
+<%= govuk_breadcrumbs "Synthetic ATaRs": tariff_knowledge_synthetic_atars_path,
+                      @synthetic_atar.real_user_search => tariff_knowledge_synthetic_atar_path(@synthetic_atar) %>
+
+<span class="govuk-caption-l">Synthetic ATaR</span>
+<h1 class="govuk-heading-l">Are you sure you want to delete this synthetic ATaR?</h1>
+
+<%= govuk_warning_text(text: "This deletes the current synthetic ATaR. Its earlier versions stay available in the version history. Sets of test searches that were already generated from it are not changed.") %>
+
+<%= govuk_summary_list(rows: [
+  { key: { text: "Real user search" }, value: { text: @synthetic_atar.real_user_search } },
+  { key: { text: "Chapter" }, value: { text: @synthetic_atar.chapter } },
+  { key: { text: "Commodity code" }, value: { text: @synthetic_atar.goods_nomenclature_item_id } },
+]) %>
+
+<div class="govuk-button-group">
+  <%= govuk_button_to "Delete synthetic ATaR",
+                      tariff_knowledge_synthetic_atar_path(@synthetic_atar),
+                      method: :delete,
+                      warning: true,
+                      prevent_double_click: true %>
+  <%= govuk_link_to "Cancel", tariff_knowledge_synthetic_atar_path(@synthetic_atar) %>
+</div>

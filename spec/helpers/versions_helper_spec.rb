@@ -9,6 +9,14 @@ RSpec.describe VersionsHelper, type: :helper do
     )
   end
 
+  describe "#version_item_link" do
+    it "links a synthetic ATaR version to its page, at that version" do
+      version = Version.new(resource_id: "77", item_type: "TariffKnowledge::SyntheticAtar", item_id: "12", event: "update", object: {})
+
+      expect(helper.version_item_link(version)).to eq(tariff_knowledge_synthetic_atar_path("12", oid: "77"))
+    end
+  end
+
   describe "#changeset_summary" do
     it 'returns "Initial version" for create events' do
       expect(helper.changeset_summary(build_version(event: "create"))).to eq("Initial version")

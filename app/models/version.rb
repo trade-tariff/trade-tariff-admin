@@ -9,6 +9,7 @@ class Version
     "SearchReference" => "Search reference",
     "AdminConfiguration" => "Configuration",
     "DescriptionIntercept" => "Description intercept",
+    "TariffKnowledge::SyntheticAtar" => "Synthetic ATaR",
   }.freeze
 
   def whodunnit_name
@@ -33,7 +34,7 @@ class Version
   def item_description
     return nil unless object.is_a?(Hash)
 
-    object["goods_nomenclature_item_id"] || object["term"] || object["name"] || object["title"] || item_id
+    object["real_user_search"] || object["goods_nomenclature_item_id"] || object["term"] || object["name"] || object["title"] || item_id
   end
 
   def changed_fields

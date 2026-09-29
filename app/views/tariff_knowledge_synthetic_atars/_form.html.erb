@@ -1,0 +1,49 @@
+<%= govuk_form_for synthetic_atar,
+                   as: :tariff_knowledge_synthetic_atar,
+                   url: synthetic_atar.persisted? ? tariff_knowledge_synthetic_atar_path(synthetic_atar) : tariff_knowledge_synthetic_atars_path do |f| %>
+  <%= f.govuk_error_summary %>
+
+  <%= f.govuk_text_field :real_user_search,
+                         label: { text: "Real user search", size: "s" },
+                         hint: { text: "The search a trader typed. It identifies this record, and a search that is already used cannot be added again. Capital letters and extra spaces are ignored." },
+                         width: "two-thirds" %>
+
+  <%= f.govuk_text_field :chapter,
+                         label: { text: "Chapter", size: "s" },
+                         hint: { text: "Two digits, for example 01." },
+                         width: 2 %>
+
+  <%= f.govuk_text_field :times_searched,
+                         label: { text: "Times searched", size: "s" },
+                         hint: { text: "How many times traders made this search. Optional." },
+                         width: 5 %>
+
+  <%= f.govuk_text_field :likely_heading,
+                         label: { text: "Likely heading", size: "s" },
+                         hint: { text: "A best guess at the heading, for context only. Optional." },
+                         width: 5 %>
+
+  <%= f.govuk_text_area :description,
+                        label: { text: "Full product description", size: "s" },
+                        hint: { text: "All the facts needed to classify the product: material, use, state and so on." },
+                        rows: 6 %>
+
+  <%= f.govuk_text_field :goods_nomenclature_item_id,
+                         label: { text: "Commodity code", size: "s" },
+                         hint: { text: "Exactly 10 digits. Keep any leading zero." },
+                         width: 10 %>
+
+  <%= f.govuk_text_area :notes,
+                        label: { text: "Notes", size: "s" },
+                        hint: { text: "The reason for the commodity code. Optional." },
+                        rows: 3 %>
+
+  <%= f.govuk_text_field :completed_by,
+                         label: { text: "Completed by", size: "s" },
+                         hint: { text: "The analyst's initials. Optional." },
+                         width: 5 %>
+
+  <%= submit_and_back_buttons f,
+                              synthetic_atar.persisted? ? tariff_knowledge_synthetic_atar_path(synthetic_atar) : tariff_knowledge_synthetic_atars_path,
+                              submit: synthetic_atar.persisted? ? "Save changes" : "Create synthetic ATaR" %>
+<% end %>

@@ -14,6 +14,8 @@ module VersionsHelper
       goods_nomenclature_self_text_path(version.item_id, **opts) if version.item_id.present?
     when "TariffKnowledge::CompressedNote"
       tariff_knowledge_compressed_note_path(version.item_id, **opts) if version.item_id.present?
+    when "TariffKnowledge::SyntheticAtar"
+      tariff_knowledge_synthetic_atar_path(version.item_id, **opts) if version.item_id.present?
     when "AdminConfiguration"
       name = version.object&.dig("name")
       configuration_path(name, **opts) if name.present?
