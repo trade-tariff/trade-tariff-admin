@@ -94,7 +94,7 @@
     <div class="search-analytics-metrics">
       <% [
         ["Failure rate", search_analytics_percentage(summary[:failure_rate]), statuses[:failure_rate]],
-        ["Zero-result rate", search_analytics_percentage(summary[:zero_result_rate]), statuses[:zero_result_rate]],
+        ["Zero-result rate", search_analytics_percentage(availability[:zero_result_rate_search_only] ? summary[:zero_result_rate] : nil), statuses[:zero_result_rate]],
         ["Selection rate", search_analytics_percentage(summary[:selection_rate]), statuses[:selection_rate]],
         [availability[:latency_percentiles_approximate] ? "P90 latency (approx.)" : "P90 latency", search_analytics_latency(summary[:p90_latency_ms]), statuses[:p90_latency_ms]],
       ].each do |label, value, status| %>
@@ -111,6 +111,11 @@
         </section>
       <% end %>
     </div>
+
+    <% zero_result_coverage = (availability[:zero_result_rate_coverage] || {}).with_indifferent_access %>
+    <% if zero_result_coverage[:complete] == false && zero_result_coverage[:collected_days].to_i.positive? %>
+      <p class="govuk-body-s">Zero-result rate covers <%= zero_result_coverage[:collected_days] %> of <%= zero_result_coverage[:expected_days] %> UTC days.</p>
+    <% end %>
 
     <%= render GovukComponent::DetailsComponent.new(summary_text: "How these metrics are calculated", classes: "govuk-!-margin-top-4") do %>
       <%= govuk_summary_list(
@@ -139,7 +144,7 @@
               },
               {
                 key: { text: "Zero-result rate" },
-                value: { text: "Classic counts responses with no commodity results; Internal counts responses with no results. The rate uses completed requests, not journeys." },
+                value: { text: "Completed searches with no returned items divided by completed searches. Exact matches, intermediate questions and failed or degraded requests are excluded. Results at any tariff level count as items. The rate counts frontend search responses, not unique journeys." },
               },
               {
                 key: { text: "Selection rate" },

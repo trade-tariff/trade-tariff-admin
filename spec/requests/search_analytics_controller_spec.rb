@@ -7,7 +7,7 @@ RSpec.describe SearchAnalyticsController do
     SearchAnalytics.new(
       period: "24h",
       view: "all",
-      availability: { journey_metrics: true, costs_match_view: true },
+      availability: { journey_metrics: true, costs_match_view: true, zero_result_rate_search_only: true },
       generated_at: "2026-06-10T09:55:00Z",
       data_through: "2026-06-10T09:50:00Z",
       summary: {
