@@ -1,0 +1,31 @@
+<%= govuk_breadcrumbs "Gold query sets": evaluation_gold_query_sets_path %>
+
+<h1 class="govuk-heading-l">New gold query set</h1>
+
+<p class="govuk-body">
+  The backend picks source items at random and asks the model to write three test searches for each
+  one, in the background. Every item is either a real ATaR ruling or a synthetic ATaR.
+</p>
+
+<%= govuk_form_for @gold_query_set,
+                   as: :evaluation_gold_query_set,
+                   url: evaluation_gold_query_sets_path do |f| %>
+  <%= f.govuk_error_summary %>
+
+  <%= f.govuk_text_field :name,
+                         label: { text: "Name", size: "s" },
+                         hint: { text: "A name that is not used by another set. It is how you will choose this set later." },
+                         width: "two-thirds" %>
+
+  <%= f.govuk_number_field :requested_size,
+                           label: { text: "Number of source items", size: "s" },
+                           hint: { text: "Between 1 and 500. Each item gives 3 test searches. If fewer items exist than you ask for, the set uses all of them." },
+                           width: 5 %>
+
+  <%= f.govuk_number_field :atar_percentage,
+                           label: { text: "Percentage from real ATaR rulings", size: "s" },
+                           hint: { text: "From 0 to 100. The rest come from synthetic ATaRs. 100 uses real ATaR rulings only. 0 uses synthetic ATaRs only." },
+                           width: 3 %>
+
+  <%= submit_and_back_buttons f, evaluation_gold_query_sets_path, submit: "Create gold query set" %>
+<% end %>

@@ -1,0 +1,80 @@
+<%= govuk_breadcrumbs "Gold query sets": evaluation_gold_query_sets_path %>
+
+<span class="govuk-caption-l">Gold query set</span>
+<h1 class="govuk-heading-l"><%= @gold_query_set.name %></h1>
+
+<% if @gold_query_set.generating? %>
+  <%= govuk_notification_banner(title_text: "Important") do |banner| %>
+    <% banner.with_heading(text: "This set is still being generated.") %>
+    <p class="govuk-body">
+      <%= @gold_query_set.finished_count %> of <%= @gold_query_set.planned_count %> items are done.
+      Reload the page to see the latest progress.
+    </p>
+  <% end %>
+<% end %>
+
+<dl class="govuk-summary-list govuk-!-margin-bottom-6">
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Status</dt>
+    <dd class="govuk-summary-list__value"><%= gold_query_set_status_tag(@gold_query_set) %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Mix asked for</dt>
+    <dd class="govuk-summary-list__value"><%= @gold_query_set.atar_percentage %>% ATaR rulings, <%= @gold_query_set.synthetic_atar_percentage %>% synthetic ATaRs</dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Items asked for</dt>
+    <dd class="govuk-summary-list__value"><%= @gold_query_set.requested_size %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Items picked</dt>
+    <dd class="govuk-summary-list__value">
+      <%= @gold_query_set.planned_count %>
+      <span class="govuk-hint govuk-!-margin-bottom-0">Lower than the number asked for when there were not enough source items.</span>
+    </dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Generation</dt>
+    <dd class="govuk-summary-list__value"><%= gold_query_set_progress(@gold_query_set) %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Source items now</dt>
+    <dd class="govuk-summary-list__value">
+      <%= @gold_query_set.atar_count.to_i %> ATaR, <%= @gold_query_set.synthetic_atar_count.to_i %> synthetic ATaR
+      <span class="govuk-hint govuk-!-margin-bottom-0">Changes when items are deleted.</span>
+    </dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Created</dt>
+    <dd class="govuk-summary-list__value"><%= @gold_query_set.formatted_created_at %> by <%= @gold_query_set.created_by_name %></dd>
+  </div>
+</dl>
+
+<% if @gold_query_set.failure_list.any? %>
+  <h2 class="govuk-heading-m">Items that failed</h2>
+  <p class="govuk-body">These items produced no test searches. The rest of the set is not affected.</p>
+  <table class="govuk-table">
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th class="govuk-table__header" scope="col">Source</th>
+        <th class="govuk-table__header" scope="col">Reference</th>
+        <th class="govuk-table__header" scope="col">Error</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+      <% @gold_query_set.failure_list.each do |failure| %>
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell"><%= gold_query_source_label(failure["source_type"]) %></td>
+          <td class="govuk-table__cell"><%= failure["source_id"] %></td>
+          <td class="govuk-table__cell"><%= failure["error"] %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>
+
+<% if policy(@gold_query_set).destroy? %>
+  <div class="govuk-button-group">
+    <%= govuk_button_link_to "Delete gold query set", delete_evaluation_gold_query_set_path(@gold_query_set), warning: true %>
+  </div>
+<% end %>
