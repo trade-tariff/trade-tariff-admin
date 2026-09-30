@@ -189,6 +189,12 @@ Rails.application.routes.draw do
     member do
       get :delete, action: :confirm_destroy
     end
+
+    resources :items, controller: "evaluation_gold_query_items", only: %i[edit update destroy] do
+      member do
+        get :delete, action: :confirm_destroy
+      end
+    end
   end
   resources :search_analytics, only: %i[index]
   resources :search_export_workbooks, only: %i[create show] do

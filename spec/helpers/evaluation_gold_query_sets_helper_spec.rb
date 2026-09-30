@@ -34,6 +34,16 @@ RSpec.describe EvaluationGoldQuerySetsHelper, type: :helper do
     end
   end
 
+  describe "#gold_query_persona_label" do
+    it "uses the label the item form uses" do
+      expect(helper.gold_query_persona_label("emu_ordinary")).to eq("Ordinary search")
+    end
+
+    it "shows an unknown persona as words" do
+      expect(helper.gold_query_persona_label("emu_expert")).to eq("Emu expert")
+    end
+  end
+
   describe "#gold_query_source_label" do
     it "names an ATaR" do
       expect(helper.gold_query_source_label("atar")).to eq("ATaR")

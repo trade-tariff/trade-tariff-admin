@@ -19,6 +19,10 @@ module EvaluationGoldQuerySetsHelper
     text
   end
 
+  def gold_query_persona_label(persona)
+    EvaluationGoldQueryItem::PERSONAS.dig(persona.to_s, :label) || persona.to_s.humanize
+  end
+
   def gold_query_source_label(source_type)
     { "atar" => "ATaR", "synthetic_atar" => "Synthetic ATaR" }.fetch(source_type.to_s, source_type.to_s.humanize)
   end

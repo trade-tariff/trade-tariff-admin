@@ -1,0 +1,44 @@
+<% if versions.present? %>
+  <h2 class="govuk-heading-m govuk-!-margin-top-8">History</h2>
+  <p class="govuk-body">
+    Every change to the three test searches of this item, newest first. The history is read only.
+    To undo a change, edit the item again.
+  </p>
+
+  <table class="govuk-table">
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th class="govuk-table__header" scope="col">Test search</th>
+        <th class="govuk-table__header" scope="col">Event</th>
+        <th class="govuk-table__header" scope="col">Changes</th>
+        <th class="govuk-table__header" scope="col">Changed by</th>
+        <th class="govuk-table__header" scope="col">Date</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+      <% versions.each do |version| %>
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell"><%= gold_query_persona_label(version.object&.dig("persona")) %></td>
+          <td class="govuk-table__cell"><%= version.event.capitalize %></td>
+          <td class="govuk-table__cell">
+            <% summary = changeset_summary(version) %>
+            <% if version.has_changeset? %>
+              <details class="govuk-details govuk-!-margin-bottom-0">
+                <summary class="govuk-details__summary">
+                  <span class="govuk-details__summary-text"><%= summary %></span>
+                </summary>
+                <div class="govuk-details__text">
+                  <%= changeset_detail_html(version) %>
+                </div>
+              </details>
+            <% else %>
+              <%= summary || "-" %>
+            <% end %>
+          </td>
+          <td class="govuk-table__cell"><%= version.whodunnit_name || "-" %></td>
+          <td class="govuk-table__cell"><%= version.created_at_formatted %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

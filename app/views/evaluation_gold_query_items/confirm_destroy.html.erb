@@ -1,0 +1,22 @@
+<%= govuk_breadcrumbs "Gold query sets": evaluation_gold_query_sets_path,
+                      @gold_query_set.name => evaluation_gold_query_set_path(@gold_query_set) %>
+
+<span class="govuk-caption-l"><%= gold_query_source_label(@item.source_type) %> <%= @item.source_id %></span>
+<h1 class="govuk-heading-l">Are you sure you want to delete this item?</h1>
+
+<%= govuk_warning_text(text: "This deletes the item and all three of its test searches from this set. It cannot be undone. The ATaR ruling or synthetic ATaR it came from is not changed.") %>
+
+<%= govuk_summary_list(rows: [
+  *(@item.synthetic_atar? && @item.real_user_search.present? ? [{ key: { text: "Real user search" }, value: { text: @item.real_user_search } }] : []),
+  { key: { text: "Expected commodity code" }, value: { text: @item.expected_code } },
+  *EvaluationGoldQueryItem::PERSONAS.map { |persona, details| { key: { text: details[:label] }, value: { text: @item.public_send(:"#{persona}_query").to_s } } },
+]) %>
+
+<div class="govuk-button-group">
+  <%= govuk_button_to "Delete item",
+                      evaluation_gold_query_set_item_path(@gold_query_set, @item),
+                      method: :delete,
+                      warning: true,
+                      prevent_double_click: true %>
+  <%= govuk_link_to "Cancel", evaluation_gold_query_set_path(@gold_query_set) %>
+</div>

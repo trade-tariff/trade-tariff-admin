@@ -30,6 +30,8 @@ class EvaluationGoldQuerySetsController < AuthenticatedController
 
   def show
     authorize EvaluationGoldQuerySet, :show?
+
+    @items = fetch_items
   end
 
   def confirm_destroy
@@ -62,6 +64,15 @@ private
     Rails.logger.error("Failed to fetch gold query sets: #{e.message}")
     flash.now[:alert] = "Gold query sets could not be loaded. Try again."
     Kaminari.paginate_array([]).page(1)
+  end
+
+  # Nil when the items cannot be loaded, so the page can still show the set itself.
+  def fetch_items
+    EvaluationGoldQueryItem.all(params.permit(:page).to_h.symbolize_keys.merge(gold_query_set_id: @gold_query_set.resource_id))
+  rescue Faraday::Error => e
+    Rails.logger.error("Failed to fetch gold query set items: #{e.message}")
+    flash.now[:alert] = "The items of this set could not be loaded. Try again."
+    nil
   end
 
   def gold_query_set_params

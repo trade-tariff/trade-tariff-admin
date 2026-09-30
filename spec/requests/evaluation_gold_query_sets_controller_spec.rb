@@ -25,15 +25,49 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
   end
   let(:set_response) { jsonapi_response("gold_query_set", set_attributes.merge("resource_id" => set_id)) }
 
-  def paginated_response(rows, total_count: rows.length)
+  let(:item_rows) do
+    [
+      {
+        "resource_id" => "atar-600000001",
+        "gold_query_set_id" => 3,
+        "source_type" => "atar",
+        "source_id" => "600000001",
+        "real_user_search" => nil,
+        "expected_code" => "6302100000",
+        "oracle_text" => "Woven cotton bed linen.",
+        "emu_generic_query" => "sheets",
+        "emu_ordinary_query" => "cotton bed sheets",
+        "emu_specific_query" => "printed cotton bed sheets",
+      },
+      {
+        "resource_id" => "synthetic_atar-12",
+        "gold_query_set_id" => 3,
+        "source_type" => "synthetic_atar",
+        "source_id" => "12",
+        "real_user_search" => "a made up search",
+        "expected_code" => "4201000000",
+        "oracle_text" => "A leather riding saddle.",
+        "emu_generic_query" => "saddle",
+        "emu_ordinary_query" => "leather saddle",
+        "emu_specific_query" => "leather riding saddle for a pony",
+      },
+    ]
+  end
+
+  def paginated_response(rows, total_count: rows.length, type: "gold_query_set")
     {
       status: 200,
       headers: json_headers,
       body: {
-        data: rows.map { |attributes| { type: "gold_query_set", id: attributes["resource_id"], attributes: attributes.except("resource_id") } },
+        data: rows.map { |attributes| { type: type, id: attributes["resource_id"], attributes: attributes.except("resource_id") } },
         meta: { pagination: { page: 1, per_page: 20, total_count: } },
       }.to_json,
     }
+  end
+
+  def stub_items(rows = item_rows)
+    stub_api_request("/search/evaluation/gold_query_sets/#{set_id}/items")
+      .and_return(paginated_response(rows, type: "gold_query_set_item"))
   end
 
   describe "GET #index" do
@@ -166,6 +200,7 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
     before do
       create(:user, uid: "user-123", name: "Alex Example")
       stub_api_request("/search/evaluation/gold_query_sets/#{set_id}").and_return(set_response)
+      stub_items
     end
 
     it { is_expected.to have_http_status :success }
@@ -193,6 +228,42 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
       expect(rendered_page.body).not_to include("still being generated")
     end
 
+    it "lists each item with its source, code and three test searches" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_css("h2", text: "Items")
+      expect(page).to have_css("caption", text: "2 items")
+      expect(page).to have_css("tr", text: "ATaR 600000001 6302100000 sheets cotton bed sheets printed cotton bed sheets", normalize_ws: true)
+      expect(page).to have_css("tr", text: "Synthetic ATaR 12 Real search: a made up search 4201000000 saddle leather saddle leather riding saddle for a pony", normalize_ws: true)
+    end
+
+    it "links each item to its edit and delete pages" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_link("Edit", href: edit_evaluation_gold_query_set_item_path(set_id, "atar-600000001"))
+      expect(page).to have_link("Delete", href: delete_evaluation_gold_query_set_item_path(set_id, "synthetic_atar-12"))
+    end
+
+    context "when the set has no items" do
+      before { stub_items([]) }
+
+      it "says so" do
+        expect(rendered_page.body).to include("This set has no items.")
+      end
+    end
+
+    context "when the items cannot be loaded" do
+      before do
+        stub_api_request("/search/evaluation/gold_query_sets/#{set_id}/items").and_return(status: 500, headers: json_headers, body: { error: "boom" }.to_json)
+      end
+
+      it "still shows the set, with a warning instead of the items" do
+        expect(rendered_page).to have_http_status(:success)
+        expect(rendered_page.body).to include("The items of this set could not be loaded. Try again.")
+        expect(Capybara.string(rendered_page.body)).to have_css("h1", text: "Baseline")
+      end
+    end
+
     context "when the set is still generating" do
       let(:set_attributes) { super().merge("status" => "generating", "generated_count" => 4, "failed_count" => 0, "failures" => []) }
 
@@ -202,6 +273,14 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
         expect(page).to have_css(".govuk-notification-banner", text: "still being generated")
         expect(page).to have_css(".govuk-notification-banner", text: "4 of 10")
         expect(page).not_to have_css("h2", text: "Items that failed")
+      end
+
+      it "lists the items written so far but offers no edit or delete until it has finished" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("td", text: "6302100000")
+        expect(page).not_to have_link("Edit")
+        expect(page).not_to have_link("Delete", href: %r{/items/})
       end
     end
 

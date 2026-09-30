@@ -78,3 +78,16 @@
     <%= govuk_button_link_to "Delete gold query set", delete_evaluation_gold_query_set_path(@gold_query_set), warning: true %>
   </div>
 <% end %>
+
+<% unless @items.nil? %>
+  <h2 class="govuk-heading-m govuk-!-margin-top-8">Items</h2>
+
+  <% if @items.any? %>
+    <%= render "items_table", gold_query_set: @gold_query_set, items: @items %>
+    <%= paginate @items %>
+  <% else %>
+    <div class="govuk-inset-text">
+      <p class="govuk-body">This set has no items.</p>
+    </div>
+  <% end %>
+<% end %>

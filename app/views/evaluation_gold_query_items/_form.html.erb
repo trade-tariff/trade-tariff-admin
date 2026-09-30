@@ -1,0 +1,25 @@
+<%= govuk_form_for item,
+                   as: :evaluation_gold_query_item,
+                   url: evaluation_gold_query_set_item_path(@gold_query_set, item),
+                   method: :patch do |f| %>
+  <%= f.govuk_error_summary %>
+
+  <%= f.govuk_text_field :expected_code,
+                         label: { text: "Expected commodity code", size: "s" },
+                         hint: { text: "Digits only: 6, 8 or 10 of them. This is saved to all three test searches of the item." },
+                         width: 10 %>
+
+  <% EvaluationGoldQueryItem::PERSONAS.each do |persona, details| %>
+    <%= f.govuk_text_area :"#{persona}_query",
+                          label: { text: details[:label], size: "s" },
+                          hint: { text: details[:hint] },
+                          rows: 2 %>
+
+    <%= f.govuk_text_area :"#{persona}_notes",
+                          label: { text: "Notes on the #{details[:label].downcase}", size: "s" },
+                          hint: { text: "Optional. For example, why you changed it." },
+                          rows: 2 %>
+  <% end %>
+
+  <%= submit_and_back_buttons f, evaluation_gold_query_set_path(@gold_query_set), submit: "Save changes", back_text: "Cancel" %>
+<% end %>

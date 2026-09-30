@@ -1,6 +1,16 @@
 RSpec.describe Version do
   subject(:version) { described_class.new(object: object) }
 
+  describe "#friendly_type_name" do
+    it "calls a gold query a gold query" do
+      expect(described_class.new(item_type: "EvaluationGoldQuery").friendly_type_name).to eq("Gold query")
+    end
+
+    it "shows an unknown type as it is" do
+      expect(described_class.new(item_type: "SomethingElse").friendly_type_name).to eq("SomethingElse")
+    end
+  end
+
   describe "#item_description" do
     context "when the object is not a hash" do
       let(:object) { nil }
@@ -45,6 +55,18 @@ RSpec.describe Version do
       it "falls back to the item id" do
         expect(version.item_description).to eq("42")
       end
+    end
+
+    it "describes a gold query by its query, because it has no name or code of its own" do
+      version = described_class.new(item_id: "5", object: { "persona" => "emu_generic", "query" => "cotton sheets", "expected_code" => "6302100000" })
+
+      expect(version.item_description).to eq("cotton sheets")
+    end
+
+    it "still prefers the commodity code when there is one" do
+      version = described_class.new(item_id: "5", object: { "goods_nomenclature_item_id" => "0101210000", "query" => "horse" })
+
+      expect(version.item_description).to eq("0101210000")
     end
   end
 end

@@ -1,0 +1,29 @@
+<%= govuk_breadcrumbs "Gold query sets": evaluation_gold_query_sets_path,
+                      @gold_query_set.name => evaluation_gold_query_set_path(@gold_query_set) %>
+
+<span class="govuk-caption-l"><%= gold_query_source_label(@item.source_type) %> <%= @item.source_id %></span>
+<h1 class="govuk-heading-l">Edit test searches</h1>
+
+<dl class="govuk-summary-list govuk-!-margin-bottom-6">
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Source</dt>
+    <dd class="govuk-summary-list__value"><%= gold_query_source_label(@item.source_type) %>, reference <%= @item.source_id %></dd>
+  </div>
+  <% if @item.synthetic_atar? && @item.real_user_search.present? %>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Real user search</dt>
+      <dd class="govuk-summary-list__value"><%= @item.real_user_search %></dd>
+    </div>
+  <% end %>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Text the test searches were written from</dt>
+    <dd class="govuk-summary-list__value">
+      <%= simple_format(@item.oracle_text) %>
+      <span class="govuk-hint govuk-!-margin-bottom-0">This text cannot be edited here. To correct it, change the source and generate a new set.</span>
+    </dd>
+  </div>
+</dl>
+
+<%= render "form", item: @item %>
+
+<%= render "history", versions: @versions %>
