@@ -2,6 +2,9 @@
 # with the three test searches written for it. There is no page for a single item, because
 # the set page lists them. An item is edited or deleted from there.
 class EvaluationGoldQueryItemsController < AuthenticatedController
+  include UkOnly
+
+  rescue_from Faraday::Error, with: :redirect_item_unavailable
   rescue_from Faraday::ResourceNotFound, with: :redirect_item_not_found
 
   before_action :load_gold_query_set, only: %i[edit update confirm_destroy]
@@ -50,6 +53,12 @@ private
   # A set that does not exist is reported by the set page, which this redirect lands on.
   def redirect_item_not_found
     redirect_to evaluation_gold_query_set_path(params[:evaluation_gold_query_set_id]), alert: "Gold query set item not found."
+  end
+
+  # The set itself may also be unreachable (the backend is down or slow), not just this
+  # item, so this lands on the sets list rather than a set page that would fail the same way.
+  def redirect_item_unavailable
+    redirect_to evaluation_gold_query_sets_path, alert: "The gold query set could not be loaded. Try again."
   end
 
   def fetch_versions

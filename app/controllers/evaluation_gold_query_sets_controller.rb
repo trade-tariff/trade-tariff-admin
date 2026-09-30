@@ -1,4 +1,7 @@
 class EvaluationGoldQuerySetsController < AuthenticatedController
+  include UkOnly
+
+  rescue_from Faraday::Error, with: :redirect_gold_query_set_unavailable
   rescue_from Faraday::ResourceNotFound, with: :redirect_gold_query_set_not_found
 
   before_action :load_gold_query_set, only: %i[show confirm_destroy destroy]
@@ -56,6 +59,10 @@ private
 
   def redirect_gold_query_set_not_found
     redirect_to evaluation_gold_query_sets_path, alert: "Gold query set not found."
+  end
+
+  def redirect_gold_query_set_unavailable
+    redirect_to evaluation_gold_query_sets_path, alert: "The gold query set could not be loaded. Try again."
   end
 
   def fetch_gold_query_sets

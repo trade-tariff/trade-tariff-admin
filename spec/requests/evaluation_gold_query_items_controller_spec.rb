@@ -74,6 +74,14 @@ RSpec.describe EvaluationGoldQueryItemsController, type: :request do
 
     it { is_expected.to have_http_status :success }
 
+    context "when the XI service is selected" do
+      before { allow(TradeTariffAdmin::ServiceChooser).to receive(:service_choice).and_return "xi" }
+
+      it "is not reachable, even by going straight to the address" do
+        expect(rendered_page).to have_http_status :not_found
+      end
+    end
+
     it "shows where the item came from and the text the test searches were written from" do
       page = Capybara.string(rendered_page.body)
 
@@ -140,6 +148,20 @@ RSpec.describe EvaluationGoldQueryItemsController, type: :request do
         rendered_page
 
         expect(session.dig("flash", "flashes", "alert")).to eq("Gold query set item not found.")
+      end
+    end
+
+    context "when the backend is down or slow" do
+      before do
+        stub_api_request("/search/evaluation/gold_query_sets/#{set_id}").to_raise(Faraday::ConnectionFailed)
+      end
+
+      it { is_expected.to redirect_to(evaluation_gold_query_sets_path) }
+
+      it "shows a warning instead of an error page" do
+        rendered_page
+
+        expect(session.dig("flash", "flashes", "alert")).to eq("The gold query set could not be loaded. Try again.")
       end
     end
 
