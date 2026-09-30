@@ -348,7 +348,7 @@ private
   def search_analytics_ai_operation_label(event_kind)
     {
       "interactive_search" => "AI-assisted search",
-      "interactive_search_final_answer" => "AI answer",
+      "interactive_search_final_answer" => "Question limit reached answer",
       "search_query_expansion" => "Search term expansion",
       "duplicate_question_guard" => "Duplicate question check",
       "vector_search_query_embedding" => "Search matching preparation",

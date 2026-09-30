@@ -120,7 +120,7 @@ RSpec.describe SearchAnalyticsHelper do
 
   {
     "interactive_search" => "AI-assisted search",
-    "interactive_search_final_answer" => "AI answer",
+    "interactive_search_final_answer" => "Question limit reached answer",
     "search_query_expansion" => "Search term expansion",
     "duplicate_question_guard" => "Duplicate question check",
     "unrecognised_operation" => "Unrecognised operation",
