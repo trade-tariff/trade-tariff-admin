@@ -1,0 +1,22 @@
+<%= govuk_breadcrumbs "Gold query sets": evaluation_gold_query_sets_path,
+                      @gold_query_set.name => evaluation_gold_query_set_path(@gold_query_set) %>
+
+<span class="govuk-caption-l">Gold query set</span>
+<h1 class="govuk-heading-l">Are you sure you want to delete this gold query set?</h1>
+
+<%= govuk_warning_text(text: "This deletes the set, all of its gold queries and their history. It cannot be undone. A set that an experiment uses cannot be deleted. Point the experiment at another set first.") %>
+
+<%= govuk_summary_list(rows: [
+  { key: { text: "Name" }, value: { text: @gold_query_set.name } },
+  { key: { text: "Status" }, value: { text: @gold_query_set.status.to_s.humanize } },
+  { key: { text: "Source items now" }, value: { text: @gold_query_set.item_count.to_s } },
+]) %>
+
+<div class="govuk-button-group">
+  <%= govuk_button_to "Delete gold query set",
+                      evaluation_gold_query_set_path(@gold_query_set),
+                      method: :delete,
+                      warning: true,
+                      prevent_double_click: true %>
+  <%= govuk_link_to "Cancel", evaluation_gold_query_set_path(@gold_query_set) %>
+</div>

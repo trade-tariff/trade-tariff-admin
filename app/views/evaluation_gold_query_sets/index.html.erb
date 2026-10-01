@@ -1,0 +1,47 @@
+<h1 class="govuk-heading-l">Gold query sets</h1>
+
+<p class="govuk-body">
+  A gold query set is a saved collection of test searches. Every test search has a known correct
+  commodity code. An experiment run scores the search engine against one set, so two runs made
+  against the same set can be compared fairly.
+</p>
+
+<div class="govuk-button-group govuk-!-margin-bottom-6">
+  <%= link_to "New gold query set", new_evaluation_gold_query_set_path, class: "govuk-button" %>
+</div>
+
+<% if @gold_query_sets.any? %>
+  <table class="govuk-table">
+    <caption class="govuk-table__caption govuk-table__caption--s">
+      <%= pluralize(@gold_query_sets.total_count, "gold query set") %>. Reload the page to see the latest progress.
+    </caption>
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th class="govuk-table__header" scope="col">Name</th>
+        <th class="govuk-table__header" scope="col">Status</th>
+        <th class="govuk-table__header" scope="col">Generation</th>
+        <th class="govuk-table__header" scope="col">Source items now</th>
+        <th class="govuk-table__header" scope="col">Created</th>
+        <th class="govuk-table__header" scope="col">Created by</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+      <% @gold_query_sets.each do |gold_query_set| %>
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell"><%= link_to gold_query_set.name, evaluation_gold_query_set_path(gold_query_set), class: "govuk-link" %></td>
+          <td class="govuk-table__cell"><%= gold_query_set_status_tag(gold_query_set) %></td>
+          <td class="govuk-table__cell"><%= gold_query_set_progress(gold_query_set) %></td>
+          <td class="govuk-table__cell"><%= gold_query_set.atar_count.to_i %> ATaR, <%= gold_query_set.synthetic_atar_count.to_i %> synthetic ATaR</td>
+          <td class="govuk-table__cell"><%= gold_query_set.formatted_created_at %></td>
+          <td class="govuk-table__cell"><%= gold_query_set.created_by_name %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <%= paginate @gold_query_sets %>
+<% else %>
+  <div class="govuk-inset-text">
+    <p class="govuk-body">No gold query sets yet. Create one to start.</p>
+  </div>
+<% end %>

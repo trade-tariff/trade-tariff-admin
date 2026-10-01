@@ -1,0 +1,42 @@
+<%# Edit and delete are offered once generation has finished. While the set is generating, a
+    background job that is retried could write over a change made now. %>
+<% can_change_items = !gold_query_set.generating? && policy(EvaluationGoldQueryItem).update? %>
+
+<table class="govuk-table">
+  <caption class="govuk-table__caption govuk-table__caption--s"><%= pluralize(items.total_count, "item") %>. Each item has three test searches.</caption>
+  <thead class="govuk-table__head">
+    <tr class="govuk-table__row">
+      <th class="govuk-table__header" scope="col">Source</th>
+      <th class="govuk-table__header" scope="col">Expected code</th>
+      <% EvaluationGoldQueryItem::PERSONAS.each_value do |details| %>
+        <th class="govuk-table__header" scope="col"><%= details[:label] %></th>
+      <% end %>
+      <% if can_change_items %>
+        <th class="govuk-table__header" scope="col"><span class="govuk-visually-hidden">Actions</span></th>
+      <% end %>
+    </tr>
+  </thead>
+  <tbody class="govuk-table__body">
+    <% items.each do |item| %>
+      <tr class="govuk-table__row">
+        <td class="govuk-table__cell">
+          <%= gold_query_source_label(item.source_type) %> <%= item.source_id %>
+          <% if item.synthetic_atar? && item.real_user_search.present? %>
+            <br><span class="govuk-hint govuk-!-margin-bottom-0">Real search: <%= item.real_user_search %></span>
+          <% end %>
+        </td>
+        <td class="govuk-table__cell"><%= item.expected_code %></td>
+        <% EvaluationGoldQueryItem::PERSONAS.each_key do |persona| %>
+          <td class="govuk-table__cell"><%= item.public_send(:"#{persona}_query") %></td>
+        <% end %>
+        <% if can_change_items %>
+          <td class="govuk-table__cell">
+            <%= link_to edit_evaluation_gold_query_set_item_path(gold_query_set, item), class: "govuk-link" do %>Edit<span class="govuk-visually-hidden"> item <%= item.source_id %></span><% end %>
+            <br>
+            <%= link_to delete_evaluation_gold_query_set_item_path(gold_query_set, item), class: "govuk-link" do %>Delete<span class="govuk-visually-hidden"> item <%= item.source_id %></span><% end %>
+          </td>
+        <% end %>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
