@@ -8,8 +8,8 @@ class Commodity
              :description,
              :declarable
 
-  def search_references
-    Commodity::SearchReference.all(casted_by: self)
+  def search_references(usage: nil)
+    Commodity::SearchReference.all(::SearchReference.collection_options(casted_by: self, usage:))
   end
 
   def heading_id

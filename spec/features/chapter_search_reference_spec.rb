@@ -29,6 +29,7 @@ RSpec.describe "Chapter Search Reference management" do
           .to_return jsonapi_success_response("chapter", chapter_attrs)
 
         stub_api_request("/admin/chapters/#{chapter.to_param}/search_references", :get, backend: backend)
+          .with(query: hash_including({}))
           .to_return jsonapi_success_response(
             "search_reference",
             [],
@@ -70,6 +71,7 @@ RSpec.describe "Chapter Search Reference management" do
           .to_return jsonapi_success_response("chapter", chapter_attrs)
 
         stub_api_request("/admin/chapters/#{chapter.to_param}/search_references", :get, backend: backend)
+          .with(query: hash_including({}))
           .to_return jsonapi_success_response(
             "search_reference",
             [chapter_search_reference.attributes],
@@ -115,6 +117,7 @@ RSpec.describe "Chapter Search Reference management" do
           .to_return jsonapi_success_response("chapter", chapter_attrs)
 
         stub_api_request("/admin/chapters/#{chapter.to_param}/search_references", :get, backend: backend)
+          .with(query: hash_including({}))
           .to_return jsonapi_success_response(
             "search_reference",
             [chapter_search_reference.attributes],
@@ -140,6 +143,7 @@ RSpec.describe "Chapter Search Reference management" do
     context "when selected counterpart service is missing" do
       before do
         stub_api_request("/admin/chapters/#{chapter.to_param}/search_references", :get, backend: "xi")
+          .with(query: hash_including({}))
           .to_return jsonapi_success_response("search_reference", [])
       end
 
@@ -162,9 +166,11 @@ RSpec.describe "Chapter Search Reference management" do
       end
 
       stub_api_request("/admin/chapters/#{chapter.to_param}/search_references", :get, backend: "uk")
+        .with(query: hash_including({}))
         .to_return jsonapi_success_response("search_reference", [chapter_search_reference.attributes])
 
       stub_api_request("/admin/chapters/#{chapter.to_param}/search_references", :get, backend: "xi")
+        .with(query: hash_including({}))
         .to_return jsonapi_success_response("search_reference", [])
 
       stub_api_request("/admin/chapters/#{chapter.to_param}/search_references/#{chapter_search_reference.to_param}", :delete, backend: "uk")

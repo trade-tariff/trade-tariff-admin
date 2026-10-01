@@ -7,8 +7,8 @@ class Chapter
   has_one :chapter_note
   has_many :headings
 
-  def search_references
-    Chapter::SearchReference.all(casted_by: self)
+  def search_references(usage: nil)
+    Chapter::SearchReference.all(::SearchReference.collection_options(casted_by: self, usage:))
   end
 
   def has_chapter_note?

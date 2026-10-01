@@ -1,0 +1,11 @@
+<nav class="govuk-body" aria-label="Filter search references by usage">
+  Show:
+  <% SearchReference::USAGE_FILTERS.each_with_index do |(usage, name), index| %>
+    <%= " | " unless index.zero? %>
+    <% if usage_filter_param == usage %>
+      <strong aria-current="page"><%= name %></strong>
+    <% else %>
+      <%= link_to name, url_for(usage:), class: "govuk-link" %>
+    <% end %>
+  <% end %>
+</nav>

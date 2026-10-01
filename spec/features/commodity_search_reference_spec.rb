@@ -28,6 +28,7 @@ RSpec.describe "Commodity Search Reference management" do
           .to_return jsonapi_success_response("commodity", commodity.attributes)
 
         stub_api_request("/admin/commodities/#{commodity.to_param}/search_references", :get, backend: backend)
+          .with(query: hash_including({}))
           .to_return jsonapi_success_response(
             "search_reference",
             [],
@@ -51,6 +52,87 @@ RSpec.describe "Commodity Search Reference management" do
     end
   end
 
+  describe "Search reference usage" do
+    let(:fpo_search_reference) do
+      build(
+        :commodity_search_reference,
+        id: 4,
+        title: "fpo title",
+        usage: "fpo",
+        referenced: commodity.attributes,
+      )
+    end
+
+    let(:search_reference_attributes) { commodity_search_reference.attributes.merge(usage: "search") }
+
+    before do
+      stub_api_request("/admin/commodities/#{commodity.to_param}", :get)
+        .to_return jsonapi_success_response("commodity", commodity.attributes)
+
+      {
+        "search" => [search_reference_attributes],
+        "fpo" => [fpo_search_reference.attributes],
+        "all" => [search_reference_attributes, fpo_search_reference.attributes],
+      }.each do |usage, references|
+        stub_api_request("/admin/commodities/#{commodity.to_param}/search_references", :get)
+          .with(query: { filter: { usage: } })
+          .to_return jsonapi_success_response("search_reference", references)
+      end
+
+      stub_api_request("/admin/commodities/#{commodity.to_param}/search_references", :get)
+        .to_return jsonapi_success_response("search_reference", [])
+    end
+
+    specify "shows only search references by default" do
+      ensure_on references_commodity_search_references_path(commodity)
+
+      expect(page).to have_css("#{dom_id_selector(commodity_search_reference)} .govuk-tag", text: "Search")
+        .and have_no_content("fpo title")
+    end
+
+    specify "shows FPO only references when all usages are selected" do
+      ensure_on references_commodity_search_references_path(commodity)
+      click_link "All"
+
+      expect(page).to have_css("#{dom_id_selector(fpo_search_reference)} .govuk-tag", text: "FPO only")
+    end
+
+    specify "filters the references by FPO only usage" do
+      ensure_on references_commodity_search_references_path(commodity)
+      click_link "FPO only"
+
+      expect(page).to have_content("fpo title").and have_no_content("new title")
+    end
+
+    specify "edits an FPO only reference" do
+      ensure_on edit_references_commodity_search_reference_path(commodity, fpo_search_reference)
+
+      expect(page).to have_checked_field("FPO only")
+    end
+
+    specify "defaults new references to search usage" do
+      ensure_on new_references_commodity_search_reference_path(commodity)
+
+      expect(page).to have_checked_field("Search")
+    end
+
+    context "when FPO only is selected" do
+      before do
+        stub_api_request("/admin/commodities/#{commodity.to_param}/search_references", :post)
+          .to_return api_created_response
+      end
+
+      specify "creates an FPO only reference" do
+        visit new_references_commodity_search_reference_path(commodity)
+        fill_in "Search reference", with: "fpo title"
+        choose "FPO only"
+        click_button "Create Search reference"
+
+        expect(WebMock).to have_requested(:post, %r{/search_references}).with(body: /usage%5D=fpo/)
+      end
+    end
+  end
+
   describe "Search Reference deletion" do
     before do
       %w[uk xi].each do |backend|
@@ -58,6 +140,7 @@ RSpec.describe "Commodity Search Reference management" do
           .to_return jsonapi_success_response("commodity", commodity.attributes)
 
         stub_api_request("/admin/commodities/#{commodity.to_param}/search_references", :get, backend: backend)
+          .with(query: hash_including({}))
           .to_return jsonapi_success_response(
             "search_reference",
             [commodity_search_reference.attributes],
@@ -101,8 +184,10 @@ RSpec.describe "Commodity Search Reference management" do
         .to_return jsonapi_success_response("commodity", commodity.attributes)
 
       stub_api_request("/admin/commodities/#{commodity.to_param}/search_references", :get, backend: "uk")
+        .with(query: hash_including({}))
         .to_return jsonapi_success_response("search_reference", [commodity_search_reference.attributes])
       stub_api_request("/admin/commodities/#{commodity.to_param}/search_references", :get, backend: "xi")
+        .with(query: hash_including({}))
         .to_return jsonapi_success_response("search_reference", [])
 
       stub_api_request("/admin/commodities/#{commodity.to_param}/search_references/#{commodity_search_reference.to_param}", :delete, backend: "uk")
@@ -134,6 +219,7 @@ RSpec.describe "Commodity Search Reference management" do
           .to_return jsonapi_success_response("commodity", commodity.attributes)
 
         stub_api_request("/admin/commodities/#{commodity.to_param}/search_references", :get, backend: backend)
+          .with(query: hash_including({}))
           .to_return jsonapi_success_response(
             "search_reference",
             [commodity_search_reference.attributes],
@@ -165,8 +251,10 @@ RSpec.describe "Commodity Search Reference management" do
         .to_return jsonapi_success_response("commodity", commodity.attributes)
 
       stub_api_request("/admin/commodities/#{commodity.to_param}/search_references", :get, backend: "uk")
+        .with(query: hash_including({}))
         .to_return jsonapi_success_response("search_reference", [commodity_search_reference.attributes])
       stub_api_request("/admin/commodities/#{commodity.to_param}/search_references", :get, backend: "xi")
+        .with(query: hash_including({}))
         .to_return jsonapi_success_response("search_reference", [])
 
       stub_api_request("/admin/commodities/#{commodity.to_param}/search_references/#{commodity_search_reference.to_param}", :patch, backend: "uk")
