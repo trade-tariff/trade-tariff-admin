@@ -29,6 +29,7 @@ RSpec.describe "Heading Search Reference management" do
           .to_return jsonapi_success_response("heading", heading_attrs)
 
         stub_api_request("/admin/headings/#{heading.to_param}/search_references", :get, backend: backend)
+          .with(query: hash_including({}))
           .to_return jsonapi_success_response(
             "search_reference",
             [],
@@ -62,6 +63,7 @@ RSpec.describe "Heading Search Reference management" do
           .to_return jsonapi_success_response("heading", heading_attrs)
 
         stub_api_request("/admin/headings/#{heading.to_param}/search_references", :get, backend: backend)
+          .with(query: hash_including({}))
           .to_return jsonapi_success_response(
             "search_reference",
             [heading_search_reference.attributes],
@@ -112,8 +114,10 @@ RSpec.describe "Heading Search Reference management" do
         .to_return jsonapi_success_response("heading", heading_attrs)
 
       stub_api_request("/admin/headings/#{heading.to_param}/search_references", :get, backend: "uk")
+        .with(query: hash_including({}))
         .to_return jsonapi_success_response("search_reference", [heading_search_reference.attributes])
       stub_api_request("/admin/headings/#{heading.to_param}/search_references", :get, backend: "xi")
+        .with(query: hash_including({}))
         .to_return jsonapi_success_response("search_reference", [])
 
       stub_api_request("/admin/headings/#{heading.to_param}/search_references/#{heading_search_reference.to_param}", :delete, backend: "uk")
@@ -148,6 +152,7 @@ RSpec.describe "Heading Search Reference management" do
           .to_return jsonapi_success_response("heading", heading_attrs)
 
         stub_api_request("/admin/headings/#{heading.to_param}/search_references", :get, backend: backend)
+          .with(query: hash_including({}))
           .to_return jsonapi_success_response(
             "search_reference",
             [heading_search_reference.attributes],
@@ -182,8 +187,10 @@ RSpec.describe "Heading Search Reference management" do
         .to_return jsonapi_success_response("heading", heading_attrs)
 
       stub_api_request("/admin/headings/#{heading.to_param}/search_references", :get, backend: "uk")
+        .with(query: hash_including({}))
         .to_return jsonapi_success_response("search_reference", [heading_search_reference.attributes])
       stub_api_request("/admin/headings/#{heading.to_param}/search_references", :get, backend: "xi")
+        .with(query: hash_including({}))
         .to_return jsonapi_success_response("search_reference", [])
 
       stub_api_request("/admin/headings/#{heading.to_param}/search_references/#{heading_search_reference.to_param}", :patch, backend: "uk")
