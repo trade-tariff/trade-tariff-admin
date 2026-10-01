@@ -24,9 +24,9 @@ RSpec.describe NavigationHelper, type: :helper do
       )
     end
 
-    it "defines Classification with 7 items" do
+    it "defines Classification with 8 items" do
       section = helper.navigation_sections.find { |s| s.key == :classification }
-      expect(section.items.map(&:text)).to eq(["Search References", "Descriptions", "Intercepts", "Synthetic ATaRs", "Search dashboard", "Search diagnostics", "Recent changes"])
+      expect(section.items.map(&:text)).to eq(["Search References", "Descriptions", "Intercepts", "Synthetic ATaRs", "Gold query sets", "Search dashboard", "Search diagnostics", "Recent changes"])
     end
 
     it "defines SPIMM with xi service restriction" do
@@ -88,7 +88,7 @@ RSpec.describe NavigationHelper, type: :helper do
                          "Reports",
                          "Rollbacks",
                        ],
-                       classification: ["Search References", "Descriptions", "Intercepts", "Synthetic ATaRs", "Search dashboard", "Search diagnostics", "Recent changes"],
+                       classification: ["Search References", "Descriptions", "Intercepts", "Synthetic ATaRs", "Gold query sets", "Search dashboard", "Search diagnostics", "Recent changes"],
                        manage_users: nil,
                        configuration: []
     end

@@ -104,6 +104,13 @@ module NavigationHelper
             service: :uk,
           ),
           NavigationItem.new(
+            text: "Gold query sets",
+            href: evaluation_gold_query_sets_path,
+            policy_class: EvaluationGoldQuerySet,
+            active_when: /\/evaluation_gold_query_sets/,
+            service: :uk,
+          ),
+          NavigationItem.new(
             text: "Search dashboard",
             href: search_analytics_path,
             policy_class: SearchAnalytics,
