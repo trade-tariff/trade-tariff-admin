@@ -19,8 +19,8 @@ Terraform to deploy the service into AWS.
 
 | Name | Source | Version |
 | ---- | ------ | ------- |
-| <a name="module_admin-job"></a> [admin-job](#module\_admin-job) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.0.1 |
-| <a name="module_service"></a> [service](#module\_service) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.1.0 |
+| <a name="module_admin-job"></a> [admin-job](#module\_admin-job) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.3.1 |
+| <a name="module_service"></a> [service](#module\_service) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.3.1 |
 
 ## Resources
 
