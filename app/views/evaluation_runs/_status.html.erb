@@ -1,0 +1,16 @@
+<% total_items = @gold_query_set ? @gold_query_set.atar_count.to_i + @gold_query_set.synthetic_atar_count.to_i : 0 %>
+
+<% if @run.generating? %>
+  <div class="govuk-notification-banner" role="status" aria-live="polite">
+    <div class="govuk-notification-banner__content">
+      <p class="govuk-notification-banner__heading">
+        <span class="app-spinner" data-run-tracking-target="spinner" aria-hidden="true"></span>
+        <%= @run.status.capitalize %>: <%= @run.finished_count %> of <%= total_items %> done
+      </p>
+    </div>
+  </div>
+
+  <%= button_to "Cancel run", cancel_evaluation_run_path(@run), class: "govuk-button govuk-button--warning" %>
+<% else %>
+  <p class="govuk-body">Finished: <%= @run.status.humanize %>. <%= @run.finished_count %> of <%= total_items %> done.</p>
+<% end %>

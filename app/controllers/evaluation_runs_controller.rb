@@ -8,6 +8,8 @@ class EvaluationRunsController < AuthenticatedController
   rescue_from Faraday::Error, with: :redirect_run_unavailable
   rescue_from Faraday::ResourceNotFound, with: :redirect_run_not_found
 
+  before_action :load_run, only: %i[show cancel]
+
   def new
     authorize EvaluationRun, :create?
 
@@ -39,7 +41,28 @@ class EvaluationRunsController < AuthenticatedController
     end
   end
 
+  def show
+    authorize @run, :show?
+
+    @gold_query_set = fetch_gold_query_set
+    respond_to do |format|
+      format.html
+      format.json { render json: { pending: @run.generating?, html: render_to_string(partial: "status", formats: [:html]) } }
+    end
+  end
+
+  def cancel
+    authorize @run, :show?
+
+    @run.cancel! if @run.cancellable?
+    redirect_to evaluation_run_path(@run)
+  end
+
 private
+
+  def load_run
+    @run = EvaluationRun.find(params[:id])
+  end
 
   def fetch_experiments
     EvaluationExperiment.all(per_page: 200)
@@ -61,6 +84,14 @@ private
     allowed_keys = @configuration_schema[:allowed_overrides].map { |entry| entry[:name] } + %w[gold_query_set_id]
 
     params.require(:evaluation_run).to_unsafe_h.slice(*allowed_keys.map(&:to_s)).reject { |_, value| value.blank? }
+  end
+
+  def fetch_gold_query_set
+    return nil if @run.gold_query_set_id.blank?
+
+    EvaluationGoldQuerySet.find(@run.gold_query_set_id)
+  rescue Faraday::Error
+    nil
   end
 
   # The launch form needs all three of @experiments, @gold_query_sets and @configuration_schema to

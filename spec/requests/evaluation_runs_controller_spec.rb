@@ -151,5 +151,87 @@ RSpec.describe EvaluationRunsController, type: :request do
       end
     end
   end
+
+  describe "GET #show" do
+    let(:make_request) { get evaluation_run_path(run_id) }
+    let(:run_id) { "9" }
+    let(:run_attributes) { { "experiment_id" => 7, "status" => "running", "gold_query_set_id" => 3, "result_count" => 4, "error_count" => 0 } }
+
+    before do
+      stub_api_request("/search/evaluation/runs/#{run_id}").and_return(jsonapi_response("run", run_attributes.merge("resource_id" => run_id)))
+      stub_api_request("/search/evaluation/gold_query_sets/3").and_return(jsonapi_response("gold_query_set", { "name" => "Set A", "atar_count" => 10, "synthetic_atar_count" => 0, "resource_id" => "3" }))
+    end
+
+    it { is_expected.to have_http_status :success }
+
+    it "shows the live count and a cancel button while the run is in progress" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_css("p", text: "4 of 10")
+      expect(page).to have_button("Cancel run")
+    end
+
+    context "when the run has finished" do
+      let(:run_attributes) { super().merge("status" => "completed", "result_count" => 10) }
+
+      it "does not show a cancel button" do
+        expect(Capybara.string(rendered_page.body)).not_to have_button("Cancel run")
+      end
+    end
+
+    context "with the polling JSON response" do
+      let(:make_request) { get evaluation_run_path(run_id, format: :json) }
+
+      it "says the run is still pending while queued or running" do
+        expect(JSON.parse(rendered_page.body)["pending"]).to be(true)
+      end
+    end
+
+    context "with the polling JSON response, when the run has finished" do
+      let(:make_request) { get evaluation_run_path(run_id, format: :json) }
+      let(:run_attributes) { super().merge("status" => "completed") }
+
+      it "says the run is no longer pending" do
+        expect(JSON.parse(rendered_page.body)["pending"]).to be(false)
+      end
+    end
+
+    context "when the backend cannot be reached" do
+      before { stub_api_request("/search/evaluation/runs/#{run_id}").to_raise(Faraday::ConnectionFailed) }
+
+      it "redirects to the experiment list with a warning instead of an error page" do
+        expect(rendered_page).to redirect_to(evaluation_experiments_path)
+
+        rendered_page
+        expect(session.dig("flash", "flashes", "alert")).to eq("The launch form could not be loaded. Try again.")
+      end
+    end
+  end
+
+  describe "POST #cancel" do
+    let(:make_request) { post cancel_evaluation_run_path(run_id) }
+    let(:run_id) { "9" }
+
+    before { stub_api_request("/search/evaluation/runs/#{run_id}").and_return(jsonapi_response("run", { "status" => "running", "resource_id" => run_id })) }
+
+    context "when the run is still running" do
+      before do
+        stub_api_request("/search/evaluation/runs/#{run_id}", :patch)
+          .with { |request| Rack::Utils.parse_nested_query(request.body).dig("data", "attributes", "status") == "cancelled" }
+          .and_return(jsonapi_response("run", { "status" => "cancelled", "resource_id" => run_id }))
+      end
+
+      it { is_expected.to redirect_to(evaluation_run_path(run_id)) }
+    end
+
+    context "when the run has already finished" do
+      before { stub_api_request("/search/evaluation/runs/#{run_id}").and_return(jsonapi_response("run", { "status" => "completed", "resource_id" => run_id })) }
+
+      it "does nothing and redirects without sending a cancel request" do
+        expect(rendered_page).to redirect_to(evaluation_run_path(run_id))
+        expect(a_request(:patch, %r{/runs/#{run_id}})).not_to have_been_made
+      end
+    end
+  end
 end
 # rubocop:enable RSpec/ExampleLength, RSpec/MultipleExpectations, RSpec/MultipleMemoizedHelpers

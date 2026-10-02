@@ -1,7 +1,6 @@
-# One execution of an experiment. Unlike every other model in this app, a run is never edited by the
-# admin app after creation (only the eval app updates its status), so it has no generic #save/#update
-# path — only .launch!, which needs a one-off Idempotency-Key header the shared ApiEntity#save/#update
-# machinery has no way to send.
+# One execution of an experiment. Creation is the one mutation that doesn't go through the generic
+# ApiEntity#save path — .launch! needs a one-off Idempotency-Key header that machinery has no way to
+# send. Cancelling (#cancel!) is an ordinary attribute update, so it uses #update/#save as-is.
 class EvaluationRun
   include ApiEntity
 
@@ -45,6 +44,18 @@ class EvaluationRun
     %w[queued running].include?(status)
   end
 
+  def cancellable?
+    generating?
+  end
+
+  def finished_count
+    result_count.to_i
+  end
+
+  def cancel!
+    update(status: "cancelled")
+  end
+
   # Override fields are named dynamically from the backend's own schema (OverrideSchema; see
   # EvaluationConfiguration) rather than being declared as EvaluationRun attributes. The launch
   # form always starts from a blank, unpersisted run, so the correct starting value for every
@@ -52,13 +63,19 @@ class EvaluationRun
   # object.public_send(field_name) to read that starting value, and ApiEntity#method_missing
   # raises for any name it was never assigned. Returning nil here instead keeps every override
   # field blank on a fresh form, which is what "Use default" already means for all of them.
+  # rubocop:disable Style/MissingRespondToMissing -- a broad respond_to_missing? here (e.g.
+  # "anything not ending in =") would make @run.respond_to?(:policy_class) true, and Pundit's
+  # PolicyFinder specifically probes that to decide how to resolve a policy class — it would then
+  # call policy_class (routed back through this method_missing, returning nil) instead of its
+  # normal "EvaluationRun" + "Policy" inference, breaking `authorize @run, ...` everywhere.
+  # Confirmed by reproduction: Pundit::NotDefinedError, "unable to find policy `` for ...".
+  # Leaving respond_to_missing? at ApiEntity's own definition (attributes.key?(name) || super) is
+  # correct: nothing in this form's render path checks respond_to? before calling these dynamic
+  # getters, so method_missing alone is enough to keep every override field blank.
   def method_missing(method_name, *args, &block)
     return super if method_name.to_s.end_with?("=") || args.any? || block
 
     attributes.key?(method_name) ? self[method_name] : nil
   end
-
-  def respond_to_missing?(method_name, include_private = false)
-    !method_name.to_s.end_with?("=") || super
-  end
+  # rubocop:enable Style/MissingRespondToMissing
 end

@@ -862,6 +862,22 @@
   }
 }
 
+.app-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  vertical-align: text-bottom;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: app-spinner-rotate 0.75s linear infinite;
+}
+
+@keyframes app-spinner-rotate {
+  to { transform: rotate(360deg); }
+}
+
 .search-diagnostics-events {
   .govuk-table__row:target {
     background-color: govuk.govuk-colour("yellow");
