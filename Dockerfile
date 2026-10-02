@@ -54,7 +54,7 @@ RUN rm -rf node_modules log tmp && \
 # Build runtime image
 FROM ruby:${RUBY_VERSION}-alpine${ALPINE_VERSION} AS production
 
-RUN apk add --update --no-cache tzdata postgresql-dev nodejs && \
+RUN apk add --update --no-cache tzdata postgresql-dev nodejs socat && \
   cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
   echo "Europe/London" > /etc/timezone && \
   # Remove default gem(specs) to clear CVEs
