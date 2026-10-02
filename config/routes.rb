@@ -201,6 +201,9 @@ Rails.application.routes.draw do
       get :delete, action: :confirm_destroy
     end
   end
+  resources :evaluation_runs, only: %i[new create show] do
+    post :cancel, on: :member
+  end
   resources :search_analytics, only: %i[index]
   resources :search_export_workbooks, only: %i[create show] do
     get :download, on: :member

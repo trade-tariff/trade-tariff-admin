@@ -1,0 +1,29 @@
+<h2 class="govuk-heading-m">Overrides</h2>
+<p class="govuk-body">Leave a field as "Use default" to use the experiment's own setting for this run.</p>
+
+<% override_schema.each do |entry| %>
+  <% case entry[:config_type] %>
+  <% when "options" %>
+    <%# entry[:options] is a plain array of {key:, label:} hashes from JSON.parse, not model
+        objects — govuk_collection_select's value_method/text_method args call .public_send on
+        each item, which breaks on a bare Hash (no #label method, and #key is a real Hash method
+        with different arity). Building the [text, value] pairs by hand sidesteps that entirely. %>
+    <%= f.govuk_select entry[:name],
+                       options_for_select([["Use default", ""]] + entry[:options].map { |o| [o[:label], o[:key]] }),
+                       label: { text: entry[:name].humanize, size: "s" },
+                       data: { "run-preview-target": "overrideField", "override-key": entry[:name], action: "change->run-preview#render" } %>
+  <% when "integer" %>
+    <%= f.govuk_number_field entry[:name],
+                             label: { text: entry[:name].humanize, size: "s" },
+                             hint: { text: "Between #{entry[:min]} and #{entry[:max]}." },
+                             width: 5,
+                             data: { "run-preview-target": "overrideField", "override-key": entry[:name], action: "change->run-preview#render" } %>
+  <% when "boolean" %>
+    <%= f.govuk_collection_radio_buttons entry[:name],
+                                         { "" => "Use default", "true" => "Yes", "false" => "No" },
+                                         :first,
+                                         :last,
+                                         legend: { text: entry[:name].humanize },
+                                         data: { "run-preview-target": "overrideField", "override-key": entry[:name], action: "change->run-preview#render" } %>
+  <% end %>
+<% end %>

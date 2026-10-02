@@ -41,9 +41,7 @@ RSpec.describe EvaluationExperimentsController, type: :request do
         .and_return(paginated_response([experiment_attributes.merge("resource_id" => experiment_id)]))
     end
 
-    it "responds with a success status code", skip: "blocked on Task 5: the index view's new_evaluation_run_path link doesn't exist until EvaluationRun's routes land" do
-      expect(rendered_page).to have_http_status :success
-    end
+    it { is_expected.to have_http_status :success }
 
     context "when the XI service is selected" do
       before { allow(TradeTariffAdmin::ServiceChooser).to receive(:service_choice).and_return "xi" }
@@ -53,7 +51,7 @@ RSpec.describe EvaluationExperimentsController, type: :request do
       end
     end
 
-    it "lists the experiments", skip: "blocked on Task 5: the index view's new_evaluation_run_path link doesn't exist until EvaluationRun's routes land" do
+    it "lists the experiments" do
       page = Capybara.string(rendered_page.body)
 
       expect(page).to have_css("h1", text: "Evaluation experiments")
@@ -144,7 +142,7 @@ RSpec.describe EvaluationExperimentsController, type: :request do
       stub_api_request("/search/evaluation/runs", :get).with(query: hash_including("experiment_id" => experiment_id)).and_return(paginated_response([], total_count: 2))
     end
 
-    it "asks for confirmation and says how many runs will be lost", skip: "blocked on Task 5: EvaluationRun doesn't exist as a model yet" do
+    it "asks for confirmation and says how many runs will be lost" do
       page = Capybara.string(rendered_page.body)
 
       expect(page).to have_css("h1", text: "Are you sure you want to delete this experiment?")
