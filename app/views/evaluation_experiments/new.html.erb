@@ -1,0 +1,28 @@
+<%= govuk_breadcrumbs "Evaluation experiments": evaluation_experiments_path %>
+
+<h1 class="govuk-heading-l">New experiment</h1>
+
+<%= govuk_form_for @experiment,
+                   as: :evaluation_experiment,
+                   url: evaluation_experiments_path do |f| %>
+  <%= f.govuk_error_summary %>
+
+  <%= f.govuk_text_field :name,
+                         label: { text: "Name", size: "s" },
+                         hint: { text: "A name that is not used by another experiment." },
+                         width: "two-thirds" %>
+
+  <%= f.govuk_text_area :description,
+                        label: { text: "Description", size: "s" },
+                        rows: 2 %>
+
+  <%= f.govuk_collection_select :gold_query_set_id,
+                                @gold_query_sets,
+                                :resource_id,
+                                :name,
+                                label: { text: "Default gold query set", size: "s" },
+                                hint: { text: "Every run launched from this experiment scores against this set unless a different one is chosen at launch time." },
+                                options: { include_blank: "Choose later" } %>
+
+  <%= submit_and_back_buttons f, evaluation_experiments_path, submit: "Create experiment" %>
+<% end %>

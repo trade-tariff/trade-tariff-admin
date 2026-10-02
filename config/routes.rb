@@ -196,6 +196,11 @@ Rails.application.routes.draw do
       end
     end
   end
+  resources :evaluation_experiments, only: %i[index new create destroy] do
+    member do
+      get :delete, action: :confirm_destroy
+    end
+  end
   resources :search_analytics, only: %i[index]
   resources :search_export_workbooks, only: %i[create show] do
     get :download, on: :member
