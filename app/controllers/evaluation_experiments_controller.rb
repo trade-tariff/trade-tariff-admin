@@ -1,6 +1,7 @@
 class EvaluationExperimentsController < AuthenticatedController
   include UkOnly
 
+  rescue_from Faraday::Error, with: :redirect_experiment_unavailable
   rescue_from Faraday::ResourceNotFound, with: :redirect_experiment_not_found
 
   before_action :load_experiment, only: %i[confirm_destroy destroy]
@@ -52,6 +53,10 @@ private
 
   def redirect_experiment_not_found
     redirect_to evaluation_experiments_path, alert: "Experiment not found."
+  end
+
+  def redirect_experiment_unavailable
+    redirect_to evaluation_experiments_path, alert: "The experiment could not be loaded. Try again."
   end
 
   def fetch_experiments

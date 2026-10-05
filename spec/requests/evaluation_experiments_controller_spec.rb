@@ -132,6 +132,17 @@ RSpec.describe EvaluationExperimentsController, type: :request do
         expect(page).to have_field("Name", with: "Baseline")
       end
     end
+
+    context "when the backend cannot be reached" do
+      before { stub_api_request("/search/evaluation/experiments", :post).and_return(status: 500, headers: json_headers, body: { error: "boom" }.to_json) }
+
+      it "redirects with a warning instead of an error page" do
+        expect(rendered_page).to redirect_to(evaluation_experiments_path)
+
+        rendered_page
+        expect(session.dig("flash", "flashes", "alert")).to eq("The experiment could not be loaded. Try again.")
+      end
+    end
   end
 
   describe "GET #confirm_destroy" do
@@ -148,6 +159,17 @@ RSpec.describe EvaluationExperimentsController, type: :request do
       expect(page).to have_css("h1", text: "Are you sure you want to delete this experiment?")
       expect(page).to have_css(".govuk-warning-text", text: "2 runs")
       expect(page).to have_button("Delete experiment")
+    end
+
+    context "when the backend cannot be reached" do
+      before { stub_api_request("/search/evaluation/runs", :get).with(query: hash_including("experiment_id" => experiment_id)).and_return(status: 500, headers: json_headers, body: { error: "boom" }.to_json) }
+
+      it "redirects with a warning instead of an error page" do
+        expect(rendered_page).to redirect_to(evaluation_experiments_path)
+
+        rendered_page
+        expect(session.dig("flash", "flashes", "alert")).to eq("The experiment could not be loaded. Try again.")
+      end
     end
   end
 
@@ -171,6 +193,17 @@ RSpec.describe EvaluationExperimentsController, type: :request do
       let(:current_user) { create(:user, :hmrc_admin) }
 
       it { is_expected.to have_http_status :forbidden }
+    end
+
+    context "when the backend cannot be reached" do
+      before { stub_api_request("/search/evaluation/experiments/#{experiment_id}", :delete).and_return(status: 500, headers: json_headers, body: { error: "boom" }.to_json) }
+
+      it "redirects with a warning instead of an error page" do
+        expect(rendered_page).to redirect_to(evaluation_experiments_path)
+
+        rendered_page
+        expect(session.dig("flash", "flashes", "alert")).to eq("The experiment could not be loaded. Try again.")
+      end
     end
   end
 end
