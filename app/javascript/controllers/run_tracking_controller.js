@@ -1,5 +1,8 @@
 // Shape copied from workbook_controller.js (search_export_workbooks) — same polling cadence, same
-// {pending, html} JSON contract, same "taking longer than expected" fallback.
+// {pending, html} JSON contract. Unlike that controller, polling never stops on its own just because
+// time has passed — only a terminal status or a genuine fetch failure stops it; see
+// EvaluationRunsHelper#evaluation_run_running_a_while? for the "this is taking a while" reassurance,
+// computed server-side so it survives every poll's full HTML replacement below.
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
@@ -10,7 +13,6 @@ export default class extends Controller {
     if (!this.pendingValue) return;
 
     this.requestController = new AbortController();
-    this.deadline = setTimeout(() => this.pause('This is taking longer than expected. Check the run status again.'), 180000);
     this.schedule();
   }
 
@@ -58,7 +60,6 @@ export default class extends Controller {
 
   stop() {
     clearTimeout(this.timer);
-    clearTimeout(this.deadline);
     this.requestController?.abort();
     this.requestController = null;
   }

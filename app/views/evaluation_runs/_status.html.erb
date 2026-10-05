@@ -7,6 +7,13 @@
         <span class="app-spinner" data-run-tracking-target="spinner" aria-hidden="true"></span>
         <%= @run.status.capitalize %>: <%= @run.finished_count %> of <%= total_items %> done
       </p>
+      <% if (eta = evaluation_run_eta(@run, total_items)) %>
+        <p class="govuk-body"><%= eta %></p>
+      <% end %>
+      <% if evaluation_run_running_a_while?(@run) %>
+        <p class="govuk-body">This run has been going for a while. This page will keep updating — feel free to leave it open.</p>
+      <% end %>
+      <p class="govuk-body" data-run-tracking-target="message"></p>
     </div>
   </div>
 

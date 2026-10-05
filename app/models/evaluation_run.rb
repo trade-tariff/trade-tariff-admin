@@ -15,7 +15,8 @@ class EvaluationRun
              :effective_configuration,
              :result_count,
              :error_count,
-             :error_summary
+             :error_summary,
+             :started_at
 
   def self.launch!(experiment_id:, triggered_by:, run_time_overrides:, idempotency_key:)
     payload = {

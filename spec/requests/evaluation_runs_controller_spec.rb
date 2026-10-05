@@ -256,6 +256,26 @@ RSpec.describe EvaluationRunsController, type: :request do
       expect(page).to have_button("Cancel run")
     end
 
+    context "when enough of the run has finished to estimate the time remaining" do
+      let(:run_attributes) { super().merge("result_count" => 4, "started_at" => 2.minutes.ago.iso8601) }
+
+      it "shows an estimate" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("p", text: /About \d+ minutes? remaining/)
+      end
+    end
+
+    context "when the run has been going for a while" do
+      let(:run_attributes) { super().merge("started_at" => 10.minutes.ago.iso8601) }
+
+      it "shows a reassuring note instead of going silent" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("p", text: "This run has been going for a while")
+      end
+    end
+
     context "when the run has finished" do
       let(:run_attributes) { super().merge("status" => "completed", "result_count" => 10) }
 
