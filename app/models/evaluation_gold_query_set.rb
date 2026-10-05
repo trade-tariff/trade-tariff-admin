@@ -21,6 +21,7 @@ class EvaluationGoldQuerySet
              :created_by,
              :atar_count,
              :synthetic_atar_count,
+             :gold_query_count,
              :created_at
 
   # The backend refuses to delete a set that an experiment still uses (409) and names

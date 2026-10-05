@@ -18,14 +18,25 @@ export default class extends Controller {
     const experimentData = this.experimentsValue[experimentId] || {};
     const experimentOverrides = experimentData.overrides || {};
     const typedOverrides = this.currentTypedOverrides();
-    const effective = { ...this.baselineValue, ...experimentOverrides, ...typedOverrides };
 
     const setName = experimentData.gold_query_set_name || 'No gold query set on this experiment';
     const setLabel = experimentData.gold_query_set_item_count != null
       ? `${setName} (${experimentData.gold_query_set_item_count} items)`
       : setName;
 
-    const rows = Object.entries(effective).map(([key, value]) => `${key}: ${value}`);
+    // Every key the operator could possibly see, in first-seen order (baseline's own keys first,
+    // then any key only an experiment or typed override introduces, e.g. simulator_model — which
+    // has no baseline value at all; see BaselineProvider's own comment on why). A key resolved
+    // purely from the baseline shows the word "default", not that baseline's own value — this run
+    // sends nothing for it, so showing e.g. "false" would look like something the operator chose,
+    // when really production's own setting could be different (or change) by the time this run
+    // actually executes.
+    const keys = [...new Set([...Object.keys(this.baselineValue), ...Object.keys(experimentOverrides), ...Object.keys(typedOverrides)])];
+    const rows = keys.map((key) => {
+      if (key in typedOverrides) return `${key}: ${typedOverrides[key]}`;
+      if (key in experimentOverrides) return `${key}: ${experimentOverrides[key]}`;
+      return `${key}: default`;
+    });
     this.renderPreview(setLabel, rows);
   }
 

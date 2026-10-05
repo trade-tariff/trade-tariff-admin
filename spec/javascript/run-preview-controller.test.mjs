@@ -105,3 +105,45 @@ test('layers typed field values over the experiment and baseline overrides', () 
   const rendered = controller.previewTarget.children.map(allText).join('|');
   assert.match(rendered, /max_rounds: 3/);
 });
+
+test('shows "default" for a baseline field left untouched, not its resolved value', () => {
+  const controller = setup({
+    baseline: { search_non_declarables: false, max_rounds: 7 },
+    experiments: { 7: { gold_query_set_name: 'Set A', overrides: {} } },
+  });
+
+  controller.render();
+
+  const rendered = controller.previewTarget.children.map(allText).join('|');
+  assert.match(rendered, /search_non_declarables: default/);
+  assert.doesNotMatch(rendered, /search_non_declarables: false/);
+});
+
+test('shows a typed boolean override as its real value, not "default"', () => {
+  const controller = setup({
+    baseline: { search_non_declarables: false },
+    experiments: { 7: { gold_query_set_name: 'Set A', overrides: {} } },
+    overrideFields: [
+      { dataset: { overrideKey: 'search_non_declarables' }, type: 'radio', value: '', checked: false },
+      { dataset: { overrideKey: 'search_non_declarables' }, type: 'radio', value: 'true', checked: true },
+      { dataset: { overrideKey: 'search_non_declarables' }, type: 'radio', value: 'false', checked: false },
+    ],
+  });
+
+  controller.render();
+
+  const rendered = controller.previewTarget.children.map(allText).join('|');
+  assert.match(rendered, /search_non_declarables: true/);
+});
+
+test('shows an experiment-level override even for a key absent from baseline', () => {
+  const controller = setup({
+    baseline: { question_model: 'gpt-5.4' },
+    experiments: { 7: { gold_query_set_name: 'Set A', overrides: { simulator_model: 'gpt-5.2' } } },
+  });
+
+  controller.render();
+
+  const rendered = controller.previewTarget.children.map(allText).join('|');
+  assert.match(rendered, /simulator_model: gpt-5\.2/);
+});

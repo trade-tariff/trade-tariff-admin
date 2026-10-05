@@ -885,3 +885,13 @@
     outline-offset: -3px;
   }
 }
+
+// The "Show"/"Hide" text is injected by govuk-frontend's own accordion JS next to the chevron
+// icon (accordion.mjs, setExpanded) -- there's no template option to omit it, only to change its
+// wording via data-i18n.show-section/hide-section. Hiding it here, rather than fighting that JS
+// with an empty i18n override, is also accessibility-safe: the button's full "Overrides, Show
+// this section" label comes from its own aria-label attribute, not this span's visible text, so a
+// screen reader still announces it even though display: none removes it from sighted view.
+#overrides-accordion .govuk-accordion__section-toggle-text {
+  display: none;
+}

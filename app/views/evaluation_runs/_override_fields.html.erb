@@ -1,33 +1,53 @@
-<h2 class="govuk-heading-m">Overrides</h2>
-<p class="govuk-body">Leave a field as "Use default" to use the experiment's own setting for this run.</p>
+<div class="govuk-accordion" data-module="govuk-accordion" id="overrides-accordion">
+  <div class="govuk-accordion__section">
+    <div class="govuk-accordion__section-header">
+      <h2 class="govuk-accordion__section-heading">
+        <span class="govuk-accordion__section-button" id="overrides-accordion-heading-1">Overrides</span>
+      </h2>
+    </div>
+    <div id="overrides-accordion-content-1" class="govuk-accordion__section-content" aria-labelledby="overrides-accordion-heading-1">
+      <p class="govuk-body">Choose "Use default", or leave a number field blank, to use the experiment's own setting for this run.</p>
 
-<% override_schema.each do |entry| %>
-  <% case entry[:config_type] %>
-  <% when "options" %>
-    <%# entry[:options] is a plain array of {key:, label:} hashes from JSON.parse, not model
-        objects — govuk_collection_select's value_method/text_method args call .public_send on
-        each item, which breaks on a bare Hash (no #label method, and #key is a real Hash method
-        with different arity). Building the [text, value] pairs by hand sidesteps that entirely. %>
-    <%# The selected value must be baked into the options string here, via options_for_select's
-        own second argument — govuk_select's underlying select() helper, given an already-built
-        String (rather than a collection it can call value_method/text_method on), renders it
-        verbatim and has no other way to mark one <option> as selected. %>
-    <%= f.govuk_select entry[:name],
-                       options_for_select([["Use default", ""]] + entry[:options].map { |o| [o[:label], o[:key]] }, f.object.public_send(entry[:name])),
-                       label: { text: entry[:name].humanize, size: "s" },
-                       data: { "run-preview-target": "overrideField", "override-key": entry[:name], action: "change->run-preview#render" } %>
-  <% when "integer" %>
-    <%= f.govuk_number_field entry[:name],
+      <% override_schema.each do |entry| %>
+        <% case entry[:config_type] %>
+        <% when "options" %>
+          <%# entry[:options] is a plain array of {key:, label:} hashes from JSON.parse, not model
+              objects — govuk_collection_select's value_method/text_method args call .public_send on
+              each item, which breaks on a bare Hash (no #label method, and #key is a real Hash method
+              with different arity). Building the [text, value] pairs by hand sidesteps that entirely. %>
+          <%# The selected value must be baked into the options string here, via options_for_select's
+              own second argument — govuk_select's underlying select() helper, given an already-built
+              String (rather than a collection it can call value_method/text_method on), renders it
+              verbatim and has no other way to mark one <option> as selected. %>
+          <%= f.govuk_select entry[:name],
+                             options_for_select([["Use default", ""]] + entry[:options].map { |o| [o[:label], o[:key]] }, f.object.public_send(entry[:name])),
                              label: { text: entry[:name].humanize, size: "s" },
-                             hint: { text: "Between #{entry[:min]} and #{entry[:max]}." },
-                             width: 5,
+                             hint: { text: entry[:description] },
                              data: { "run-preview-target": "overrideField", "override-key": entry[:name], action: "change->run-preview#render" } %>
-  <% when "boolean" %>
-    <%= f.govuk_collection_radio_buttons entry[:name],
-                                         { "" => "Use default", "true" => "Yes", "false" => "No" },
-                                         :first,
-                                         :last,
-                                         legend: { text: entry[:name].humanize },
-                                         data: { "run-preview-target": "overrideField", "override-key": entry[:name], action: "change->run-preview#render" } %>
-  <% end %>
-<% end %>
+        <% when "integer" %>
+          <%= f.govuk_number_field entry[:name],
+                                   label: { text: entry[:name].humanize, size: "s" },
+                                   hint: { text: "#{entry[:description]} Between #{entry[:min]} and #{entry[:max]}. Leave blank to use the default." },
+                                   width: 5,
+                                   data: { "run-preview-target": "overrideField", "override-key": entry[:name], action: "change->run-preview#render" } %>
+        <% when "boolean" %>
+          <%# Built from individual govuk_radio_button calls, not govuk_collection_radio_buttons: the
+              collection form's per-item element (CollectionRadioButton#options, in the gem) only
+              forwards id/aria/class onto each <input> — a data: option given to
+              govuk_collection_radio_buttons itself lands on the wrapping <div>, not on any individual
+              radio. That left the preview's Stimulus target on an element with no .type or .value, so
+              run_preview_controller.js read every boolean override as the literal string "undefined".
+              govuk_radio_button, by contrast, forwards arbitrary kwargs (including data:) straight onto
+              its own <input>. %>
+          <%= f.govuk_radio_buttons_fieldset entry[:name], legend: { text: entry[:name].humanize }, hint: { text: entry[:description] } do %>
+            <% [["", "Use default"], ["true", "Yes"], ["false", "No"]].each do |value, label| %>
+              <%= f.govuk_radio_button entry[:name], value,
+                                       label: { text: label },
+                                       data: { "run-preview-target": "overrideField", "override-key": entry[:name], action: "change->run-preview#render" } %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</div>

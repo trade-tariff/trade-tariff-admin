@@ -14,9 +14,9 @@ RSpec.describe EvaluationRunsController, type: :request do
       body: {
         baseline: { "question_model" => "gpt-5.4", "max_rounds" => 7 },
         allowed_overrides: [
-          { name: "question_model", config_type: "options", options: [{ key: "gpt-5.4", label: "gpt-5.4" }, { key: "gpt-5.6", label: "gpt-5.6" }] },
-          { name: "max_rounds", config_type: "integer", min: 1, max: 20 },
-          { name: "search_non_declarables", config_type: "boolean" },
+          { name: "question_model", config_type: "options", description: "The AI model used to ask clarifying questions.", options: [{ key: "gpt-5.4", label: "gpt-5.4" }, { key: "gpt-5.6", label: "gpt-5.6" }] },
+          { name: "max_rounds", config_type: "integer", min: 1, max: 20, description: "The most clarifying questions the search can ask." },
+          { name: "search_non_declarables", config_type: "boolean", description: "Include non-declarable codes in the results." },
         ],
       }.to_json,
     }
@@ -57,12 +57,42 @@ RSpec.describe EvaluationRunsController, type: :request do
       expect(page).to have_button("Launch")
     end
 
+    it "puts the overrides inside a collapsible accordion, so the page isn't a wall of fields" do
+      page = Capybara.string(rendered_page.body)
+
+      accordion = page.find(".govuk-accordion[data-module='govuk-accordion']")
+      expect(accordion).to have_css(".govuk-accordion__section-button", text: "Overrides")
+      expect(accordion).to have_select("Question model")
+      expect(accordion).to have_field("Max rounds")
+    end
+
     it "embeds the experiment's gold query set name and item count in the preview data" do
       page = Capybara.string(rendered_page.body)
       experiments_data = JSON.parse(page.find("form")["data-run-preview-experiments-value"])
 
       expect(experiments_data.dig("7", "gold_query_set_name")).to eq("Set A")
       expect(experiments_data.dig("7", "gold_query_set_item_count")).to eq(5)
+    end
+
+    it "explains what each override does" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_css(".govuk-hint", text: "The AI model used to ask clarifying questions.")
+      expect(page).to have_css(".govuk-hint", text: "Include non-declarable codes in the results.")
+    end
+
+    it "tells the operator a number field can be left blank for the default, not just that an option exists" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_css(".govuk-hint", text: "Leave blank to use the default.")
+    end
+
+    it "puts the live-preview target on each individual boolean radio, not just the fieldset" do
+      page = Capybara.string(rendered_page.body)
+
+      radios = page.all("input[type='radio'][data-override-key='search_non_declarables']")
+      expect(radios.size).to eq(3)
+      expect(radios.map { |radio| radio["data-run-preview-target"] }).to all(eq("overrideField"))
     end
 
     context "when the experiment's gold query set has been deleted" do
@@ -347,16 +377,29 @@ RSpec.describe EvaluationRunsController, type: :request do
 
     before do
       stub_api_request("/search/evaluation/runs/#{run_id}").and_return(jsonapi_response("run", run_attributes.merge("resource_id" => run_id)))
-      stub_api_request("/search/evaluation/gold_query_sets/3").and_return(jsonapi_response("gold_query_set", { "name" => "Set A", "atar_count" => 10, "synthetic_atar_count" => 0, "resource_id" => "3" }))
+      stub_api_request("/search/evaluation/gold_query_sets/3").and_return(jsonapi_response("gold_query_set", { "name" => "Set A", "atar_count" => 10, "synthetic_atar_count" => 0, "gold_query_count" => 30, "resource_id" => "3" }))
+      stub_api_request("/search/evaluation/experiments/7").and_return(jsonapi_response("experiment", experiment_attributes.merge("resource_id" => "7")))
     end
 
     it { is_expected.to have_http_status :success }
 
+    it "shows the experiment name alongside the run id, not just a bare number" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_css("h1", text: "Baseline — Run ID: 9")
+    end
+
     it "shows the live count and a cancel button while the run is in progress" do
       page = Capybara.string(rendered_page.body)
 
-      expect(page).to have_css("p", text: "4 of 10")
+      expect(page).to have_css("p", text: "4 of 30")
       expect(page).to have_button("Cancel run")
+    end
+
+    it "has no back link while the run is still in progress, so a running run stays watched" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).not_to have_css("a.govuk-back-link")
     end
 
     context "when enough of the run has finished to estimate the time remaining" do
@@ -385,6 +428,22 @@ RSpec.describe EvaluationRunsController, type: :request do
       it "does not show a cancel button" do
         expect(Capybara.string(rendered_page.body)).not_to have_button("Cancel run")
       end
+
+      it "shows a back link, since there's nothing left to watch" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("a.govuk-back-link", text: "Back to experiments")
+      end
+    end
+
+    context "when the run was cancelled" do
+      let(:run_attributes) { super().merge("status" => "cancelled", "result_count" => 1) }
+
+      it "shows a back link" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("a.govuk-back-link", text: "Back to experiments")
+      end
     end
 
     context "when the run has failed to start" do
@@ -394,6 +453,12 @@ RSpec.describe EvaluationRunsController, type: :request do
         page = Capybara.string(rendered_page.body)
 
         expect(page).to have_css("p", text: "could not reach the evaluation service: connection refused")
+      end
+
+      it "shows a back link" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("a.govuk-back-link", text: "Back to experiments")
       end
     end
 
@@ -411,6 +476,12 @@ RSpec.describe EvaluationRunsController, type: :request do
 
       it "says the run is no longer pending" do
         expect(JSON.parse(rendered_page.body)["pending"]).to be(false)
+      end
+
+      it "includes a back link in the replaced HTML — the page never reloads to pick up show.html.erb's own, so it must live in the polled partial" do
+        html = JSON.parse(rendered_page.body)["html"]
+
+        expect(Capybara.string(html)).to have_css("a.govuk-back-link", text: "Back to experiments")
       end
     end
 
