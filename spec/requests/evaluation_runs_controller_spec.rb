@@ -126,14 +126,42 @@ RSpec.describe EvaluationRunsController, type: :request do
         stub_api_request("/search/evaluation/configuration").and_return(configuration_response)
         stub_api_request("/search/evaluation/runs", :post)
           .with { |request|
-            attributes = Rack::Utils.parse_nested_query(request.body).dig("data", "attributes")
+            attributes = JSON.parse(request.body).dig("data", "attributes")
             request.headers["Idempotency-Key"] == "key-abc" &&
-              attributes["configuration_overrides"] == { "max_rounds" => "3" }
+              attributes["configuration_overrides"] == { "max_rounds" => 3 }
           }
           .and_return(jsonapi_response("run", { "status" => "queued" }, status: 201).tap { |r| r[:body] = JSON.parse(r[:body]).deep_merge("data" => { "id" => "9" }).to_json })
       end
 
       it { is_expected.to redirect_to(evaluation_run_path("9")) }
+    end
+
+    context "when a boolean override is set" do
+      let(:make_request) do
+        post evaluation_runs_path, params: {
+          evaluation_run: {
+            experiment_id: "7",
+            gold_query_set_id: "3",
+            idempotency_key: "key-abc",
+            max_rounds: "",
+            question_model: "",
+            search_non_declarables: "true",
+          },
+        }
+      end
+
+      before do
+        stub_api_request("/search/evaluation/configuration").and_return(configuration_response)
+        stub_api_request("/search/evaluation/runs", :post)
+          .with { |request|
+            JSON.parse(request.body).dig("data", "attributes", "configuration_overrides") == { "search_non_declarables" => true }
+          }
+          .and_return(jsonapi_response("run", { "status" => "queued", "resource_id" => "9" }, status: 201))
+      end
+
+      it "sends a real boolean, not the string \"true\"" do
+        expect(rendered_page).to have_http_status(:found)
+      end
     end
 
     context "when the backend rejects it" do
@@ -151,6 +179,47 @@ RSpec.describe EvaluationRunsController, type: :request do
 
         expect(page).to have_css(".govuk-error-summary", text: "must be between 1 and 20")
         expect(page).to have_css("input[name='evaluation_run[idempotency_key]'][value='key-abc']", visible: false)
+      end
+
+      it "also keeps the experiment selection and the typed override values" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_select("Experiment", selected: "Baseline")
+        expect(page).to have_field("Max rounds", with: "3")
+      end
+    end
+
+    context "when the eval run service cannot be reached at all" do
+      let(:make_request) do
+        post evaluation_runs_path, params: {
+          evaluation_run: {
+            experiment_id: "7",
+            gold_query_set_id: "3",
+            idempotency_key: "key-abc",
+            max_rounds: "3",
+            question_model: "",
+            search_non_declarables: "",
+          },
+        }
+      end
+
+      before do
+        stub_api_request("/search/evaluation/configuration").and_return(configuration_response)
+        stub_api_request("/search/evaluation/experiments").with(query: hash_including("per_page" => "200")).and_return(paginated_response([experiment_attributes.merge("resource_id" => "7")], type: "experiment"))
+        stub_api_request("/search/evaluation/gold_query_sets").with(query: hash_including("per_page" => "200")).and_return(paginated_response([gold_query_set_attributes.merge("resource_id" => "3")], type: "gold_query_set"))
+        stub_api_request("/search/evaluation/runs", :post).to_raise(Faraday::ConnectionFailed)
+      end
+
+      it "shows the form again with a warning, instead of redirecting away" do
+        expect(rendered_page).to have_http_status(:unprocessable_content)
+      end
+
+      it "keeps the same idempotency key and what was typed" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("input[name='evaluation_run[idempotency_key]'][value='key-abc']", visible: false)
+        expect(page).to have_select("Experiment", selected: "Baseline")
+        expect(page).to have_field("Max rounds", with: "3")
       end
     end
 

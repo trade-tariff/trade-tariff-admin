@@ -24,17 +24,23 @@ class EvaluationRunsController < AuthenticatedController
     authorize EvaluationRun, :create?
 
     @configuration_schema = EvaluationConfiguration.schema
-    @run = EvaluationRun.launch!(
-      experiment_id: run_params[:experiment_id],
-      triggered_by: Current.whodunnit,
-      run_time_overrides: override_params,
-      idempotency_key: run_params[:idempotency_key],
-    )
+    @run = begin
+      EvaluationRun.launch!(
+        experiment_id: run_params[:experiment_id],
+        triggered_by: Current.whodunnit,
+        run_time_overrides: override_params,
+        idempotency_key: run_params[:idempotency_key],
+      )
+    rescue Faraday::Error => e
+      Rails.logger.error("Failed to launch evaluation run: #{e.message}")
+      EvaluationRun.new.tap { |run| run.errors.add(:base, "The evaluation service could not be reached. Try again.") }
+    end
 
     if @run.errors.empty?
       redirect_to evaluation_run_path(@run)
     else
       @idempotency_key = run_params[:idempotency_key]
+      @run.attributes.merge!(raw_override_params.merge("experiment_id" => run_params[:experiment_id]))
       @experiments = fetch_experiments
       @gold_query_sets_by_id = fetch_gold_query_sets.index_by { |set| set.resource_id.to_s }
       render :new, status: :unprocessable_content
@@ -76,14 +82,33 @@ private
     params.require(:evaluation_run).permit(:experiment_id, :idempotency_key)
   end
 
-  # gold_query_set_id travels as a configuration override (not a top-level run attribute) because
-  # the backend resolves the run's set from its experiment by default, and a run-time override is
-  # exactly how this form lets the operator pick a different one for just this launch — same
-  # mechanism as every other override, not a special case.
   def override_params
+    schema_by_name = @configuration_schema[:allowed_overrides].index_by { |entry| entry[:name] }
+
+    raw_override_params.each_with_object({}) do |(key, value), casted|
+      casted[key] = cast_override_value(value, schema_by_name[key][:config_type])
+    end
+  end
+
+  def raw_override_params
     allowed_keys = @configuration_schema[:allowed_overrides].map { |entry| entry[:name] }
 
     params.require(:evaluation_run).to_unsafe_h.slice(*allowed_keys.map(&:to_s)).reject { |_, value| value.blank? }
+  end
+
+  # A hand-crafted request (or a browser with JS disabled bypassing the number input's own
+  # validation) could send a non-numeric string for an integer key — falling back to the raw
+  # string here lets the backend's own AllowlistValidator reject it with its normal "must be an
+  # Integer" error, the same clean validation failure an operator already sees for any other
+  # rejected override, rather than this app raising a 500 on a malformed cast.
+  def cast_override_value(value, config_type)
+    case config_type
+    when "integer" then Integer(value)
+    when "boolean" then value == "true"
+    else value
+    end
+  rescue ArgumentError
+    value
   end
 
   def fetch_gold_query_set

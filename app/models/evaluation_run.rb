@@ -30,7 +30,7 @@ class EvaluationRun
     }
 
     resp = begin
-      api.post(collection_path, payload, { "Idempotency-Key" => idempotency_key })
+      api.post(collection_path, payload.to_json, { "Idempotency-Key" => idempotency_key, "Content-Type" => "application/json" })
     rescue Faraday::UnprocessableEntityError => e
       e.response
     end

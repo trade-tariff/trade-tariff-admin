@@ -26,7 +26,7 @@
                                 :resource_id,
                                 :name,
                                 label: { text: "Experiment", size: "s" },
-                                options: { include_blank: "Choose an experiment", selected: params[:experiment_id] },
+                                options: { include_blank: "Choose an experiment", selected: params[:experiment_id] || @run.experiment_id },
                                 data: { "run-preview-target": "experimentSelect", action: "change->run-preview#render" } %>
 
   <%= render "override_fields", f: f, override_schema: @configuration_schema[:allowed_overrides] %>

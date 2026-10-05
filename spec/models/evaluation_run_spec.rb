@@ -14,10 +14,11 @@ RSpec.describe EvaluationRun do
       before do
         stub_api_request("/search/evaluation/runs", :post)
           .with { |request|
-            body = Rack::Utils.parse_nested_query(request.body)
+            body = JSON.parse(request.body)
             attributes = body.dig("data", "attributes")
             request.headers["Idempotency-Key"] == "key-123" &&
-              attributes == { "experiment_id" => "7", "triggered_by" => "user-123", "configuration_overrides" => { "max_rounds" => "3" } }
+              request.headers["Content-Type"]&.start_with?("application/json") &&
+              attributes == { "experiment_id" => "7", "triggered_by" => "user-123", "configuration_overrides" => { "max_rounds" => 3 } }
           }
           .and_return(jsonapi_response("run", response_attributes.merge("resource_id" => "9")))
       end
@@ -25,7 +26,7 @@ RSpec.describe EvaluationRun do
       it "returns the created run" do
         run = described_class.launch!(
           experiment_id: "7", triggered_by: "user-123",
-          run_time_overrides: { max_rounds: "3" }, idempotency_key: "key-123"
+          run_time_overrides: { max_rounds: 3 }, idempotency_key: "key-123"
         )
 
         expect(run).to have_attributes(resource_id: "9", status: "queued")
