@@ -16,7 +16,7 @@ class EvaluationRunsController < AuthenticatedController
     @run = EvaluationRun.new
     @idempotency_key = SecureRandom.uuid
     @experiments = fetch_experiments
-    @gold_query_sets = fetch_gold_query_sets
+    @gold_query_sets_by_id = fetch_gold_query_sets.index_by { |set| set.resource_id.to_s }
     @configuration_schema = EvaluationConfiguration.schema
   end
 
@@ -36,7 +36,7 @@ class EvaluationRunsController < AuthenticatedController
     else
       @idempotency_key = run_params[:idempotency_key]
       @experiments = fetch_experiments
-      @gold_query_sets = fetch_gold_query_sets
+      @gold_query_sets_by_id = fetch_gold_query_sets.index_by { |set| set.resource_id.to_s }
       render :new, status: :unprocessable_content
     end
   end
@@ -81,7 +81,7 @@ private
   # exactly how this form lets the operator pick a different one for just this launch — same
   # mechanism as every other override, not a special case.
   def override_params
-    allowed_keys = @configuration_schema[:allowed_overrides].map { |entry| entry[:name] } + %w[gold_query_set_id]
+    allowed_keys = @configuration_schema[:allowed_overrides].map { |entry| entry[:name] }
 
     params.require(:evaluation_run).to_unsafe_h.slice(*allowed_keys.map(&:to_s)).reject { |_, value| value.blank? }
   end

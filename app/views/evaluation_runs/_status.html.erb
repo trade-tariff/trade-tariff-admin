@@ -13,4 +13,7 @@
   <%= button_to "Cancel run", cancel_evaluation_run_path(@run), class: "govuk-button govuk-button--warning" %>
 <% else %>
   <p class="govuk-body">Finished: <%= @run.status.humanize %>. <%= @run.finished_count %> of <%= total_items %> done.</p>
+  <% if @run.error_summary.present? %>
+    <p class="govuk-body"><%= @run.error_summary %></p>
+  <% end %>
 <% end %>

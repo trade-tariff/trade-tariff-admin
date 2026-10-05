@@ -50,11 +50,27 @@ RSpec.describe EvaluationRunsController, type: :request do
 
       expect(page).to have_css("h1", text: "Launch an evaluation")
       expect(page).to have_select("Experiment", options: ["Choose an experiment", "Baseline"])
-      expect(page).to have_select("Gold query set", options: ["Choose a gold query set", "Set A"])
+      expect(page).not_to have_select("Gold query set")
       expect(page).to have_select("Question model")
       expect(page).to have_field("Max rounds")
       expect(page).to have_css("fieldset", text: "Search non declarables")
       expect(page).to have_button("Launch")
+    end
+
+    it "embeds the experiment's gold query set name and item count in the preview data" do
+      page = Capybara.string(rendered_page.body)
+      experiments_data = JSON.parse(page.find("form")["data-run-preview-experiments-value"])
+
+      expect(experiments_data.dig("7", "gold_query_set_name")).to eq("Set A")
+      expect(experiments_data.dig("7", "gold_query_set_item_count")).to eq(5)
+    end
+
+    context "when the experiment's gold query set has been deleted" do
+      before { stub_api_request("/search/evaluation/gold_query_sets").with(query: hash_including("per_page" => "200")).and_return(paginated_response([], type: "gold_query_set")) }
+
+      it "still shows the form, without crashing" do
+        expect(rendered_page).to have_http_status :success
+      end
     end
 
     it "carries a freshly generated idempotency key as a hidden field" do
@@ -112,7 +128,7 @@ RSpec.describe EvaluationRunsController, type: :request do
           .with { |request|
             attributes = Rack::Utils.parse_nested_query(request.body).dig("data", "attributes")
             request.headers["Idempotency-Key"] == "key-abc" &&
-              attributes["configuration_overrides"] == { "max_rounds" => "3", "gold_query_set_id" => "3" }
+              attributes["configuration_overrides"] == { "max_rounds" => "3" }
           }
           .and_return(jsonapi_response("run", { "status" => "queued" }, status: 201).tap { |r| r[:body] = JSON.parse(r[:body]).deep_merge("data" => { "id" => "9" }).to_json })
       end
@@ -176,6 +192,16 @@ RSpec.describe EvaluationRunsController, type: :request do
 
       it "does not show a cancel button" do
         expect(Capybara.string(rendered_page.body)).not_to have_button("Cancel run")
+      end
+    end
+
+    context "when the run has failed to start" do
+      let(:run_attributes) { super().merge("status" => "failed", "result_count" => 0, "error_summary" => "could not reach the evaluation service: connection refused") }
+
+      it "shows the error_summary, not just the bare status" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("p", text: "could not reach the evaluation service: connection refused")
       end
     end
 
