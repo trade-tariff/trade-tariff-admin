@@ -11,7 +11,7 @@ export default class extends Controller {
   render() {
     const experimentId = this.experimentSelectTarget.value;
     if (!experimentId) {
-      this.previewTarget.innerHTML = '<h2 class="govuk-heading-s">Preview</h2><p class="govuk-body">Choose an experiment to see what this run will use.</p>';
+      this.renderPreview('Choose an experiment to see what this run will use.', []);
       return;
     }
 
@@ -25,8 +25,36 @@ export default class extends Controller {
       ? `${setName} (${experimentData.gold_query_set_item_count} items)`
       : setName;
 
-    const rows = Object.entries(effective).map(([key, value]) => `<li>${key}: ${value}</li>`).join('');
-    this.previewTarget.innerHTML = `<h2 class="govuk-heading-s">Preview</h2><p class="govuk-body">${setLabel}</p><ul class="govuk-list">${rows}</ul>`;
+    const rows = Object.entries(effective).map(([key, value]) => `${key}: ${value}`);
+    this.renderPreview(setLabel, rows);
+  }
+
+  // Built from DOM nodes via textContent, never an HTML string — setLabel (a gold query set's
+  // name) and each row (an experiment's own saved overrides) are operator-entered free text,
+  // persisted and shown to every other technical operator who opens this form. Interpolating
+  // either into innerHTML would let one operator's saved text run as script in another's browser.
+  renderPreview(setLabel, rows) {
+    const heading = document.createElement('h2');
+    heading.className = 'govuk-heading-s';
+    heading.textContent = 'Preview';
+
+    const summary = document.createElement('p');
+    summary.className = 'govuk-body';
+    summary.textContent = setLabel;
+
+    const children = [heading, summary];
+    if (rows.length) {
+      const list = document.createElement('ul');
+      list.className = 'govuk-list';
+      rows.forEach((row) => {
+        const item = document.createElement('li');
+        item.textContent = row;
+        list.appendChild(item);
+      });
+      children.push(list);
+    }
+
+    this.previewTarget.replaceChildren(...children);
   }
 
   currentTypedOverrides() {

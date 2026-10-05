@@ -189,6 +189,62 @@ RSpec.describe EvaluationRunsController, type: :request do
       end
     end
 
+    context "when the backend rejects it and a model-select override was chosen" do
+      let(:make_request) do
+        post evaluation_runs_path, params: {
+          evaluation_run: {
+            experiment_id: "7",
+            gold_query_set_id: "3",
+            idempotency_key: "key-abc",
+            max_rounds: "3",
+            question_model: "gpt-5.6",
+            search_non_declarables: "",
+          },
+        }
+      end
+
+      before do
+        stub_api_request("/search/evaluation/runs", :post).and_return(api_error_response(max_rounds: "must be between 1 and 20"))
+        stub_api_request("/search/evaluation/experiments").with(query: hash_including("per_page" => "200")).and_return(paginated_response([experiment_attributes.merge("resource_id" => "7")], type: "experiment"))
+        stub_api_request("/search/evaluation/gold_query_sets").with(query: hash_including("per_page" => "200")).and_return(paginated_response([gold_query_set_attributes.merge("resource_id" => "3")], type: "gold_query_set"))
+        stub_api_request("/search/evaluation/configuration").and_return(configuration_response)
+      end
+
+      it "keeps the chosen model selected, not reset to Use default" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_select("Question model", selected: "gpt-5.6")
+      end
+    end
+
+    context "when the backend rejects it and a boolean override was chosen" do
+      let(:make_request) do
+        post evaluation_runs_path, params: {
+          evaluation_run: {
+            experiment_id: "7",
+            gold_query_set_id: "3",
+            idempotency_key: "key-abc",
+            max_rounds: "3",
+            question_model: "",
+            search_non_declarables: "true",
+          },
+        }
+      end
+
+      before do
+        stub_api_request("/search/evaluation/runs", :post).and_return(api_error_response(max_rounds: "must be between 1 and 20"))
+        stub_api_request("/search/evaluation/experiments").with(query: hash_including("per_page" => "200")).and_return(paginated_response([experiment_attributes.merge("resource_id" => "7")], type: "experiment"))
+        stub_api_request("/search/evaluation/gold_query_sets").with(query: hash_including("per_page" => "200")).and_return(paginated_response([gold_query_set_attributes.merge("resource_id" => "3")], type: "gold_query_set"))
+        stub_api_request("/search/evaluation/configuration").and_return(configuration_response)
+      end
+
+      it "keeps the chosen radio checked, not reset to Use default" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_checked_field("Yes")
+      end
+    end
+
     context "when the eval run service cannot be reached at all" do
       let(:make_request) do
         post evaluation_runs_path, params: {
@@ -223,11 +279,58 @@ RSpec.describe EvaluationRunsController, type: :request do
       end
     end
 
+    context "when no experiment was chosen" do
+      let(:make_request) do
+        post evaluation_runs_path, params: {
+          evaluation_run: {
+            experiment_id: "",
+            gold_query_set_id: "",
+            idempotency_key: "key-abc",
+            max_rounds: "",
+            question_model: "",
+            search_non_declarables: "",
+          },
+        }
+      end
+
+      before do
+        stub_api_request("/search/evaluation/configuration").and_return(configuration_response)
+        stub_api_request("/search/evaluation/experiments").with(query: hash_including("per_page" => "200")).and_return(paginated_response([experiment_attributes.merge("resource_id" => "7")], type: "experiment"))
+        stub_api_request("/search/evaluation/gold_query_sets").with(query: hash_including("per_page" => "200")).and_return(paginated_response([gold_query_set_attributes.merge("resource_id" => "3")], type: "gold_query_set"))
+      end
+
+      it "shows a validation error instead of calling the backend at all" do
+        expect(rendered_page).to have_http_status(:unprocessable_content)
+        expect(a_request(:post, %r{/search/evaluation/runs\z})).not_to have_been_made
+      end
+
+      it "names the missing field" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css(".govuk-error-summary", text: "Choose an experiment")
+      end
+    end
+
+    context "when this idempotency key was already used for a different request" do
+      before do
+        stub_api_request("/search/evaluation/configuration").and_return(configuration_response)
+        stub_api_request("/search/evaluation/experiments").with(query: hash_including("per_page" => "200")).and_return(paginated_response([experiment_attributes.merge("resource_id" => "7")], type: "experiment"))
+        stub_api_request("/search/evaluation/gold_query_sets").with(query: hash_including("per_page" => "200")).and_return(paginated_response([gold_query_set_attributes.merge("resource_id" => "3")], type: "gold_query_set"))
+        stub_api_request("/search/evaluation/runs", :post).and_return(status: 409, headers: json_headers, body: { error: "conflict" }.to_json)
+      end
+
+      it "tells the operator to reload for a new attempt, not that the service is unreachable" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css(".govuk-error-summary", text: "A run was already started from this form")
+      end
+    end
+
     context "when a boolean override is left on 'Use default'" do
       before do
         stub_api_request("/search/evaluation/configuration").and_return(configuration_response)
         stub_api_request("/search/evaluation/runs", :post)
-          .with { |request| !Rack::Utils.parse_nested_query(request.body).dig("data", "attributes", "configuration_overrides")&.key?("search_non_declarables") }
+          .with { |request| !JSON.parse(request.body).dig("data", "attributes", "configuration_overrides")&.key?("search_non_declarables") }
           .and_return(jsonapi_response("run", { "status" => "queued", "resource_id" => "9" }, status: 201))
       end
 

@@ -24,17 +24,35 @@ class EvaluationRunsController < AuthenticatedController
     authorize EvaluationRun, :create?
 
     @configuration_schema = EvaluationConfiguration.schema
-    @run = begin
-      EvaluationRun.launch!(
-        experiment_id: run_params[:experiment_id],
-        triggered_by: Current.whodunnit,
-        run_time_overrides: override_params,
-        idempotency_key: run_params[:idempotency_key],
-      )
-    rescue Faraday::Error => e
-      Rails.logger.error("Failed to launch evaluation run: #{e.message}")
-      EvaluationRun.new.tap { |run| run.errors.add(:base, "The evaluation service could not be reached. Try again.") }
-    end
+    @run = if run_params[:experiment_id].blank?
+             # Caught here, not left to the backend: the select has a blank "Choose an experiment"
+             # option and nothing stops submitting it as-is. Without this, EvaluationExperiment.with_pk!
+             # on the backend rejects an empty id with a 404 (or worse, a 500 from Postgres casting an
+             # empty string to an integer id), which this controller's own Faraday::Error rescue below
+             # would then report as "the evaluation service could not be reached" — true of nothing, and
+             # retrying it changes nothing.
+             EvaluationRun.new.tap { |run| run.errors.add(:experiment_id, "Choose an experiment") }
+           else
+             begin
+               EvaluationRun.launch!(
+                 experiment_id: run_params[:experiment_id],
+                 triggered_by: Current.whodunnit,
+                 run_time_overrides: override_params,
+                 idempotency_key: run_params[:idempotency_key],
+               )
+             rescue Faraday::ConflictError
+               # This Idempotency-Key was already used for a request with different inputs (backend's
+               # own IdempotencyKeyConflict, raised as a 409) — the realistic way to hit this is a
+               # timeout: the backend created a run, the response never arrived here, the form re-rendered
+               # with the same key, and the operator then changed something before resubmitting. The run
+               # from the first attempt already exists; "could not be reached" would send them around that
+               # loop again instead of telling them what's actually going on.
+               EvaluationRun.new.tap { |run| run.errors.add(:base, "A run was already started from this form. Reload the page to start a new one.") }
+             rescue Faraday::Error => e
+               Rails.logger.error("Failed to launch evaluation run: #{e.message}")
+               EvaluationRun.new.tap { |run| run.errors.add(:base, "The evaluation service could not be reached. Try again.") }
+             end
+           end
 
     if @run.errors.empty?
       redirect_to evaluation_run_path(@run)

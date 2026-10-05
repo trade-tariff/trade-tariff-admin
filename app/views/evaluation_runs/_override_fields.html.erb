@@ -8,8 +8,12 @@
         objects — govuk_collection_select's value_method/text_method args call .public_send on
         each item, which breaks on a bare Hash (no #label method, and #key is a real Hash method
         with different arity). Building the [text, value] pairs by hand sidesteps that entirely. %>
+    <%# The selected value must be baked into the options string here, via options_for_select's
+        own second argument — govuk_select's underlying select() helper, given an already-built
+        String (rather than a collection it can call value_method/text_method on), renders it
+        verbatim and has no other way to mark one <option> as selected. %>
     <%= f.govuk_select entry[:name],
-                       options_for_select([["Use default", ""]] + entry[:options].map { |o| [o[:label], o[:key]] }),
+                       options_for_select([["Use default", ""]] + entry[:options].map { |o| [o[:label], o[:key]] }, f.object.public_send(entry[:name])),
                        label: { text: entry[:name].humanize, size: "s" },
                        data: { "run-preview-target": "overrideField", "override-key": entry[:name], action: "change->run-preview#render" } %>
   <% when "integer" %>
