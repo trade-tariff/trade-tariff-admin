@@ -43,6 +43,8 @@ class EvaluationExperimentsController < AuthenticatedController
 
     @experiment.destroy
     redirect_to evaluation_experiments_path, notice: "Experiment deleted successfully."
+  rescue Faraday::ConflictError => e
+    redirect_to evaluation_experiments_path, alert: EvaluationExperiment.conflict_detail(e)
   end
 
 private

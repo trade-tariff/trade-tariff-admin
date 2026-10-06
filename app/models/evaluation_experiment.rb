@@ -18,6 +18,16 @@ class EvaluationExperiment
              :created_by,
              :created_at
 
+  # The backend refuses to delete an experiment while one of its runs is queued or running
+  # (409) and says why in the reply. Falls back to the same wording when the body is empty.
+  DELETE_IN_FLIGHT_MESSAGE = "This experiment cannot be deleted while one of its runs is queued or running. Wait for the run to finish, or cancel it, then try again.".freeze
+
+  def self.conflict_detail(error)
+    body = handle_body(error.response)
+
+    (body.dig("errors", 0, "detail") if body.is_a?(Hash)).presence || DELETE_IN_FLIGHT_MESSAGE
+  end
+
   def overridden?
     Array(configuration_overrides).any?
   end

@@ -195,6 +195,38 @@ RSpec.describe EvaluationExperimentsController, type: :request do
       it { is_expected.to have_http_status :forbidden }
     end
 
+    context "when a run of the experiment is still queued or running" do
+      let(:detail) { "This experiment cannot be deleted while one of its runs is queued or running. Wait for the run to finish, or cancel it, then try again." }
+
+      before do
+        stub_api_request("/search/evaluation/experiments/#{experiment_id}", :delete).and_return(
+          status: 409, headers: json_headers, body: { errors: [{ status: "409", title: "Experiment is in use", detail: }] }.to_json,
+        )
+      end
+
+      it { is_expected.to redirect_to(evaluation_experiments_path) }
+
+      it "explains why it was refused, using the backend's own wording" do
+        rendered_page
+
+        expect(session.dig("flash", "flashes", "alert")).to eq(detail)
+      end
+    end
+
+    context "when the backend refuses without saying why" do
+      before do
+        stub_api_request("/search/evaluation/experiments/#{experiment_id}", :delete).and_return(status: 409, headers: json_headers, body: "")
+      end
+
+      it "falls back to the same wording" do
+        rendered_page
+
+        expect(session.dig("flash", "flashes", "alert")).to eq(
+          "This experiment cannot be deleted while one of its runs is queued or running. Wait for the run to finish, or cancel it, then try again.",
+        )
+      end
+    end
+
     context "when the backend cannot be reached" do
       before { stub_api_request("/search/evaluation/experiments/#{experiment_id}", :delete).and_return(status: 500, headers: json_headers, body: { error: "boom" }.to_json) }
 
