@@ -76,11 +76,16 @@ class EvaluationRunsController < AuthenticatedController
 
     @gold_query_set = fetch_gold_query_set
     respond_to do |format|
-      # Only the HTML page's own title needs the experiment name — fetching it here too would
-      # add an extra backend call to every poll this page makes every 2 seconds for no reason,
-      # since the JSON response never renders it.
+      # The page's own title (show.html.erb) needs the experiment name every time, generating or
+      # not. The JSON poll only needs it once the run stops generating: that's when the status
+      # partial it re-renders starts including the Configuration section, which also reads
+      # @experiment — fetching it on every 2-second poll before then would be a wasted backend
+      # call for a section that isn't shown yet.
       format.html { @experiment = fetch_experiment }
-      format.json { render json: { pending: @run.generating?, html: render_to_string(partial: "status", formats: [:html]) } }
+      format.json do
+        @experiment = fetch_experiment unless @run.generating?
+        render json: { pending: @run.generating?, html: render_to_string(partial: "status", formats: [:html]) }
+      end
     end
   end
 

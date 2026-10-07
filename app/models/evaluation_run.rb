@@ -13,10 +13,23 @@ class EvaluationRun
              :status,
              :gold_query_set_id,
              :effective_configuration,
+             :run_time_overrides,
              :result_count,
              :error_count,
+             :gold_in_top1_count,
+             :gold_in_top5_count,
+             :max_cost_result,
+             :min_cost_result,
+             :max_latency_result,
+             :min_latency_result,
              :error_summary,
-             :started_at
+             :triggered_by,
+             :started_at,
+             :completed_at,
+             :total_cost_usd,
+             :total_latency_seconds,
+             :total_provider_calls,
+             :created_at
 
   def self.launch!(experiment_id:, triggered_by:, run_time_overrides:, idempotency_key:)
     payload = {
@@ -57,6 +70,42 @@ class EvaluationRun
     update(status: "cancelled")
   end
 
+  # One row per key in effective_configuration, tagged with where that value actually came from — a
+  # run-time override (set when this specific run was launched), an experiment default (carried every
+  # time this experiment is launched, unless overridden), or the untouched baseline. Checked in that
+  # order because a key can appear in more than one layer; the layer that actually won is the one
+  # reported, and effective_configuration already holds exactly that value for every key, so there's
+  # no need to separately know what the baseline's value was at the time this run was launched.
+  def configuration_breakdown(experiment)
+    run_overrides = run_time_overrides || {}
+    experiment_overrides = experiment&.configuration_overrides || {}
+
+    (effective_configuration || {}).map do |name, value|
+      source = if run_overrides.key?(name)
+                 "run"
+               elsif experiment_overrides.key?(name)
+                 "experiment"
+               else
+                 "baseline"
+               end
+      { name:, value:, source: }
+    end
+  end
+
+  def top1_rate
+    rate_of(gold_in_top1_count)
+  end
+
+  def top5_rate
+    rate_of(gold_in_top5_count)
+  end
+
+  def average_latency_seconds
+    return nil if result_count.to_i.zero?
+
+    total_latency_seconds.to_f / result_count
+  end
+
   # Override fields are named dynamically from the backend's own schema (OverrideSchema; see
   # EvaluationConfiguration) rather than being declared as EvaluationRun attributes. The launch
   # form always starts from a blank, unpersisted run, so the correct starting value for every
@@ -79,4 +128,12 @@ class EvaluationRun
     attributes.key?(method_name) ? self[method_name] : nil
   end
   # rubocop:enable Style/MissingRespondToMissing
+
+private
+
+  def rate_of(count)
+    return nil if result_count.to_i.zero?
+
+    (count.to_f / result_count) * 100
+  end
 end

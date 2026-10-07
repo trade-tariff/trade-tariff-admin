@@ -423,7 +423,15 @@ RSpec.describe EvaluationRunsController, type: :request do
     end
 
     context "when the run has finished" do
-      let(:run_attributes) { super().merge("status" => "completed", "result_count" => 10) }
+      let(:run_attributes) do
+        super().merge(
+          "status" => "completed", "result_count" => 10, "run_time_overrides" => { "max_rounds" => 3 },
+          "effective_configuration" => { "max_rounds" => 3 },
+          "gold_in_top1_count" => 6, "gold_in_top5_count" => 9, "total_latency_seconds" => 25.0,
+          "max_cost_result" => { "id" => "55", "source_type" => "atar", "source_id" => "600004365", "cost_usd" => "0.05", "latency_seconds" => "3.2" },
+          "min_cost_result" => nil
+        )
+      end
 
       it "does not show a cancel button" do
         expect(Capybara.string(rendered_page.body)).not_to have_button("Cancel run")
@@ -433,6 +441,29 @@ RSpec.describe EvaluationRunsController, type: :request do
         page = Capybara.string(rendered_page.body)
 
         expect(page).to have_css("a.govuk-back-link", text: "Back to experiments")
+      end
+
+      it "shows the full summary and the configuration breakdown, tagged by source" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("dd", text: "10")
+        expect(page).to have_css("td", text: "Max rounds")
+        expect(page).to have_css("td", text: "Overridden for this run")
+      end
+
+      it "shows accuracy and average latency, computed from the run's own counts" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("dd", text: "60%")
+        expect(page).to have_css("dd", text: "90%")
+        expect(page).to have_css("dd", text: "2.5")
+      end
+
+      it "shows the costliest result with a link, and a plain dash when there is no cheapest one" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_link("600004365 ($0.05)", href: evaluation_run_result_path(run_id, "55"))
+        expect(page).to have_css("dd", text: "-")
       end
     end
 
