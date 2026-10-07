@@ -24,6 +24,7 @@ class EvaluationRun
              :error_count,
              :gold_in_top1_count,
              :gold_in_top5_count,
+             :unpriced_result_count,
              :max_cost_result,
              :min_cost_result,
              :max_latency_result,

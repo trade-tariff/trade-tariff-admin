@@ -46,6 +46,14 @@
       <dt class="govuk-summary-list__key">Cost</dt>
       <dd class="govuk-summary-list__value">Total <%= @run.total_cost_usd %>, average <%= evaluation_run_average(@run.total_cost_usd, @run.result_count) %> per result</dd>
     </div>
+    <% if @run.unpriced_result_count.to_i.positive? %>
+      <%# At least one result used a model missing from config/openai_model_pricing.yml in
+          trade-tariff-backend — the totals above still sum whatever partial cost each one
+          managed to price, so they look complete when they may not be. %>
+      <p class="govuk-body govuk-!-font-weight-bold">
+        <%= pluralize(@run.unpriced_result_count, "result") %> have unknown pricing — the total cost above may be understated.
+      </p>
+    <% end %>
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">Latency</dt>
       <dd class="govuk-summary-list__value">Average <%= evaluation_run_seconds(@run.average_latency_seconds) %> per result</dd>

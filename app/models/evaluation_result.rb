@@ -21,6 +21,7 @@ class EvaluationResult
              :latency_seconds,
              :cost_usd,
              :provider_calls,
+             :pricing_known,
              :error,
              :trace
 

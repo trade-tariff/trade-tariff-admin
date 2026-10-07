@@ -467,6 +467,16 @@ RSpec.describe EvaluationRunsController, type: :request do
       end
     end
 
+    context "when the run has finished with some results priced against an untracked model" do
+      let(:run_attributes) { super().merge("status" => "completed", "unpriced_result_count" => 3) }
+
+      it "warns that the total cost may be understated, instead of showing it as if it were complete" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("p", text: "3 results have unknown pricing")
+      end
+    end
+
     context "when the run has finished with a setting from the experiment's own default, not a run-time override" do
       let(:run_attributes) do
         super().merge(

@@ -20,6 +20,7 @@ RSpec.describe EvaluationResultsController, type: :request do
       "gold_in_top5" => true,
       "cost_usd" => "0.0034",
       "latency_seconds" => "1.25",
+      "pricing_known" => true,
       "error" => nil,
       "trace" => { "question_trace" => [
         { "round" => 1, "question" => "What material?", "options" => %w[Rubber Leather], "chosen" => "Rubber", "reasoning" => "oracle text says rubber sole", "attempts" => 1, "simulator_failed" => false, "request_id" => "22222222-2222-2222-2222-222222222222" },
@@ -76,6 +77,25 @@ RSpec.describe EvaluationResultsController, type: :request do
       end
     end
 
+    context "when the cost is not fully known" do
+      # pricing_known is false when at least one of this result's LLM calls used a model missing
+      # from config/openai_model_pricing.yml in trade-tariff-backend — cost_usd still holds
+      # whatever partial total was priceable, but showing that number plainly would look exactly
+      # like a genuinely complete, small cost rather than an understated one.
+      let(:result_attributes) { super().merge("pricing_known" => false) }
+
+      before do
+        stub_api_request("/search/evaluation/results").with(query: hash_including("run_id" => run_id)).and_return(paginated_response([result_attributes.merge("resource_id" => "55")]))
+      end
+
+      it "shows that the cost is unknown, not the misleadingly precise partial figure" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("td", text: "Unknown")
+        expect(page).not_to have_css("td", text: "0.0034")
+      end
+    end
+
     context "when asking for the second page" do
       let(:make_request) { get evaluation_run_results_path(run_id, page: 2) }
 
@@ -121,6 +141,17 @@ RSpec.describe EvaluationResultsController, type: :request do
       expect(page).to have_css("dd", text: "Yes")
       expect(page).to have_css("dd", text: "0.0034")
       expect(page).to have_css("dd", text: "1.25")
+    end
+
+    context "when the cost is not fully known" do
+      let(:result_attributes) { super().merge("pricing_known" => false) }
+
+      it "shows that the cost is unknown, not the misleadingly precise partial figure" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("dd", text: "Unknown")
+        expect(page).not_to have_css("dd", text: "0.0034")
+      end
     end
 
     context "when the source is a synthetic ATaR" do

@@ -27,7 +27,11 @@
   </div>
   <div class="govuk-summary-list__row">
     <dt class="govuk-summary-list__key">Cost</dt>
-    <dd class="govuk-summary-list__value"><%= @result.cost_usd || "-" %></dd>
+    <%# pricing_known false means at least one LLM call behind this result used a model missing
+        from the pricing table — cost_usd still holds whatever partial total was priceable, but
+        showing that number plainly would look like a genuinely complete small cost rather than
+        an understated one. %>
+    <dd class="govuk-summary-list__value"><%= @result.pricing_known ? (@result.cost_usd || "-") : "Unknown" %></dd>
   </div>
   <div class="govuk-summary-list__row">
     <dt class="govuk-summary-list__key">Latency</dt>
