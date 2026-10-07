@@ -3,7 +3,7 @@ RSpec.describe EvaluationRunPolicy do
 
   let(:run) { EvaluationRun.new(resource_id: 9) }
 
-  permissions :create?, :show? do
+  permissions :create?, :show?, :index? do
     it "grants access to technical operator" do
       user = create(:user, :technical_operator)
       expect(policy).to permit(user, run)

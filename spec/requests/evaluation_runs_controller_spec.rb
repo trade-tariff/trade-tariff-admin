@@ -522,5 +522,72 @@ RSpec.describe EvaluationRunsController, type: :request do
       end
     end
   end
+
+  describe "GET #index" do
+    let(:make_request) { get evaluation_runs_path }
+    let(:run_attributes) { { "experiment_id" => 7, "status" => "completed", "gold_query_set_id" => 3, "result_count" => 10, "error_count" => 0, "created_at" => "2026-10-01T09:00:00Z" } }
+
+    def paginated_response(rows, total_count: rows.length)
+      {
+        status: 200,
+        headers: json_headers,
+        body: {
+          data: rows.map { |attributes| { type: "run", id: attributes["resource_id"], attributes: attributes.except("resource_id") } },
+          meta: { pagination: { page: 1, per_page: 20, total_count: } },
+        }.to_json,
+      }
+    end
+
+    before do
+      stub_api_request("/search/evaluation/runs")
+        .and_return(paginated_response([run_attributes.merge("resource_id" => "9")]))
+    end
+
+    it { is_expected.to have_http_status :success }
+
+    it "lists the runs with their status and progress" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_css("h1", text: "Evaluation runs")
+      expect(page).to have_link("Run #9", href: evaluation_run_path("9"))
+      expect(page).to have_css("td", text: "completed")
+      expect(page).to have_css("td", text: "10 of")
+    end
+
+    context "when filtering by status" do
+      let(:make_request) { get evaluation_runs_path(status: "failed") }
+
+      before { stub_api_request("/search/evaluation/runs").with(query: hash_including("status" => "failed")).and_return(paginated_response([])) }
+
+      it { is_expected.to have_http_status :success }
+    end
+
+    context "when asking for the second page" do
+      let(:make_request) { get evaluation_runs_path(page: 2) }
+
+      before { stub_api_request("/search/evaluation/runs").with(query: hash_including("page" => "2")).and_return(paginated_response([run_attributes.merge("resource_id" => "10")], total_count: 21)) }
+
+      it "requests that page from the backend, not an unbounded fetch" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_link("Run #10")
+      end
+    end
+
+    context "when the backend cannot be reached" do
+      before { stub_api_request("/search/evaluation/runs").and_return(status: 500, headers: json_headers, body: { error: "boom" }.to_json) }
+
+      it "shows an empty list and a warning instead of an error page" do
+        expect(rendered_page).to have_http_status(:success)
+        expect(rendered_page.body).to include("Runs could not be loaded. Try again.")
+      end
+    end
+
+    context "when the user is not a technical operator" do
+      let(:current_user) { create(:user, :hmrc_admin) }
+
+      it { is_expected.to have_http_status :forbidden }
+    end
+  end
 end
 # rubocop:enable RSpec/ExampleLength, RSpec/MultipleExpectations, RSpec/MultipleMemoizedHelpers

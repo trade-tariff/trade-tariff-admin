@@ -10,6 +10,12 @@ class EvaluationRunsController < AuthenticatedController
 
   before_action :load_run, only: %i[show cancel]
 
+  def index
+    authorize EvaluationRun, :index?
+
+    @runs = fetch_runs
+  end
+
   def new
     authorize EvaluationRun, :create?
 
@@ -97,6 +103,19 @@ private
 
   def fetch_gold_query_sets
     EvaluationGoldQuerySet.all(per_page: 200)
+  end
+
+  # This local rescue, not the controller-wide rescue_from Faraday::Error above, is deliberate —
+  # the run list degrades to "empty list plus a warning" the same way the experiment list and
+  # gold-query-set list already do, rather than bouncing away entirely the way the launch form
+  # does. A list page has a sensible empty state; the launch form and the single-run show page
+  # don't.
+  def fetch_runs
+    EvaluationRun.all(params.permit(:page, :status, :experiment_id, :from, :to).to_h.symbolize_keys)
+  rescue Faraday::Error => e
+    Rails.logger.error("Failed to fetch runs: #{e.message}")
+    flash.now[:alert] = "Runs could not be loaded. Try again."
+    Kaminari.paginate_array([]).page(1)
   end
 
   def run_params
