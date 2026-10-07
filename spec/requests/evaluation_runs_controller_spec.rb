@@ -467,6 +467,23 @@ RSpec.describe EvaluationRunsController, type: :request do
       end
     end
 
+    context "when the run has finished with a setting from the experiment's own default, not a run-time override" do
+      let(:run_attributes) do
+        super().merge(
+          "status" => "completed", "effective_configuration" => { "max_rounds" => 3, "rrf_k" => 40 },
+          "run_time_overrides" => { "max_rounds" => 3 }
+        )
+      end
+      let(:experiment_attributes) { super().merge("configuration_overrides" => { "rrf_k" => 40 }) }
+
+      it "tags it as the experiment default, not baseline" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("td", text: "Rrf k")
+        expect(page).to have_css("td", text: "From the experiment's own default")
+      end
+    end
+
     context "when the run was cancelled" do
       let(:run_attributes) { super().merge("status" => "cancelled", "result_count" => 1) }
 
@@ -516,6 +533,22 @@ RSpec.describe EvaluationRunsController, type: :request do
       end
     end
 
+    context "with the polling JSON response, when the run has finished with a setting from the experiment's own default" do
+      let(:make_request) { get evaluation_run_path(run_id, format: :json) }
+      let(:run_attributes) { super().merge("status" => "completed", "effective_configuration" => { "rrf_k" => 40 }) }
+      let(:experiment_attributes) { super().merge("configuration_overrides" => { "rrf_k" => 40 }) }
+
+      it "fetches the experiment for this response too, so the Configuration table tags sources correctly" do
+        # Guards the ledger's Task 5 ruling: #show fetches @experiment unconditionally for
+        # HTML, but only `unless @run.generating?` for JSON — if that guard were ever widened
+        # to skip the fetch here too, every experiment-sourced setting would silently mis-tag
+        # as "Baseline, not overridden" instead of raising anything an operator would notice.
+        html = JSON.parse(rendered_page.body)["html"]
+
+        expect(Capybara.string(html)).to have_css("td", text: "From the experiment's own default")
+      end
+    end
+
     context "when the backend cannot be reached" do
       before { stub_api_request("/search/evaluation/runs/#{run_id}").to_raise(Faraday::ConnectionFailed) }
 
@@ -556,7 +589,7 @@ RSpec.describe EvaluationRunsController, type: :request do
 
   describe "GET #index" do
     let(:make_request) { get evaluation_runs_path }
-    let(:run_attributes) { { "experiment_id" => 7, "status" => "completed", "gold_query_set_id" => 3, "result_count" => 10, "error_count" => 0, "created_at" => "2026-10-01T09:00:00Z" } }
+    let(:run_attributes) { { "experiment_id" => 7, "status" => "completed", "gold_query_set_id" => 3, "result_count" => 10, "error_count" => 2, "created_at" => "2026-10-01T09:00:00Z" } }
 
     def paginated_response(rows, total_count: rows.length)
       {
@@ -582,7 +615,11 @@ RSpec.describe EvaluationRunsController, type: :request do
       expect(page).to have_css("h1", text: "Evaluation runs")
       expect(page).to have_link("Run #9", href: evaluation_run_path("9"))
       expect(page).to have_css("td", text: "completed")
-      expect(page).to have_css("td", text: "10 of")
+      # result_count already includes errored results (reconcile_aggregates! counts every
+      # ingested result, successes and failures alike) — "10 done, 2 failed" reads correctly;
+      # the old "result_count of (error_count + result_count)" text would have doubled every
+      # failure into the denominator, showing "10 of 12" for a run that reported on 10.
+      expect(page).to have_css("td", text: "10 done, 2 failed")
     end
 
     context "when filtering by status" do

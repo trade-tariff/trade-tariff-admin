@@ -1,4 +1,4 @@
-# rubocop:disable RSpec/MultipleExpectations
+# rubocop:disable RSpec/MultipleExpectations, RSpec/ExampleLength
 RSpec.describe EvaluationResultsController, type: :request do
   subject(:rendered_page) { make_request && response }
 
@@ -18,6 +18,9 @@ RSpec.describe EvaluationResultsController, type: :request do
       "final_rank" => 1,
       "gold_in_top1" => true,
       "gold_in_top5" => true,
+      "cost_usd" => "0.0034",
+      "latency_seconds" => "1.25",
+      "error" => nil,
       "trace" => { "question_trace" => [
         { "round" => 1, "question" => "What material?", "options" => %w[Rubber Leather], "chosen" => "Rubber", "reasoning" => "oracle text says rubber sole", "attempts" => 1, "simulator_failed" => false, "request_id" => "22222222-2222-2222-2222-222222222222" },
       ] },
@@ -44,12 +47,14 @@ RSpec.describe EvaluationResultsController, type: :request do
 
     it { is_expected.to have_http_status :success }
 
-    it "lists the results with pass/fail" do
+    it "lists the results with pass/fail, cost and latency" do
       page = Capybara.string(rendered_page.body)
 
       expect(page).to have_css("h1", text: "Results")
       expect(page).to have_link("600004365", href: evaluation_run_result_path(run_id, "55"))
       expect(page).to have_css("td", text: "Pass")
+      expect(page).to have_css("td", text: "0.0034")
+      expect(page).to have_css("td", text: "1.25")
     end
 
     context "when asking for the second page" do
@@ -90,10 +95,32 @@ RSpec.describe EvaluationResultsController, type: :request do
       expect(page).to have_css("details", text: "oracle text says rubber sole")
     end
 
-    it "links each round to its own Search Diagnostics page" do
+    it "shows rank, accuracy, cost and latency, not just the bare outcome" do
       page = Capybara.string(rendered_page.body)
 
-      expect(page).to have_link("View search internals", href: search_diagnostic_path("22222222-2222-2222-2222-222222222222"))
+      expect(page).to have_css("dd", text: "1")
+      expect(page).to have_css("dd", text: "Yes")
+      expect(page).to have_css("dd", text: "0.0034")
+      expect(page).to have_css("dd", text: "1.25")
+    end
+
+    context "when the result errored" do
+      let(:result_attributes) { super().merge("final_code" => nil, "final_rank" => nil, "gold_in_top1" => false, "gold_in_top5" => false, "error" => "could not reach the search service: timeout") }
+
+      it "shows the error, not just Fail with no explanation" do
+        expect(rendered_page.body).to include("could not reach the search service: timeout")
+      end
+    end
+
+    it "links each round to its own Search Diagnostics page, asking for the full 7-day lookback" do
+      # Without an explicit lookback_hours, SearchDiagnosticsController#show passes an empty
+      # filter through to the backend, which defaults to RequestLogLookup::DEFAULT_LOOKBACK_HOURS
+      # (72 hours) — far short of the 7 days (168 hours, SearchDiagnostic::MAX_LOOKBACK_HOURS) the
+      # spec promises. An eval run being investigated via this drill-in page is routinely more
+      # than 3 days old, so the link must ask for the full window explicitly.
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_link("View search internals", href: search_diagnostic_path("22222222-2222-2222-2222-222222222222", lookback_hours: SearchDiagnostic::MAX_LOOKBACK_HOURS))
     end
 
     context "when a round has no request_id (recorded before this link existed)" do
@@ -139,4 +166,4 @@ RSpec.describe EvaluationResultsController, type: :request do
     end
   end
 end
-# rubocop:enable RSpec/MultipleExpectations
+# rubocop:enable RSpec/MultipleExpectations, RSpec/ExampleLength

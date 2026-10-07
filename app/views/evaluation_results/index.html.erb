@@ -10,6 +10,8 @@
         <th class="govuk-table__header" scope="col">Returned code</th>
         <th class="govuk-table__header" scope="col">Rank</th>
         <th class="govuk-table__header" scope="col">Outcome</th>
+        <th class="govuk-table__header" scope="col">Cost</th>
+        <th class="govuk-table__header" scope="col">Latency</th>
       </tr>
     </thead>
     <tbody class="govuk-table__body">
@@ -20,6 +22,8 @@
           <td class="govuk-table__cell"><%= result.final_code || "-" %></td>
           <td class="govuk-table__cell"><%= result.final_rank || "-" %></td>
           <td class="govuk-table__cell"><%= result.passed? ? "Pass" : "Fail" %></td>
+          <td class="govuk-table__cell"><%= result.cost_usd || "-" %></td>
+          <td class="govuk-table__cell"><%= result.latency_seconds || "-" %></td>
         </tr>
       <% end %>
     </tbody>

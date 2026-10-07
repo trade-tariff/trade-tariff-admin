@@ -16,7 +16,9 @@
         <tr class="govuk-table__row">
           <td class="govuk-table__cell"><%= link_to "Run ##{run.resource_id}", evaluation_run_path(run), class: "govuk-link" %></td>
           <td class="govuk-table__cell"><%= run.status %></td>
-          <td class="govuk-table__cell"><%= run.result_count %> of <%= run.error_count.to_i + run.result_count.to_i %> so far</td>
+          <%# result_count already includes errored results (reconcile_aggregates! counts every
+              ingested result) — adding error_count again would double-count failures. %>
+          <td class="govuk-table__cell"><%= run.result_count %> done, <%= run.error_count %> failed</td>
           <td class="govuk-table__cell"><%= run.created_at %></td>
         </tr>
       <% end %>

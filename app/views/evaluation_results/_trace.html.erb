@@ -38,7 +38,10 @@
           </td>
           <td class="govuk-table__cell">
             <% if round["request_id"].present? %>
-              <%= link_to "View search internals", search_diagnostic_path(round["request_id"]), class: "govuk-link" %>
+              <%# Without an explicit lookback_hours, the backend defaults to 72 hours — short of
+                  the 7-day window the spec promises, and an eval run under investigation here is
+                  routinely older than 3 days. %>
+              <%= link_to "View search internals", search_diagnostic_path(round["request_id"], lookback_hours: SearchDiagnostic::MAX_LOOKBACK_HOURS), class: "govuk-link" %>
             <% else %>
               -
             <% end %>
