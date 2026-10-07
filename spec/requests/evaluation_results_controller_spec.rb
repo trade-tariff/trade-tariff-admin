@@ -58,6 +58,12 @@ RSpec.describe EvaluationResultsController, type: :request do
       expect(page).to have_css("td", text: "1.25")
     end
 
+    it "links back to the run, so an operator can get back to its summary" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_css("a.govuk-back-link", text: "Back to run")
+    end
+
     context "when the source is a synthetic ATaR" do
       # A synthetic ATaR's source_id is its own small database id (see
       # Evaluation::GoldQuerySource, synthetic_atar.id.to_s) — a bare "8" with no type label
@@ -132,6 +138,12 @@ RSpec.describe EvaluationResultsController, type: :request do
       expect(page).to have_css("td", text: "What material?")
       expect(page).to have_css("td", text: "Rubber")
       expect(page).to have_css("details", text: "oracle text says rubber sole")
+    end
+
+    it "links back to the results list, so an operator can get back to it" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_css("a.govuk-back-link", text: "Back to results")
     end
 
     it "shows rank, accuracy, cost and latency, not just the bare outcome" do
