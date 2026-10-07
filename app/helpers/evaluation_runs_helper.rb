@@ -42,12 +42,15 @@ module EvaluationRunsHelper
   # each a small nested hash (or nil) the run's own serializer already computed. value_field names
   # which of that hash's two numeric fields (cost_usd or latency_seconds) this particular row cares
   # about; the other field exists in the same hash but isn't shown here, since a "most expensive"
-  # row showing its own latency too would be more noise than signal.
+  # row showing its own latency too would be more noise than signal. source_type matters here the
+  # same way it does on the results list — a synthetic ATaR's source_id is its own small database
+  # id (e.g. "8"), indistinguishable from any other short id without the type label alongside it.
   def evaluation_run_outlier_link(run, outlier, value_field)
     result = run.public_send(outlier)
     return "-" if result.nil?
 
-    label = "#{result['source_id']} (#{value_field == 'cost_usd' ? '$' : ''}#{result[value_field]}#{value_field == 'latency_seconds' ? 's' : ''})"
+    value = "#{value_field == 'cost_usd' ? '$' : ''}#{result[value_field]}#{value_field == 'latency_seconds' ? 's' : ''}"
+    label = "#{gold_query_source_label(result['source_type'])} #{result['source_id']} (#{result['expected_code']}, #{value})"
     link_to label, evaluation_run_result_path(run, result["id"])
   end
 
