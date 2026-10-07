@@ -1,0 +1,18 @@
+<h1 class="govuk-heading-l"><%= @result.source_id %></h1>
+
+<dl class="govuk-summary-list govuk-!-margin-bottom-6">
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Expected code</dt>
+    <dd class="govuk-summary-list__value"><%= @result.expected_code %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Returned code</dt>
+    <dd class="govuk-summary-list__value"><%= @result.final_code || "-" %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Outcome</dt>
+    <dd class="govuk-summary-list__value"><%= @result.passed? ? "Pass" : "Fail" %></dd>
+  </div>
+</dl>
+
+<%= render "trace", result: @result %>

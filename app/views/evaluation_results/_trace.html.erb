@@ -1,0 +1,50 @@
+<h2 class="govuk-heading-m">Q&amp;A trace</h2>
+
+<% if result.question_trace.empty? %>
+  <p class="govuk-body">No Q&A trace recorded for this result.</p>
+<% else %>
+  <table class="govuk-table">
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th class="govuk-table__header" scope="col">Round</th>
+        <th class="govuk-table__header" scope="col">Question</th>
+        <th class="govuk-table__header" scope="col">Answer</th>
+        <th class="govuk-table__header" scope="col">Details</th>
+        <th class="govuk-table__header" scope="col">Search internals</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+      <% result.question_trace.each do |round| %>
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell"><%= round["round"] %></td>
+          <td class="govuk-table__cell"><%= round["question"] %></td>
+          <td class="govuk-table__cell">
+            <% if round["simulator_failed"] %>
+              Simulator failed
+            <% else %>
+              <%= round["chosen"] %>
+            <% end %>
+          </td>
+          <td class="govuk-table__cell">
+            <details class="govuk-details govuk-!-margin-bottom-0">
+              <summary class="govuk-details__summary">
+                <span class="govuk-details__summary-text">View reasoning</span>
+              </summary>
+              <div class="govuk-details__text">
+                <p class="govuk-body"><%= round["reasoning"] || "No reasoning recorded." %></p>
+                <p class="govuk-body govuk-!-margin-bottom-0">Attempts: <%= round["attempts"] || "-" %></p>
+              </div>
+            </details>
+          </td>
+          <td class="govuk-table__cell">
+            <% if round["request_id"].present? %>
+              <%= link_to "View search internals", search_diagnostic_path(round["request_id"]), class: "govuk-link" %>
+            <% else %>
+              -
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>
