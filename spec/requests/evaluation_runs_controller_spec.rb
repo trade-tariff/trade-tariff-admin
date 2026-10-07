@@ -589,7 +589,20 @@ RSpec.describe EvaluationRunsController, type: :request do
 
   describe "GET #index" do
     let(:make_request) { get evaluation_runs_path }
-    let(:run_attributes) { { "experiment_id" => 7, "status" => "completed", "gold_query_set_id" => 3, "result_count" => 10, "error_count" => 2, "created_at" => "2026-10-01T09:00:00Z" } }
+    let(:run_attributes) do
+      {
+        "experiment_id" => 7,
+        "experiment_name" => "Baseline",
+        "status" => "completed",
+        "gold_query_set_id" => 3,
+        "result_count" => 10,
+        "error_count" => 2,
+        "total_cost_usd" => "0.0421",
+        "started_at" => "2026-10-01T09:00:00Z",
+        "completed_at" => "2026-10-01T09:05:00Z",
+        "created_at" => "2026-10-01T09:00:00Z",
+      }
+    end
 
     def paginated_response(rows, total_count: rows.length)
       {
@@ -605,21 +618,41 @@ RSpec.describe EvaluationRunsController, type: :request do
     before do
       stub_api_request("/search/evaluation/runs")
         .and_return(paginated_response([run_attributes.merge("resource_id" => "9")]))
+      stub_api_request("/search/evaluation/experiments").with(query: hash_including("per_page" => "200"))
+        .and_return(
+          status: 200,
+          headers: json_headers,
+          body: {
+            data: [{ type: "experiment", id: "7", attributes: experiment_attributes }],
+            meta: { pagination: { page: 1, per_page: 200, total_count: 1 } },
+          }.to_json,
+        )
     end
 
     it { is_expected.to have_http_status :success }
 
-    it "lists the runs with their status and progress" do
+    it "lists the runs with their experiment, status, progress, cost and timing" do
       page = Capybara.string(rendered_page.body)
 
       expect(page).to have_css("h1", text: "Evaluation runs")
       expect(page).to have_link("Run #9", href: evaluation_run_path("9"))
+      expect(page).to have_css("td", text: "Baseline")
       expect(page).to have_css("td", text: "completed")
       # result_count already includes errored results (reconcile_aggregates! counts every
       # ingested result, successes and failures alike) — "10 done, 2 failed" reads correctly;
       # the old "result_count of (error_count + result_count)" text would have doubled every
       # failure into the denominator, showing "10 of 12" for a run that reported on 10.
       expect(page).to have_css("td", text: "10 done, 2 failed")
+      expect(page).to have_css("td", text: "0.0421")
+    end
+
+    it "offers a filter form for status, experiment and date range" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_select("Status", options: ["All", "Queued", "Running", "Completed", "Partially failed", "Failed", "Cancelled"])
+      expect(page).to have_select("Experiment", options: ["All experiments", "Baseline"])
+      expect(page).to have_field("From")
+      expect(page).to have_field("To")
     end
 
     context "when filtering by status" do
@@ -628,6 +661,12 @@ RSpec.describe EvaluationRunsController, type: :request do
       before { stub_api_request("/search/evaluation/runs").with(query: hash_including("status" => "failed")).and_return(paginated_response([])) }
 
       it { is_expected.to have_http_status :success }
+
+      it "pre-selects the chosen status in the filter form" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_select("Status", selected: "Failed")
+      end
     end
 
     context "when asking for the second page" do

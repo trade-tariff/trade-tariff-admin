@@ -1,4 +1,4 @@
-# rubocop:disable RSpec/MultipleExpectations, RSpec/MultipleMemoizedHelpers
+# rubocop:disable RSpec/MultipleExpectations, RSpec/MultipleMemoizedHelpers, RSpec/ExampleLength
 RSpec.describe EvaluationExperimentsController, type: :request do
   subject(:rendered_page) { make_request && response }
 
@@ -58,6 +58,7 @@ RSpec.describe EvaluationExperimentsController, type: :request do
       expect(page).to have_link("Baseline")
       expect(page).to have_css("td", text: "Alex Example")
       expect(page).to have_link("New experiment", href: new_evaluation_experiment_path)
+      expect(page).to have_link("View all runs", href: evaluation_runs_path)
     end
 
     context "when there are no experiments" do
@@ -239,4 +240,4 @@ RSpec.describe EvaluationExperimentsController, type: :request do
     end
   end
 end
-# rubocop:enable RSpec/MultipleExpectations, RSpec/MultipleMemoizedHelpers
+# rubocop:enable RSpec/MultipleExpectations, RSpec/MultipleMemoizedHelpers, RSpec/ExampleLength

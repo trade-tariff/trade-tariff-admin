@@ -7,6 +7,7 @@
 
 <div class="govuk-button-group govuk-!-margin-bottom-6">
   <%= link_to "New experiment", new_evaluation_experiment_path, class: "govuk-button" %>
+  <%= link_to "View all runs", evaluation_runs_path, class: "govuk-button govuk-button--secondary" %>
 </div>
 
 <% if @experiments.any? %>

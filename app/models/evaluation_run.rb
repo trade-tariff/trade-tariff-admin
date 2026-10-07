@@ -9,7 +9,13 @@ class EvaluationRun
   set_collection_path "admin/search/evaluation/runs"
   set_singular_path "admin/search/evaluation/runs/:id"
 
+  # Matches the backend's own EvaluationRun::STATUSES exactly (app/models/evaluation_run.rb in
+  # trade-tariff-backend) — duplicated here since this is a separate Rails process with no shared
+  # constant, used for the run list's status filter.
+  STATUSES = %w[queued running completed partially_failed failed cancelled].freeze
+
   attributes :experiment_id,
+             :experiment_name,
              :status,
              :gold_query_set_id,
              :effective_configuration,

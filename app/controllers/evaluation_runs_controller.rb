@@ -14,6 +14,7 @@ class EvaluationRunsController < AuthenticatedController
     authorize EvaluationRun, :index?
 
     @runs = fetch_runs
+    @experiments = fetch_experiments
   end
 
   def new

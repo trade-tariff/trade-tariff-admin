@@ -1,25 +1,66 @@
 <h1 class="govuk-heading-l">Evaluation runs</h1>
 
+<%= form_with url: evaluation_runs_path, method: :get, local: true do %>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-one-quarter">
+      <div class="govuk-form-group">
+        <%= label_tag :status, "Status", class: "govuk-label" %>
+        <%= select_tag :status,
+                       options_for_select([["All", ""]] + EvaluationRun::STATUSES.map { |status| [status.humanize, status] }, params[:status]),
+                       class: "govuk-select" %>
+      </div>
+    </div>
+    <div class="govuk-grid-column-one-quarter">
+      <div class="govuk-form-group">
+        <%= label_tag :experiment_id, "Experiment", class: "govuk-label" %>
+        <%= select_tag :experiment_id,
+                       options_for_select([["All experiments", ""]] + @experiments.map { |experiment| [experiment.name, experiment.resource_id] }, params[:experiment_id]),
+                       class: "govuk-select" %>
+      </div>
+    </div>
+    <div class="govuk-grid-column-one-quarter">
+      <div class="govuk-form-group">
+        <%= label_tag :from, "From", class: "govuk-label" %>
+        <%= date_field_tag :from, params[:from], class: "govuk-input" %>
+      </div>
+    </div>
+    <div class="govuk-grid-column-one-quarter">
+      <div class="govuk-form-group">
+        <%= label_tag :to, "To", class: "govuk-label" %>
+        <%= date_field_tag :to, params[:to], class: "govuk-input" %>
+      </div>
+    </div>
+  </div>
+
+  <%= submit_tag "Apply filters", class: "govuk-button" %>
+<% end %>
+
 <% if @runs.any? %>
   <table class="govuk-table">
     <caption class="govuk-table__caption govuk-table__caption--s"><%= pluralize(@runs.total_count, "run") %></caption>
     <thead class="govuk-table__head">
       <tr class="govuk-table__row">
         <th class="govuk-table__header" scope="col">Run</th>
+        <th class="govuk-table__header" scope="col">Experiment</th>
         <th class="govuk-table__header" scope="col">Status</th>
         <th class="govuk-table__header" scope="col">Progress</th>
+        <th class="govuk-table__header" scope="col">Cost</th>
         <th class="govuk-table__header" scope="col">Started</th>
+        <th class="govuk-table__header" scope="col">Completed</th>
       </tr>
     </thead>
     <tbody class="govuk-table__body">
       <% @runs.each do |run| %>
         <tr class="govuk-table__row">
           <td class="govuk-table__cell"><%= link_to "Run ##{run.resource_id}", evaluation_run_path(run), class: "govuk-link" %></td>
+          <td class="govuk-table__cell"><%= run.experiment_name %></td>
           <td class="govuk-table__cell"><%= run.status %></td>
           <%# result_count already includes errored results (reconcile_aggregates! counts every
               ingested result) — adding error_count again would double-count failures. %>
           <td class="govuk-table__cell"><%= run.result_count %> done, <%= run.error_count %> failed</td>
-          <td class="govuk-table__cell"><%= run.created_at %></td>
+          <td class="govuk-table__cell"><%= run.total_cost_usd || "-" %></td>
+          <td class="govuk-table__cell"><%= run.started_at || "-" %></td>
+          <td class="govuk-table__cell"><%= run.completed_at || "-" %></td>
         </tr>
       <% end %>
     </tbody>
