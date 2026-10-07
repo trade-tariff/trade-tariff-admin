@@ -13,6 +13,7 @@ RSpec.describe EvaluationGoldQuerySet do
       "atar_percentage" => 60,
       "atar_count" => 4,
       "synthetic_atar_count" => 2,
+      "gold_query_count" => 18,
       "created_by" => "user-123",
       "failures" => [{ "source_type" => "atar", "source_id" => "600000001", "error" => "the model did not return acceptable phrases after 3 attempts" }],
     }
@@ -37,6 +38,12 @@ RSpec.describe EvaluationGoldQuerySet do
   describe "#item_count" do
     it "adds both source types" do
       expect(gold_query_set.item_count).to eq(6)
+    end
+  end
+
+  describe "#gold_query_count" do
+    it "exposes the backend's own total, one gold query per persona per item" do
+      expect(gold_query_set.gold_query_count).to eq(18)
     end
   end
 

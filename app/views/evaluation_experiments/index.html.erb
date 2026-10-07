@@ -1,0 +1,44 @@
+<h1 class="govuk-heading-l">Evaluation experiments</h1>
+
+<p class="govuk-body">
+  An experiment is a saved combination of a gold query set and a default set of configuration
+  overrides. Launch it to start a run.
+</p>
+
+<div class="govuk-button-group govuk-!-margin-bottom-6">
+  <%= link_to "New experiment", new_evaluation_experiment_path, class: "govuk-button" %>
+</div>
+
+<% if @experiments.any? %>
+  <table class="govuk-table">
+    <caption class="govuk-table__caption govuk-table__caption--s"><%= pluralize(@experiments.total_count, "experiment") %></caption>
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th class="govuk-table__header" scope="col">Name</th>
+        <th class="govuk-table__header" scope="col">Overrides</th>
+        <th class="govuk-table__header" scope="col">Created</th>
+        <th class="govuk-table__header" scope="col">Created by</th>
+        <th class="govuk-table__header" scope="col"><span class="govuk-visually-hidden">Actions</span></th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+      <% @experiments.each do |experiment| %>
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell"><%= link_to experiment.name, new_evaluation_run_path(experiment_id: experiment.resource_id), class: "govuk-link" %></td>
+          <td class="govuk-table__cell"><%= experiment.overridden? ? "Has overrides" : "No overrides" %></td>
+          <td class="govuk-table__cell"><%= experiment.formatted_created_at %></td>
+          <td class="govuk-table__cell"><%= experiment.created_by_name %></td>
+          <td class="govuk-table__cell">
+            <%= link_to delete_evaluation_experiment_path(experiment), class: "govuk-link" do %>Delete<span class="govuk-visually-hidden"> experiment <%= experiment.name %></span><% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <%= paginate @experiments %>
+<% else %>
+  <div class="govuk-inset-text">
+    <p class="govuk-body">No experiments yet. Create one to start.</p>
+  </div>
+<% end %>

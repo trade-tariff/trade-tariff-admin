@@ -1,0 +1,40 @@
+<h1 class="govuk-heading-l">Launch an evaluation</h1>
+
+<%
+  experiments_data = @experiments.map { |e|
+    gold_query_set = @gold_query_sets_by_id[e.gold_query_set_id.to_s]
+    [
+      e.resource_id.to_s,
+      {
+        overrides: e.configuration_overrides,
+        gold_query_set_name: gold_query_set&.name || "Unknown (set may have been deleted)",
+        gold_query_set_item_count: gold_query_set&.item_count,
+      },
+    ]
+  }.to_h
+%>
+
+<%= govuk_form_for @run,
+                   as: :evaluation_run,
+                   url: evaluation_runs_path,
+                   html: { data: { controller: "run-preview", "run-preview-baseline-value": @configuration_schema[:baseline].to_json, "run-preview-experiments-value": experiments_data.to_json } } do |f| %>
+  <%= f.govuk_error_summary %>
+  <%= f.hidden_field :idempotency_key, value: @idempotency_key %>
+
+  <%= f.govuk_collection_select :experiment_id,
+                                @experiments,
+                                :resource_id,
+                                :name,
+                                label: { text: "Experiment", size: "s" },
+                                options: { include_blank: "Choose an experiment", selected: params[:experiment_id] || @run.experiment_id },
+                                data: { "run-preview-target": "experimentSelect", action: "change->run-preview#render" } %>
+
+  <%= render "override_fields", f: f, override_schema: @configuration_schema[:allowed_overrides] %>
+
+  <div class="govuk-inset-text" data-run-preview-target="preview">
+    <h2 class="govuk-heading-s">Preview</h2>
+    <p class="govuk-body">Choose an experiment to see what this run will use.</p>
+  </div>
+
+  <%= submit_and_back_buttons f, evaluation_experiments_path, submit: "Launch" %>
+<% end %>
