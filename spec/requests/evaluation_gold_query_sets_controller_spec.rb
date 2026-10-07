@@ -284,6 +284,12 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
         expect(rendered_page.body).not_to include("Reload the page")
       end
 
+      it "shows a spinner, the same visual cue the run tracking page uses" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css(".govuk-notification-banner .app-spinner")
+      end
+
       it "lists the items written so far but offers no edit or delete until it has finished" do
         page = Capybara.string(rendered_page.body)
 

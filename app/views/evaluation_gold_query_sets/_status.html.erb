@@ -1,6 +1,9 @@
 <% if @gold_query_set.generating? %>
   <%= govuk_notification_banner(title_text: "Important") do |banner| %>
-    <% banner.with_heading(text: "This set is still being generated.") %>
+    <% banner.with_heading do %>
+      <span class="app-spinner" aria-hidden="true"></span>
+      This set is still being generated.
+    <% end %>
     <p class="govuk-body">
       <%= @gold_query_set.finished_count %> of <%= @gold_query_set.planned_count %> items are done.
       This page updates on its own — feel free to leave it open.
