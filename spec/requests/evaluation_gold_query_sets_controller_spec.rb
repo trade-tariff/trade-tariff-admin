@@ -275,12 +275,13 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
     context "when the set is still generating" do
       let(:set_attributes) { super().merge("status" => "generating", "generated_count" => 4, "failed_count" => 0, "failures" => []) }
 
-      it "says so, and how far it has got" do
+      it "says so, and how far it has got, without asking the operator to reload" do
         page = Capybara.string(rendered_page.body)
 
         expect(page).to have_css(".govuk-notification-banner", text: "still being generated")
         expect(page).to have_css(".govuk-notification-banner", text: "4 of 10")
         expect(page).not_to have_css("h2", text: "Items that failed")
+        expect(rendered_page.body).not_to include("Reload the page")
       end
 
       it "lists the items written so far but offers no edit or delete until it has finished" do
@@ -289,6 +290,35 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
         expect(page).to have_css("td", text: "6302100000")
         expect(page).not_to have_link("Edit")
         expect(page).not_to have_link("Delete", href: %r{/items/})
+      end
+
+      it "sets up live polling instead of a static page" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("[data-controller='run-tracking'][data-run-tracking-pending-value='true'][data-run-tracking-url-value]")
+      end
+    end
+
+    context "with the polling JSON response while still generating" do
+      let(:make_request) { get evaluation_gold_query_set_path(set_id, format: :json) }
+      let(:set_attributes) { super().merge("status" => "generating", "generated_count" => 4, "failed_count" => 0, "failures" => []) }
+
+      it "says the set is still pending, with the status partial's HTML" do
+        body = JSON.parse(rendered_page.body)
+
+        expect(body["pending"]).to be(true)
+        expect(Capybara.string(body["html"])).to have_css(".govuk-notification-banner", text: "4 of 10")
+      end
+    end
+
+    context "with the polling JSON response once finished" do
+      let(:make_request) { get evaluation_gold_query_set_path(set_id, format: :json) }
+
+      it "says the set is no longer pending, with the finished HTML" do
+        body = JSON.parse(rendered_page.body)
+
+        expect(body["pending"]).to be(false)
+        expect(Capybara.string(body["html"])).to have_css("h2", text: "Items that failed")
       end
     end
 
