@@ -1,7 +1,7 @@
 <h2 class="govuk-heading-m">Q&amp;A trace</h2>
 
 <% if result.question_trace.empty? %>
-  <p class="govuk-body">No Q&A trace recorded for this result.</p>
+  <p class="govuk-body">No clarifying questions were recorded for this result. Either the search converged on the first search round and never needed to ask one, or this result predates AI-1068's Q&amp;A trace recording (every search before then is scored exactly the same way, just without this detail).</p>
 <% else %>
   <table class="govuk-table">
     <thead class="govuk-table__head">

@@ -57,6 +57,25 @@ RSpec.describe EvaluationResultsController, type: :request do
       expect(page).to have_css("td", text: "1.25")
     end
 
+    context "when the source is a synthetic ATaR" do
+      # A synthetic ATaR's source_id is its own small database id (see
+      # Evaluation::GoldQuerySource, synthetic_atar.id.to_s) — a bare "8" with no type label
+      # alongside it is indistinguishable from any other row with an equally short id, and
+      # doesn't tell an operator what they're actually looking at or let them find the real
+      # classification code at a glance.
+      let(:result_attributes) { super().merge("source_type" => "synthetic_atar", "source_id" => "8") }
+
+      before do
+        stub_api_request("/search/evaluation/results").with(query: hash_including("run_id" => run_id)).and_return(paginated_response([result_attributes.merge("resource_id" => "55")]))
+      end
+
+      it "shows the source type alongside the id, not just the bare id" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_link("Synthetic ATaR 8", href: evaluation_run_result_path(run_id, "55"))
+      end
+    end
+
     context "when asking for the second page" do
       let(:make_request) { get evaluation_run_results_path(run_id, page: 2) }
 
@@ -104,6 +123,19 @@ RSpec.describe EvaluationResultsController, type: :request do
       expect(page).to have_css("dd", text: "1.25")
     end
 
+    context "when the source is a synthetic ATaR" do
+      # Same gap as the index page — a synthetic ATaR's source_id is a bare database id (e.g.
+      # "8"), not a real ATaR's long reference number. The h1 showing only that bare id gives an
+      # operator no way to tell what they're looking at.
+      let(:result_attributes) { super().merge("source_type" => "synthetic_atar", "source_id" => "8") }
+
+      it "shows the source type in the heading, not just the bare id" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("h1", text: "Synthetic ATaR 8")
+      end
+    end
+
     context "when the result errored" do
       let(:result_attributes) { super().merge("final_code" => nil, "final_rank" => nil, "gold_in_top1" => false, "gold_in_top5" => false, "error" => "could not reach the search service: timeout") }
 
@@ -137,8 +169,17 @@ RSpec.describe EvaluationResultsController, type: :request do
     context "when the result has no trace" do
       let(:result_attributes) { super().merge("trace" => {}) }
 
-      it "says so plainly, instead of showing an empty table" do
-        expect(rendered_page.body).to include("No Q&A trace recorded for this result.")
+      it "explains why, instead of leaving an operator wondering if something's broken" do
+        # The two real causes read very differently to an operator: a search that converged on
+        # its first round never had a question to record (expected, not a gap); a result from
+        # before this trace-recording feature shipped (AI-1068 Task 3) genuinely has none. A bare
+        # "No Q&A trace recorded" either way reads as a bug report either way to someone who just
+        # watched a different result show a full trace moments earlier. have_css, not a raw body
+        # substring check, since the view's own text wraps across lines in the rendered HTML.
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("p", text: "No clarifying questions were recorded for this result")
+        expect(page).to have_css("p", text: "converged on the first search")
       end
     end
 

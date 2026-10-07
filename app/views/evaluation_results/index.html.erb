@@ -17,7 +17,7 @@
     <tbody class="govuk-table__body">
       <% @results.each do |result| %>
         <tr class="govuk-table__row">
-          <td class="govuk-table__cell"><%= link_to result.source_id, evaluation_run_result_path(params[:evaluation_run_id], result), class: "govuk-link" %></td>
+          <td class="govuk-table__cell"><%= link_to "#{gold_query_source_label(result.source_type)} #{result.source_id}", evaluation_run_result_path(params[:evaluation_run_id], result), class: "govuk-link" %></td>
           <td class="govuk-table__cell"><%= result.expected_code %></td>
           <td class="govuk-table__cell"><%= result.final_code || "-" %></td>
           <td class="govuk-table__cell"><%= result.final_rank || "-" %></td>

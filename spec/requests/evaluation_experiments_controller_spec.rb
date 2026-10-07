@@ -59,6 +59,7 @@ RSpec.describe EvaluationExperimentsController, type: :request do
       expect(page).to have_css("td", text: "Alex Example")
       expect(page).to have_link("New experiment", href: new_evaluation_experiment_path)
       expect(page).to have_link("View all runs", href: evaluation_runs_path)
+      expect(page).to have_link("View runs", href: evaluation_runs_path(experiment_id: experiment_id))
     end
 
     context "when there are no experiments" do
