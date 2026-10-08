@@ -58,6 +58,12 @@ RSpec.describe EvaluationResultsController, type: :request do
       expect(page).to have_css("td", text: "1.25")
     end
 
+    it "shows which persona asked each one, not just the outcome" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_css("td", text: "Generic search")
+    end
+
     it "links back to the run, so an operator can get back to its summary" do
       page = Capybara.string(rendered_page.body)
 
@@ -153,6 +159,12 @@ RSpec.describe EvaluationResultsController, type: :request do
       expect(page).to have_css("dd", text: "Yes")
       expect(page).to have_css("dd", text: "0.0034")
       expect(page).to have_css("dd", text: "1.25")
+    end
+
+    it "shows which persona asked this one" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_css("dd", text: "Generic search")
     end
 
     context "when the cost is not fully known" do
