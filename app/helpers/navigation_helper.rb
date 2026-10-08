@@ -111,6 +111,13 @@ module NavigationHelper
             service: :uk,
           ),
           NavigationItem.new(
+            text: "Evaluations",
+            href: evaluation_experiments_path,
+            policy_class: EvaluationExperiment,
+            active_when: /\/evaluation_experiments|\/evaluation_runs/,
+            service: :uk,
+          ),
+          NavigationItem.new(
             text: "Search dashboard",
             href: search_analytics_path,
             policy_class: SearchAnalytics,

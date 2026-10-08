@@ -1,5 +1,5 @@
 module "admin-job" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.0.1"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.3.1"
 
   region = var.region
 
@@ -23,6 +23,10 @@ module "admin-job" {
   service_environment_config = local.admin_service_env_vars
 
   enable_ecs_exec = true
+
+  readonly_root_filesystem = true
+  writable_paths           = local.writable_paths
+  container_user           = local.container_user
 
   has_autoscaler = false
   max_capacity   = 1

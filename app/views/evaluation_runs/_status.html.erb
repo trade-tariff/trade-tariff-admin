@@ -1,0 +1,35 @@
+<%# The real total a run works through: one gold query per persona per item, not the number of
+    items (atar_count/synthetic_atar_count deliberately deduplicate by item, for the "N items"
+    display elsewhere) — see EvaluationGoldQuerySet.gold_query_counts on the backend. %>
+<% total_items = @gold_query_set ? @gold_query_set.gold_query_count.to_i : 0 %>
+
+<% if @run.generating? %>
+  <div class="govuk-notification-banner" role="status" aria-live="polite">
+    <div class="govuk-notification-banner__content">
+      <p class="govuk-notification-banner__heading">
+        <span class="app-spinner" data-run-tracking-target="spinner" aria-hidden="true"></span>
+        <%= @run.status.capitalize %>: <%= @run.finished_count %> of <%= total_items %> done
+      </p>
+      <% if (eta = evaluation_run_eta(@run, total_items)) %>
+        <p class="govuk-body"><%= eta %></p>
+      <% end %>
+      <% if evaluation_run_running_a_while?(@run) %>
+        <p class="govuk-body">This run has been going for a while. This page will keep updating — feel free to leave it open.</p>
+      <% end %>
+      <p class="govuk-body" data-run-tracking-target="message"></p>
+    </div>
+  </div>
+
+  <%= button_to "Cancel run", cancel_evaluation_run_path(@run), class: "govuk-button govuk-button--warning" %>
+<% else %>
+  <%# This whole partial, not show.html.erb, is what the tracking page's live polling replaces
+      (run_tracking_controller.js sets statusTarget.innerHTML from it on every poll) — a back
+      link placed in show.html.erb instead would never appear for a run that finishes while the
+      operator is already watching it, only for one loaded fresh after it was already done. %>
+  <%= link_to "Back to experiments", evaluation_experiments_path, class: "govuk-back-link" %>
+
+  <p class="govuk-body">Finished: <%= @run.status.humanize %>. <%= @run.finished_count %> of <%= total_items %> done.</p>
+  <% if @run.error_summary.present? %>
+    <p class="govuk-body"><%= @run.error_summary %></p>
+  <% end %>
+<% end %>

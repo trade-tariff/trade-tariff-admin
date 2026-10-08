@@ -54,7 +54,7 @@ RUN rm -rf node_modules log tmp && \
 # Build runtime image
 FROM ruby:${RUBY_VERSION}-alpine${ALPINE_VERSION} AS production
 
-RUN apk add --update --no-cache tzdata postgresql-dev nodejs && \
+RUN apk add --update --no-cache tzdata postgresql-dev nodejs socat && \
   cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
   echo "Europe/London" > /etc/timezone && \
   # Remove default gem(specs) to clear CVEs
@@ -77,8 +77,10 @@ COPY --from=builder /app /app
 COPY --from=builder /usr/local/bundle/ /usr/local/bundle/
 
 RUN bundle config set without 'development test'
-RUN addgroup -S tariff && \
-  adduser -S tariff -G tariff && \
+# Pin uid/gid so the ecs-service module's writable-volume permissions init container
+# can chown the read-only-root-filesystem mounts to a known id (container_user).
+RUN addgroup -S -g 1000 tariff && \
+  adduser -S -u 1000 -G tariff tariff && \
   chown -R tariff:tariff /app && \
   chown -R tariff:tariff /usr/local/bundle
 

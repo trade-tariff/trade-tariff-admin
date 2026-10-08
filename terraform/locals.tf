@@ -35,4 +35,16 @@ locals {
   ]
 
   admin_service_env_vars = concat(local.secret_env_vars, local.database_env_vars, local.ecs_tls_env_vars)
+
+  # Paths the image must still be able to write to under a read-only root filesystem.
+  # WORKDIR is /app, so Rails.root-relative paths resolve there.
+  #   /tmp      - ClientBuilder writes the backend TLS cert to /tmp/backend.crt
+  #   /app/tmp  - bootsnap, loaded in config/boot.rb; without it the app fails to boot
+  #   /app/log  - Rails log directory; logs go to stdout, kept for parity with other services
+  writable_paths = ["/tmp", "/app/tmp", "/app/log"]
+
+  # Matches the uid/gid pinned in the Dockerfile. The ecs-service module adds an init
+  # container that chowns the writable mounts to this user, because Fargate mounts them
+  # root-owned and the app runs as the non-root `tariff`.
+  container_user = "1000:1000"
 }

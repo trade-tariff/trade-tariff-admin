@@ -1,0 +1,9 @@
+<div data-controller="run-tracking"
+     data-run-tracking-pending-value="<%= @run.generating? %>"
+     data-run-tracking-url-value="<%= evaluation_run_path(@run, format: :json) %>">
+  <h1 class="govuk-heading-l"><%= @experiment.name %> — Run ID: <%= @run.resource_id %></h1>
+
+  <div data-run-tracking-target="status" role="status" aria-live="polite">
+    <%= render "status" %>
+  </div>
+</div>
