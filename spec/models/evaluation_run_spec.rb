@@ -114,4 +114,31 @@ RSpec.describe EvaluationRun do
       expect(run.average_latency_seconds).to be_nil
     end
   end
+
+  describe "#persona_rows" do
+    # rubocop:disable RSpec/ExampleLength -- one coherent check of the whole breakdown shape; splitting
+    # the fixture setup from the eq assertion would just scatter one scenario across two examples.
+    it "breaks each persona out with its own top1, top5, cost and latency numbers, sorted by persona" do
+      run = described_class.new(
+        "persona_breakdown" => {
+          "emu_specific" => { "result_count" => 1, "gold_in_top1_count" => 1, "gold_in_top5_count" => 1, "total_cost_usd" => 0.05, "total_latency_seconds" => 1.0 },
+          "emu_generic" => { "result_count" => 2, "gold_in_top1_count" => 1, "gold_in_top5_count" => 2, "total_cost_usd" => 0.03, "total_latency_seconds" => 5.0 },
+        },
+      )
+
+      expect(run.persona_rows).to eq(
+        [
+          { persona: "emu_generic", result_count: 2, top1_rate: 50.0, top5_rate: 100.0, total_cost_usd: 0.03, average_latency_seconds: 2.5 },
+          { persona: "emu_specific", result_count: 1, top1_rate: 100.0, top5_rate: 100.0, total_cost_usd: 0.05, average_latency_seconds: 1.0 },
+        ],
+      )
+    end
+    # rubocop:enable RSpec/ExampleLength
+
+    it "is an empty list, not an error, when the run has no persona breakdown yet" do
+      run = described_class.new("persona_breakdown" => {})
+
+      expect(run.persona_rows).to eq([])
+    end
+  end
 end

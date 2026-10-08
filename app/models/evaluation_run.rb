@@ -25,6 +25,7 @@ class EvaluationRun
              :gold_in_top1_count,
              :gold_in_top5_count,
              :unpriced_result_count,
+             :persona_breakdown,
              :max_cost_result,
              :min_cost_result,
              :max_latency_result,
@@ -100,17 +101,37 @@ class EvaluationRun
   end
 
   def top1_rate
-    rate_of(gold_in_top1_count)
+    rate_of(gold_in_top1_count, result_count)
   end
 
   def top5_rate
-    rate_of(gold_in_top5_count)
+    rate_of(gold_in_top5_count, result_count)
   end
 
   def average_latency_seconds
-    return nil if result_count.to_i.zero?
+    average_of(total_latency_seconds, result_count)
+  end
 
-    total_latency_seconds.to_f / result_count
+  # One row per persona present in persona_breakdown (the backend's own EvaluationRun#reconcile_aggregates!
+  # groups by whatever persona string is actually on each result — see that method in
+  # trade-tariff-backend — so there's no fixed list to iterate here either), each carrying the same
+  # top1_rate/top5_rate/average_latency_seconds shape as the run's own totals above, just scoped to
+  # that one persona's result_count instead of the whole run's — so the view can show which persona
+  # is doing best or worst without repeating the rate/average maths per row. Sorted by persona name
+  # for a stable display order, since persona_breakdown's own key order depends on which persona's
+  # results happened to be grouped first.
+  def persona_rows
+    (persona_breakdown || {}).sort_by { |persona, _stats| persona }.map do |persona, stats|
+      count = stats["result_count"].to_i
+      {
+        persona:,
+        result_count: count,
+        top1_rate: rate_of(stats["gold_in_top1_count"], count),
+        top5_rate: rate_of(stats["gold_in_top5_count"], count),
+        total_cost_usd: stats["total_cost_usd"],
+        average_latency_seconds: average_of(stats["total_latency_seconds"], count),
+      }
+    end
   end
 
   # Override fields are named dynamically from the backend's own schema (OverrideSchema; see
@@ -138,9 +159,15 @@ class EvaluationRun
 
 private
 
-  def rate_of(count)
-    return nil if result_count.to_i.zero?
+  def rate_of(numerator, total)
+    return nil if total.to_i.zero?
 
-    (count.to_f / result_count) * 100
+    (numerator.to_f / total) * 100
+  end
+
+  def average_of(total, count)
+    return nil if count.to_i.zero?
+
+    total.to_f / count
   end
 end

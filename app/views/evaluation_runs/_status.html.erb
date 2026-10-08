@@ -92,6 +92,35 @@
     </div>
   </dl>
 
+  <% if @run.persona_rows.any? %>
+    <h2 class="govuk-heading-m">By persona</h2>
+    <p class="govuk-body">Compare which persona's accuracy, cost or latency is best or worst within this run.</p>
+    <table class="govuk-table">
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th class="govuk-table__header" scope="col">Persona</th>
+          <th class="govuk-table__header" scope="col">Results</th>
+          <th class="govuk-table__header" scope="col">Top 1</th>
+          <th class="govuk-table__header" scope="col">Top 5</th>
+          <th class="govuk-table__header" scope="col">Average cost</th>
+          <th class="govuk-table__header" scope="col">Average latency</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        <% @run.persona_rows.each do |row| %>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell"><%= gold_query_persona_label(row[:persona]) %></td>
+            <td class="govuk-table__cell"><%= row[:result_count] %></td>
+            <td class="govuk-table__cell"><%= evaluation_run_rate(row[:top1_rate]) %></td>
+            <td class="govuk-table__cell"><%= evaluation_run_rate(row[:top5_rate]) %></td>
+            <td class="govuk-table__cell"><%= evaluation_run_average(row[:total_cost_usd], row[:result_count]) %></td>
+            <td class="govuk-table__cell"><%= evaluation_run_seconds(row[:average_latency_seconds]) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+
   <%= render "configuration", run: @run, experiment: @experiment %>
 
   <%= link_to "View results", evaluation_run_results_path(@run), class: "govuk-button govuk-button--secondary" %>

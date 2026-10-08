@@ -467,6 +467,27 @@ RSpec.describe EvaluationRunsController, type: :request do
       end
     end
 
+    context "when the run has finished with a persona breakdown" do
+      let(:run_attributes) do
+        super().merge(
+          "status" => "completed",
+          "persona_breakdown" => {
+            "emu_generic" => { "result_count" => 2, "gold_in_top1_count" => 1, "gold_in_top5_count" => 2, "total_cost_usd" => 0.03, "total_latency_seconds" => 5.0 },
+            "emu_specific" => { "result_count" => 1, "gold_in_top1_count" => 1, "gold_in_top5_count" => 1, "total_cost_usd" => 0.05, "total_latency_seconds" => 1.0 },
+          },
+        )
+      end
+
+      it "shows each persona's own accuracy, cost and latency, so one persona can be compared against another" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("td", text: "Generic search")
+        expect(page).to have_css("td", text: "Specific search")
+        expect(page).to have_css("td", text: "50%")
+        expect(page).to have_css("td", text: "2.5")
+      end
+    end
+
     context "when the run has finished with some results priced against an untracked model" do
       let(:run_attributes) { super().merge("status" => "completed", "unpriced_result_count" => 3) }
 
