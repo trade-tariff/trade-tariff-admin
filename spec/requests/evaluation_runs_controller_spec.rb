@@ -423,7 +423,15 @@ RSpec.describe EvaluationRunsController, type: :request do
     end
 
     context "when the run has finished" do
-      let(:run_attributes) { super().merge("status" => "completed", "result_count" => 10) }
+      let(:run_attributes) do
+        super().merge(
+          "status" => "completed", "result_count" => 10, "run_time_overrides" => { "max_rounds" => 3 },
+          "effective_configuration" => { "max_rounds" => 3 },
+          "gold_in_top1_count" => 6, "gold_in_top5_count" => 9, "total_latency_seconds" => 25.0,
+          "max_cost_result" => { "id" => "55", "source_type" => "atar", "source_id" => "600004365", "expected_code" => "6404199000", "cost_usd" => "0.05", "latency_seconds" => "3.2" },
+          "min_cost_result" => nil
+        )
+      end
 
       it "does not show a cancel button" do
         expect(Capybara.string(rendered_page.body)).not_to have_button("Cancel run")
@@ -433,6 +441,77 @@ RSpec.describe EvaluationRunsController, type: :request do
         page = Capybara.string(rendered_page.body)
 
         expect(page).to have_css("a.govuk-back-link", text: "Back to experiments")
+      end
+
+      it "shows the full summary and the configuration breakdown, tagged by source" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("dd", text: "10")
+        expect(page).to have_css("td", text: "Max rounds")
+        expect(page).to have_css("td", text: "Overridden for this run")
+      end
+
+      it "shows accuracy and average latency, computed from the run's own counts" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("dd", text: "60%")
+        expect(page).to have_css("dd", text: "90%")
+        expect(page).to have_css("dd", text: "2.5")
+      end
+
+      it "shows the costliest result with its type and commodity code, and a plain dash when there is no cheapest one" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_link("ATaR 600004365 (6404199000, $0.05)", href: evaluation_run_result_path(run_id, "55"))
+        expect(page).to have_css("dd", text: "-")
+      end
+    end
+
+    context "when the run has finished with a persona breakdown" do
+      let(:run_attributes) do
+        super().merge(
+          "status" => "completed",
+          "persona_breakdown" => {
+            "emu_generic" => { "result_count" => 2, "gold_in_top1_count" => 1, "gold_in_top5_count" => 2, "total_cost_usd" => 0.03, "total_latency_seconds" => 5.0 },
+            "emu_specific" => { "result_count" => 1, "gold_in_top1_count" => 1, "gold_in_top5_count" => 1, "total_cost_usd" => 0.05, "total_latency_seconds" => 1.0 },
+          },
+        )
+      end
+
+      it "shows each persona's own accuracy, cost and latency, so one persona can be compared against another" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("td", text: "Generic search")
+        expect(page).to have_css("td", text: "Specific search")
+        expect(page).to have_css("td", text: "50%")
+        expect(page).to have_css("td", text: "2.5")
+      end
+    end
+
+    context "when the run has finished with some results priced against an untracked model" do
+      let(:run_attributes) { super().merge("status" => "completed", "unpriced_result_count" => 3) }
+
+      it "warns that the total cost may be understated, instead of showing it as if it were complete" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("p", text: "3 results have unknown pricing")
+      end
+    end
+
+    context "when the run has finished with a setting from the experiment's own default, not a run-time override" do
+      let(:run_attributes) do
+        super().merge(
+          "status" => "completed", "effective_configuration" => { "max_rounds" => 3, "rrf_k" => 40 },
+          "run_time_overrides" => { "max_rounds" => 3 }
+        )
+      end
+      let(:experiment_attributes) { super().merge("configuration_overrides" => { "rrf_k" => 40 }) }
+
+      it "tags it as the experiment default, not baseline" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("td", text: "Rrf k")
+        expect(page).to have_css("td", text: "From the experiment's own default")
       end
     end
 
@@ -485,6 +564,22 @@ RSpec.describe EvaluationRunsController, type: :request do
       end
     end
 
+    context "with the polling JSON response, when the run has finished with a setting from the experiment's own default" do
+      let(:make_request) { get evaluation_run_path(run_id, format: :json) }
+      let(:run_attributes) { super().merge("status" => "completed", "effective_configuration" => { "rrf_k" => 40 }) }
+      let(:experiment_attributes) { super().merge("configuration_overrides" => { "rrf_k" => 40 }) }
+
+      it "fetches the experiment for this response too, so the Configuration table tags sources correctly" do
+        # Guards the ledger's Task 5 ruling: #show fetches @experiment unconditionally for
+        # HTML, but only `unless @run.generating?` for JSON — if that guard were ever widened
+        # to skip the fetch here too, every experiment-sourced setting would silently mis-tag
+        # as "Baseline, not overridden" instead of raising anything an operator would notice.
+        html = JSON.parse(rendered_page.body)["html"]
+
+        expect(Capybara.string(html)).to have_css("td", text: "From the experiment's own default")
+      end
+    end
+
     context "when the backend cannot be reached" do
       before { stub_api_request("/search/evaluation/runs/#{run_id}").to_raise(Faraday::ConnectionFailed) }
 
@@ -520,6 +615,116 @@ RSpec.describe EvaluationRunsController, type: :request do
         expect(rendered_page).to redirect_to(evaluation_run_path(run_id))
         expect(a_request(:patch, %r{/runs/#{run_id}})).not_to have_been_made
       end
+    end
+  end
+
+  describe "GET #index" do
+    let(:make_request) { get evaluation_runs_path }
+    let(:run_attributes) do
+      {
+        "experiment_id" => 7,
+        "experiment_name" => "Baseline",
+        "status" => "completed",
+        "gold_query_set_id" => 3,
+        "result_count" => 10,
+        "error_count" => 2,
+        "total_cost_usd" => "0.0421",
+        "started_at" => "2026-10-01T09:00:00Z",
+        "completed_at" => "2026-10-01T09:05:00Z",
+        "created_at" => "2026-10-01T09:00:00Z",
+      }
+    end
+
+    def paginated_response(rows, total_count: rows.length)
+      {
+        status: 200,
+        headers: json_headers,
+        body: {
+          data: rows.map { |attributes| { type: "run", id: attributes["resource_id"], attributes: attributes.except("resource_id") } },
+          meta: { pagination: { page: 1, per_page: 20, total_count: } },
+        }.to_json,
+      }
+    end
+
+    before do
+      stub_api_request("/search/evaluation/runs")
+        .and_return(paginated_response([run_attributes.merge("resource_id" => "9")]))
+      stub_api_request("/search/evaluation/experiments").with(query: hash_including("per_page" => "200"))
+        .and_return(
+          status: 200,
+          headers: json_headers,
+          body: {
+            data: [{ type: "experiment", id: "7", attributes: experiment_attributes }],
+            meta: { pagination: { page: 1, per_page: 200, total_count: 1 } },
+          }.to_json,
+        )
+    end
+
+    it { is_expected.to have_http_status :success }
+
+    it "lists the runs with their experiment, status, progress, cost and timing" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_css("h1", text: "Evaluation runs")
+      expect(page).to have_link("Run #9", href: evaluation_run_path("9"))
+      expect(page).to have_css("td", text: "Baseline")
+      expect(page).to have_css("td", text: "completed")
+      # result_count already includes errored results (reconcile_aggregates! counts every
+      # ingested result, successes and failures alike) — "10 done, 2 failed" reads correctly;
+      # the old "result_count of (error_count + result_count)" text would have doubled every
+      # failure into the denominator, showing "10 of 12" for a run that reported on 10.
+      expect(page).to have_css("td", text: "10 done, 2 failed")
+      expect(page).to have_css("td", text: "0.0421")
+    end
+
+    it "offers a filter form for status, experiment and date range" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_select("Status", options: ["All", "Queued", "Running", "Completed", "Partially failed", "Failed", "Cancelled"])
+      expect(page).to have_select("Experiment", options: ["All experiments", "Baseline"])
+      expect(page).to have_field("From")
+      expect(page).to have_field("To")
+    end
+
+    context "when filtering by status" do
+      let(:make_request) { get evaluation_runs_path(status: "failed") }
+
+      before { stub_api_request("/search/evaluation/runs").with(query: hash_including("status" => "failed")).and_return(paginated_response([])) }
+
+      it { is_expected.to have_http_status :success }
+
+      it "pre-selects the chosen status in the filter form" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_select("Status", selected: "Failed")
+      end
+    end
+
+    context "when asking for the second page" do
+      let(:make_request) { get evaluation_runs_path(page: 2) }
+
+      before { stub_api_request("/search/evaluation/runs").with(query: hash_including("page" => "2")).and_return(paginated_response([run_attributes.merge("resource_id" => "10")], total_count: 21)) }
+
+      it "requests that page from the backend, not an unbounded fetch" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_link("Run #10")
+      end
+    end
+
+    context "when the backend cannot be reached" do
+      before { stub_api_request("/search/evaluation/runs").and_return(status: 500, headers: json_headers, body: { error: "boom" }.to_json) }
+
+      it "shows an empty list and a warning instead of an error page" do
+        expect(rendered_page).to have_http_status(:success)
+        expect(rendered_page.body).to include("Runs could not be loaded. Try again.")
+      end
+    end
+
+    context "when the user is not a technical operator" do
+      let(:current_user) { create(:user, :hmrc_admin) }
+
+      it { is_expected.to have_http_status :forbidden }
     end
   end
 end

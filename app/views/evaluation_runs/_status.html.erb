@@ -28,8 +28,100 @@
       operator is already watching it, only for one loaded fresh after it was already done. %>
   <%= link_to "Back to experiments", evaluation_experiments_path, class: "govuk-back-link" %>
 
-  <p class="govuk-body">Finished: <%= @run.status.humanize %>. <%= @run.finished_count %> of <%= total_items %> done.</p>
+  <h2 class="govuk-heading-m">Summary</h2>
+  <dl class="govuk-summary-list">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Status</dt>
+      <dd class="govuk-summary-list__value"><%= @run.status.humanize %></dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Results</dt>
+      <dd class="govuk-summary-list__value"><%= @run.finished_count %> of <%= total_items %> done, <%= @run.error_count %> failed</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Accuracy</dt>
+      <dd class="govuk-summary-list__value"><%= evaluation_run_rate(@run.top1_rate) %> in top 1, <%= evaluation_run_rate(@run.top5_rate) %> in top 5</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Cost</dt>
+      <dd class="govuk-summary-list__value">Total <%= @run.total_cost_usd %>, average <%= evaluation_run_average(@run.total_cost_usd, @run.result_count) %> per result</dd>
+    </div>
+    <% if @run.unpriced_result_count.to_i.positive? %>
+      <%# At least one result used a model missing from config/openai_model_pricing.yml in
+          trade-tariff-backend — the totals above still sum whatever partial cost each one
+          managed to price, so they look complete when they may not be. %>
+      <p class="govuk-body govuk-!-font-weight-bold">
+        <%= pluralize(@run.unpriced_result_count, "result") %> have unknown pricing — the total cost above may be understated.
+      </p>
+    <% end %>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Latency</dt>
+      <dd class="govuk-summary-list__value">Average <%= evaluation_run_seconds(@run.average_latency_seconds) %> per result</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Started</dt>
+      <dd class="govuk-summary-list__value"><%= @run.started_at %></dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Completed</dt>
+      <dd class="govuk-summary-list__value"><%= @run.completed_at %></dd>
+    </div>
+  </dl>
   <% if @run.error_summary.present? %>
     <p class="govuk-body"><%= @run.error_summary %></p>
   <% end %>
+
+  <h2 class="govuk-heading-m">Extremes</h2>
+  <p class="govuk-body">Worth a look before paging through every result individually.</p>
+  <dl class="govuk-summary-list">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Most expensive</dt>
+      <dd class="govuk-summary-list__value"><%= evaluation_run_outlier_link(@run, :max_cost_result, "cost_usd") %></dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Least expensive</dt>
+      <dd class="govuk-summary-list__value"><%= evaluation_run_outlier_link(@run, :min_cost_result, "cost_usd") %></dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Slowest</dt>
+      <dd class="govuk-summary-list__value"><%= evaluation_run_outlier_link(@run, :max_latency_result, "latency_seconds") %></dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Fastest</dt>
+      <dd class="govuk-summary-list__value"><%= evaluation_run_outlier_link(@run, :min_latency_result, "latency_seconds") %></dd>
+    </div>
+  </dl>
+
+  <% if @run.persona_rows.any? %>
+    <h2 class="govuk-heading-m">By persona</h2>
+    <p class="govuk-body">Compare which persona's accuracy, cost or latency is best or worst within this run.</p>
+    <table class="govuk-table">
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th class="govuk-table__header" scope="col">Persona</th>
+          <th class="govuk-table__header" scope="col">Results</th>
+          <th class="govuk-table__header" scope="col">Top 1</th>
+          <th class="govuk-table__header" scope="col">Top 5</th>
+          <th class="govuk-table__header" scope="col">Average cost</th>
+          <th class="govuk-table__header" scope="col">Average latency</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        <% @run.persona_rows.each do |row| %>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell"><%= gold_query_persona_label(row[:persona]) %></td>
+            <td class="govuk-table__cell"><%= row[:result_count] %></td>
+            <td class="govuk-table__cell"><%= evaluation_run_rate(row[:top1_rate]) %></td>
+            <td class="govuk-table__cell"><%= evaluation_run_rate(row[:top5_rate]) %></td>
+            <td class="govuk-table__cell"><%= evaluation_run_average(row[:total_cost_usd], row[:result_count]) %></td>
+            <td class="govuk-table__cell"><%= evaluation_run_seconds(row[:average_latency_seconds]) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+
+  <%= render "configuration", run: @run, experiment: @experiment %>
+
+  <%= link_to "View results", evaluation_run_results_path(@run), class: "govuk-button govuk-button--secondary" %>
 <% end %>

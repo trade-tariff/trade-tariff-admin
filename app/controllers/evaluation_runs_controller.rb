@@ -10,6 +10,13 @@ class EvaluationRunsController < AuthenticatedController
 
   before_action :load_run, only: %i[show cancel]
 
+  def index
+    authorize EvaluationRun, :index?
+
+    @runs = fetch_runs
+    @experiments = fetch_experiments
+  end
+
   def new
     authorize EvaluationRun, :create?
 
@@ -70,11 +77,16 @@ class EvaluationRunsController < AuthenticatedController
 
     @gold_query_set = fetch_gold_query_set
     respond_to do |format|
-      # Only the HTML page's own title needs the experiment name — fetching it here too would
-      # add an extra backend call to every poll this page makes every 2 seconds for no reason,
-      # since the JSON response never renders it.
+      # The page's own title (show.html.erb) needs the experiment name every time, generating or
+      # not. The JSON poll only needs it once the run stops generating: that's when the status
+      # partial it re-renders starts including the Configuration section, which also reads
+      # @experiment — fetching it on every 2-second poll before then would be a wasted backend
+      # call for a section that isn't shown yet.
       format.html { @experiment = fetch_experiment }
-      format.json { render json: { pending: @run.generating?, html: render_to_string(partial: "status", formats: [:html]) } }
+      format.json do
+        @experiment = fetch_experiment unless @run.generating?
+        render json: { pending: @run.generating?, html: render_to_string(partial: "status", formats: [:html]) }
+      end
     end
   end
 
@@ -97,6 +109,19 @@ private
 
   def fetch_gold_query_sets
     EvaluationGoldQuerySet.all(per_page: 200)
+  end
+
+  # This local rescue, not the controller-wide rescue_from Faraday::Error above, is deliberate —
+  # the run list degrades to "empty list plus a warning" the same way the experiment list and
+  # gold-query-set list already do, rather than bouncing away entirely the way the launch form
+  # does. A list page has a sensible empty state; the launch form and the single-run show page
+  # don't.
+  def fetch_runs
+    EvaluationRun.all(params.permit(:page, :status, :experiment_id, :from, :to).to_h.symbolize_keys)
+  rescue Faraday::Error => e
+    Rails.logger.error("Failed to fetch runs: #{e.message}")
+    flash.now[:alert] = "Runs could not be loaded. Try again."
+    Kaminari.paginate_array([]).page(1)
   end
 
   def run_params

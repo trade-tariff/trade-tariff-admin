@@ -1,0 +1,54 @@
+<%= link_to "Back to results", evaluation_run_results_path(params[:evaluation_run_id]), class: "govuk-back-link" %>
+
+<h1 class="govuk-heading-l"><%= gold_query_source_label(@result.source_type) %> <%= @result.source_id %></h1>
+
+<dl class="govuk-summary-list govuk-!-margin-bottom-6">
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Persona</dt>
+    <dd class="govuk-summary-list__value"><%= gold_query_persona_label(@result.persona) %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Expected code</dt>
+    <dd class="govuk-summary-list__value"><%= @result.expected_code %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Returned code</dt>
+    <dd class="govuk-summary-list__value"><%= @result.final_code || "-" %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Rank</dt>
+    <dd class="govuk-summary-list__value"><%= @result.final_rank || "-" %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Outcome</dt>
+    <dd class="govuk-summary-list__value"><%= @result.passed? ? "Pass" : "Fail" %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">In top 1</dt>
+    <dd class="govuk-summary-list__value"><%= @result.gold_in_top1 ? "Yes" : "No" %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">In top 5</dt>
+    <dd class="govuk-summary-list__value"><%= @result.gold_in_top5 ? "Yes" : "No" %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Cost</dt>
+    <%# pricing_known false means at least one LLM call behind this result used a model missing
+        from the pricing table — cost_usd still holds whatever partial total was priceable, but
+        showing that number plainly would look like a genuinely complete small cost rather than
+        an understated one. %>
+    <dd class="govuk-summary-list__value"><%= @result.pricing_known ? (@result.cost_usd || "-") : "Unknown" %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Latency</dt>
+    <dd class="govuk-summary-list__value"><%= @result.latency_seconds || "-" %></dd>
+  </div>
+  <% if @result.error.present? %>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Error</dt>
+      <dd class="govuk-summary-list__value"><%= @result.error %></dd>
+    </div>
+  <% end %>
+</dl>
+
+<%= render "trace", result: @result %>

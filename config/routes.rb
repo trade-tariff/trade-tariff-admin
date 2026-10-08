@@ -201,8 +201,15 @@ Rails.application.routes.draw do
       get :delete, action: :confirm_destroy
     end
   end
-  resources :evaluation_runs, only: %i[new create show] do
+  resources :evaluation_runs, only: %i[index new create show] do
     post :cancel, on: :member
+    # Declared here, one task ahead of EvaluationResultsController's own existence (added later,
+    # alongside the drill-in page) — the same forward-reference pattern already used for the
+    # launch form. Route declarations only need to exist for their *_path helpers to work; Rails
+    # doesn't require the controller class until a request actually dispatches to the route, and
+    # nothing before that controller exists does — the run summary's specs only assert that a
+    # generated link's href is correct, never visit it.
+    resources :results, controller: "evaluation_results", only: %i[index show]
   end
   resources :search_analytics, only: %i[index]
   resources :search_export_workbooks, only: %i[create show] do

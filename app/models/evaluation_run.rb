@@ -9,14 +9,35 @@ class EvaluationRun
   set_collection_path "admin/search/evaluation/runs"
   set_singular_path "admin/search/evaluation/runs/:id"
 
+  # Matches the backend's own EvaluationRun::STATUSES exactly (app/models/evaluation_run.rb in
+  # trade-tariff-backend) — duplicated here since this is a separate Rails process with no shared
+  # constant, used for the run list's status filter.
+  STATUSES = %w[queued running completed partially_failed failed cancelled].freeze
+
   attributes :experiment_id,
+             :experiment_name,
              :status,
              :gold_query_set_id,
              :effective_configuration,
+             :run_time_overrides,
              :result_count,
              :error_count,
+             :gold_in_top1_count,
+             :gold_in_top5_count,
+             :unpriced_result_count,
+             :persona_breakdown,
+             :max_cost_result,
+             :min_cost_result,
+             :max_latency_result,
+             :min_latency_result,
              :error_summary,
-             :started_at
+             :triggered_by,
+             :started_at,
+             :completed_at,
+             :total_cost_usd,
+             :total_latency_seconds,
+             :total_provider_calls,
+             :created_at
 
   def self.launch!(experiment_id:, triggered_by:, run_time_overrides:, idempotency_key:)
     payload = {
@@ -57,6 +78,62 @@ class EvaluationRun
     update(status: "cancelled")
   end
 
+  # One row per key in effective_configuration, tagged with where that value actually came from — a
+  # run-time override (set when this specific run was launched), an experiment default (carried every
+  # time this experiment is launched, unless overridden), or the untouched baseline. Checked in that
+  # order because a key can appear in more than one layer; the layer that actually won is the one
+  # reported, and effective_configuration already holds exactly that value for every key, so there's
+  # no need to separately know what the baseline's value was at the time this run was launched.
+  def configuration_breakdown(experiment)
+    run_overrides = run_time_overrides || {}
+    experiment_overrides = experiment&.configuration_overrides || {}
+
+    (effective_configuration || {}).map do |name, value|
+      source = if run_overrides.key?(name)
+                 "run"
+               elsif experiment_overrides.key?(name)
+                 "experiment"
+               else
+                 "baseline"
+               end
+      { name:, value:, source: }
+    end
+  end
+
+  def top1_rate
+    rate_of(gold_in_top1_count, result_count)
+  end
+
+  def top5_rate
+    rate_of(gold_in_top5_count, result_count)
+  end
+
+  def average_latency_seconds
+    average_of(total_latency_seconds, result_count)
+  end
+
+  # One row per persona present in persona_breakdown (the backend's own EvaluationRun#reconcile_aggregates!
+  # groups by whatever persona string is actually on each result — see that method in
+  # trade-tariff-backend — so there's no fixed list to iterate here either), each carrying the same
+  # top1_rate/top5_rate/average_latency_seconds shape as the run's own totals above, just scoped to
+  # that one persona's result_count instead of the whole run's — so the view can show which persona
+  # is doing best or worst without repeating the rate/average maths per row. Sorted by persona name
+  # for a stable display order, since persona_breakdown's own key order depends on which persona's
+  # results happened to be grouped first.
+  def persona_rows
+    (persona_breakdown || {}).sort_by { |persona, _stats| persona }.map do |persona, stats|
+      count = stats["result_count"].to_i
+      {
+        persona:,
+        result_count: count,
+        top1_rate: rate_of(stats["gold_in_top1_count"], count),
+        top5_rate: rate_of(stats["gold_in_top5_count"], count),
+        total_cost_usd: stats["total_cost_usd"],
+        average_latency_seconds: average_of(stats["total_latency_seconds"], count),
+      }
+    end
+  end
+
   # Override fields are named dynamically from the backend's own schema (OverrideSchema; see
   # EvaluationConfiguration) rather than being declared as EvaluationRun attributes. The launch
   # form always starts from a blank, unpersisted run, so the correct starting value for every
@@ -79,4 +156,18 @@ class EvaluationRun
     attributes.key?(method_name) ? self[method_name] : nil
   end
   # rubocop:enable Style/MissingRespondToMissing
+
+private
+
+  def rate_of(numerator, total)
+    return nil if total.to_i.zero?
+
+    (numerator.to_f / total) * 100
+  end
+
+  def average_of(total, count)
+    return nil if count.to_i.zero?
+
+    total.to_f / count
+  end
 end
