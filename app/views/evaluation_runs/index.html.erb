@@ -68,7 +68,7 @@
           <tr class="govuk-table__row">
             <% if comparing_experiment %>
               <td class="govuk-table__cell">
-                <% unless run.generating? %>
+                <% if run.completed? %>
                   <%= check_box_tag "run_ids[]", run.resource_id, false, id: "run_ids_#{run.resource_id}" %>
                 <% end %>
               </td>

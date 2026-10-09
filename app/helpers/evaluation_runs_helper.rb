@@ -99,11 +99,13 @@ private
 
   # Named by the run's own id (label_a/label_b, e.g. "Run #9"), not an arbitrary "Run A"/"Run B" --
   # an operator comparing more than one pair over a session shouldn't have to remember which
-  # letter was which run. nil on either side means one run has no data for this metric (e.g. a
-  # total_cost_usd of 0 results) -- there's nothing to compare, so this says so rather than
-  # guessing a winner.
+  # letter was which run. nil on either side means one run has no data for this metric at all
+  # (e.g. a run with 0 results) -- that's reported as "Not available", distinct from "No change",
+  # since the two runs being equal is a different fact to the metric being unmeasurable (AI-1427
+  # review feedback).
   def evaluation_run_comparison_winner(value_a, value_b, label_a, label_b, higher_is_better)
-    return "No change" if value_a.nil? || value_b.nil? || value_a == value_b
+    return "Not available" if value_a.nil? || value_b.nil?
+    return "No change" if value_a == value_b
 
     a_wins = higher_is_better ? value_a > value_b : value_a < value_b
     a_wins ? label_a : label_b

@@ -100,12 +100,12 @@ RSpec.describe EvaluationRunsHelper do
       expect(rows).to all(include(better: "No change"))
     end
 
-    it "calls it a tie rather than guessing when either run has no data for a metric" do
+    it "says data isn't available rather than calling it a tie when either run has no data for a metric" do
       run_b = EvaluationRun.new(resource_id: "10", gold_in_top1_count: nil, gold_in_top5_count: nil, result_count: 0, total_cost_usd: nil, total_latency_seconds: nil)
 
       rows = helper.evaluation_run_comparison_rows(run_a, run_b)
 
-      expect(rows).to all(include(better: "No change"))
+      expect(rows).to all(include(better: "Not available"))
     end
   end
 end

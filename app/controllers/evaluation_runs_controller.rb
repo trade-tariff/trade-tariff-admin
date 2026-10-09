@@ -17,10 +17,10 @@ class EvaluationRunsController < AuthenticatedController
     @experiments = fetch_experiments
   end
 
-  # One generic message covers every way a selection can be invalid (wrong count, still
-  # generating, different experiments, a bad id) -- the index page's own checkboxes already
-  # confine a normal selection to one experiment's finished runs, so an operator going through
-  # the UI should never actually see this; it exists as a backstop against a hand-edited URL.
+  # One generic message covers every way a selection can be invalid (wrong count, not completed,
+  # different experiments, a bad id) -- the index page's own checkboxes already confine a normal
+  # selection to one experiment's completed runs, so an operator going through the UI should
+  # never actually see this; it exists as a backstop against a hand-edited URL.
   COMPARISON_ERROR = "Select exactly two finished runs from the same experiment to compare.".freeze
 
   def compare
@@ -125,17 +125,24 @@ private
   # Returns [run_a, run_b] ordered by started_at ascending (the earlier run always on the left,
   # so two people comparing the same pair see it the same way round), or [nil, nil] for any
   # invalid selection -- the caller doesn't need to know which rule failed, since #compare shows
-  # the same message either way.
+  # the same message either way. Requiring completed? (not just !generating?) rules out failed,
+  # cancelled and partially_failed runs too -- a cancelled-while-queued run has no started_at at
+  # all, which would otherwise raise in the sort below, and a run that didn't finish every item
+  # would make "Total cost" an unfair comparison against one that did (AI-1427 review feedback).
   def load_comparison_runs
     ids = Array(params[:run_ids]).reject(&:blank?).uniq
     return [nil, nil] unless ids.size == 2
 
     runs = ids.map { |id| EvaluationRun.find(id) }
-    return [nil, nil] if runs.any?(&:generating?)
+    return [nil, nil] if runs.any? { |run| !run.completed? }
     return [nil, nil] if runs.map(&:experiment_id).uniq.size != 1
 
     runs.sort_by(&:started_at)
-  rescue Faraday::Error
+  rescue Faraday::ResourceNotFound
+    # A bad/hand-edited run id -- still folded into the same generic message as any other
+    # invalid selection. Anything else (timeouts, 5xx, connection failures) is a real backend
+    # problem, not a bad selection, so it's left to propagate to the class-level
+    # rescue_from Faraday::Error above instead of being swallowed here (AI-1427 review feedback).
     [nil, nil]
   end
 

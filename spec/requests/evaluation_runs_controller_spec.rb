@@ -755,16 +755,22 @@ RSpec.describe EvaluationRunsController, type: :request do
       expect(page).not_to have_button("Compare selected runs")
     end
 
-    context "when filtering by a specific experiment, and a run is still in progress" do
-      let(:make_request) { get evaluation_runs_path(experiment_id: "7") }
-      let(:run_attributes) { super().merge("status" => "running") }
+    # Not "completed" covers both a run still in flight (AI-1427's original check) and one that's
+    # finished without completing cleanly -- a failed/cancelled/partially_failed run is reachable
+    # through this same checkbox otherwise, which is what let a cancelled-while-queued run (nil
+    # started_at) crash the comparison page instead of bouncing back with a friendly message.
+    %w[running partially_failed failed cancelled].each do |status|
+      context "when filtering by a specific experiment, and a run is #{status}, not completed" do
+        let(:make_request) { get evaluation_runs_path(experiment_id: "7") }
+        let(:run_attributes) { super().merge("status" => status) }
 
-      before { stub_api_request("/search/evaluation/runs").with(query: hash_including("experiment_id" => "7")).and_return(paginated_response([run_attributes.merge("resource_id" => "9")])) }
+        before { stub_api_request("/search/evaluation/runs").with(query: hash_including("experiment_id" => "7")).and_return(paginated_response([run_attributes.merge("resource_id" => "9")])) }
 
-      it "does not offer a checkbox for a run that's still generating" do
-        page = Capybara.string(rendered_page.body)
+        it "does not offer a checkbox for a run that hasn't completed" do
+          page = Capybara.string(rendered_page.body)
 
-        expect(page).not_to have_field("run_ids[]", type: "checkbox")
+          expect(page).not_to have_field("run_ids[]", type: "checkbox")
+        end
       end
     end
   end
@@ -847,11 +853,36 @@ RSpec.describe EvaluationRunsController, type: :request do
       end
     end
 
-    context "when one of the selected runs is still running" do
-      before { stub_api_request("/search/evaluation/runs/10").and_return(jsonapi_response("run", run_b_attributes.merge("status" => "running", "resource_id" => "10"))) }
+    # Not "completed" covers a run still in flight and one that finished without completing
+    # cleanly -- the latter matters because a cancelled-while-queued run has no started_at at
+    # all, and the sort below would raise comparing nil with a string if it were ever reached
+    # (AI-1427 review feedback).
+    %w[running partially_failed failed cancelled].each do |status|
+      context "when one of the selected runs is #{status}, not completed" do
+        before { stub_api_request("/search/evaluation/runs/10").and_return(jsonapi_response("run", run_b_attributes.merge("status" => status, "resource_id" => "10"))) }
 
-      it "bounces back rather than comparing a run that's still in flight" do
+        it "bounces back rather than comparing a run that hasn't completed" do
+          expect(rendered_page).to redirect_to(evaluation_runs_path(experiment_id: "7"))
+        end
+      end
+    end
+
+    context "when one of the selected runs was cancelled before it ever started running" do
+      before { stub_api_request("/search/evaluation/runs/10").and_return(jsonapi_response("run", run_b_attributes.merge("status" => "cancelled", "started_at" => nil, "resource_id" => "10"))) }
+
+      it "bounces back instead of raising when there's no started_at to sort by" do
         expect(rendered_page).to redirect_to(evaluation_runs_path(experiment_id: "7"))
+      end
+    end
+
+    context "when the backend can't be reached while loading a selected run" do
+      before { stub_api_request("/search/evaluation/runs/10").to_raise(Faraday::ConnectionFailed) }
+
+      it "redirects to the experiment list with a warning, not the generic selection message" do
+        expect(rendered_page).to redirect_to(evaluation_experiments_path)
+
+        rendered_page
+        expect(session.dig("flash", "flashes", "alert")).to eq("The launch form could not be loaded. Try again.")
       end
     end
 
