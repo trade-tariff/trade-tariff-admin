@@ -42,6 +42,9 @@ gem "responders"
 gem "lograge"
 gem "logstash-event"
 
+# Sidekiq Web for the backend queues (no workers run here)
+gem "sidekiq", "~> 8.1"
+
 # Misc
 gem "bootsnap", require: false
 gem "csv", "~> 3.3"
