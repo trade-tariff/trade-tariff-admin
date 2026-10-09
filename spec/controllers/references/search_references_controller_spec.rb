@@ -149,6 +149,42 @@ RSpec.describe References::SearchReferencesController do
     end
   end
 
+  describe "usage" do
+    it "defaults a new reference to search usage" do
+      controller.new
+
+      expect(controller.instance_variable_get(:@search_reference).usage).to eq("search")
+    end
+
+    it "sends a known usage to the API" do
+      params.merge!(search_reference: { title: "Reference", usage: "fpo" })
+
+      expect(controller.send(:reference_attributes)).to eq(title: "reference", usage: "fpo")
+    end
+
+    it "does not send an unknown usage to the API" do
+      params.merge!(search_reference: { title: "Reference", usage: "other" })
+
+      expect(controller.send(:reference_attributes)).to eq(title: "reference")
+    end
+
+    it "defaults the usage filter to search" do
+      expect(controller.send(:usage_filter_param)).to eq("search")
+    end
+
+    it "uses search for an unknown usage filter" do
+      params.merge!(usage: "other")
+
+      expect(controller.send(:usage_filter_param)).to eq("search")
+    end
+
+    it "accepts the all usage filter" do
+      params.merge!(usage: "all")
+
+      expect(controller.send(:usage_filter_param)).to eq("all")
+    end
+  end
+
   describe "private helpers" do
     it "stops service iteration when a reference has errors" do
       failed_reference = SearchReference.new

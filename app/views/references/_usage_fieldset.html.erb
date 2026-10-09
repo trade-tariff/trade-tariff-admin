@@ -1,0 +1,6 @@
+<%= form.govuk_collection_radio_buttons :usage,
+                                        SearchReference::USAGE_NAMES,
+                                        :first,
+                                        :last,
+                                        legend: { text: "Use this reference for" },
+                                        hint: { text: "Search references show in public search. FPO only references do not show in public search. The FPO classifier uses them for training." } %>
