@@ -315,6 +315,13 @@ Rails.application.routes.draw do
 
   post "/csp-violation-report", to: "csp_reports#create"
 
+  # Sidekiq Web for engineers. No page links here. See README "Sidekiq Web".
+  constraints(SidekiqWebConstraint.new) do
+    get "sidekiq", to: redirect("/sidekiq/uk")
+    mount MountedPathInfoFix.new(UkSidekiqWeb) => "/sidekiq/uk", as: :uk_sidekiq_web
+    mount MountedPathInfoFix.new(XiSidekiqWeb) => "/sidekiq/xi", as: :xi_sidekiq_web
+  end
+
   match "/400", to: "errors#bad_request", via: :all
   match "/404", to: "errors#not_found", via: :all
   match "/405", to: "errors#method_not_allowed", via: :all
