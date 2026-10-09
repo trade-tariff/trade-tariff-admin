@@ -317,8 +317,8 @@ Rails.application.routes.draw do
   # Sidekiq Web for engineers. No page links here. See README "Sidekiq Web".
   constraints(SidekiqWebConstraint.new) do
     get "sidekiq", to: redirect("/sidekiq/uk")
-    mount MountedPathInfoFix.new(UkSidekiqWeb) => "/sidekiq/uk", as: :uk_sidekiq_web
-    mount MountedPathInfoFix.new(XiSidekiqWeb) => "/sidekiq/xi", as: :xi_sidekiq_web
+    mount UkSidekiqWeb => "/sidekiq/uk", as: :uk_sidekiq_web
+    mount XiSidekiqWeb => "/sidekiq/xi", as: :xi_sidekiq_web
   end
 
   match "/400", to: "errors#bad_request", via: :all
