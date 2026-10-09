@@ -82,6 +82,33 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for hooks and pull requests.
 - [Backend service selection](lib/trade_tariff_admin/service_chooser.rb): UK and XI configuration.
 - [Deployment workflows](.github/workflows/): deployments to AWS, for maintainers.
 
+## Sidekiq Web
+
+Sidekiq Web shows the live queues, retries and dead jobs of the backend.
+No page in the admin app links to it. Go to the URL directly.
+
+| Service | Path |
+| ------- | ---- |
+| UK | `/sidekiq/uk` |
+| XI | `/sidekiq/xi` |
+
+`/sidekiq` redirects to `/sidekiq/uk`.
+
+Only users with the `technical_operator` or `superadmin` role can open it.
+Other users get a 404. Sign in to admin first.
+
+The admin app reads the backend Sidekiq Redis with these variables:
+
+- `SIDEKIQ_UK_REDIS_URL`
+- `SIDEKIQ_XI_REDIS_URL`
+
+In development and test, both default to `redis://localhost:6379/0`.
+In production, both are required. Terraform reads them from the
+`valkey-sidekiq-uk-connection-string` and
+`valkey-sidekiq-xi-connection-string` secrets.
+
+Sidekiq Web can delete queues, kill jobs and retry jobs. Take care in production.
+
 ## Contribute
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) for reporting bugs, making a fork,
