@@ -4,6 +4,13 @@ on:
   pull_request_target:
     types: [opened, edited, synchronize]
 
+# Run the labelling workflows one at a time. The labeler writes the full label list,
+# so a parallel run removes a label that risk-label just added.
+# Only one run waits. A newer run cancels the waiting run. Re-run it if needed.
+concurrency:
+  group: pr-labels-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
 jobs:
   risk-label:
     uses: trade-tariff/trade-tariff-tools/.github/workflows/risk-label-reusable.yml@main
