@@ -54,6 +54,22 @@ module EvaluationRunsHelper
     link_to label, evaluation_run_result_path(run, result["id"])
   end
 
+  # Four metrics, each compared independently of the other three (AI-1427) -- a config change
+  # that trades cost for accuracy should show as "cost worse, accuracy better", not wash out into
+  # a single composite score. higher_is_better flips the win direction for the two rate metrics
+  # against the two cost/latency metrics, since "better" means opposite things for each pair.
+  def evaluation_run_comparison_rows(run_a, run_b)
+    label_a = "Run ##{run_a.resource_id}"
+    label_b = "Run ##{run_b.resource_id}"
+
+    [
+      evaluation_run_comparison_row("Top 1 accuracy", run_a.top1_rate, run_b.top1_rate, label_a, label_b, value_format: :rate, higher_is_better: true),
+      evaluation_run_comparison_row("Top 5 accuracy", run_a.top5_rate, run_b.top5_rate, label_a, label_b, value_format: :rate, higher_is_better: true),
+      evaluation_run_comparison_row("Total cost", run_a.total_cost_usd&.to_f, run_b.total_cost_usd&.to_f, label_a, label_b, value_format: :cost, higher_is_better: false),
+      evaluation_run_comparison_row("Average latency", run_a.average_latency_seconds, run_b.average_latency_seconds, label_a, label_b, value_format: :seconds, higher_is_better: false),
+    ]
+  end
+
 private
 
   def evaluation_run_elapsed(run)
@@ -62,5 +78,36 @@ private
     Time.current - Time.zone.parse(run.started_at.to_s)
   rescue ArgumentError, TypeError
     nil
+  end
+
+  def evaluation_run_comparison_row(label, value_a, value_b, label_a, label_b, value_format:, higher_is_better:)
+    {
+      label:,
+      value_a: evaluation_run_comparison_value(value_a, value_format),
+      value_b: evaluation_run_comparison_value(value_b, value_format),
+      better: evaluation_run_comparison_winner(value_a, value_b, label_a, label_b, higher_is_better),
+    }
+  end
+
+  def evaluation_run_comparison_value(value, value_format)
+    case value_format
+    when :rate then evaluation_run_rate(value)
+    when :seconds then evaluation_run_seconds(value)
+    when :cost then value.nil? ? "-" : sprintf("$%.4f", value)
+    end
+  end
+
+  # Named by the run's own id (label_a/label_b, e.g. "Run #9"), not an arbitrary "Run A"/"Run B" --
+  # an operator comparing more than one pair over a session shouldn't have to remember which
+  # letter was which run. nil on either side means one run has no data for this metric at all
+  # (e.g. a run with 0 results) -- that's reported as "Not available", distinct from "No change",
+  # since the two runs being equal is a different fact to the metric being unmeasurable (AI-1427
+  # review feedback).
+  def evaluation_run_comparison_winner(value_a, value_b, label_a, label_b, higher_is_better)
+    return "Not available" if value_a.nil? || value_b.nil?
+    return "No change" if value_a == value_b
+
+    a_wins = higher_is_better ? value_a > value_b : value_a < value_b
+    a_wins ? label_a : label_b
   end
 end
