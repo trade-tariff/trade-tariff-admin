@@ -17,6 +17,21 @@ class EvaluationRunsController < AuthenticatedController
     @experiments = fetch_experiments
   end
 
+  # One generic message covers every way a selection can be invalid (wrong count, still
+  # generating, different experiments, a bad id) -- the index page's own checkboxes already
+  # confine a normal selection to one experiment's finished runs, so an operator going through
+  # the UI should never actually see this; it exists as a backstop against a hand-edited URL.
+  COMPARISON_ERROR = "Select exactly two finished runs from the same experiment to compare.".freeze
+
+  def compare
+    authorize EvaluationRun, :compare?
+
+    @run_a, @run_b = load_comparison_runs
+    return if @run_a
+
+    redirect_to evaluation_runs_path(experiment_id: params[:experiment_id]), alert: COMPARISON_ERROR
+  end
+
   def new
     authorize EvaluationRun, :create?
 
@@ -105,6 +120,23 @@ private
 
   def fetch_experiments
     EvaluationExperiment.all(per_page: 200)
+  end
+
+  # Returns [run_a, run_b] ordered by started_at ascending (the earlier run always on the left,
+  # so two people comparing the same pair see it the same way round), or [nil, nil] for any
+  # invalid selection -- the caller doesn't need to know which rule failed, since #compare shows
+  # the same message either way.
+  def load_comparison_runs
+    ids = Array(params[:run_ids]).reject(&:blank?).uniq
+    return [nil, nil] unless ids.size == 2
+
+    runs = ids.map { |id| EvaluationRun.find(id) }
+    return [nil, nil] if runs.any?(&:generating?)
+    return [nil, nil] if runs.map(&:experiment_id).uniq.size != 1
+
+    runs.sort_by(&:started_at)
+  rescue Faraday::Error
+    [nil, nil]
   end
 
   def fetch_gold_query_sets

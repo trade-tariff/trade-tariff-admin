@@ -50,4 +50,62 @@ RSpec.describe EvaluationRunsHelper do
       expect(helper.evaluation_run_running_a_while?(run)).to be(false)
     end
   end
+
+  describe "#evaluation_run_comparison_rows" do
+    let(:run_a) do
+      EvaluationRun.new(
+        resource_id: "9", gold_in_top1_count: 6, gold_in_top5_count: 9, result_count: 10,
+        total_cost_usd: "0.05", total_latency_seconds: 25.0
+      )
+    end
+    let(:run_b) do
+      EvaluationRun.new(
+        resource_id: "10", gold_in_top1_count: 8, gold_in_top5_count: 10, result_count: 10,
+        total_cost_usd: "0.08", total_latency_seconds: 40.0
+      )
+    end
+
+    it "lists top1 accuracy, top5 accuracy, total cost and average latency, each compared independently" do
+      rows = helper.evaluation_run_comparison_rows(run_a, run_b)
+
+      expect(rows.map { |row| row[:label] }).to eq(["Top 1 accuracy", "Top 5 accuracy", "Total cost", "Average latency"])
+    end
+
+    it "says which run is better on a rate metric where a higher value wins" do
+      rows = helper.evaluation_run_comparison_rows(run_a, run_b)
+      top1_row = rows.find { |row| row[:label] == "Top 1 accuracy" }
+
+      expect(top1_row).to include(value_a: "60%", value_b: "80%", better: "Run #10")
+    end
+
+    it "says which run is better on cost, where a lower value wins" do
+      rows = helper.evaluation_run_comparison_rows(run_a, run_b)
+      cost_row = rows.find { |row| row[:label] == "Total cost" }
+
+      expect(cost_row).to include(value_a: "$0.0500", value_b: "$0.0800", better: "Run #9")
+    end
+
+    it "says which run is better on latency, where a lower value wins" do
+      rows = helper.evaluation_run_comparison_rows(run_a, run_b)
+      latency_row = rows.find { |row| row[:label] == "Average latency" }
+
+      expect(latency_row).to include(value_a: "2.5s", value_b: "4.0s", better: "Run #9")
+    end
+
+    it "calls it a tie when both runs have the exact same value" do
+      run_b = EvaluationRun.new(resource_id: "10", gold_in_top1_count: 6, gold_in_top5_count: 9, result_count: 10, total_cost_usd: "0.05", total_latency_seconds: 25.0)
+
+      rows = helper.evaluation_run_comparison_rows(run_a, run_b)
+
+      expect(rows).to all(include(better: "No change"))
+    end
+
+    it "calls it a tie rather than guessing when either run has no data for a metric" do
+      run_b = EvaluationRun.new(resource_id: "10", gold_in_top1_count: nil, gold_in_top5_count: nil, result_count: 0, total_cost_usd: nil, total_latency_seconds: nil)
+
+      rows = helper.evaluation_run_comparison_rows(run_a, run_b)
+
+      expect(rows).to all(include(better: "No change"))
+    end
+  end
 end

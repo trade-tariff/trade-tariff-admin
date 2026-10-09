@@ -35,36 +35,62 @@
   <%= submit_tag "Apply filters", class: "govuk-button" %>
 <% end %>
 
+<% comparing_experiment = params[:experiment_id].present? %>
+
 <% if @runs.any? %>
-  <table class="govuk-table">
-    <caption class="govuk-table__caption govuk-table__caption--s"><%= pluralize(@runs.total_count, "run") %></caption>
-    <thead class="govuk-table__head">
-      <tr class="govuk-table__row">
-        <th class="govuk-table__header" scope="col">Run</th>
-        <th class="govuk-table__header" scope="col">Experiment</th>
-        <th class="govuk-table__header" scope="col">Status</th>
-        <th class="govuk-table__header" scope="col">Progress</th>
-        <th class="govuk-table__header" scope="col">Cost</th>
-        <th class="govuk-table__header" scope="col">Started</th>
-        <th class="govuk-table__header" scope="col">Completed</th>
-      </tr>
-    </thead>
-    <tbody class="govuk-table__body">
-      <% @runs.each do |run| %>
+  <%# Checkboxes (and the button below) only render once the list is already filtered to one
+      experiment -- comparing across experiments isn't supported, and an unfiltered "all
+      experiments" list would make picking two comparable runs confusing rather than obviously
+      restricted (AI-1427). %>
+  <%= form_with url: compare_evaluation_runs_path, method: :get, local: true do %>
+    <% if comparing_experiment %>
+      <%= hidden_field_tag :experiment_id, params[:experiment_id] %>
+    <% end %>
+
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--s"><%= pluralize(@runs.total_count, "run") %></caption>
+      <thead class="govuk-table__head">
         <tr class="govuk-table__row">
-          <td class="govuk-table__cell"><%= link_to "Run ##{run.resource_id}", evaluation_run_path(run), class: "govuk-link" %></td>
-          <td class="govuk-table__cell"><%= run.experiment_name %></td>
-          <td class="govuk-table__cell"><%= run.status %></td>
-          <%# result_count already includes errored results (reconcile_aggregates! counts every
-              ingested result) — adding error_count again would double-count failures. %>
-          <td class="govuk-table__cell"><%= run.result_count %> done, <%= run.error_count %> failed</td>
-          <td class="govuk-table__cell"><%= run.total_cost_usd || "-" %></td>
-          <td class="govuk-table__cell"><%= run.started_at || "-" %></td>
-          <td class="govuk-table__cell"><%= run.completed_at || "-" %></td>
+          <% if comparing_experiment %>
+            <th class="govuk-table__header" scope="col"><span class="govuk-visually-hidden">Select to compare</span></th>
+          <% end %>
+          <th class="govuk-table__header" scope="col">Run</th>
+          <th class="govuk-table__header" scope="col">Experiment</th>
+          <th class="govuk-table__header" scope="col">Status</th>
+          <th class="govuk-table__header" scope="col">Progress</th>
+          <th class="govuk-table__header" scope="col">Cost</th>
+          <th class="govuk-table__header" scope="col">Started</th>
+          <th class="govuk-table__header" scope="col">Completed</th>
         </tr>
-      <% end %>
-    </tbody>
-  </table>
+      </thead>
+      <tbody class="govuk-table__body">
+        <% @runs.each do |run| %>
+          <tr class="govuk-table__row">
+            <% if comparing_experiment %>
+              <td class="govuk-table__cell">
+                <% unless run.generating? %>
+                  <%= check_box_tag "run_ids[]", run.resource_id, false, id: "run_ids_#{run.resource_id}" %>
+                <% end %>
+              </td>
+            <% end %>
+            <td class="govuk-table__cell"><%= link_to "Run ##{run.resource_id}", evaluation_run_path(run), class: "govuk-link" %></td>
+            <td class="govuk-table__cell"><%= run.experiment_name %></td>
+            <td class="govuk-table__cell"><%= run.status %></td>
+            <%# result_count already includes errored results (reconcile_aggregates! counts every
+                ingested result) — adding error_count again would double-count failures. %>
+            <td class="govuk-table__cell"><%= run.result_count %> done, <%= run.error_count %> failed</td>
+            <td class="govuk-table__cell"><%= run.total_cost_usd || "-" %></td>
+            <td class="govuk-table__cell"><%= run.started_at || "-" %></td>
+            <td class="govuk-table__cell"><%= run.completed_at || "-" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <% if comparing_experiment %>
+      <%= submit_tag "Compare selected runs", class: "govuk-button" %>
+    <% end %>
+  <% end %>
 
   <%= paginate @runs %>
 <% else %>
