@@ -108,6 +108,8 @@ In production, both are required. Terraform reads them from the
 `valkey-sidekiq-xi-connection-string` secrets.
 
 Sidekiq Web can delete queues, kill jobs and retry jobs. Take care in production.
+The admin log records each request that can change Sidekiq data, with the
+user uid and email (`[SidekiqWeb]` lines).
 
 ## Contribute
 

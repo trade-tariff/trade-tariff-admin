@@ -26,6 +26,18 @@ private
     return false unless user_session.cookie_token_match_for?(id_token_cookie)
     return false unless user_session.current?
 
-    user_session.user.technical_operator?
+    user = user_session.user
+    return false unless user.technical_operator?
+
+    log_change_request(request, user)
+    true
+  end
+
+  # Sidekiq Web is a Rack app, so lograge and PaperTrail do not record it.
+  # Log who sent each request that can change Sidekiq data (retry, kill, delete).
+  def log_change_request(request, user)
+    return if request.get? || request.head?
+
+    Rails.logger.info("[SidekiqWeb] #{request.request_method} #{request.original_fullpath} by user uid=#{user.uid} email=#{user.email}")
   end
 end

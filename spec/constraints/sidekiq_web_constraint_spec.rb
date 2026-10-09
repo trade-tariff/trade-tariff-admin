@@ -117,6 +117,35 @@ RSpec.describe SidekiqWebConstraint do
 
       expect(constraint.matches?(request)).to be(false)
     end
+
+    it "logs who made a change request" do
+      request.request_method = "POST"
+      request.path = "/sidekiq/uk/queues/default/delete"
+      allow(Rails.logger).to receive(:info)
+
+      constraint.matches?(request)
+
+      expect(Rails.logger).to have_received(:info).with("[SidekiqWeb] POST /sidekiq/uk/queues/default/delete by user uid=#{user.uid} email=#{user.email}")
+    end
+
+    it "does not log a read request" do
+      request.request_method = "GET"
+      allow(Rails.logger).to receive(:info)
+
+      constraint.matches?(request)
+
+      expect(Rails.logger).not_to have_received(:info).with(/\[SidekiqWeb\]/)
+    end
+
+    it "does not log a refused change request" do
+      user.update!(role: User::HMRC_ADMIN)
+      request.request_method = "POST"
+      allow(Rails.logger).to receive(:info)
+
+      constraint.matches?(request)
+
+      expect(Rails.logger).not_to have_received(:info).with(/\[SidekiqWeb\]/)
+    end
   end
 
   describe "#matches? with an unknown auth strategy" do
