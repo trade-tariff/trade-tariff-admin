@@ -1,7 +1,7 @@
 name: Preview App Up
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled, unlabeled]
+    types: [opened, synchronize, reopened, labeled]
 
 permissions:
   contents: read
@@ -19,7 +19,13 @@ concurrency: preevy-${{ github.event.number }}
 
 jobs:
   deploy:
-    if: contains(github.event.pull_request.labels.*.name, 'needs-preview') || contains(github.event.pull_request.labels.*.name, 'keep-preview')
+    # Deploy only when a labeled event adds a preview label, not for other labels.
+    if: >
+      (contains(github.event.pull_request.labels.*.name, 'needs-preview') ||
+       contains(github.event.pull_request.labels.*.name, 'keep-preview')) &&
+      (github.event.action != 'labeled' ||
+       github.event.label.name == 'needs-preview' ||
+       github.event.label.name == 'keep-preview')
     runs-on: ubuntu-latest
     outputs:
       preview_url: ${{ steps.get-url.outputs.preview_url }}

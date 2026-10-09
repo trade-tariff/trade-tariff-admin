@@ -8,7 +8,6 @@ on:
       - synchronize
       - reopened
       - labeled
-      - unlabeled
 
 permissions:
   contents: read
@@ -16,9 +15,15 @@ permissions:
 
 jobs:
   deploy:
+    # Deploy only when a labeled event adds needs-deployment, not for other labels.
     if: >
       github.event_name == 'workflow_dispatch' ||
-      contains(github.event.pull_request.labels.*.name, 'needs-deployment')
+      (contains(github.event.pull_request.labels.*.name, 'needs-deployment') &&
+       (github.event.action != 'labeled' || github.event.label.name == 'needs-deployment'))
+    # Development is shared. Queue deploys so that two runs do not push the same image tag.
+    concurrency:
+      group: deploy-development-tariff-admin
+      cancel-in-progress: false
     uses: trade-tariff/trade-tariff-tools/.github/workflows/deploy-ecs.yml@main
     with:
       app-name: tariff-admin
@@ -31,9 +36,11 @@ jobs:
       ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
 
   start-services:
+    # Deploy only when a labeled event adds needs-deployment, not for other labels.
     if: >
       github.event_name == 'workflow_dispatch' ||
-      contains(github.event.pull_request.labels.*.name, 'needs-deployment')
+      (contains(github.event.pull_request.labels.*.name, 'needs-deployment') &&
+       (github.event.action != 'labeled' || github.event.label.name == 'needs-deployment'))
     runs-on: ubuntu-latest
     steps:
       - uses: trade-tariff/trade-tariff-tools/.github/actions/start-services@main
