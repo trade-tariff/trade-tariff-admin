@@ -162,6 +162,13 @@ Rails.application.routes.draw do
     end
   end
 
+  # Flat route so a search reference (including a deleted one) can be deep
+  # linked from its version history without knowing its parent.
+  get "search_references/:id",
+      to: "search_references#show",
+      as: :search_reference,
+      constraints: { id: /\d+/ }
+
   resources :configurations, param: :name, only: %i[index show edit update]
 
   resources :description_intercepts, only: %i[index new create show edit update destroy] do
