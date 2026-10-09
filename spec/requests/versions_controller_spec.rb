@@ -175,6 +175,39 @@ RSpec.describe VersionsController, type: :request do
       end
     end
 
+    context "when the backend refuses to restore a search reference" do # rubocop:disable RSpec/MultipleMemoizedHelpers
+      let(:make_request) { post restore_version_path(version_id) }
+      let(:detail) { "Cannot restore this search reference because commodity 0101210000 has expired." }
+
+      before do
+        stub_api_request("/versions/#{version_id}", backend: "uk")
+          .and_return(
+            status: 200,
+            headers: { "content-type" => "application/json; charset=utf-8" },
+            body: {
+              data: {
+                id: version_id.to_s,
+                type: "version",
+                attributes: { item_type: "SearchReference", item_id: "34", event: "destroy", object: { "title" => "foo" } },
+              },
+            }.to_json,
+          )
+        stub_api_request("/versions/#{version_id}/restore", :post, backend: "uk")
+          .and_return(
+            status: 422,
+            headers: { "content-type" => "application/json; charset=utf-8" },
+            body: { errors: [{ status: "422", title: "Restore failed", detail: }] }.to_json,
+          )
+      end
+
+      it { is_expected.to redirect_to(search_reference_path("34", oid: version_id.to_s)) }
+
+      it "shows why the restore was refused" do
+        rendered_page
+        expect(session.dig("flash", "flashes", "alert")).to eq(detail)
+      end
+    end
+
     context "when API fails" do
       let(:make_request) { post restore_version_path(version_id) }
 

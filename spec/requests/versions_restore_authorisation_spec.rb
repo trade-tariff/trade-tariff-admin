@@ -168,6 +168,28 @@ RSpec.describe "Version restore authorisation", type: :request do
     it { is_expected.to have_http_status :forbidden }
   end
 
+  # Search references: TECHNICAL_OPERATOR and HMRC_ADMIN, the same as a direct edit.
+  context "when a technical operator restores a search reference version" do
+    let(:current_user) { create(:user, :technical_operator) }
+    let(:item_type) { "SearchReference" }
+
+    it { is_expected.to have_http_status :redirect }
+  end
+
+  context "when an hmrc admin restores a search reference version" do
+    let(:current_user) { create(:user, :hmrc_admin) }
+    let(:item_type) { "SearchReference" }
+
+    it { is_expected.to have_http_status :redirect }
+  end
+
+  context "when an auditor restores a search reference version" do
+    let(:current_user) { create(:user, :auditor) }
+    let(:item_type) { "SearchReference" }
+
+    it { is_expected.to have_http_status :forbidden }
+  end
+
   # The Admin Portal has no screen for a goods nomenclature intercept, so no
   # role may restore one. The backend accepts the type, so the denial must be
   # explicit here rather than assumed from the missing screen.
