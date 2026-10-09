@@ -21,6 +21,7 @@ jobs:
       (contains(github.event.pull_request.labels.*.name, 'needs-deployment') &&
        (github.event.action != 'labeled' || github.event.label.name == 'needs-deployment'))
     # Development is shared. Queue deploys so that two runs do not push the same image tag.
+    # Only one run waits. A newer run cancels the waiting run. Re-run it if needed.
     concurrency:
       group: deploy-development-tariff-admin
       cancel-in-progress: false

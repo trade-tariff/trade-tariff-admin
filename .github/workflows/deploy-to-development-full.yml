@@ -21,6 +21,7 @@ jobs:
       (contains(github.event.pull_request.labels.*.name, 'needs-full-deployment') &&
        (github.event.action != 'labeled' || github.event.label.name == 'needs-full-deployment'))
     # Shares the group with deploy-to-development.yml because both deploy admin.
+    # Only one run waits. A newer run cancels the waiting run. Re-run it if needed.
     concurrency:
       group: deploy-development-tariff-admin
       cancel-in-progress: false
