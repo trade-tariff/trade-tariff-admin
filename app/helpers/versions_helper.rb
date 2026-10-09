@@ -19,6 +19,8 @@ module VersionsHelper
     when "AdminConfiguration"
       name = version.object&.dig("name")
       configuration_path(name, **opts) if name.present?
+    when "SearchReference"
+      search_reference_path(version.item_id, **opts) if version.item_id.present?
     end
   end
 

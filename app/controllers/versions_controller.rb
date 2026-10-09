@@ -19,6 +19,7 @@ class VersionsController < AuthenticatedController
     "TariffKnowledge::SyntheticAtar" => TariffKnowledgeSyntheticAtarPolicy,
     "CustomsTariffSectionNote" => CustomsTariff::SectionNotePolicy,
     "CustomsTariffChapterNote" => CustomsTariff::ChapterNotePolicy,
+    "SearchReference" => SearchReferencePolicy,
   }.freeze
 
   def index
@@ -31,8 +32,8 @@ class VersionsController < AuthenticatedController
   end
 
   def restore
-    version = Version.find(params[:id])
-    authorize version, :update?, policy_class: RESTORE_POLICIES.fetch(version.item_type, ApplicationPolicy)
+    @version = Version.find(params[:id])
+    authorize @version, :update?, policy_class: RESTORE_POLICIES.fetch(@version.item_type, ApplicationPolicy)
 
     response = Version.api.post("admin/versions/#{params[:id]}/restore")
     version_data = response.body["data"]
@@ -40,6 +41,10 @@ class VersionsController < AuthenticatedController
 
     redirect_to chapter_note_restore_path || (restored && version_item_link(restored)) || versions_path,
                 notice: "Restored successfully."
+  rescue Faraday::UnprocessableEntityError => e
+    # The backend refused the restore, e.g. a search reference whose commodity
+    # is no longer valid. Send the operator back to the version they tried.
+    redirect_to version_item_link(@version) || versions_path, alert: restore_error_detail(e)
   rescue Faraday::ResourceNotFound
     # The lookup can fail before authorize runs. There is then no record to
     # authorise against, so tell Pundit that this request needs no policy.
@@ -51,6 +56,16 @@ class VersionsController < AuthenticatedController
   end
 
 private
+
+  def restore_error_detail(error)
+    body = error.response&.dig(:body)
+    body = JSON.parse(body) if body.is_a?(String)
+    detail = body.is_a?(Hash) ? Array(body["errors"]).filter_map { |e| e["detail"] if e.is_a?(Hash) }.join(" ") : nil
+
+    detail.presence || "Failed to restore."
+  rescue JSON::ParserError
+    "Failed to restore."
+  end
 
   def chapter_note_restore_path
     return unless params[:section_id].present? && params[:update_version].present?
