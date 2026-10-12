@@ -157,4 +157,18 @@ RSpec.describe EvaluationRun do
       end
     end
   end
+
+  describe "#fully_scored?" do
+    it "is true when the run produced exactly as many results as it was meant to" do
+      run = described_class.new("result_count" => 30)
+
+      expect(run.fully_scored?(30)).to be(true)
+    end
+
+    it "is false when the run has fewer results than it was meant to produce" do
+      run = described_class.new("result_count" => 12)
+
+      expect(run.fully_scored?(30)).to be(false)
+    end
+  end
 end
