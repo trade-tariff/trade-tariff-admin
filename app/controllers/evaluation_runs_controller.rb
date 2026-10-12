@@ -125,26 +125,53 @@ private
   # Returns [run_a, run_b] ordered by started_at ascending (the earlier run always on the left,
   # so two people comparing the same pair see it the same way round), or [nil, nil] for any
   # invalid selection -- the caller doesn't need to know which rule failed, since #compare shows
-  # the same message either way. Requiring completed? (not just !generating?) rules out failed,
-  # cancelled and partially_failed runs too -- a cancelled-while-queued run has no started_at at
-  # all, which would otherwise raise in the sort below, and a run that didn't finish every item
-  # would make "Total cost" an unfair comparison against one that did (AI-1427 review feedback).
+  # the same message either way. comparable_run? (below) rules out failed, cancelled and a
+  # truncated partially_failed run -- a cancelled-while-queued run has no started_at at all,
+  # which would otherwise raise in the sort below, and a run that didn't finish every item would
+  # make "Total cost" an unfair comparison against one that did (AI-1427 review feedback).
   def load_comparison_runs
     ids = Array(params[:run_ids]).reject(&:blank?).uniq
     return [nil, nil] unless ids.size == 2
 
     runs = ids.map { |id| EvaluationRun.find(id) }
-    return [nil, nil] if runs.any? { |run| !run.completed? }
+    return [nil, nil] if runs.any? { |run| !comparable_run?(run) }
     return [nil, nil] if runs.map(&:experiment_id).uniq.size != 1
 
     runs.sort_by(&:started_at)
   rescue Faraday::ResourceNotFound
-    # A bad/hand-edited run id -- still folded into the same generic message as any other
-    # invalid selection. Anything else (timeouts, 5xx, connection failures) is a real backend
-    # problem, not a bad selection, so it's left to propagate to the class-level
+    # A bad/hand-edited run id, or a partially_failed run's gold_query_set_id pointing at a set
+    # that's since been deleted -- either way still folded into the same generic message as any
+    # other invalid selection. Anything else (timeouts, 5xx, connection failures) is a real
+    # backend problem, not a bad selection, so it's left to propagate to the class-level
     # rescue_from Faraday::Error above instead of being swallowed here (AI-1427 review feedback).
     [nil, nil]
   end
+
+  # completed? alone isn't enough: a "partially_failed" run can mean every gold query still got
+  # a result and only an individual Q&A session errored along the way (comparable -- its totals
+  # are just as complete as a completed run's), or the run was cut short partway through and the
+  # remaining gold queries were never attempted at all (not comparable -- its totals cover fewer
+  # items). EvaluationRun#fully_scored? tells the two apart by checking result_count against the
+  # run's own gold query set size, which needs an extra fetch load_comparison_runs' rescue above
+  # already covers (AI-1431).
+  def comparable_run?(run)
+    return true if run.completed?
+    return false unless run.status == "partially_failed"
+    return false if run.gold_query_set_id.blank?
+
+    run.fully_scored?(EvaluationGoldQuerySet.find(run.gold_query_set_id).gold_query_count)
+  end
+
+  # The list page's checkbox needs the same eligibility rule as the compare action, but a
+  # transient backend hiccup checking ONE partially_failed row's gold query set must not take
+  # down the whole list the way #fetch_runs' own rescue already protects it from any other
+  # outage -- #index deliberately never relies on the class-level rescue_from (see #fetch_runs).
+  def show_compare_checkbox?(run)
+    comparable_run?(run)
+  rescue Faraday::Error
+    false
+  end
+  helper_method :show_compare_checkbox?
 
   def fetch_gold_query_sets
     EvaluationGoldQuerySet.all(per_page: 200)

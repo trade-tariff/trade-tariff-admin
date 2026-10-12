@@ -58,8 +58,17 @@ RSpec.describe EvaluationExperimentsController, type: :request do
       expect(page).to have_link("Baseline")
       expect(page).to have_css("td", text: "Alex Example")
       expect(page).to have_link("New experiment", href: new_evaluation_experiment_path)
-      expect(page).to have_link("View all runs", href: evaluation_runs_path)
       expect(page).to have_link("View runs", href: evaluation_runs_path(experiment_id: experiment_id))
+    end
+
+    # AI-1429: the only way into the runs list from this page should be scoped to one experiment
+    # at a time (each row's own "View runs" link, asserted above) -- an unscoped "all runs" view
+    # mixes every experiment's runs together and doesn't fit the run-comparison feature, which
+    # only makes sense once you're already looking at one experiment's runs.
+    it "offers no unscoped way to view every experiment's runs mixed together" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).not_to have_link("View all runs")
     end
 
     context "when there are no experiments" do

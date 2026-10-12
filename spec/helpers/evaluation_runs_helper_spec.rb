@@ -108,4 +108,19 @@ RSpec.describe EvaluationRunsHelper do
       expect(rows).to all(include(better: "Not available"))
     end
   end
+
+  describe "#evaluation_run_comparison_status_tag" do
+    it "is blank for a completed run, since that's the normal case needing no flag" do
+      run = EvaluationRun.new(resource_id: "9", status: "completed")
+
+      expect(helper.evaluation_run_comparison_status_tag(run)).to eq("")
+    end
+
+    it "shows the status as a GOV.UK tag for a partially_failed run, so its results aren't mistaken for a completed run's" do
+      run = EvaluationRun.new(resource_id: "9", status: "partially_failed")
+
+      tag = Capybara.string(helper.evaluation_run_comparison_status_tag(run))
+      expect(tag).to have_css("span.govuk-tag", text: "Partially failed")
+    end
+  end
 end

@@ -2,6 +2,29 @@
 
 <h1 class="govuk-heading-l">Results</h1>
 
+<%= form_with url: evaluation_run_results_path(params[:evaluation_run_id]), method: :get, local: true do %>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-one-quarter">
+      <div class="govuk-form-group">
+        <%= label_tag :persona, "Persona", class: "govuk-label" %>
+        <%= select_tag :persona,
+                       options_for_select([["All", ""]] + EvaluationGoldQueryItem::PERSONAS.map { |key, details| [details[:label], key] }, params[:persona]),
+                       class: "govuk-select" %>
+      </div>
+    </div>
+    <div class="govuk-grid-column-one-quarter">
+      <div class="govuk-form-group">
+        <%= label_tag :outcome, "Outcome", class: "govuk-label" %>
+        <%= select_tag :outcome,
+                       options_for_select([["All", ""], ["Pass", "pass"], ["Fail", "fail"], ["Error", "error"]], params[:outcome]),
+                       class: "govuk-select" %>
+      </div>
+    </div>
+  </div>
+
+  <%= submit_tag "Apply filters", class: "govuk-button" %>
+<% end %>
+
 <% if @results.any? %>
   <table class="govuk-table">
     <caption class="govuk-table__caption govuk-table__caption--s"><%= pluralize(@results.total_count, "result") %></caption>
@@ -25,7 +48,7 @@
           <td class="govuk-table__cell"><%= result.expected_code %></td>
           <td class="govuk-table__cell"><%= result.final_code || "-" %></td>
           <td class="govuk-table__cell"><%= result.final_rank || "-" %></td>
-          <td class="govuk-table__cell"><%= result.passed? ? "Pass" : "Fail" %></td>
+          <td class="govuk-table__cell"><%= result.outcome.capitalize %></td>
           <td class="govuk-table__cell"><%= result.pricing_known ? (result.cost_usd || "-") : "Unknown" %></td>
           <td class="govuk-table__cell"><%= result.latency_seconds || "-" %></td>
         </tr>

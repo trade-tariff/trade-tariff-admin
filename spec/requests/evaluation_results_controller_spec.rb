@@ -128,6 +128,88 @@ RSpec.describe EvaluationResultsController, type: :request do
         expect(rendered_page.body).to include("Results could not be loaded. Try again.")
       end
     end
+
+    context "when a result's own session errored" do
+      # An errored result's gold_in_top5 is always false too, same as a genuine wrong-answer
+      # miss -- showing "Fail" for both would hide that this one broke for a different reason
+      # (e.g. ran out of question rounds) rather than being scored wrong (AI-1432).
+      let(:result_attributes) { super().merge("gold_in_top1" => false, "gold_in_top5" => false, "error" => "simulator exhausted its retries without producing an answer") }
+
+      before do
+        stub_api_request("/search/evaluation/results").with(query: hash_including("run_id" => run_id)).and_return(paginated_response([result_attributes.merge("resource_id" => "55")]))
+      end
+
+      it "shows Error, not Fail, in the Outcome column" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("td", text: "Error")
+        expect(page).not_to have_css("td", text: "Fail")
+      end
+    end
+
+    context "when filtering by persona" do
+      let(:make_request) { get evaluation_run_results_path(run_id, persona: "emu_specific") }
+
+      before { stub_api_request("/search/evaluation/results").with(query: hash_including("persona" => "emu_specific")).and_return(paginated_response([])) }
+
+      it "sends the chosen persona to the backend" do
+        rendered_page
+
+        expect(a_request(:get, %r{/search/evaluation/results}).with(query: hash_including("persona" => "emu_specific"))).to have_been_made
+      end
+
+      it "pre-selects the chosen persona in the filter form" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_select("Persona", selected: "Specific search")
+      end
+    end
+
+    context "when filtering by outcome" do
+      let(:make_request) { get evaluation_run_results_path(run_id, outcome: "error") }
+
+      before { stub_api_request("/search/evaluation/results").with(query: hash_including("outcome" => "error")).and_return(paginated_response([])) }
+
+      it "sends the chosen outcome to the backend" do
+        rendered_page
+
+        expect(a_request(:get, %r{/search/evaluation/results}).with(query: hash_including("outcome" => "error"))).to have_been_made
+      end
+
+      it "pre-selects the chosen outcome in the filter form" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_select("Outcome", selected: "Error")
+      end
+    end
+
+    it "offers filter dropdowns for persona and outcome" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_select("Persona", options: ["All", "Generic search", "Ordinary search", "Specific search"])
+      expect(page).to have_select("Outcome", options: %w[All Pass Fail Error])
+    end
+
+    context "when asking for the second page while filtering" do
+      let(:make_request) { get evaluation_run_results_path(run_id, page: 2, persona: "emu_specific") }
+
+      before { stub_api_request("/search/evaluation/results").with(query: hash_including("page" => "2", "persona" => "emu_specific")).and_return(paginated_response([result_attributes.merge("resource_id" => "56")], total_count: 21)) }
+
+      it "keeps the filter selected, not reset on the next page" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_select("Persona", selected: "Specific search")
+      end
+
+      it "carries the filter param into the pagination links" do
+        page = Capybara.string(rendered_page.body)
+
+        # Kaminari's params_on_first_page is false (this app's default config), so the link back
+        # to page 1 omits the page param entirely rather than sending an explicit page=1 -- the
+        # filter param being present at all is what this test is actually checking.
+        expect(page).to have_link("1", href: evaluation_run_results_path(run_id, persona: "emu_specific"))
+      end
+    end
   end
 
   describe "GET #show" do
@@ -196,6 +278,13 @@ RSpec.describe EvaluationResultsController, type: :request do
 
       it "shows the error, not just Fail with no explanation" do
         expect(rendered_page.body).to include("could not reach the search service: timeout")
+      end
+
+      it "shows Error, not Fail, as the outcome" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("dd", text: "Error")
+        expect(page).not_to have_css("dd", text: "Fail")
       end
     end
 

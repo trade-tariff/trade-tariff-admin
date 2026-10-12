@@ -70,6 +70,16 @@ class EvaluationRun
     status == "completed"
   end
 
+  # True once this run has produced a result for every gold query it was ever going to attempt.
+  # A "partially_failed" run can mean either of two very different things: every gold query got a
+  # result, but one or more individual Q&A sessions errored along the way (this is still true),
+  # or the run aborted partway through and the remaining gold queries were never attempted at all
+  # (this is false, since result_count falls short of intended_total) -- the status string alone
+  # can't tell the two apart, only comparing against the gold query set's own size can (AI-1431).
+  def fully_scored?(intended_total)
+    result_count == intended_total
+  end
+
   def cancellable?
     generating?
   end
