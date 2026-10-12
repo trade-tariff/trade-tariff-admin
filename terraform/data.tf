@@ -37,6 +37,22 @@ data "aws_secretsmanager_secret_version" "database_url" {
   secret_id = data.aws_secretsmanager_secret.database_url.id
 }
 
+data "aws_secretsmanager_secret" "sidekiq_uk_redis_url" {
+  name = "valkey-sidekiq-uk-connection-string"
+}
+
+data "aws_secretsmanager_secret_version" "sidekiq_uk_redis_url" {
+  secret_id = data.aws_secretsmanager_secret.sidekiq_uk_redis_url.id
+}
+
+data "aws_secretsmanager_secret" "sidekiq_xi_redis_url" {
+  name = "valkey-sidekiq-xi-connection-string"
+}
+
+data "aws_secretsmanager_secret_version" "sidekiq_xi_redis_url" {
+  secret_id = data.aws_secretsmanager_secret.sidekiq_xi_redis_url.id
+}
+
 data "aws_secretsmanager_secret" "ecs_tls_certificate" {
   name = "ecs-tls-certificate"
 }

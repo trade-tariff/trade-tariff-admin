@@ -17,6 +17,17 @@ locals {
     }
   ]
 
+  sidekiq_env_vars = [
+    {
+      name  = "SIDEKIQ_UK_REDIS_URL"
+      value = data.aws_secretsmanager_secret_version.sidekiq_uk_redis_url.secret_string
+    },
+    {
+      name  = "SIDEKIQ_XI_REDIS_URL"
+      value = data.aws_secretsmanager_secret_version.sidekiq_xi_redis_url.secret_string
+    }
+  ]
+
   tls_secret = jsondecode(data.aws_secretsmanager_secret_version.ecs_tls_certificate.secret_string)
 
   ecs_tls_env_vars = [
@@ -34,7 +45,7 @@ locals {
     }
   ]
 
-  admin_service_env_vars = concat(local.secret_env_vars, local.database_env_vars, local.ecs_tls_env_vars)
+  admin_service_env_vars = concat(local.secret_env_vars, local.database_env_vars, local.sidekiq_env_vars, local.ecs_tls_env_vars)
 
   # Paths the image must still be able to write to under a read-only root filesystem.
   # WORKDIR is /app, so Rails.root-relative paths resolve there.

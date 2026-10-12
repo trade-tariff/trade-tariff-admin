@@ -1,0 +1,31 @@
+<%= link_to "Back to runs", evaluation_runs_path(experiment_id: @run_a.experiment_id), class: "govuk-back-link" %>
+
+<h1 class="govuk-heading-l">Compare runs — <%= @run_a.experiment_name %></h1>
+
+<table class="govuk-table">
+  <caption class="govuk-table__caption govuk-table__caption--s">Accuracy, cost and latency compared independently</caption>
+  <thead class="govuk-table__head">
+    <tr class="govuk-table__row">
+      <th class="govuk-table__header" scope="col">Metric</th>
+      <th class="govuk-table__header" scope="col">
+        <%= link_to "Run ##{@run_a.resource_id}", evaluation_run_path(@run_a), class: "govuk-link" %>
+        (<%= @run_a.started_at %>)
+      </th>
+      <th class="govuk-table__header" scope="col">
+        <%= link_to "Run ##{@run_b.resource_id}", evaluation_run_path(@run_b), class: "govuk-link" %>
+        (<%= @run_b.started_at %>)
+      </th>
+      <th class="govuk-table__header" scope="col">Which is better</th>
+    </tr>
+  </thead>
+  <tbody class="govuk-table__body">
+    <% evaluation_run_comparison_rows(@run_a, @run_b).each do |row| %>
+      <tr class="govuk-table__row">
+        <td class="govuk-table__cell"><%= row[:label] %></td>
+        <td class="govuk-table__cell"><%= row[:value_a] %></td>
+        <td class="govuk-table__cell"><%= row[:value_b] %></td>
+        <td class="govuk-table__cell"><%= row[:better] %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

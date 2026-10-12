@@ -12,6 +12,18 @@ module TradeTariffAdmin
       ENV.fetch("ADMIN_HOST", "http://localhost")
     end
 
+    def sidekiq_uk_redis_url
+      return ENV.fetch("SIDEKIQ_UK_REDIS_URL") if Rails.env.production?
+
+      ENV.fetch("SIDEKIQ_UK_REDIS_URL", "redis://localhost:6379/0")
+    end
+
+    def sidekiq_xi_redis_url
+      return ENV.fetch("SIDEKIQ_XI_REDIS_URL") if Rails.env.production?
+
+      ENV.fetch("SIDEKIQ_XI_REDIS_URL", "redis://localhost:6379/0")
+    end
+
     def production?
       ENV["GOVUK_APP_DOMAIN"] == "tariff-admin-production.cloudapps.digital"
     end

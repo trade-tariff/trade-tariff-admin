@@ -10,6 +10,28 @@ class EvaluationRunsController < AuthenticatedController
 
   before_action :load_run, only: %i[show cancel]
 
+  def index
+    authorize EvaluationRun, :index?
+
+    @runs = fetch_runs
+    @experiments = fetch_experiments
+  end
+
+  # One generic message covers every way a selection can be invalid (wrong count, not completed,
+  # different experiments, a bad id) -- the index page's own checkboxes already confine a normal
+  # selection to one experiment's completed runs, so an operator going through the UI should
+  # never actually see this; it exists as a backstop against a hand-edited URL.
+  COMPARISON_ERROR = "Select exactly two finished runs from the same experiment to compare.".freeze
+
+  def compare
+    authorize EvaluationRun, :compare?
+
+    @run_a, @run_b = load_comparison_runs
+    return if @run_a
+
+    redirect_to evaluation_runs_path(experiment_id: params[:experiment_id]), alert: COMPARISON_ERROR
+  end
+
   def new
     authorize EvaluationRun, :create?
 
@@ -70,11 +92,16 @@ class EvaluationRunsController < AuthenticatedController
 
     @gold_query_set = fetch_gold_query_set
     respond_to do |format|
-      # Only the HTML page's own title needs the experiment name — fetching it here too would
-      # add an extra backend call to every poll this page makes every 2 seconds for no reason,
-      # since the JSON response never renders it.
+      # The page's own title (show.html.erb) needs the experiment name every time, generating or
+      # not. The JSON poll only needs it once the run stops generating: that's when the status
+      # partial it re-renders starts including the Configuration section, which also reads
+      # @experiment — fetching it on every 2-second poll before then would be a wasted backend
+      # call for a section that isn't shown yet.
       format.html { @experiment = fetch_experiment }
-      format.json { render json: { pending: @run.generating?, html: render_to_string(partial: "status", formats: [:html]) } }
+      format.json do
+        @experiment = fetch_experiment unless @run.generating?
+        render json: { pending: @run.generating?, html: render_to_string(partial: "status", formats: [:html]) }
+      end
     end
   end
 
@@ -95,8 +122,45 @@ private
     EvaluationExperiment.all(per_page: 200)
   end
 
+  # Returns [run_a, run_b] ordered by started_at ascending (the earlier run always on the left,
+  # so two people comparing the same pair see it the same way round), or [nil, nil] for any
+  # invalid selection -- the caller doesn't need to know which rule failed, since #compare shows
+  # the same message either way. Requiring completed? (not just !generating?) rules out failed,
+  # cancelled and partially_failed runs too -- a cancelled-while-queued run has no started_at at
+  # all, which would otherwise raise in the sort below, and a run that didn't finish every item
+  # would make "Total cost" an unfair comparison against one that did (AI-1427 review feedback).
+  def load_comparison_runs
+    ids = Array(params[:run_ids]).reject(&:blank?).uniq
+    return [nil, nil] unless ids.size == 2
+
+    runs = ids.map { |id| EvaluationRun.find(id) }
+    return [nil, nil] if runs.any? { |run| !run.completed? }
+    return [nil, nil] if runs.map(&:experiment_id).uniq.size != 1
+
+    runs.sort_by(&:started_at)
+  rescue Faraday::ResourceNotFound
+    # A bad/hand-edited run id -- still folded into the same generic message as any other
+    # invalid selection. Anything else (timeouts, 5xx, connection failures) is a real backend
+    # problem, not a bad selection, so it's left to propagate to the class-level
+    # rescue_from Faraday::Error above instead of being swallowed here (AI-1427 review feedback).
+    [nil, nil]
+  end
+
   def fetch_gold_query_sets
     EvaluationGoldQuerySet.all(per_page: 200)
+  end
+
+  # This local rescue, not the controller-wide rescue_from Faraday::Error above, is deliberate —
+  # the run list degrades to "empty list plus a warning" the same way the experiment list and
+  # gold-query-set list already do, rather than bouncing away entirely the way the launch form
+  # does. A list page has a sensible empty state; the launch form and the single-run show page
+  # don't.
+  def fetch_runs
+    EvaluationRun.all(params.permit(:page, :status, :experiment_id, :from, :to).to_h.symbolize_keys)
+  rescue Faraday::Error => e
+    Rails.logger.error("Failed to fetch runs: #{e.message}")
+    flash.now[:alert] = "Runs could not be loaded. Try again."
+    Kaminari.paginate_array([]).page(1)
   end
 
   def run_params

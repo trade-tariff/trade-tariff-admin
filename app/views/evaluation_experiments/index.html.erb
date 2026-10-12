@@ -7,6 +7,7 @@
 
 <div class="govuk-button-group govuk-!-margin-bottom-6">
   <%= link_to "New experiment", new_evaluation_experiment_path, class: "govuk-button" %>
+  <%= link_to "View all runs", evaluation_runs_path, class: "govuk-button govuk-button--secondary" %>
 </div>
 
 <% if @experiments.any? %>
@@ -29,6 +30,7 @@
           <td class="govuk-table__cell"><%= experiment.formatted_created_at %></td>
           <td class="govuk-table__cell"><%= experiment.created_by_name %></td>
           <td class="govuk-table__cell">
+            <%= link_to "View runs", evaluation_runs_path(experiment_id: experiment.resource_id), class: "govuk-link" %>
             <%= link_to delete_evaluation_experiment_path(experiment), class: "govuk-link" do %>Delete<span class="govuk-visually-hidden"> experiment <%= experiment.name %></span><% end %>
           </td>
         </tr>

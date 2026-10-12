@@ -35,6 +35,10 @@ class EvaluationGoldQuerySetsController < AuthenticatedController
     authorize EvaluationGoldQuerySet, :show?
 
     @items = fetch_items
+    respond_to do |format|
+      format.html
+      format.json { render json: { pending: @gold_query_set.generating?, html: render_to_string(partial: "status", formats: [:html]) } }
+    end
   end
 
   def confirm_destroy

@@ -356,4 +356,46 @@ RSpec.describe TradeTariffAdmin do
       it { is_expected.to be(true) }
     end
   end
+
+  describe ".sidekiq_uk_redis_url" do
+    it "returns SIDEKIQ_UK_REDIS_URL when it is set" do
+      ENV["SIDEKIQ_UK_REDIS_URL"] = "rediss://:secret@uk-sidekiq:6379"
+
+      expect(described_class.sidekiq_uk_redis_url).to eq("rediss://:secret@uk-sidekiq:6379")
+    end
+
+    it "returns the local Redis when SIDEKIQ_UK_REDIS_URL is not set outside production" do
+      ENV.delete("SIDEKIQ_UK_REDIS_URL")
+
+      expect(described_class.sidekiq_uk_redis_url).to eq("redis://localhost:6379/0")
+    end
+
+    it "raises KeyError when SIDEKIQ_UK_REDIS_URL is not set in production" do
+      ENV.delete("SIDEKIQ_UK_REDIS_URL")
+      allow(Rails).to receive(:env).and_return(ActiveSupport::EnvironmentInquirer.new("production"))
+
+      expect { described_class.sidekiq_uk_redis_url }.to raise_error(KeyError, /SIDEKIQ_UK_REDIS_URL/)
+    end
+  end
+
+  describe ".sidekiq_xi_redis_url" do
+    it "returns SIDEKIQ_XI_REDIS_URL when it is set" do
+      ENV["SIDEKIQ_XI_REDIS_URL"] = "rediss://:secret@xi-sidekiq:6379"
+
+      expect(described_class.sidekiq_xi_redis_url).to eq("rediss://:secret@xi-sidekiq:6379")
+    end
+
+    it "returns the local Redis when SIDEKIQ_XI_REDIS_URL is not set outside production" do
+      ENV.delete("SIDEKIQ_XI_REDIS_URL")
+
+      expect(described_class.sidekiq_xi_redis_url).to eq("redis://localhost:6379/0")
+    end
+
+    it "raises KeyError when SIDEKIQ_XI_REDIS_URL is not set in production" do
+      ENV.delete("SIDEKIQ_XI_REDIS_URL")
+      allow(Rails).to receive(:env).and_return(ActiveSupport::EnvironmentInquirer.new("production"))
+
+      expect { described_class.sidekiq_xi_redis_url }.to raise_error(KeyError, /SIDEKIQ_XI_REDIS_URL/)
+    end
+  end
 end

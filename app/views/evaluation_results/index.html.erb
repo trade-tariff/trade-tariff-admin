@@ -1,0 +1,41 @@
+<%= link_to "Back to run", evaluation_run_path(params[:evaluation_run_id]), class: "govuk-back-link" %>
+
+<h1 class="govuk-heading-l">Results</h1>
+
+<% if @results.any? %>
+  <table class="govuk-table">
+    <caption class="govuk-table__caption govuk-table__caption--s"><%= pluralize(@results.total_count, "result") %></caption>
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th class="govuk-table__header" scope="col">Source</th>
+        <th class="govuk-table__header" scope="col">Persona</th>
+        <th class="govuk-table__header" scope="col">Expected code</th>
+        <th class="govuk-table__header" scope="col">Returned code</th>
+        <th class="govuk-table__header" scope="col">Rank</th>
+        <th class="govuk-table__header" scope="col">Outcome</th>
+        <th class="govuk-table__header" scope="col">Cost</th>
+        <th class="govuk-table__header" scope="col">Latency</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+      <% @results.each do |result| %>
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell"><%= link_to "#{gold_query_source_label(result.source_type)} #{result.source_id}", evaluation_run_result_path(params[:evaluation_run_id], result), class: "govuk-link" %></td>
+          <td class="govuk-table__cell"><%= gold_query_persona_label(result.persona) %></td>
+          <td class="govuk-table__cell"><%= result.expected_code %></td>
+          <td class="govuk-table__cell"><%= result.final_code || "-" %></td>
+          <td class="govuk-table__cell"><%= result.final_rank || "-" %></td>
+          <td class="govuk-table__cell"><%= result.passed? ? "Pass" : "Fail" %></td>
+          <td class="govuk-table__cell"><%= result.pricing_known ? (result.cost_usd || "-") : "Unknown" %></td>
+          <td class="govuk-table__cell"><%= result.latency_seconds || "-" %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <%= paginate @results %>
+<% else %>
+  <div class="govuk-inset-text">
+    <p class="govuk-body">No results yet.</p>
+  </div>
+<% end %>
