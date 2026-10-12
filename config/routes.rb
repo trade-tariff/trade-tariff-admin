@@ -203,6 +203,7 @@ Rails.application.routes.draw do
   end
   resources :evaluation_runs, only: %i[index new create show] do
     post :cancel, on: :member
+    get :compare, on: :collection
     # Declared here, one task ahead of EvaluationResultsController's own existence (added later,
     # alongside the drill-in page) — the same forward-reference pattern already used for the
     # launch form. Route declarations only need to exist for their *_path helpers to work; Rails

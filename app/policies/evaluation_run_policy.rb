@@ -10,4 +10,8 @@ class EvaluationRunPolicy < ApplicationPolicy
   def show?
     technical_operator?
   end
+
+  def compare?
+    technical_operator?
+  end
 end

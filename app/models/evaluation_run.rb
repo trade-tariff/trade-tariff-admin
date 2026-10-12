@@ -66,6 +66,10 @@ class EvaluationRun
     %w[queued running].include?(status)
   end
 
+  def completed?
+    status == "completed"
+  end
+
   def cancellable?
     generating?
   end

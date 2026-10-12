@@ -141,4 +141,20 @@ RSpec.describe EvaluationRun do
       expect(run.persona_rows).to eq([])
     end
   end
+
+  describe "#completed?" do
+    it "is true when the run finished without being cancelled or failing" do
+      run = described_class.new("status" => "completed")
+
+      expect(run.completed?).to be(true)
+    end
+
+    it "is false for every other status, including partially_failed" do
+      %w[queued running partially_failed failed cancelled].each do |status|
+        run = described_class.new("status" => status)
+
+        expect(run.completed?).to be(false)
+      end
+    end
+  end
 end

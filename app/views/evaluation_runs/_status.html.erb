@@ -40,11 +40,17 @@
     </div>
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">Accuracy</dt>
-      <dd class="govuk-summary-list__value"><%= evaluation_run_rate(@run.top1_rate) %> in top 1, <%= evaluation_run_rate(@run.top5_rate) %> in top 5</dd>
+      <dd class="govuk-summary-list__value">
+        <%= evaluation_run_rate(@run.top1_rate) %> in top 1, <%= evaluation_run_rate(@run.top5_rate) %> in top 5
+        <p class="govuk-hint govuk-!-margin-bottom-0">How often the correct commodity code was the top result, or appeared anywhere in the top 5 results shown.</p>
+      </dd>
     </div>
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">Cost</dt>
-      <dd class="govuk-summary-list__value">Total <%= @run.total_cost_usd %>, average <%= evaluation_run_average(@run.total_cost_usd, @run.result_count) %> per result</dd>
+      <dd class="govuk-summary-list__value">
+        Total <%= @run.total_cost_usd %>, average <%= evaluation_run_average(@run.total_cost_usd, @run.result_count) %> per result
+        <p class="govuk-hint govuk-!-margin-bottom-0">Covers the AI cost of generating clarifying questions and any embedding calls this run made — not the cost of simulating the trader's answers.</p>
+      </dd>
     </div>
     <% if @run.unpriced_result_count.to_i.positive? %>
       <%# At least one result used a model missing from config/openai_model_pricing.yml in
@@ -56,7 +62,10 @@
     <% end %>
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">Latency</dt>
-      <dd class="govuk-summary-list__value">Average <%= evaluation_run_seconds(@run.average_latency_seconds) %> per result</dd>
+      <dd class="govuk-summary-list__value">
+        Average <%= evaluation_run_seconds(@run.average_latency_seconds) %> per result
+        <p class="govuk-hint govuk-!-margin-bottom-0">How long each question took on average, start to finish, including every clarifying question it took to get an answer.</p>
+      </dd>
     </div>
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">Started</dt>

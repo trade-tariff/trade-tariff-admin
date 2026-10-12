@@ -459,6 +459,14 @@ RSpec.describe EvaluationRunsController, type: :request do
         expect(page).to have_css("dd", text: "2.5")
       end
 
+      it "explains in plain English what the accuracy, cost and latency figures mean" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("dd .govuk-hint", text: "top result")
+        expect(page).to have_css("dd .govuk-hint", text: "clarifying question")
+        expect(page).to have_css("dd .govuk-hint", text: "simulating the trader")
+      end
+
       it "shows the costliest result with its type and commodity code, and a plain dash when there is no cheapest one" do
         page = Capybara.string(rendered_page.body)
 
@@ -718,6 +726,181 @@ RSpec.describe EvaluationRunsController, type: :request do
       it "shows an empty list and a warning instead of an error page" do
         expect(rendered_page).to have_http_status(:success)
         expect(rendered_page.body).to include("Runs could not be loaded. Try again.")
+      end
+    end
+
+    context "when the user is not a technical operator" do
+      let(:current_user) { create(:user, :hmrc_admin) }
+
+      it { is_expected.to have_http_status :forbidden }
+    end
+
+    context "when filtering by a specific experiment" do
+      let(:make_request) { get evaluation_runs_path(experiment_id: "7") }
+
+      before { stub_api_request("/search/evaluation/runs").with(query: hash_including("experiment_id" => "7")).and_return(paginated_response([run_attributes.merge("resource_id" => "9")])) }
+
+      it "offers a checkbox for each finished run, to select it for comparison" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_field("run_ids[]", type: "checkbox")
+        expect(page).to have_button("Compare selected runs")
+      end
+    end
+
+    it "offers no comparison checkboxes when viewing all experiments together, to avoid selecting runs that can't be compared" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).not_to have_field("run_ids[]", type: "checkbox")
+      expect(page).not_to have_button("Compare selected runs")
+    end
+
+    # Not "completed" covers both a run still in flight (AI-1427's original check) and one that's
+    # finished without completing cleanly -- a failed/cancelled/partially_failed run is reachable
+    # through this same checkbox otherwise, which is what let a cancelled-while-queued run (nil
+    # started_at) crash the comparison page instead of bouncing back with a friendly message.
+    %w[running partially_failed failed cancelled].each do |status|
+      context "when filtering by a specific experiment, and a run is #{status}, not completed" do
+        let(:make_request) { get evaluation_runs_path(experiment_id: "7") }
+        let(:run_attributes) { super().merge("status" => status) }
+
+        before { stub_api_request("/search/evaluation/runs").with(query: hash_including("experiment_id" => "7")).and_return(paginated_response([run_attributes.merge("resource_id" => "9")])) }
+
+        it "does not offer a checkbox for a run that hasn't completed" do
+          page = Capybara.string(rendered_page.body)
+
+          expect(page).not_to have_field("run_ids[]", type: "checkbox")
+        end
+      end
+    end
+  end
+
+  describe "GET #compare" do
+    let(:make_request) { get compare_evaluation_runs_path(run_ids: %w[9 10], experiment_id: "7") }
+    let(:run_a_attributes) do
+      {
+        "experiment_id" => 7,
+        "experiment_name" => "Baseline",
+        "status" => "completed",
+        "result_count" => 10,
+        "gold_in_top1_count" => 6,
+        "gold_in_top5_count" => 9,
+        "total_cost_usd" => "0.0500",
+        "total_latency_seconds" => 25.0,
+        "started_at" => "2026-10-01T09:00:00Z",
+      }
+    end
+    let(:run_b_attributes) do
+      {
+        "experiment_id" => 7,
+        "experiment_name" => "Baseline",
+        "status" => "completed",
+        "result_count" => 10,
+        "gold_in_top1_count" => 8,
+        "gold_in_top5_count" => 10,
+        "total_cost_usd" => "0.0800",
+        "total_latency_seconds" => 40.0,
+        "started_at" => "2026-10-01T10:00:00Z",
+      }
+    end
+
+    before do
+      stub_api_request("/search/evaluation/runs/9").and_return(jsonapi_response("run", run_a_attributes.merge("resource_id" => "9")))
+      stub_api_request("/search/evaluation/runs/10").and_return(jsonapi_response("run", run_b_attributes.merge("resource_id" => "10")))
+    end
+
+    it { is_expected.to have_http_status :success }
+
+    it "shows both runs' metrics side by side" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_css("th", text: "Run #9")
+      expect(page).to have_css("th", text: "Run #10")
+      expect(page).to have_css("td", text: "Top 1 accuracy")
+      expect(page).to have_css("td", text: "60%")
+      expect(page).to have_css("td", text: "80%")
+    end
+
+    context "when the two runs were started in the opposite order" do
+      let(:make_request) { get compare_evaluation_runs_path(run_ids: %w[10 9], experiment_id: "7") }
+
+      it "still shows the earlier-started run first, so the baseline is always on the left" do
+        page = Capybara.string(rendered_page.body)
+
+        headers = page.all("th").map(&:text)
+        expect(headers.index { |text| text.include?("Run #9") }).to be < headers.index { |text| text.include?("Run #10") }
+      end
+    end
+
+    context "when fewer than two runs are selected" do
+      let(:make_request) { get compare_evaluation_runs_path(run_ids: %w[9], experiment_id: "7") }
+
+      it "bounces back to the run list with an explanation, rather than erroring" do
+        expect(rendered_page).to redirect_to(evaluation_runs_path(experiment_id: "7"))
+
+        rendered_page
+        expect(session.dig("flash", "flashes", "alert")).to eq("Select exactly two finished runs from the same experiment to compare.")
+      end
+    end
+
+    context "when more than two runs are selected" do
+      let(:make_request) { get compare_evaluation_runs_path(run_ids: %w[9 10 11], experiment_id: "7") }
+
+      before { stub_api_request("/search/evaluation/runs/11").and_return(jsonapi_response("run", run_a_attributes.merge("resource_id" => "11"))) }
+
+      it "bounces back with the same explanation" do
+        expect(rendered_page).to redirect_to(evaluation_runs_path(experiment_id: "7"))
+      end
+    end
+
+    # Not "completed" covers a run still in flight and one that finished without completing
+    # cleanly -- the latter matters because a cancelled-while-queued run has no started_at at
+    # all, and the sort below would raise comparing nil with a string if it were ever reached
+    # (AI-1427 review feedback).
+    %w[running partially_failed failed cancelled].each do |status|
+      context "when one of the selected runs is #{status}, not completed" do
+        before { stub_api_request("/search/evaluation/runs/10").and_return(jsonapi_response("run", run_b_attributes.merge("status" => status, "resource_id" => "10"))) }
+
+        it "bounces back rather than comparing a run that hasn't completed" do
+          expect(rendered_page).to redirect_to(evaluation_runs_path(experiment_id: "7"))
+        end
+      end
+    end
+
+    context "when one of the selected runs was cancelled before it ever started running" do
+      before { stub_api_request("/search/evaluation/runs/10").and_return(jsonapi_response("run", run_b_attributes.merge("status" => "cancelled", "started_at" => nil, "resource_id" => "10"))) }
+
+      it "bounces back instead of raising when there's no started_at to sort by" do
+        expect(rendered_page).to redirect_to(evaluation_runs_path(experiment_id: "7"))
+      end
+    end
+
+    context "when the backend can't be reached while loading a selected run" do
+      before { stub_api_request("/search/evaluation/runs/10").to_raise(Faraday::ConnectionFailed) }
+
+      it "redirects to the experiment list with a warning, not the generic selection message" do
+        expect(rendered_page).to redirect_to(evaluation_experiments_path)
+
+        rendered_page
+        expect(session.dig("flash", "flashes", "alert")).to eq("The launch form could not be loaded. Try again.")
+      end
+    end
+
+    context "when the selected runs belong to different experiments" do
+      before { stub_api_request("/search/evaluation/runs/10").and_return(jsonapi_response("run", run_b_attributes.merge("experiment_id" => 99, "resource_id" => "10"))) }
+
+      it "bounces back rather than comparing across experiments" do
+        expect(rendered_page).to have_http_status(:found)
+        rendered_page
+        expect(session.dig("flash", "flashes", "alert")).to eq("Select exactly two finished runs from the same experiment to compare.")
+      end
+    end
+
+    context "when a selected run does not exist" do
+      before { stub_api_request("/search/evaluation/runs/10").to_raise(Faraday::ResourceNotFound) }
+
+      it "bounces back with the same explanation, rather than a 404" do
+        expect(rendered_page).to redirect_to(evaluation_runs_path(experiment_id: "7"))
       end
     end
 
