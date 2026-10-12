@@ -16,7 +16,7 @@ RSpec.describe "Passwordless authentication", type: :request do
   it "permits protected access after the callback" do
     get "/auth/redirect"
     get dashboard_path
-    expect(response).not_to redirect_to(TradeTariffAdmin.identity_consumer_url)
+    expect(response).to redirect_to(customs_tariff_updates_path)
   end
 
   context "without a prepared local account" do
@@ -34,8 +34,13 @@ RSpec.describe "Passwordless authentication", type: :request do
     end
   end
 
-  context "with a rejected token" do
-    let(:verify_result) { VerifyToken::Result.new(valid: false, payload: nil, reason: :not_in_group) }
+  context "with a token outside the admin group" do
+    before do
+      allow(VerifyToken).to receive(:new).and_call_original
+      allow(TradeTariffAdmin).to receive_messages(identity_cognito_jwks_keys: %w[key], identity_consumer: "admin")
+      allow(DecryptToken).to receive(:new).with(id_token).and_return(instance_double(DecryptToken, call: id_token))
+      allow(DecodeJwt).to receive(:new).with(id_token).and_return(instance_double(DecodeJwt, call: decoded_id_token.merge("cognito:groups" => %w[other-group])))
+    end
 
     it "creates no consumer session and grants no protected access", :aggregate_failures do
       expect { get "/auth/redirect" }.not_to change(Session, :count)
