@@ -58,6 +58,17 @@ module EvaluationRunsHelper
   # that trades cost for accuracy should show as "cost worse, accuracy better", not wash out into
   # a single composite score. higher_is_better flips the win direction for the two rate metrics
   # against the two cost/latency metrics, since "better" means opposite things for each pair.
+  # A compared run is always either completed, or a partially_failed run whose every gold query
+  # still got a result (AI-1431) -- the second case needs a visible flag so a reader doesn't
+  # mistake its few "ran out of rounds"/session-error results for ordinary scored answers the
+  # way a completed run's results all are. Blank, not a tag, for completed, since that's the
+  # ordinary case needing no flag.
+  def evaluation_run_comparison_status_tag(run)
+    return "" if run.completed?
+
+    tag.span(run.status.humanize, class: "govuk-tag govuk-tag--yellow")
+  end
+
   def evaluation_run_comparison_rows(run_a, run_b)
     label_a = "Run ##{run_a.resource_id}"
     label_b = "Run ##{run_b.resource_id}"

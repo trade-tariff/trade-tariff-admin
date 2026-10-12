@@ -10,10 +10,12 @@
       <th class="govuk-table__header" scope="col">
         <%= link_to "Run ##{@run_a.resource_id}", evaluation_run_path(@run_a), class: "govuk-link" %>
         (<%= @run_a.started_at %>)
+        <%= evaluation_run_comparison_status_tag(@run_a) %>
       </th>
       <th class="govuk-table__header" scope="col">
         <%= link_to "Run ##{@run_b.resource_id}", evaluation_run_path(@run_b), class: "govuk-link" %>
         (<%= @run_b.started_at %>)
+        <%= evaluation_run_comparison_status_tag(@run_b) %>
       </th>
       <th class="govuk-table__header" scope="col">Which is better</th>
     </tr>
