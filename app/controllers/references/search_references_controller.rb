@@ -8,12 +8,13 @@ module References
 
     def index
       authorize SearchReference, :index?
-      @search_references = search_reference_parent.search_references
+      @usage_filter = usage_filter_param
+      @search_references = search_reference_parent.search_references(usage: @usage_filter)
     end
 
     def new
       authorize SearchReference, :create?
-      @search_reference = SearchReference.new
+      @search_reference = SearchReference.new(usage: SearchReference::SEARCH_USAGE)
       if release_service_params_present?
         assign_release_services_to_form(@search_reference)
       else
@@ -81,7 +82,7 @@ module References
         reference = search_reference_for_action
         next :missing if reference.blank?
 
-        reference.build(title: normalised_title)
+        reference.build(reference_attributes)
         assign_release_services_to_form(reference)
         reference.save
         reference
@@ -137,7 +138,7 @@ module References
 
     def search_reference_for_action
       @search_reference_for_action ||= begin
-        search_reference_parent.search_references.find(params[:id]).tap do |reference|
+        search_reference_parent.search_references(usage: SearchReference::ALL_USAGES).find(params[:id]).tap do |reference|
           reference.referenced_id = search_reference_parent.id
         end
       rescue Faraday::ResourceNotFound
@@ -177,8 +178,20 @@ module References
     end
 
     def search_reference_params
-      params.require(:search_reference).permit(:title, :original_title, :release_to_uk, :release_to_xi)
+      params.require(:search_reference).permit(:title, :original_title, :usage, :release_to_uk, :release_to_xi)
     end
+
+    def reference_attributes
+      attributes = { title: normalised_title }
+      usage = search_reference_params[:usage]
+      attributes[:usage] = usage if SearchReference::USAGE_NAMES.key?(usage)
+      attributes
+    end
+
+    def usage_filter_param
+      SearchReference::USAGE_FILTERS.key?(params[:usage]) ? params[:usage] : SearchReference::SEARCH_USAGE
+    end
+    helper_method :usage_filter_param
 
     def selected_release_services
       RELEASE_SERVICES.select do |service|
@@ -255,7 +268,7 @@ module References
     def fallback_reference_by_original_title
       return nil if normalised_original_title_param.blank?
 
-      reference = search_reference_parent.search_references.detect do |entry|
+      reference = search_reference_parent.search_references(usage: SearchReference::ALL_USAGES).detect do |entry|
         SearchReferences::TitleNormaliser.normalise_title(entry.title) == normalised_original_title_param
       end
       return reference if reference
@@ -272,7 +285,7 @@ module References
       other_services.each do |service|
         TradeTariffAdmin::ServiceChooser.service_choice = service
 
-        reference = search_reference_parent.search_references.detect do |entry|
+        reference = search_reference_parent.search_references(usage: SearchReference::ALL_USAGES).detect do |entry|
           SearchReferences::TitleNormaliser.normalise_title(entry.title) == normalised_original_title_param
         end
         return reference if reference
@@ -294,7 +307,7 @@ module References
     end
 
     def build_search_reference
-      search_reference_parent.search_references.build(title: normalised_title)
+      search_reference_parent.search_references.build(reference_attributes)
     end
   end
 end
