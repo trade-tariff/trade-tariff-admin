@@ -21,7 +21,7 @@ class EvaluationResultsController < AuthenticatedController
 private
 
   def fetch_results
-    EvaluationResult.all(params.permit(:page).to_h.symbolize_keys.merge(run_id: params[:evaluation_run_id]))
+    EvaluationResult.all(params.permit(:page, :persona, :outcome).to_h.symbolize_keys.merge(run_id: params[:evaluation_run_id]))
   rescue Faraday::Error => e
     Rails.logger.error("Failed to fetch results: #{e.message}")
     flash.now[:alert] = "Results could not be loaded. Try again."

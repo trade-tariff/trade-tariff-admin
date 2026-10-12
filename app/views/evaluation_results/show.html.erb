@@ -21,7 +21,7 @@
   </div>
   <div class="govuk-summary-list__row">
     <dt class="govuk-summary-list__key">Outcome</dt>
-    <dd class="govuk-summary-list__value"><%= @result.passed? ? "Pass" : "Fail" %></dd>
+    <dd class="govuk-summary-list__value"><%= @result.outcome.capitalize %></dd>
   </div>
   <div class="govuk-summary-list__row">
     <dt class="govuk-summary-list__key">In top 1</dt>

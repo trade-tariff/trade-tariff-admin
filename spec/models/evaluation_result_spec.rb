@@ -44,4 +44,23 @@ RSpec.describe EvaluationResult do
       expect(result).not_to be_passed
     end
   end
+
+  describe "#outcome" do
+    it "is pass when the gold code was in the top 5" do
+      expect(result.outcome).to eq("pass")
+    end
+
+    it "is fail when the gold code was not in the top 5 and nothing errored" do
+      result.gold_in_top5 = false
+
+      expect(result.outcome).to eq("fail")
+    end
+
+    it "is error when the gold query's own session broke, even though gold_in_top5 is also false" do
+      result.gold_in_top5 = false
+      result.error = "simulator exhausted its retries without producing an answer"
+
+      expect(result.outcome).to eq("error")
+    end
+  end
 end
