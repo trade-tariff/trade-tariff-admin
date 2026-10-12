@@ -9,6 +9,11 @@ permissions:
   contents: read
   id-token: write
 
+# Cancel pull request runs that a newer push replaces. Never cancel merge queue runs.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 env:
   TERRAFORM_VERSION: 1.13.5
   PYTHON_VERSION: 3
