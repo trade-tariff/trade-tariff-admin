@@ -777,16 +777,14 @@ RSpec.describe EvaluationRunsController, type: :request do
 
     # partially_failed covers two different situations (AI-1431): every gold query still got a
     # result and only an individual Q&A session errored along the way (result_count matches the
-    # gold query set's own size), or the run was cut short and the rest were never attempted
-    # (result_count falls short). Only the first is safe to compare, so only it gets a checkbox.
+    # run's own intended_result_count, snapshotted once at launch -- AI-1435), or the run was cut
+    # short and the rest were never attempted (result_count falls short). Only the first is safe
+    # to compare, so only it gets a checkbox.
     context "when filtering by a specific experiment, and a run is partially_failed but every gold query still got a result" do
       let(:make_request) { get evaluation_runs_path(experiment_id: "7") }
-      let(:run_attributes) { super().merge("status" => "partially_failed", "result_count" => 10) }
+      let(:run_attributes) { super().merge("status" => "partially_failed", "result_count" => 10, "intended_result_count" => 10) }
 
-      before do
-        stub_api_request("/search/evaluation/runs").with(query: hash_including("experiment_id" => "7")).and_return(paginated_response([run_attributes.merge("resource_id" => "9")]))
-        stub_api_request("/search/evaluation/gold_query_sets/3").and_return(jsonapi_response("gold_query_set", { "gold_query_count" => 10, "resource_id" => "3" }))
-      end
+      before { stub_api_request("/search/evaluation/runs").with(query: hash_including("experiment_id" => "7")).and_return(paginated_response([run_attributes.merge("resource_id" => "9")])) }
 
       it "offers a checkbox, the same as a completed run" do
         page = Capybara.string(rendered_page.body)
@@ -797,12 +795,9 @@ RSpec.describe EvaluationRunsController, type: :request do
 
     context "when filtering by a specific experiment, and a run is partially_failed because it was cut short partway through" do
       let(:make_request) { get evaluation_runs_path(experiment_id: "7") }
-      let(:run_attributes) { super().merge("status" => "partially_failed", "result_count" => 4) }
+      let(:run_attributes) { super().merge("status" => "partially_failed", "result_count" => 4, "intended_result_count" => 10) }
 
-      before do
-        stub_api_request("/search/evaluation/runs").with(query: hash_including("experiment_id" => "7")).and_return(paginated_response([run_attributes.merge("resource_id" => "9")]))
-        stub_api_request("/search/evaluation/gold_query_sets/3").and_return(jsonapi_response("gold_query_set", { "gold_query_count" => 10, "resource_id" => "3" }))
-      end
+      before { stub_api_request("/search/evaluation/runs").with(query: hash_including("experiment_id" => "7")).and_return(paginated_response([run_attributes.merge("resource_id" => "9")])) }
 
       it "does not offer a checkbox, the same as any other run that hasn't completed" do
         page = Capybara.string(rendered_page.body)
@@ -811,19 +806,19 @@ RSpec.describe EvaluationRunsController, type: :request do
       end
     end
 
-    context "when the backend can't be reached while checking a partially_failed run's gold query set" do
+    # A run started before this field existed has no intended_result_count at all (never
+    # backfilled -- there's no way to know, after the fact, what size its gold query set had at
+    # its own launch time, AI-1435). Treated as not comparable, the same safe default as any
+    # other partially_failed run this can't positively confirm was fully scored.
+    context "when filtering by a specific experiment, and a partially_failed run predates intended_result_count" do
       let(:make_request) { get evaluation_runs_path(experiment_id: "7") }
-      let(:run_attributes) { super().merge("status" => "partially_failed", "result_count" => 10) }
+      let(:run_attributes) { super().merge("status" => "partially_failed", "result_count" => 10, "intended_result_count" => nil) }
 
-      before do
-        stub_api_request("/search/evaluation/runs").with(query: hash_including("experiment_id" => "7")).and_return(paginated_response([run_attributes.merge("resource_id" => "9")]))
-        stub_api_request("/search/evaluation/gold_query_sets/3").to_raise(Faraday::ConnectionFailed)
-      end
+      before { stub_api_request("/search/evaluation/runs").with(query: hash_including("experiment_id" => "7")).and_return(paginated_response([run_attributes.merge("resource_id" => "9")])) }
 
-      it "still shows the list, just without a checkbox for that row, instead of taking down the whole page" do
-        expect(rendered_page).to have_http_status(:success)
-
+      it "does not offer a checkbox" do
         page = Capybara.string(rendered_page.body)
+
         expect(page).not_to have_field("run_ids[]", type: "checkbox")
       end
     end
@@ -925,13 +920,11 @@ RSpec.describe EvaluationRunsController, type: :request do
 
     # partially_failed covers two different situations (AI-1431): every gold query still got a
     # result and only an individual Q&A session errored along the way (result_count matches the
-    # gold query set's own size), or the run was cut short and the rest were never attempted
-    # (result_count falls short). Only the first is safe to compare.
+    # run's own intended_result_count, snapshotted once at launch -- AI-1435), or the run was cut
+    # short and the rest were never attempted (result_count falls short). Only the first is safe
+    # to compare.
     context "when one of the selected runs is partially_failed but every gold query still got a result" do
-      before do
-        stub_api_request("/search/evaluation/runs/10").and_return(jsonapi_response("run", run_b_attributes.merge("status" => "partially_failed", "resource_id" => "10")))
-        stub_api_request("/search/evaluation/gold_query_sets/3").and_return(jsonapi_response("gold_query_set", { "gold_query_count" => 10, "resource_id" => "3" }))
-      end
+      before { stub_api_request("/search/evaluation/runs/10").and_return(jsonapi_response("run", run_b_attributes.merge("status" => "partially_failed", "intended_result_count" => 10, "resource_id" => "10"))) }
 
       it "compares it, the same as a completed run, but flags it so its results aren't mistaken for a completed run's" do
         expect(rendered_page).to have_http_status(:success)
@@ -943,27 +936,21 @@ RSpec.describe EvaluationRunsController, type: :request do
     end
 
     context "when one of the selected runs is partially_failed because it was cut short partway through" do
-      before do
-        stub_api_request("/search/evaluation/runs/10").and_return(jsonapi_response("run", run_b_attributes.merge("status" => "partially_failed", "result_count" => 4, "resource_id" => "10")))
-        stub_api_request("/search/evaluation/gold_query_sets/3").and_return(jsonapi_response("gold_query_set", { "gold_query_count" => 10, "resource_id" => "3" }))
-      end
+      before { stub_api_request("/search/evaluation/runs/10").and_return(jsonapi_response("run", run_b_attributes.merge("status" => "partially_failed", "result_count" => 4, "intended_result_count" => 10, "resource_id" => "10"))) }
 
       it "bounces back rather than comparing a run that was cut short" do
         expect(rendered_page).to redirect_to(evaluation_runs_path(experiment_id: "7"))
       end
     end
 
-    context "when the backend can't be reached while checking a partially_failed run's gold query set" do
-      before do
-        stub_api_request("/search/evaluation/runs/10").and_return(jsonapi_response("run", run_b_attributes.merge("status" => "partially_failed", "resource_id" => "10")))
-        stub_api_request("/search/evaluation/gold_query_sets/3").to_raise(Faraday::ConnectionFailed)
-      end
+    # A run started before this field existed has no intended_result_count at all (never
+    # backfilled -- AI-1435). Treated as not comparable, the same safe default as any other
+    # partially_failed run this can't positively confirm was fully scored.
+    context "when one of the selected runs is partially_failed and predates intended_result_count" do
+      before { stub_api_request("/search/evaluation/runs/10").and_return(jsonapi_response("run", run_b_attributes.merge("status" => "partially_failed", "intended_result_count" => nil, "resource_id" => "10"))) }
 
-      it "redirects to the experiment list with a warning, not the generic selection message" do
-        expect(rendered_page).to redirect_to(evaluation_experiments_path)
-
-        rendered_page
-        expect(session.dig("flash", "flashes", "alert")).to eq("The launch form could not be loaded. Try again.")
+      it "bounces back rather than comparing a run it can't confirm was fully scored" do
+        expect(rendered_page).to redirect_to(evaluation_runs_path(experiment_id: "7"))
       end
     end
 

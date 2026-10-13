@@ -139,11 +139,10 @@ private
 
     runs.sort_by(&:started_at)
   rescue Faraday::ResourceNotFound
-    # A bad/hand-edited run id, or a partially_failed run's gold_query_set_id pointing at a set
-    # that's since been deleted -- either way still folded into the same generic message as any
-    # other invalid selection. Anything else (timeouts, 5xx, connection failures) is a real
-    # backend problem, not a bad selection, so it's left to propagate to the class-level
-    # rescue_from Faraday::Error above instead of being swallowed here (AI-1427 review feedback).
+    # A bad/hand-edited run id -- folded into the same generic message as any other invalid
+    # selection. Anything else (timeouts, 5xx, connection failures) is a real backend problem,
+    # not a bad selection, so it's left to propagate to the class-level rescue_from Faraday::Error
+    # above instead of being swallowed here (AI-1427 review feedback).
     [nil, nil]
   end
 
@@ -151,27 +150,16 @@ private
   # a result and only an individual Q&A session errored along the way (comparable -- its totals
   # are just as complete as a completed run's), or the run was cut short partway through and the
   # remaining gold queries were never attempted at all (not comparable -- its totals cover fewer
-  # items). EvaluationRun#fully_scored? tells the two apart by checking result_count against the
-  # run's own gold query set size, which needs an extra fetch load_comparison_runs' rescue above
-  # already covers (AI-1431).
+  # items). EvaluationRun#fully_scored? tells the two apart by comparing result_count against
+  # intended_result_count, a plain number already loaded on the run itself (AI-1435) -- no extra
+  # backend call, so nothing here can fail on its own.
   def comparable_run?(run)
     return true if run.completed?
     return false unless run.status == "partially_failed"
-    return false if run.gold_query_set_id.blank?
 
-    run.fully_scored?(EvaluationGoldQuerySet.find(run.gold_query_set_id).gold_query_count)
+    run.fully_scored?
   end
-
-  # The list page's checkbox needs the same eligibility rule as the compare action, but a
-  # transient backend hiccup checking ONE partially_failed row's gold query set must not take
-  # down the whole list the way #fetch_runs' own rescue already protects it from any other
-  # outage -- #index deliberately never relies on the class-level rescue_from (see #fetch_runs).
-  def show_compare_checkbox?(run)
-    comparable_run?(run)
-  rescue Faraday::Error
-    false
-  end
-  helper_method :show_compare_checkbox?
+  helper_method :comparable_run?
 
   def fetch_gold_query_sets
     EvaluationGoldQuerySet.all(per_page: 200)
