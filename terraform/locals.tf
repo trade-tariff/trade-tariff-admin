@@ -10,6 +10,12 @@ locals {
 
   ecr_repo = "382373577178.dkr.ecr.eu-west-2.amazonaws.com/tariff-admin-production"
 
+  # Cost allocation tags. Activate them in the Billing console so Cost Explorer
+  # can group costs by component. The module copies them to each Fargate task.
+  cost_allocation_tags = {
+    Component = "admin"
+  }
+
   database_env_vars = [
     {
       name  = "DATABASE_URL"
