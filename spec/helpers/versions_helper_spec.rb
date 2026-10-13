@@ -15,6 +15,12 @@ RSpec.describe VersionsHelper, type: :helper do
 
       expect(helper.version_item_link(version)).to eq(tariff_knowledge_synthetic_atar_path("12", oid: "77"))
     end
+
+    it "links a search reference version to its page, at that version" do
+      version = Version.new(resource_id: "88", item_type: "SearchReference", item_id: "34", event: "destroy", object: {})
+
+      expect(helper.version_item_link(version)).to eq(search_reference_path("34", oid: "88"))
+    end
   end
 
   describe "#changeset_summary" do

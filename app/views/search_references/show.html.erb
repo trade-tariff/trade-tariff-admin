@@ -1,0 +1,60 @@
+<%= govuk_breadcrumbs 'Recent changes': versions_path(item_type: 'SearchReference') %>
+
+<%= render 'versions/version_banner',
+           record: @search_reference,
+           current_path: search_reference_path(@search_reference),
+           type_name: 'search reference' %>
+
+<span class="govuk-caption-l">Search reference</span>
+<h1 class="govuk-heading-l"><%= @search_reference.title %></h1>
+
+<% if @search_reference.deleted? %>
+  <div class="govuk-warning-text">
+    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+    <strong class="govuk-warning-text__text">
+      <span class="govuk-visually-hidden">Warning</span>
+      This search reference has been deleted. Restore a version from the history below to bring it back.
+    </strong>
+  </div>
+<% end %>
+
+<dl class="govuk-summary-list govuk-!-margin-bottom-6">
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Title</dt>
+    <dd class="govuk-summary-list__value"><%= @search_reference.title %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Used for</dt>
+    <dd class="govuk-summary-list__value"><%= @search_reference.fpo? ? 'FPO training only' : 'Public search and FPO training' %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Referenced type</dt>
+    <dd class="govuk-summary-list__value"><%= @search_reference.referenced_class.presence || '-' %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Commodity code</dt>
+    <dd class="govuk-summary-list__value"><%= @search_reference.commodity_code_with_suffix.presence || '-' %></dd>
+  </div>
+</dl>
+
+<% parent_path = search_reference_parent_path(@search_reference) %>
+<% if @search_reference.current? && !@search_reference.deleted? && parent_path %>
+  <p class="govuk-body">
+    <%= link_to "Manage search references for #{@search_reference.referenced_class.to_s.downcase} #{@search_reference.commodity_code_with_suffix}",
+                parent_path,
+                class: 'govuk-link' %>
+  </p>
+<% end %>
+
+<% if @versions.present? %>
+  <%= render 'versions/history_section',
+             versions: @versions,
+             view_path_helper: ->(v) { search_reference_path(@search_reference, oid: v.resource_id) },
+             restore_path_helper: ->(v) { restore_version_path(v.resource_id) },
+             can_restore: policy(SearchReference).update?,
+             current_oid: @search_reference.version_oid %>
+<% end %>
+
+<%= render 'versions/version_navigation',
+           record: @search_reference,
+           version_path_helper: ->(oid) { search_reference_path(@search_reference, oid: oid) } %>
