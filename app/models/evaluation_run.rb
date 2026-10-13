@@ -18,6 +18,7 @@ class EvaluationRun
              :experiment_name,
              :status,
              :gold_query_set_id,
+             :intended_result_count,
              :effective_configuration,
              :run_time_overrides,
              :result_count,
@@ -74,10 +75,13 @@ class EvaluationRun
   # A "partially_failed" run can mean either of two very different things: every gold query got a
   # result, but one or more individual Q&A sessions errored along the way (this is still true),
   # or the run aborted partway through and the remaining gold queries were never attempted at all
-  # (this is false, since result_count falls short of intended_total) -- the status string alone
-  # can't tell the two apart, only comparing against the gold query set's own size can (AI-1431).
-  def fully_scored?(intended_total)
-    result_count == intended_total
+  # (this is false, since result_count falls short of intended_result_count) -- the status string
+  # alone can't tell the two apart (AI-1431). intended_result_count is a plain stored number, the
+  # run's own gold query set size snapshotted once at launch (AI-1435) -- a run from before this
+  # field existed has none, and nil never equals a real result_count, so it reads as false here,
+  # not comparable, the same safe default as today.
+  def fully_scored?
+    result_count == intended_result_count
   end
 
   def cancellable?
