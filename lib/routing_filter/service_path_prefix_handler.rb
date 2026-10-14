@@ -26,16 +26,16 @@ module RoutingFilter
         service_choice = ::TradeTariffAdmin::ServiceChooser.service_choice
 
         if service_choice.present? && service_choice != service_choice_default
-          prepended_url = prepend_segment(result.url, service_choice)
-          apply_prepended_url(result, prepended_url)
+          prepend_service_choice(result, service_choice)
         end
       end
     end
 
   private
 
-    def apply_prepended_url(result, prepended_url)
-      result.update(prepended_url)
+    # ResultWrapper#update replaces an in-memory URL; it is not model persistence.
+    def prepend_service_choice(result, service_choice)
+      result.update(prepend_segment(result.url, service_choice))
     end
 
     def service_choice_default
