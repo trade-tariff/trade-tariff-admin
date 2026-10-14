@@ -1,6 +1,10 @@
 RSpec.describe EvaluationResultsController, type: :request do
   subject(:rendered_page) { make_request && response }
 
+  def page
+    Capybara.string(rendered_page.body)
+  end
+
   include_context "with authenticated user"
 
   let(:current_user) { create(:user, :technical_operator) }
@@ -48,44 +52,30 @@ RSpec.describe EvaluationResultsController, type: :request do
     it { is_expected.to have_http_status :success }
 
     it "shows the Results heading" do
-      page = Capybara.string(rendered_page.body)
-
       expect(page).to have_css("h1", text: "Results")
     end
 
     it "links the source id to the result" do
-      page = Capybara.string(rendered_page.body)
-
       expect(page).to have_link("600004365", href: evaluation_run_result_path(run_id, "55"))
     end
 
     it "shows Pass for a correct result" do
-      page = Capybara.string(rendered_page.body)
-
       expect(page).to have_css("td", text: "Pass")
     end
 
     it "shows the cost" do
-      page = Capybara.string(rendered_page.body)
-
       expect(page).to have_css("td", text: "0.0034")
     end
 
     it "shows the latency" do
-      page = Capybara.string(rendered_page.body)
-
       expect(page).to have_css("td", text: "1.25")
     end
 
     it "shows which persona asked each one, not just the outcome" do
-      page = Capybara.string(rendered_page.body)
-
       expect(page).to have_css("td", text: "Generic search")
     end
 
     it "links back to the run, so an operator can get back to its summary" do
-      page = Capybara.string(rendered_page.body)
-
       expect(page).to have_css("a.govuk-back-link", text: "Back to run")
     end
 
@@ -102,8 +92,6 @@ RSpec.describe EvaluationResultsController, type: :request do
       end
 
       it "shows the source type alongside the id, not just the bare id" do
-        page = Capybara.string(rendered_page.body)
-
         expect(page).to have_link("Synthetic ATaR 8", href: evaluation_run_result_path(run_id, "55"))
       end
     end
@@ -120,15 +108,13 @@ RSpec.describe EvaluationResultsController, type: :request do
       end
 
       it "shows that the cost is unknown" do
-        page = Capybara.string(rendered_page.body)
-
         expect(page).to have_css("td", text: "Unknown")
       end
 
       it "does not show the misleadingly precise partial figure" do
-        page = Capybara.string(rendered_page.body)
+        row = page.find("a", text: "600004365").ancestor("tr")
 
-        expect(page).not_to have_css("td", text: "0.0034")
+        expect(row).not_to have_css("td", text: "0.0034")
       end
     end
 
@@ -138,8 +124,6 @@ RSpec.describe EvaluationResultsController, type: :request do
       before { stub_api_request("/search/evaluation/results").with(query: hash_including("page" => "2")).and_return(paginated_response([result_attributes.merge("resource_id" => "56", "source_id" => "600099999")], total_count: 21)) }
 
       it "requests that page from the backend, not an unbounded fetch" do
-        page = Capybara.string(rendered_page.body)
-
         expect(page).to have_link("600099999")
       end
     end
@@ -167,15 +151,13 @@ RSpec.describe EvaluationResultsController, type: :request do
       end
 
       it "shows Error in the Outcome column" do
-        page = Capybara.string(rendered_page.body)
-
         expect(page).to have_css("td", text: "Error")
       end
 
       it "does not show Fail in the Outcome column" do
-        page = Capybara.string(rendered_page.body)
+        row = page.find("a", text: "600004365").ancestor("tr")
 
-        expect(page).not_to have_css("td", text: "Fail")
+        expect(row).not_to have_css("td", text: "Fail")
       end
     end
 
@@ -191,8 +173,6 @@ RSpec.describe EvaluationResultsController, type: :request do
       end
 
       it "pre-selects the chosen persona in the filter form" do
-        page = Capybara.string(rendered_page.body)
-
         expect(page).to have_select("Persona", selected: "Specific search")
       end
     end
@@ -209,21 +189,15 @@ RSpec.describe EvaluationResultsController, type: :request do
       end
 
       it "pre-selects the chosen outcome in the filter form" do
-        page = Capybara.string(rendered_page.body)
-
         expect(page).to have_select("Outcome", selected: "Error")
       end
     end
 
     it "offers a persona filter" do
-      page = Capybara.string(rendered_page.body)
-
       expect(page).to have_select("Persona", options: ["All", "Generic search", "Ordinary search", "Specific search"])
     end
 
     it "offers an outcome filter" do
-      page = Capybara.string(rendered_page.body)
-
       expect(page).to have_select("Outcome", options: %w[All Pass Fail Error])
     end
 
@@ -233,14 +207,10 @@ RSpec.describe EvaluationResultsController, type: :request do
       before { stub_api_request("/search/evaluation/results").with(query: hash_including("page" => "2", "persona" => "emu_specific")).and_return(paginated_response([result_attributes.merge("resource_id" => "56")], total_count: 21)) }
 
       it "keeps the filter selected, not reset on the next page" do
-        page = Capybara.string(rendered_page.body)
-
         expect(page).to have_select("Persona", selected: "Specific search")
       end
 
       it "carries the filter param into the pagination links" do
-        page = Capybara.string(rendered_page.body)
-
         # Kaminari's params_on_first_page is false (this app's default config), so the link back
         # to page 1 omits the page param entirely rather than sending an explicit page=1 -- the
         # filter param being present at all is what this test is actually checking.
@@ -257,62 +227,42 @@ RSpec.describe EvaluationResultsController, type: :request do
     it { is_expected.to have_http_status :success }
 
     it "shows the source id in the heading" do
-      page = Capybara.string(rendered_page.body)
-
       expect(page).to have_css("h1", text: "600004365")
     end
 
     it "shows the question for the round" do
-      page = Capybara.string(rendered_page.body)
-
       expect(page).to have_css("td", text: "What material?")
     end
 
     it "shows the chosen answer for the round" do
-      page = Capybara.string(rendered_page.body)
-
       expect(page).to have_css("td", text: "Rubber")
     end
 
     it "shows the reasoning for the round" do
-      page = Capybara.string(rendered_page.body)
-
       expect(page).to have_css("details", text: "oracle text says rubber sole")
     end
 
     it "links back to the results list, so an operator can get back to it" do
-      page = Capybara.string(rendered_page.body)
-
       expect(page).to have_css("a.govuk-back-link", text: "Back to results")
     end
 
     it "shows the rank" do
-      page = Capybara.string(rendered_page.body)
-
       expect(page).to have_css("dd", text: "1")
     end
 
     it "shows the top-1 accuracy" do
-      page = Capybara.string(rendered_page.body)
-
       expect(page).to have_css("dd", text: "Yes")
     end
 
     it "shows the cost" do
-      page = Capybara.string(rendered_page.body)
-
       expect(page).to have_css("dd", text: "0.0034")
     end
 
     it "shows the latency" do
-      page = Capybara.string(rendered_page.body)
-
       expect(page).to have_css("dd", text: "1.25")
     end
 
     it "shows which persona asked this one" do
-      page = Capybara.string(rendered_page.body)
-
       expect(page).to have_css("dd", text: "Generic search")
     end
 
@@ -320,15 +270,13 @@ RSpec.describe EvaluationResultsController, type: :request do
       let(:result_attributes) { super().merge("pricing_known" => false) }
 
       it "shows that the cost is unknown" do
-        page = Capybara.string(rendered_page.body)
-
         expect(page).to have_css("dd", text: "Unknown")
       end
 
       it "does not show the misleadingly precise partial figure" do
-        page = Capybara.string(rendered_page.body)
+        cost_row = page.find("div.govuk-summary-list__row", text: "Cost")
 
-        expect(page).not_to have_css("dd", text: "0.0034")
+        expect(cost_row).not_to have_css("dd", text: "0.0034")
       end
     end
 
@@ -339,8 +287,6 @@ RSpec.describe EvaluationResultsController, type: :request do
       let(:result_attributes) { super().merge("source_type" => "synthetic_atar", "source_id" => "8") }
 
       it "shows the source type in the heading, not just the bare id" do
-        page = Capybara.string(rendered_page.body)
-
         expect(page).to have_css("h1", text: "Synthetic ATaR 8")
       end
     end
@@ -353,15 +299,13 @@ RSpec.describe EvaluationResultsController, type: :request do
       end
 
       it "shows Error as the outcome" do
-        page = Capybara.string(rendered_page.body)
-
         expect(page).to have_css("dd", text: "Error")
       end
 
       it "does not show Fail as the outcome" do
-        page = Capybara.string(rendered_page.body)
+        outcome_row = page.find("div.govuk-summary-list__row", text: "Outcome")
 
-        expect(page).not_to have_css("dd", text: "Fail")
+        expect(outcome_row).not_to have_css("dd", text: "Fail")
       end
     end
 
@@ -371,8 +315,6 @@ RSpec.describe EvaluationResultsController, type: :request do
       # (72 hours) — far short of the 7 days (168 hours, SearchDiagnostic::MAX_LOOKBACK_HOURS) the
       # spec promises. An eval run being investigated via this drill-in page is routinely more
       # than 3 days old, so the link must ask for the full window explicitly.
-      page = Capybara.string(rendered_page.body)
-
       expect(page).to have_link("View search internals", href: search_diagnostic_path("22222222-2222-2222-2222-222222222222", lookback_hours: SearchDiagnostic::MAX_LOOKBACK_HOURS))
     end
 
@@ -380,14 +322,10 @@ RSpec.describe EvaluationResultsController, type: :request do
       let(:result_attributes) { super().deep_merge("trace" => { "question_trace" => [{ "round" => 1 }] }) }
 
       it "does not link to search internals" do
-        page = Capybara.string(rendered_page.body)
-
         expect(page).not_to have_link("View search internals")
       end
 
       it "shows a dash instead of a dead link" do
-        page = Capybara.string(rendered_page.body)
-
         expect(page).to have_css("td", text: "-")
       end
     end
@@ -402,14 +340,10 @@ RSpec.describe EvaluationResultsController, type: :request do
       # watched a different result show a full trace moments earlier. have_css, not a raw body
       # substring check, since the view's own text wraps across lines in the rendered HTML.
       it "explains that no clarifying questions were recorded" do
-        page = Capybara.string(rendered_page.body)
-
         expect(page).to have_css("p", text: "No clarifying questions were recorded for this result")
       end
 
-      it "explains that the search converged on the first search" do
-        page = Capybara.string(rendered_page.body)
-
+      it "explains that the search converged on the first search round and never needed to ask one" do
         expect(page).to have_css("p", text: "converged on the first search")
       end
     end
@@ -425,7 +359,7 @@ RSpec.describe EvaluationResultsController, type: :request do
       it "warns that the result could not be loaded" do
         rendered_page
 
-        expect(session.dig("flash", "flashes", "alert")).to eq("Result could not be loaded. Try again.")
+        expect(flash[:alert]).to eq("Result could not be loaded. Try again.")
       end
     end
 
@@ -435,8 +369,6 @@ RSpec.describe EvaluationResultsController, type: :request do
       end
 
       it "shows that round as failed" do
-        page = Capybara.string(rendered_page.body)
-
         expect(page).to have_css("td", text: "Simulator failed")
       end
     end
