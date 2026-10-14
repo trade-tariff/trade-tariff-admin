@@ -35,8 +35,7 @@ module References
       failed_reference, = run_for_selected_services(selected_services) do
         reference = build_search_reference
         assign_release_services_to_form(reference)
-        reference.save
-        reference
+        reference.tap(&:save)
       end
 
       if failed_reference
@@ -83,8 +82,7 @@ module References
 
         reference.build(title: normalised_title)
         assign_release_services_to_form(reference)
-        reference.save
-        reference
+        reference.tap(&:save)
       end
 
       if failed_reference
