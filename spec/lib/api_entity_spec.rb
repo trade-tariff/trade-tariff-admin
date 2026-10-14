@@ -168,61 +168,55 @@ RSpec.describe ApiEntity do
     end
 
     it "raises the Faraday error" do
-      expect { delete_response }.to raise_error(
+      expect { destroy_record }.to raise_error(
         an_instance_of(error_class).and(having_attributes(response_status: status)),
       )
     end
   end
 
-  shared_examples "a delete contract" do |delete_action|
-    subject(:delete_response) { entity.public_send(delete_action) }
+  %i[destroy destroy!].each do |delete_action|
+    describe "##{delete_action}" do
+      subject(:destroy_record) { entity.public_send(delete_action) }
 
-    let(:entity) { persistence_class.new(resource_id: "15", title: "Note") }
+      let(:entity) { persistence_class.new(resource_id: "15", title: "Note") }
 
-    context "when the API deletes the record" do
-      before do
-        stub_api_request(member_path, :delete).and_return(
-          status: 200,
-          headers: { "content-type" => "application/json" },
-          body: { deleted: true }.to_json,
-        )
+      context "when the API deletes the record" do
+        before do
+          stub_api_request(member_path, :delete).and_return(
+            status: 200,
+            headers: { "content-type" => "application/json" },
+            body: { deleted: true }.to_json,
+          )
+        end
+
+        it "returns the delete response" do
+          expect(destroy_record).to be_a(Faraday::Response).and(
+            have_attributes(status: 200, body: { "deleted" => true }),
+          )
+        end
+
+        it "sends a delete request" do
+          destroy_record
+
+          expect(WebMock).to have_requested(:delete, %r{#{Regexp.escape(member_path)}\z})
+        end
       end
 
-      it "returns the delete response" do
-        expect(delete_response).to be_a(Faraday::Response).and(
-          have_attributes(status: 200, body: { "deleted" => true }),
-        )
+      context "when the API returns 404" do
+        include_examples "an unwrapped delete failure", 404, Faraday::ResourceNotFound
       end
 
-      it "sends a delete request" do
-        delete_response
+      context "when the API returns 409" do
+        include_examples "an unwrapped delete failure", 409, Faraday::ConflictError
+      end
 
-        expect(WebMock).to have_requested(:delete, %r{#{Regexp.escape(member_path)}\z})
+      context "when the API returns 422" do
+        include_examples "an unwrapped delete failure", 422, Faraday::UnprocessableEntityError
+      end
+
+      context "when the API returns 500" do
+        include_examples "an unwrapped delete failure", 500, Faraday::ServerError
       end
     end
-
-    context "when the API returns 404" do
-      include_examples "an unwrapped delete failure", 404, Faraday::ResourceNotFound
-    end
-
-    context "when the API returns 409" do
-      include_examples "an unwrapped delete failure", 409, Faraday::ConflictError
-    end
-
-    context "when the API returns 422" do
-      include_examples "an unwrapped delete failure", 422, Faraday::UnprocessableEntityError
-    end
-
-    context "when the API returns 500" do
-      include_examples "an unwrapped delete failure", 500, Faraday::ServerError
-    end
-  end
-
-  describe "#destroy" do
-    include_examples "a delete contract", :destroy
-  end
-
-  describe "#destroy!" do
-    include_examples "a delete contract", :destroy!
   end
 end
