@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/ExampleLength, RSpec/MultipleExpectations, RSpec/MultipleMemoizedHelpers
 require "zip"
 RSpec.describe DescriptionInterceptsController, type: :request do
   subject(:rendered_page) { make_request && response }
@@ -37,7 +36,7 @@ RSpec.describe DescriptionInterceptsController, type: :request do
     }
   end
 
-  let(:template_config_attributes) do
+  def template_config_attributes
     {
       "name" => "description_intercept_templates",
       "config_type" => "object_template",
@@ -76,8 +75,12 @@ RSpec.describe DescriptionInterceptsController, type: :request do
     }
   end
 
-  let(:template_config_response) do
+  def template_config_response
     jsonapi_response("admin_configuration", template_config_attributes.merge("resource_id" => "description_intercept_templates"))
+  end
+
+  def page
+    Capybara.string(rendered_page.body)
   end
 
   describe "GET #index" do
@@ -90,42 +93,103 @@ RSpec.describe DescriptionInterceptsController, type: :request do
 
     it { is_expected.to have_http_status :success }
 
-    it "renders the intercepts page" do
+    it "shows the intercepts heading" do
       expect(rendered_page.body).to include("Intercepts")
+    end
+
+    it "shows the guided search explanation" do
       expect(rendered_page.body).to include("Description intercepts let you control how guided search behaves for known search terms.")
+    end
+
+    it "shows the description intercepts label" do
       expect(rendered_page.body).to include("Description Intercepts")
+    end
+
+    it "shows the filtering enabled label" do
       expect(rendered_page.body).to include("Filtering enabled")
+    end
+
+    it "shows the has guidance label" do
       expect(rendered_page.body).to include("Has guidance")
+    end
+
+    it "shows the escalation enabled label" do
       expect(rendered_page.body).to include("Escalation enabled")
+    end
+
+    it "shows the excluded label" do
       expect(rendered_page.body).to include("Excluded")
+    end
+
+    it "shows the commodity intercepts notice" do
       expect(rendered_page.body).to include("Commodity Intercepts (coming soon)")
+    end
+
+    it "shows the new description intercept action" do
       expect(rendered_page.body).to include("New description intercept")
+    end
+
+    it "shows the file import heading" do
       expect(rendered_page.body).to include("Import description intercepts from a file")
+    end
+
+    it "shows the bulk import heading" do
       expect(rendered_page.body).to include("Bulk import description intercepts")
+    end
+
+    it "shows the available templates heading" do
       expect(rendered_page.body).to include("Available templates")
+    end
+
+    it "shows the file preparation heading" do
       expect(rendered_page.body).to include("Prepare your file")
+    end
+
+    it "shows the example CSV download" do
       expect(rendered_page.body).to include("Download example CSV")
+    end
+
+    it "shows the example term" do
       expect(rendered_page.body).to include("gift")
+    end
+
+    it "shows the example alias" do
       expect(rendered_page.body).to include("present")
+    end
+
+    it "shows the generic template" do
       expect(rendered_page.body).to include("generic")
+    end
+
+    it "shows the escalation template" do
       expect(rendered_page.body).to include("escalation")
     end
 
     context "when no templates are configured" do
-      let(:template_config_response) do
+      def template_config_response
         jsonapi_response(
           "admin_configuration",
           template_config_attributes.merge("resource_id" => "description_intercept_templates", "value" => {}),
         )
       end
 
-      it "shows an actionable warning and disables upload" do
-        page = Capybara.string(rendered_page.body)
-
+      it "warns that no templates are configured" do
         expect(page).to have_text("No templates are currently configured.")
+      end
+
+      it "shows the configurations link text" do
         expect(rendered_page.body).to include("Configurations")
+      end
+
+      it "links to the template configuration" do
         expect(rendered_page.body).to include(configuration_path("description_intercept_templates"))
+      end
+
+      it "disables the upload control" do
         expect(rendered_page.body).to include('disabled="disabled"')
+      end
+
+      it "shows the import button" do
         expect(rendered_page.body).to include('value="Import description intercepts"')
       end
     end
@@ -134,9 +198,15 @@ RSpec.describe DescriptionInterceptsController, type: :request do
   describe "GET #example_import" do
     let(:make_request) { get example_import_description_intercepts_path }
 
-    it "downloads an example CSV" do
+    it "returns success" do
       expect(rendered_page).to have_http_status(:success)
+    end
+
+    it "sends a CSV content type" do
       expect(rendered_page.headers["Content-Type"]).to include("text/csv")
+    end
+
+    it "sends the example CSV" do
       expect(rendered_page.body).to eq("term,aliases,template\ngift,\"present,gifts\",generic\n")
     end
   end
@@ -169,7 +239,11 @@ RSpec.describe DescriptionInterceptsController, type: :request do
     it "returns the table payload" do
       json = JSON.parse(rendered_page.body)
 
-      expect(json["data"]).to eq([
+      expect(json["data"]).to eq(index_table_rows)
+    end
+
+    def index_table_rows
+      [
         {
           "id" => "123",
           "term" => "animal feed",
@@ -181,7 +255,7 @@ RSpec.describe DescriptionInterceptsController, type: :request do
           "escalates" => true,
           "created_at" => "15 April 2026",
         },
-      ])
+      ]
     end
   end
 
@@ -190,22 +264,37 @@ RSpec.describe DescriptionInterceptsController, type: :request do
 
     it { is_expected.to have_http_status :success }
 
-    it "shows the new form" do
+    it "shows the new heading" do
       expect(rendered_page.body).to include("New description intercept")
+    end
+
+    it "shows the create button" do
       expect(rendered_page.body).to include("Create description intercept")
+    end
+
+    it "shows the relevant products field" do
       expect(rendered_page.body).to include("Relevant Products")
+    end
+
+    it "hides the guidance level" do
       expect(rendered_page.body).not_to include("Guidance level")
+    end
+
+    it "hides the guidance location" do
       expect(rendered_page.body).not_to include("Guidance location")
     end
 
-    it "defaults guided search to selected" do
+    it "shows the guided search source" do
       expect(rendered_page.body).to include('id="description_intercept_sources_guided_search"')
+    end
+
+    it "selects guided search by default" do
       expect(rendered_page.body).to match(/id="description_intercept_sources_guided_search"[\s\S]*?value="guided_search"[\s\S]*?checked/)
     end
   end
 
   describe "POST #bulk_import" do
-    let(:csv_upload) do
+    def csv_upload
       Rack::Test::UploadedFile.new(StringIO.new("term,aliases,template\ngift,\"present,gifts\",generic\n"), "text/csv", original_filename: "intercepts.csv")
     end
 
@@ -244,14 +333,17 @@ RSpec.describe DescriptionInterceptsController, type: :request do
           )
       end
 
-      it "renders the grouped errors" do
+      it "returns unprocessable content" do
         expect(rendered_page).to have_http_status(:unprocessable_content)
+      end
+
+      it "shows the invalid template error" do
         expect(rendered_page.body).to include("foo and baz are not valid templates")
       end
     end
 
     context "with an XLSX upload" do
-      let(:csv_upload) do
+      def csv_upload
         Rack::Test::UploadedFile.new(StringIO.new(xlsx_content), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", original_filename: "intercepts.xlsx")
       end
 
@@ -284,33 +376,79 @@ RSpec.describe DescriptionInterceptsController, type: :request do
 
     it { is_expected.to have_http_status :success }
 
-    it "shows the description intercept details" do
+    it "shows the description intercept heading" do
       expect(rendered_page.body).to include("Description intercept")
+    end
+
+    it "shows the term" do
       expect(rendered_page.body).to include("animal feed")
+    end
+
+    it "shows the guidance message" do
       expect(rendered_page.body).to include("Ask the trader to pick a more specific feed type.")
+    end
+
+    it "shows the guidance header" do
       expect(rendered_page.body).to include("Check the feed type")
+    end
+
+    it "shows the edit action" do
       expect(rendered_page.body).to include("Edit")
     end
 
-    it "shows the delete action after the intercept details" do
-      page = Capybara.string(rendered_page.body)
-
+    it "shows the edit button" do
       expect(page).to have_link("Edit", class: "govuk-button")
+    end
+
+    it "shows the action group" do
       expect(page).to have_css(".govuk-button-group.description-intercept-actions")
+    end
+
+    it "shows the delete link" do
       expect(page).to have_link("Delete description intercept", href: delete_description_intercept_path(intercept_id), class: "govuk-button--warning")
+    end
+
+    it "does not use a confirmation attribute" do
       expect(page).to have_no_css("[data-confirm]")
     end
 
-    it "shows the full intercept summary" do
+    it "shows the filter behaviour" do
       expect(rendered_page.body).to include("Filters to selected short codes")
+    end
+
+    it "shows the relevant products" do
       expect(rendered_page.body).to include("Relevant Products")
+    end
+
+    it "shows guided search" do
       expect(rendered_page.body).to include("Guided search")
+    end
+
+    it "shows the aliases" do
       expect(rendered_page.body).to include("pet food, animal nutrition")
+    end
+
+    it "shows the soya bean description" do
       expect(rendered_page.body).to include("Soya bean flour and meal")
+    end
+
+    it "shows the animal feeding description" do
       expect(rendered_page.body).to include("Preparations of a kind used in animal feeding")
+    end
+
+    it "shows escalation as enabled" do
       expect(rendered_page.body).to include("Enabled")
+    end
+
+    it "shows that the intercept is not excluded" do
       expect(rendered_page.body).to include("Not excluded")
+    end
+
+    it "hides the guidance level" do
       expect(rendered_page.body).not_to include("Guidance level")
+    end
+
+    it "hides the guidance location" do
       expect(rendered_page.body).not_to include("Guidance location")
     end
 
@@ -319,11 +457,15 @@ RSpec.describe DescriptionInterceptsController, type: :request do
         super().merge("message" => "{{search_term}} needs **more detail**.\n\nBrowse chapter 64.")
       end
 
-      it "renders guidance using the markdown previewer" do
-        page = Capybara.string(rendered_page.body)
-
+      it "renders the search term placeholder" do
         expect(page).to have_css(".hott-markdown-preview .placeholder", text: "{{search_term}}")
+      end
+
+      it "renders the bold guidance text" do
         expect(page).to have_css(".hott-markdown-preview strong", text: "more detail")
+      end
+
+      it "does not show the raw markdown" do
         expect(page).to have_no_text("{{search_term}} needs **more detail**")
       end
     end
@@ -340,10 +482,19 @@ RSpec.describe DescriptionInterceptsController, type: :request do
         )
       end
 
-      it "shows guidance as none and hides level and location rows" do
+      it "shows the guidance row" do
         expect(rendered_page.body).to include("Guidance")
+      end
+
+      it "shows guidance as none" do
         expect(rendered_page.body).to include("None")
+      end
+
+      it "hides the guidance level" do
         expect(rendered_page.body).not_to include("Guidance level")
+      end
+
+      it "hides the guidance location" do
         expect(rendered_page.body).not_to include("Guidance location")
       end
     end
@@ -392,35 +543,79 @@ RSpec.describe DescriptionInterceptsController, type: :request do
 
     it { is_expected.to have_http_status :success }
 
-    it "shows the edit form" do
+    it "shows the save button" do
       expect(rendered_page.body).to include("Save changes")
+    end
+
+    it "shows the escalation option" do
       expect(rendered_page.body).to include("Allow HMRC support escalation")
+    end
+
+    it "shows the guidance header field" do
       expect(rendered_page.body).to include("Guidance message header")
+    end
+
+    it "shows the guidance message field" do
       expect(rendered_page.body).to include("Guidance message")
+    end
+
+    it "shows the add alias control" do
       expect(rendered_page.body).to include("Add alias")
+    end
+
+    it "shows the pet food alias" do
       expect(rendered_page.body).to include("pet food")
+    end
+
+    it "shows the animal nutrition alias" do
       expect(rendered_page.body).to include("animal nutrition")
+    end
+
+    it "fills the pet food alias" do
       expect(rendered_page.body).to include('name="description_intercept[aliases][]" value="pet food"')
+    end
+
+    it "shows the remove control for pet food" do
       expect(rendered_page.body).to include('aria-label="Remove pet food"')
+    end
+
+    it "shows the selected short codes" do
       expect(rendered_page.body).to include("Selected short codes")
+    end
+
+    it "hides the guidance level" do
       expect(rendered_page.body).not_to include("Guidance level")
+    end
+
+    it "hides the guidance location" do
       expect(rendered_page.body).not_to include("Guidance location")
     end
 
-    it "renders the guidance message as a markdown editor with preview" do
-      page = Capybara.string(rendered_page.body)
-
+    it "shows the editor columns" do
       expect(page).to have_css ".govuk-grid-row .govuk-grid-column-one-half", count: 2
+    end
+
+    it "shows the guidance textarea" do
       expect(page).to have_css 'textarea.govuk-textarea[name="description_intercept[message]"]'
+    end
+
+    it "shows the markdown preview" do
       expect(page).to have_css '.hott-markdown-preview[data-preview="govspeak"][data-preview-for="#description-intercept-message-field"]'
+    end
+
+    it "does not link commodity codes automatically" do
       expect(page).not_to have_css '.hott-markdown-preview[data-preview-for="#description-intercept-message-field"][data-preview-linkify-code-references="true"]'
     end
 
-    it "explains markdown formatting in a details component" do
-      page = Capybara.string(rendered_page.body)
-
+    it "shows the markdown formatting summary" do
       expect(page).to have_css ".govuk-details__summary-text", text: "Markdown formatting"
+    end
+
+    it "explains that commodity codes are not linked" do
       expect(page).to have_css ".govuk-details__text", text: "Commodity codes are not linked automatically", visible: :all
+    end
+
+    it "links to the markdown guide" do
       expect(page).to have_link "Markdown guide", href: "https://govspeak-preview.publishing.service.gov.uk/guide", visible: :all
     end
 
@@ -432,22 +627,34 @@ RSpec.describe DescriptionInterceptsController, type: :request do
       end
     end
 
-    it "shows remove controls for selected short codes" do
+    it "shows the remove control for 1201900000" do
       expect(rendered_page.body).to include('aria-label="Remove 1201900000"')
+    end
+
+    it "shows the remove control for 2309900000" do
       expect(rendered_page.body).to include('aria-label="Remove 2309900000"')
     end
 
-    it "shows truncated descriptions for selected short codes" do
+    it "shows the soya bean description" do
       expect(rendered_page.body).to include("Soya bean flour and meal")
+    end
+
+    it "shows the animal feeding description" do
       expect(rendered_page.body).to include("Preparations of a kind used in animal feeding")
     end
 
     context "when the intercept excludes search results" do
       let(:intercept_attributes) { super().merge("excluded" => true) }
 
-      it "renders filtering as disabled" do
+      it "shows the filtering control" do
         expect(rendered_page.body).to include('id="description-intercept-filtering-enabled"')
+      end
+
+      it "disables filtering" do
         expect(rendered_page.body).to include('disabled="disabled"')
+      end
+
+      it "explains that filtering is unavailable" do
         expect(rendered_page.body).to include("Filtering is unavailable while exclude search results is selected.")
       end
     end
@@ -455,10 +662,11 @@ RSpec.describe DescriptionInterceptsController, type: :request do
     context "when guided search is not selected" do
       let(:intercept_attributes) { super().merge("sources" => %w[fpo_search]) }
 
-      it "hides guidance fields without clearing the existing value" do
-        page = Capybara.string(rendered_page.body)
-
+      it "hides the guidance fields" do
         expect(page).to have_css '[data-description-intercept-form-target="guidanceFields"][style="display:none"]', visible: :all
+      end
+
+      it "keeps the existing guidance message" do
         expect(page).to have_css 'textarea[name="description_intercept[message]"]', text: "Ask the trader to pick a more specific feed type.", visible: :all
       end
     end
@@ -686,16 +894,35 @@ RSpec.describe DescriptionInterceptsController, type: :request do
 
     it { is_expected.to have_http_status :success }
 
-    it "asks for delete confirmation" do
-      page = Capybara.string(rendered_page.body)
-
+    it "asks for confirmation" do
       expect(page).to have_css("h1", text: "Are you sure you want to delete this description intercept?")
+    end
+
+    it "shows the term" do
       expect(page).to have_text("animal feed")
+    end
+
+    it "shows the filter behaviour" do
       expect(page).to have_text("Filters to selected short codes")
+    end
+
+    it "shows the delete button" do
       expect(page).to have_button("Delete description intercept", class: "govuk-button--warning")
+    end
+
+    it "posts the delete form" do
       expect(page).to have_css("form[action='#{description_intercept_path(intercept_id)}'][method='post']")
+    end
+
+    it "sends the delete method" do
       expect(page).to have_css("input[name='_method'][value='delete']", visible: :hidden)
+    end
+
+    it "links cancel to the intercept" do
       expect(page).to have_link("Cancel", href: description_intercept_path(intercept_id))
+    end
+
+    it "does not use a confirmation attribute" do
       expect(page).to have_no_css("[data-confirm]")
     end
 
@@ -817,7 +1044,9 @@ RSpec.describe DescriptionInterceptsController, type: :request do
     end
 
     context "with invalid update" do
-      let(:description_intercept_error_response) { webmock_response(:error, { filter_prefixes: "cannot be combined with excluded" }) }
+      def description_intercept_error_response
+        webmock_response(:error, { filter_prefixes: "cannot be combined with excluded" })
+      end
 
       before do
         stub_api_request("/description_intercepts/#{intercept_id}", :patch)
@@ -830,8 +1059,11 @@ RSpec.describe DescriptionInterceptsController, type: :request do
       it { is_expected.to have_http_status :unprocessable_content }
       it { is_expected.to render_template(:edit) }
 
-      it "links the error summary to the filter prefixes input" do
+      it "links the error summary to the filter prefixes" do
         expect(rendered_page.body).to include('href="#description-intercept-filter-prefixes-field-error"')
+      end
+
+      it "marks the filter prefixes error" do
         expect(rendered_page.body).to include('id="description-intercept-filter-prefixes-error"')
       end
     end
@@ -858,10 +1090,19 @@ RSpec.describe DescriptionInterceptsController, type: :request do
           .and_return(status: 200, headers: { "content-type" => "application/json; charset=utf-8" }, body: { data: [] }.to_json)
       end
 
-      it "shows a grammatical aliases validation message" do
+      it "shows the aliases validation message" do
         expect(rendered_page.body).to include("Aliases include values already used by another description intercept (present, gift)")
+      end
+
+      it "links the error summary to the aliases" do
         expect(rendered_page.body).to include('href="#description-intercept-aliases-field-error"')
+      end
+
+      it "marks the aliases field error" do
         expect(rendered_page.body).to include('id="description-intercept-aliases-field-error"')
+      end
+
+      it "does not repeat the aliases label" do
         expect(rendered_page.body).not_to include("Aliases Aliases include")
       end
     end
@@ -1024,4 +1265,3 @@ RSpec.describe DescriptionInterceptsController, type: :request do
     buffer.string
   end
 end
-# rubocop:enable RSpec/ExampleLength, RSpec/MultipleExpectations, RSpec/MultipleMemoizedHelpers
