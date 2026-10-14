@@ -2,7 +2,7 @@ class SearchExportWorkbooksController < AuthenticatedController
   def create
     authorize SearchExportWorkbook, :create?
 
-    export = SearchExportWorkbook.create(from: params[:from], to: params[:to])
+    export = SearchExportWorkbook.enqueue(from: params[:from], to: params[:to])
     redirect_to search_export_workbook_path(export.resource_id, preset: params[:preset].presence)
   rescue Faraday::Error => e
     status = e.response_status.to_i

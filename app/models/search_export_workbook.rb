@@ -5,7 +5,7 @@ class SearchExportWorkbook
 
   set_collection_path "admin/search_export/workbooks"
 
-  def self.create(from:, to:)
+  def self.enqueue(from:, to:)
     response = api.post(collection_path, { from:, to: }.to_json, "Content-Type" => "application/json")
     new(parse_jsonapi(response))
   end
