@@ -15,9 +15,8 @@ module GreenLanes
     def create
       authorize GreenLanes::Exemption, :create?
       @exemption = GreenLanes::Exemption.new(ex_params)
-      @exemption.save
 
-      if @exemption.errors.none?
+      if (@exemption = @exemption.save).errors.none?
         redirect_to green_lanes_exemptions_path, notice: "Exemption created"
       else
         render :new
@@ -32,9 +31,8 @@ module GreenLanes
     def update
       @exemption = GreenLanes::Exemption.build(ex_params.merge(resource_id: params[:id]))
       authorize @exemption, :update?
-      @exemption.save
 
-      if @exemption.errors.none?
+      if (@exemption = @exemption.save).errors.none?
         redirect_to green_lanes_exemptions_path, notice: "Exemption updated"
       else
         render :edit
