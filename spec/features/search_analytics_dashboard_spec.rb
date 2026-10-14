@@ -266,7 +266,7 @@ RSpec.describe "Search analytics dashboard" do
 
   def stub_workbook_export
     export = SearchExportWorkbook.new(resource_id: "42", status: "queued", from: "2026-09-01", to: "2026-09-15")
-    allow(SearchExportWorkbook).to receive(:create).and_return(export)
+    allow(SearchExportWorkbook).to receive(:enqueue).and_return(export)
     allow(SearchExportWorkbook).to receive(:find).with("42").and_return(export)
     allow(ActionController::Base).to receive(:allow_forgery_protection).and_return(true)
   end
@@ -298,7 +298,7 @@ RSpec.describe "Search analytics dashboard" do
       visit search_analytics_path(view: "internal")
       submit_dates("2026-09-01", "2026-09-15", button: "Download classifier workbook")
 
-      expect(SearchExportWorkbook).to have_received(:create).with(from: "2026-09-01", to: "2026-09-15")
+      expect(SearchExportWorkbook).to have_received(:enqueue).with(from: "2026-09-01", to: "2026-09-15")
       expect(page).to have_current_path(search_export_workbook_path("42", preset: "24h"))
     end
 
