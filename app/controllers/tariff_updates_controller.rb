@@ -12,7 +12,7 @@ class TariffUpdatesController < AuthenticatedController
   def download
     authorize Update, :schedule_download?
     @download = Download.build
-    @download.save
+    schedule_command(@download)
 
     redirect_to tariff_updates_path, notice: "Download was scheduled"
   rescue Faraday::Error => e
@@ -22,7 +22,7 @@ class TariffUpdatesController < AuthenticatedController
   def resend_cds_update_notification
     authorize Update, :resend_cds_update_notification?
     @cds_update = CdsUpdateNotification.new(cds_update_params)
-    @cds_update.save
+    schedule_command(@cds_update)
 
     redirect_to tariff_updates_path, notice: "CDS Updates notification was scheduled"
   rescue Faraday::Error => e
@@ -32,7 +32,7 @@ class TariffUpdatesController < AuthenticatedController
   def apply_and_clear_cache
     authorize Update, :apply_and_clear_cache?
     @apply = Apply.build
-    @apply.save
+    schedule_command(@apply)
 
     redirect_to tariff_updates_path, notice: "Apply & ClearCache was scheduled"
   rescue Faraday::Error => e
@@ -40,6 +40,10 @@ class TariffUpdatesController < AuthenticatedController
   end
 
 private
+
+  def schedule_command(record)
+    record.save
+  end
 
   def cds_update_params
     params
