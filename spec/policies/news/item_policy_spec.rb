@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/RepeatedExample, RSpec/RepeatedDescription
 RSpec.describe News::ItemPolicy do
   subject(:news_item_policy) { described_class }
 
@@ -70,4 +69,3 @@ RSpec.describe News::ItemPolicy do
     end
   end
 end
-# rubocop:enable RSpec/RepeatedExample, RSpec/RepeatedDescription

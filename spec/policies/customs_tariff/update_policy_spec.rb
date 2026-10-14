@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/RepeatedExample
 RSpec.describe CustomsTariff::UpdatePolicy do
   subject(:policy) { described_class }
 
@@ -40,4 +39,3 @@ RSpec.describe CustomsTariff::UpdatePolicy do
     end
   end
 end
-# rubocop:enable RSpec/RepeatedExample

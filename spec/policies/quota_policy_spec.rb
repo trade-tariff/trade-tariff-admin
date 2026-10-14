@@ -1,10 +1,9 @@
-# rubocop:disable RSpec/RepeatedExample, RSpec/RepeatedDescription
 RSpec.describe QuotaPolicy do
   subject(:quota_policy) { described_class }
 
   let(:quota) { Quota.new }
 
-  permissions :index?, :show?, :search?, :create? do
+  permissions :index?, :create?, :search?, :show? do
     it "grants access to technical operator" do
       user = create(:user, :technical_operator)
       expect(quota_policy).to permit(user, quota)
@@ -48,4 +47,3 @@ RSpec.describe QuotaPolicy do
     end
   end
 end
-# rubocop:enable RSpec/RepeatedExample, RSpec/RepeatedDescription

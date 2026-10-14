@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/RepeatedExample, RSpec/RepeatedDescription
 RSpec.describe GreenLanes::CategoryAssessmentPolicy do
   subject(:policy) { described_class }
 
@@ -26,7 +25,7 @@ RSpec.describe GreenLanes::CategoryAssessmentPolicy do
     end
   end
 
-  permissions :create?, :update?, :destroy? do
+  permissions :create?, :destroy?, :update? do
     it "grants access to technical operator" do
       user = create(:user, :technical_operator)
       expect(policy).to permit(user, category_assessment)
@@ -48,4 +47,3 @@ RSpec.describe GreenLanes::CategoryAssessmentPolicy do
     end
   end
 end
-# rubocop:enable RSpec/RepeatedExample, RSpec/RepeatedDescription
