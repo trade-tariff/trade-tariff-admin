@@ -120,6 +120,8 @@ module ApiEntity
     api.delete(singular_path)
   end
 
+  alias_method :destroy!, :destroy
+
   def serializable_hash
     payload = TariffJsonapiSerializer.new(self).serializable_hash
     normalize_serialized_attributes(payload.dig(:data, :attributes) || {})
