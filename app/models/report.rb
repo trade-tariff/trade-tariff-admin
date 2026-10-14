@@ -1,7 +1,7 @@
 class Report
   include ApiEntity
 
-  attributes :name, :description, :available, :dependencies_missing, :missing_dependencies, :download_url, :supports_email
+  attributes :name, :description, :available, :dependencies_missing, :missing_dependencies, :download_url, :supports_email, :supports_generate
 
   def run
     api.post("admin/reports/#{to_param}/run")
@@ -27,5 +27,10 @@ class Report
 
   def dependencies_missing?
     dependencies_missing
+  end
+
+  # Falls back to the previous behaviour when the backend does not send supports_generate.
+  def supports_generate?
+    supports_generate.nil? ? !supports_email : supports_generate
   end
 end
