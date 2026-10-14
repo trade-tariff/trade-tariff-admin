@@ -4,51 +4,52 @@ RSpec.describe VersionsController, type: :request do
   include_context "with authenticated user"
 
   let(:current_user) { create(:user, :technical_operator) }
-  let(:versions_data) do
-    [
-      {
-        "id" => "1",
-        "type" => "version",
-        "attributes" => {
-          "item_type" => "GoodsNomenclatureLabel",
-          "item_id" => "12345",
-          "event" => "update",
-          "whodunnit" => current_user.uid,
-          "created_at" => "2025-06-15T10:00:00Z",
-          "object" => { "goods_nomenclature_item_id" => "0101210000" },
-        },
-      },
-      {
-        "id" => "2",
-        "type" => "version",
-        "attributes" => {
-          "item_type" => "GoodsNomenclatureSelfText",
-          "item_id" => "67890",
-          "event" => "create",
-          "whodunnit" => nil,
-          "created_at" => "2025-06-14T09:00:00Z",
-          "object" => {},
-        },
-      },
-    ]
-  end
-  let(:versions_response) do
-    {
-      status: 200,
-      headers: { "content-type" => "application/json; charset=utf-8" },
-      body: {
-        data: versions_data,
-        meta: { pagination: { page: 1, per_page: 20, total_count: 2 } },
-      }.to_json,
-    }
-  end
 
   before do
     TradeTariffAdmin::ServiceChooser.service_choice = "uk"
+    allow(User).to receive(:basic_auth_user!).and_return(current_user)
   end
 
   describe "GET #index" do
     let(:make_request) { get versions_path }
+    let(:versions_data) do
+      [
+        {
+          "id" => "1",
+          "type" => "version",
+          "attributes" => {
+            "item_type" => "GoodsNomenclatureLabel",
+            "item_id" => "12345",
+            "event" => "update",
+            "whodunnit" => current_user.uid,
+            "created_at" => "2025-06-15T10:00:00Z",
+            "object" => { "goods_nomenclature_item_id" => "0101210000" },
+          },
+        },
+        {
+          "id" => "2",
+          "type" => "version",
+          "attributes" => {
+            "item_type" => "GoodsNomenclatureSelfText",
+            "item_id" => "67890",
+            "event" => "create",
+            "whodunnit" => nil,
+            "created_at" => "2025-06-14T09:00:00Z",
+            "object" => {},
+          },
+        },
+      ]
+    end
+    let(:versions_response) do
+      {
+        status: 200,
+        headers: { "content-type" => "application/json; charset=utf-8" },
+        body: {
+          data: versions_data,
+          meta: { pagination: { page: 1, per_page: 20, total_count: 2 } },
+        }.to_json,
+      }
+    end
 
     before do
       stub_api_request("/versions", backend: "uk")
@@ -59,8 +60,11 @@ RSpec.describe VersionsController, type: :request do
     it { is_expected.to have_http_status :success }
     it { is_expected.to render_template(:index) }
 
-    it "displays version entries" do # rubocop:disable RSpec/MultipleExpectations
+    it "displays the label" do
       expect(rendered_page.body).to include("Label")
+    end
+
+    it "displays the goods nomenclature item id" do
       expect(rendered_page.body).to include("0101210000")
     end
 
@@ -107,7 +111,7 @@ RSpec.describe VersionsController, type: :request do
       }
     end
 
-    context "when successful" do # rubocop:disable RSpec/MultipleMemoizedHelpers
+    context "when successful" do
       let(:make_request) { post restore_version_path(version_id) }
       let(:restore_response) do
         {
@@ -175,7 +179,7 @@ RSpec.describe VersionsController, type: :request do
       end
     end
 
-    context "when the backend refuses to restore a search reference" do # rubocop:disable RSpec/MultipleMemoizedHelpers
+    context "when the backend refuses to restore a search reference" do
       let(:make_request) { post restore_version_path(version_id) }
       let(:detail) { "Cannot restore this search reference because commodity 0101210000 has expired." }
 
