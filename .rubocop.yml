@@ -26,4 +26,8 @@ RSpec:
   Language:
     ExampleGroups:
       Regular:
+        - context
+        - describe
+        - example_group
+        - feature
         - permissions
