@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/MultipleMemoizedHelpers
 RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
   subject(:rendered_page) { make_request && response }
 
@@ -37,7 +36,8 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
       "has_label" => true,
     }
   end
-  let(:self_text_response) do
+
+  def self_text_response
     {
       status: 200,
       headers: { "content-type" => "application/json; charset=utf-8" },
@@ -55,10 +55,35 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
     TradeTariffAdmin::ServiceChooser.service_choice = "uk"
   end
 
-  # rubocop:disable RSpec/NestedGroups
   describe "GET #index" do
+    def collection_response
+      jsonapi_response("goods_nomenclature_self_text", [
+        {
+          "goods_nomenclature_sid" => goods_nomenclature_sid,
+          "goods_nomenclature_item_id" => commodity_code,
+          "score" => 0.70,
+          "needs_review" => false,
+          "stale" => false,
+          "manually_edited" => false,
+          "self_text" => "Live horses for breeding",
+        },
+      ])
+    end
+
+    def index_json
+      JSON.parse(rendered_page.body)
+    end
+
     context "with HTML format" do
       let(:make_request) { get goods_nomenclature_self_texts_path }
+
+      def generated_content_table_controller
+        Rails.root.join("app/javascript/controllers/generated_content_table_controller.js").read
+      end
+
+      def generated_content_tabs_controller
+        Rails.root.join("app/javascript/controllers/generated_content_tabs_controller.js").read
+      end
 
       it { is_expected.to have_http_status :success }
       it { is_expected.to render_template(:index) }
@@ -67,16 +92,27 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
         expect(rendered_page.body).to include("Descriptions")
       end
 
-      # rubocop:disable RSpec/MultipleExpectations
-      it "displays both tab links" do
+      it "shows the self-texts tab" do
         expect(rendered_page.body).to include("Self-texts")
+      end
+
+      it "shows the labels tab" do
         expect(rendered_page.body).to include("Labels")
       end
 
-      it "does not show a heading self-text filter" do
+      it "shows the commodity type filter" do
         expect(rendered_page.body).to include('for="st-type-commodity"')
+      end
+
+      it "shows the subheading type filter" do
         expect(rendered_page.body).to include('for="st-type-subheading"')
+      end
+
+      it "shows the all types filter" do
         expect(rendered_page.body).to include('for="st-type-all"')
+      end
+
+      it "does not show a heading type filter" do
         expect(rendered_page.body).not_to include('for="st-type-heading"')
       end
 
@@ -88,53 +124,101 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
         expect(rendered_page.body).to include('class="label-table-container" data-generated-content-table-target="table"')
       end
 
-      # rubocop:disable RSpec/ExampleLength
-      it "labels self-text and label state filters as tags" do
+      it "labels the state filters as tags" do
         expect(rendered_page.body).to include('<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Tags</legend>')
+      end
+
+      it "shows the approved self-text tag filter" do
         expect(rendered_page.body).to include('id="st-tags-approved"')
+      end
+
+      it "updates tags when the filter changes" do
         expect(rendered_page.body).to include('data-action="change->generated-content-table#changeTags"')
+      end
+
+      it "filters by the approved status" do
         expect(rendered_page.body).to include('data-status="approved"')
+      end
+
+      it "shows the approved label tag filter" do
         expect(rendered_page.body).to include('id="lb-tags-approved"')
-        expect(rendered_page.body).to include('data-status="approved"')
+      end
+
+      it "shows the needs review label tag filter" do
         expect(rendered_page.body).to include('id="lb-tags-needs_review"')
+      end
+
+      it "shows the expired label tag filter" do
         expect(rendered_page.body).to include('id="lb-tags-expired"')
       end
-      # rubocop:enable RSpec/ExampleLength
 
-      it "uses the updated visible score labels while preserving backend filter values" do
+      it "labels a low self-text score as Low" do
         expect(rendered_page.body).to include('for="st-score-bad">Low</label>')
+      end
+
+      it "labels a very high self-text score as Very High" do
         expect(rendered_page.body).to include('for="st-score-amazing">Very High</label>')
+      end
+
+      it "labels a low label score as Low" do
         expect(rendered_page.body).to include('for="lb-score-bad">Low</label>')
+      end
+
+      it "labels a very high label score as Very High" do
         expect(rendered_page.body).to include('for="lb-score-amazing">Very High</label>')
       end
 
-      # rubocop:disable RSpec/ExampleLength
-      it "uses the shared generated content table controller" do
-        controller = Rails.root.join("app/javascript/controllers/generated_content_table_controller.js").read
-
-        expect(controller).to include(%(scope="col">Tags</th>))
-        expect(controller).to include("params.set('status', this.tagsValue);")
-        expect(controller).to include("record.needs_review")
-        expect(controller).to include("record.expired")
-        expect(controller).to include("label = 'Very High'; colour = 'green'")
-        expect(controller).to include("label = 'Low'; colour = 'grey'")
+      it "renders a tags column in the table controller" do
+        expect(generated_content_table_controller).to include(%(scope="col">Tags</th>))
       end
-      # rubocop:enable RSpec/ExampleLength
 
-      # rubocop:disable RSpec/ExampleLength
-      it "defers initial data loading for hidden generated content tab panels" do
-        table_controller = Rails.root.join("app/javascript/controllers/generated_content_table_controller.js").read
-        tabs_controller = Rails.root.join("app/javascript/controllers/generated_content_tabs_controller.js").read
+      it "sends selected tags as the status filter" do
+        expect(generated_content_table_controller).to include("params.set('status', this.tagsValue);")
+      end
 
+      it "reads the needs review flag" do
+        expect(generated_content_table_controller).to include("record.needs_review")
+      end
+
+      it "reads the expired flag" do
+        expect(generated_content_table_controller).to include("record.expired")
+      end
+
+      it "labels a very high score in green" do
+        expect(generated_content_table_controller).to include("label = 'Very High'; colour = 'green'")
+      end
+
+      it "labels a low score in grey" do
+        expect(generated_content_table_controller).to include("label = 'Low'; colour = 'grey'")
+      end
+
+      it "hides the labels tab panel" do
         expect(rendered_page.body).to include('govuk-tabs__panel govuk-tabs__panel--hidden" id="labels"')
-        expect(rendered_page.body).to include('govuk-tabs__panel govuk-tabs__panel--hidden" id="compressed-notes"')
-        expect(rendered_page.body).to include('govuk-tabs__list" data-action="click->generated-content-tabs#loadSelectedTab"')
-        expect(table_controller).to include("if (this.loaded || !this.visible()) return;")
-        expect(tabs_controller).to include("event.target.closest('.govuk-tabs__tab')")
-        expect(tabs_controller).to include("window.setTimeout")
-        expect(tabs_controller).to include("controller.loadOnce();")
       end
-      # rubocop:enable RSpec/ExampleLength
+
+      it "hides the compressed notes tab panel" do
+        expect(rendered_page.body).to include('govuk-tabs__panel govuk-tabs__panel--hidden" id="compressed-notes"')
+      end
+
+      it "loads the selected tab on click" do
+        expect(rendered_page.body).to include('govuk-tabs__list" data-action="click->generated-content-tabs#loadSelectedTab"')
+      end
+
+      it "skips a table that is loaded or hidden" do
+        expect(generated_content_table_controller).to include("if (this.loaded || !this.visible()) return;")
+      end
+
+      it "finds the clicked tab" do
+        expect(generated_content_tabs_controller).to include("event.target.closest('.govuk-tabs__tab')")
+      end
+
+      it "waits before the selected tab loads" do
+        expect(generated_content_tabs_controller).to include("window.setTimeout")
+      end
+
+      it "loads the selected table once" do
+        expect(generated_content_tabs_controller).to include("controller.loadOnce();")
+      end
 
       stylesheet = Rails.root.join("app/assets/stylesheets/application.sass.scss").read
 
@@ -153,24 +237,10 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
       it "defines wrapping styles for long label descriptions" do
         expect(stylesheet).to match(/\.label-table\s*\{[\s\S]*&__description\s*\{[\s\S]*overflow-wrap:\s*anywhere;[\s\S]*word-break:\s*break-word;/)
       end
-      # rubocop:enable RSpec/MultipleExpectations
     end
 
     context "with JSON format" do
       let(:make_request) { get goods_nomenclature_self_texts_path(format: :json) }
-      let(:collection_response) do
-        jsonapi_response("goods_nomenclature_self_text", [
-          {
-            "goods_nomenclature_sid" => goods_nomenclature_sid,
-            "goods_nomenclature_item_id" => commodity_code,
-            "score" => 0.70,
-            "needs_review" => false,
-            "stale" => false,
-            "manually_edited" => false,
-            "self_text" => "Live horses for breeding",
-          },
-        ])
-      end
 
       before do
         stub_api_request("/goods_nomenclature_self_texts", backend: "uk")
@@ -180,35 +250,42 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
 
       it { is_expected.to have_http_status :success }
 
-      # rubocop:disable RSpec/MultipleExpectations
-      it "returns self-texts data with pagination" do
-        json = JSON.parse(rendered_page.body)
-
-        expect(json["data"]).to be_an(Array)
-        expect(json["data"].first["goods_nomenclature_item_id"]).to eq(commodity_code)
-        expect(json["data"].first["score"]).to eq(0.70)
-        expect(json["pagination"]).to include("page", "total_count", "total_pages")
+      it "returns an array of self-texts" do
+        expect(index_json["data"]).to be_an(Array)
       end
-      # rubocop:enable RSpec/MultipleExpectations
 
-      context "when API fails" do
-        before do
-          stub_api_request("/goods_nomenclature_self_texts", backend: "uk")
-            .with(query: hash_including({}))
-            .and_return(status: 500, body: { error: "Internal Server Error" }.to_json)
-        end
+      it "returns the commodity code" do
+        expect(index_json["data"].first["goods_nomenclature_item_id"]).to eq(commodity_code)
+      end
 
-        it { is_expected.to have_http_status :success }
+      it "returns the score" do
+        expect(index_json["data"].first["score"]).to eq(0.70)
+      end
 
-        it "returns empty data" do
-          json = JSON.parse(rendered_page.body)
+      it "returns pagination data" do
+        expect(index_json["pagination"]).to include("page", "total_count", "total_pages")
+      end
+    end
 
-          expect(json["data"]).to eq([])
-        end
+    context "with JSON format when the API fails" do
+      let(:make_request) { get goods_nomenclature_self_texts_path(format: :json) }
+
+      before do
+        stub_api_request("/goods_nomenclature_self_texts", backend: "uk")
+          .with(query: hash_including({}))
+          .and_return(collection_response)
+        stub_api_request("/goods_nomenclature_self_texts", backend: "uk")
+          .with(query: hash_including({}))
+          .and_return(status: 500, body: { error: "Internal Server Error" }.to_json)
+      end
+
+      it { is_expected.to have_http_status :success }
+
+      it "returns empty data" do
+        expect(index_json["data"]).to eq([])
       end
     end
   end
-  # rubocop:enable RSpec/NestedGroups
 
   describe "GET #search" do
     context "with valid query" do
@@ -260,22 +337,35 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
     it { is_expected.to have_http_status :success }
     it { is_expected.to render_template(:show) }
 
-    # rubocop:disable RSpec/MultipleExpectations
-    it "displays the self-text information" do
+    it "displays the commodity code" do
       expect(rendered_page.body).to include(commodity_code)
+    end
+
+    it "displays the self-text content" do
       expect(rendered_page.body).to include("Live horses for breeding or racing purposes")
+    end
+
+    it "displays the save changes button" do
       expect(rendered_page.body).to include("Save changes")
     end
-    # rubocop:enable RSpec/MultipleExpectations
 
     it "displays the View labels cross-link when has_label is true" do
       expect(rendered_page.body).to include("View labels")
     end
 
-    it "displays the record dates" do # rubocop:disable RSpec/MultipleExpectations
+    it "displays the created and updated dates" do
       expect(rendered_page.body).to include("Created", "15 June 2025", "Last updated", "Today")
+    end
+
+    it "does not show a record dates heading" do
       expect(rendered_page.body).not_to include("Record dates")
+    end
+
+    it "does not label the date as Created:" do
       expect(rendered_page.body).not_to include("Created:")
+    end
+
+    it "does not label the date as Updated:" do
       expect(rendered_page.body).not_to include("Updated:")
     end
 
@@ -286,8 +376,11 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
     context "when the self-text has approved and expired tags" do
       let(:self_text_attributes) { super().merge("approved" => true, "expired" => true) }
 
-      it "displays the approved and expired tags" do # rubocop:disable RSpec/MultipleExpectations
+      it "displays the approved tag" do
         expect(rendered_page.body).to include("Approved")
+      end
+
+      it "displays the expired tag" do
         expect(rendered_page.body).to include("Expired")
       end
     end
@@ -303,7 +396,7 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
     context "when viewing a historical version via oid" do
       let(:make_request) { get goods_nomenclature_self_text_path(goods_nomenclature_sid, oid: "42") }
 
-      let(:historical_self_text_response) do
+      def historical_self_text_response
         {
           status: 200,
           headers: { "content-type" => "application/json; charset=utf-8" },
@@ -334,8 +427,11 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
         expect(rendered_page.body).not_to include("Save changes")
       end
 
-      it "hides the action buttons" do # rubocop:disable RSpec/MultipleExpectations
+      it "does not show generate score" do
         expect(rendered_page.body).not_to include("Generate score")
+      end
+
+      it "does not show regenerate self-text" do
         expect(rendered_page.body).not_to include("Regenerate self-text")
       end
     end
@@ -570,4 +666,3 @@ RSpec.describe GoodsNomenclatureSelfTextsController, type: :request do
     it { is_expected.to have_attributes body: /contact your Delivery Manager/ }
   end
 end
-# rubocop:enable RSpec/MultipleMemoizedHelpers
