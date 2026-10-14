@@ -102,6 +102,37 @@ RSpec.describe RollbacksController do
 
     it { is_expected.to redirect_to(rollbacks_path) }
 
+    context "when the backend returns a 422" do
+      before do
+        stub_api_request("/rollbacks", :post).to_return(
+          api_error_response(reason: "must explain the rollback"),
+        )
+      end
+
+      it { is_expected.to have_http_status :unprocessable_content }
+      it { is_expected.to render_template(:new) }
+
+      it "shows the backend error" do
+        expect(Capybara.string(rendered_page.body)).to have_css(".govuk-error-summary", text: "must explain the rollback")
+      end
+
+      it "does not redirect to rollbacks" do
+        expect(rendered_page).not_to redirect_to(rollbacks_path)
+      end
+
+      it "does not set a success notice" do
+        rendered_page
+
+        expect(flash[:notice]).to be_nil
+      end
+
+      it "posts the rollback to the backend" do
+        rendered_page
+
+        expect(a_request(:post, %r{/admin/rollbacks\z})).to have_been_made
+      end
+    end
+
     context "when technical operator" do
       let(:current_user) { create(:user, :technical_operator) }
 
