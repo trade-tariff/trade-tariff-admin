@@ -1,0 +1,21 @@
+<%= govuk_breadcrumbs "Evaluation runs": evaluation_runs_path %>
+
+<h1 class="govuk-heading-l">Are you sure you want to delete these runs?</h1>
+
+<%= govuk_warning_text(text: "This deletes #{pluralize(@run_ids.size, 'run')} and all of their results. It cannot be undone.") %>
+
+<ul class="govuk-list govuk-list--bullet">
+  <% @run_ids.each do |id| %>
+    <li>Run #<%= id %></li>
+  <% end %>
+</ul>
+
+<div class="govuk-button-group">
+  <%= govuk_button_to "Delete #{pluralize(@run_ids.size, 'run')}",
+                      bulk_destroy_evaluation_runs_path(experiment_id: params[:experiment_id]),
+                      method: :delete,
+                      params: { run_ids: @run_ids },
+                      warning: true,
+                      prevent_double_click: true %>
+  <%= govuk_link_to "Cancel", evaluation_runs_path(experiment_id: params[:experiment_id]) %>
+</div>

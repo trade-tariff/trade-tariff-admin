@@ -17,11 +17,13 @@ class EvaluationRunsController < AuthenticatedController
     @experiments = fetch_experiments
   end
 
-  # One generic message covers every way a selection can be invalid (wrong count, not completed,
-  # different experiments, a bad id) -- the index page's own checkboxes already confine a normal
-  # selection to one experiment's completed runs, so an operator going through the UI should
-  # never actually see this; it exists as a backstop against a hand-edited URL.
-  COMPARISON_ERROR = "Select exactly two finished runs from the same experiment to compare.".freeze
+  # One generic message covers every way a selection can be invalid (wrong count, not completed
+  # or partially failed, different experiments, a bad id). The run list's checkboxes (AI-1441)
+  # no longer confine a normal selection to comparable runs on their own -- they're shared with
+  # the Delete action, so they also show on failed/cancelled rows -- so an operator going
+  # through the UI can genuinely reach this by picking two ineligible runs, not just via a
+  # hand-edited URL.
+  COMPARISON_ERROR = "Select exactly two completed or partially failed runs from the same experiment to compare.".freeze
 
   def compare
     authorize EvaluationRun, :compare?
@@ -112,7 +114,36 @@ class EvaluationRunsController < AuthenticatedController
     redirect_to evaluation_run_path(@run)
   end
 
+  NO_RUNS_SELECTED_ERROR = "Select at least one run to delete.".freeze
+
+  # No side effects, no backend call -- unlike EvaluationExperimentsController's own
+  # confirm_destroy (which fetches a live run count for one experiment), the ids to show here
+  # are already on the request itself, exactly as selected on the run list.
+  def confirm_bulk_destroy
+    authorize EvaluationRun, :destroy?
+
+    @run_ids = selected_run_ids
+    redirect_to evaluation_runs_path(experiment_id: params[:experiment_id]), alert: NO_RUNS_SELECTED_ERROR if @run_ids.empty?
+  end
+
+  def bulk_destroy
+    authorize EvaluationRun, :destroy?
+
+    ids = selected_run_ids
+    EvaluationRun.bulk_destroy!(ids)
+    redirect_to evaluation_runs_path(experiment_id: params[:experiment_id]), notice: "#{ids.size} #{ids.size == 1 ? 'run' : 'runs'} deleted."
+  rescue Faraday::ConflictError => e
+    redirect_to evaluation_runs_path(experiment_id: params[:experiment_id]), alert: EvaluationRun.conflict_detail(e)
+  rescue Faraday::Error => e
+    Rails.logger.error("Failed to bulk-delete evaluation runs: #{e.message}")
+    redirect_to evaluation_runs_path(experiment_id: params[:experiment_id]), alert: "Runs could not be deleted. Try again."
+  end
+
 private
+
+  def selected_run_ids
+    Array(params[:run_ids]).reject(&:blank?).uniq
+  end
 
   def load_run
     @run = EvaluationRun.find(params[:id])

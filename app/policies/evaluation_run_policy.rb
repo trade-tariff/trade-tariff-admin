@@ -14,4 +14,8 @@ class EvaluationRunPolicy < ApplicationPolicy
   def compare?
     technical_operator?
   end
+
+  def destroy?
+    technical_operator?
+  end
 end

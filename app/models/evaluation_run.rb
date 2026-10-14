@@ -63,6 +63,23 @@ class EvaluationRun
     run
   end
 
+  # The backend refuses to delete any selected run while one of them is queued or running
+  # (409) and says why in the reply. Falls back to the same wording when the body is empty.
+  DELETE_IN_FLIGHT_MESSAGE = "One or more selected runs are queued or running. Wait for them to finish, or cancel them, then try again.".freeze
+
+  def self.conflict_detail(error)
+    body = handle_body(error.response)
+
+    (body.dig("errors", 0, "detail") if body.is_a?(Hash)).presence || DELETE_IN_FLIGHT_MESSAGE
+  end
+
+  # One request carrying every selected id, not a loop of individual deletes (AI-1441) --
+  # matches the genuine bulk-destroy endpoint the backend exposes for this. There is no single-
+  # record destroy for a run anywhere; this is the only way to delete one, even one at a time.
+  def self.bulk_destroy!(run_ids)
+    api.delete("#{collection_path}/bulk_destroy", run_ids:)
+  end
+
   def generating?
     %w[queued running].include?(status)
   end

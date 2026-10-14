@@ -740,86 +740,53 @@ RSpec.describe EvaluationRunsController, type: :request do
 
       before { stub_api_request("/search/evaluation/runs").with(query: hash_including("experiment_id" => "7")).and_return(paginated_response([run_attributes.merge("resource_id" => "9")])) }
 
-      it "offers a checkbox for each finished run, to select it for comparison" do
+      it "offers a checkbox for each run, shared by Compare and Delete" do
         page = Capybara.string(rendered_page.body)
 
         expect(page).to have_field("run_ids[]", type: "checkbox")
         expect(page).to have_button("Compare selected runs")
+        expect(page).to have_button("Delete selected runs")
       end
     end
 
-    it "offers no comparison checkboxes when viewing all experiments together, to avoid selecting runs that can't be compared" do
+    it "offers no checkboxes or action buttons when viewing all experiments together, to avoid selecting runs that can't be compared" do
       page = Capybara.string(rendered_page.body)
 
       expect(page).not_to have_field("run_ids[]", type: "checkbox")
       expect(page).not_to have_button("Compare selected runs")
+      expect(page).not_to have_button("Delete selected runs")
     end
 
-    # Not "completed" covers both a run still in flight (AI-1427's original check) and one that's
-    # finished without completing cleanly -- a failed/cancelled run is reachable through this same
-    # checkbox otherwise, which is what let a cancelled-while-queued run (nil started_at) crash the
-    # comparison page instead of bouncing back with a friendly message. partially_failed is covered
-    # separately below (AI-1431), since whether it gets a checkbox depends on more than the status.
-    %w[running failed cancelled].each do |status|
-      context "when filtering by a specific experiment, and a run is #{status}, not completed" do
+    # Checkbox visibility depends only on whether a run is still in progress (AI-1441) -- not on
+    # comparable_run?/fully_scored? at all, which only matters once a selection is actually
+    # submitted to Compare (tested separately in the GET #compare section below). A failed or
+    # cancelled run is exactly the clutter an operator most wants to delete, so it gets a
+    # checkbox now; a queued/running run does not, since it can't be deleted until cancelled.
+    context "when filtering by a specific experiment, and a run is queued or running" do
+      let(:make_request) { get evaluation_runs_path(experiment_id: "7") }
+      let(:run_attributes) { super().merge("status" => "running") }
+
+      before { stub_api_request("/search/evaluation/runs").with(query: hash_including("experiment_id" => "7")).and_return(paginated_response([run_attributes.merge("resource_id" => "9")])) }
+
+      it "does not offer a checkbox for a run that's still in progress" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).not_to have_field("run_ids[]", type: "checkbox")
+      end
+    end
+
+    %w[failed cancelled partially_failed].each do |status|
+      context "when filtering by a specific experiment, and a run is #{status}" do
         let(:make_request) { get evaluation_runs_path(experiment_id: "7") }
         let(:run_attributes) { super().merge("status" => status) }
 
         before { stub_api_request("/search/evaluation/runs").with(query: hash_including("experiment_id" => "7")).and_return(paginated_response([run_attributes.merge("resource_id" => "9")])) }
 
-        it "does not offer a checkbox for a run that hasn't completed" do
+        it "offers a checkbox, even though this status can't be compared -- it can still be deleted" do
           page = Capybara.string(rendered_page.body)
 
-          expect(page).not_to have_field("run_ids[]", type: "checkbox")
+          expect(page).to have_field("run_ids[]", type: "checkbox")
         end
-      end
-    end
-
-    # partially_failed covers two different situations (AI-1431): every gold query still got a
-    # result and only an individual Q&A session errored along the way (result_count matches the
-    # run's own intended_result_count, snapshotted once at launch -- AI-1435), or the run was cut
-    # short and the rest were never attempted (result_count falls short). Only the first is safe
-    # to compare, so only it gets a checkbox.
-    context "when filtering by a specific experiment, and a run is partially_failed but every gold query still got a result" do
-      let(:make_request) { get evaluation_runs_path(experiment_id: "7") }
-      let(:run_attributes) { super().merge("status" => "partially_failed", "result_count" => 10, "intended_result_count" => 10) }
-
-      before { stub_api_request("/search/evaluation/runs").with(query: hash_including("experiment_id" => "7")).and_return(paginated_response([run_attributes.merge("resource_id" => "9")])) }
-
-      it "offers a checkbox, the same as a completed run" do
-        page = Capybara.string(rendered_page.body)
-
-        expect(page).to have_field("run_ids[]", type: "checkbox")
-      end
-    end
-
-    context "when filtering by a specific experiment, and a run is partially_failed because it was cut short partway through" do
-      let(:make_request) { get evaluation_runs_path(experiment_id: "7") }
-      let(:run_attributes) { super().merge("status" => "partially_failed", "result_count" => 4, "intended_result_count" => 10) }
-
-      before { stub_api_request("/search/evaluation/runs").with(query: hash_including("experiment_id" => "7")).and_return(paginated_response([run_attributes.merge("resource_id" => "9")])) }
-
-      it "does not offer a checkbox, the same as any other run that hasn't completed" do
-        page = Capybara.string(rendered_page.body)
-
-        expect(page).not_to have_field("run_ids[]", type: "checkbox")
-      end
-    end
-
-    # A run started before this field existed has no intended_result_count at all (never
-    # backfilled -- there's no way to know, after the fact, what size its gold query set had at
-    # its own launch time, AI-1435). Treated as not comparable, the same safe default as any
-    # other partially_failed run this can't positively confirm was fully scored.
-    context "when filtering by a specific experiment, and a partially_failed run predates intended_result_count" do
-      let(:make_request) { get evaluation_runs_path(experiment_id: "7") }
-      let(:run_attributes) { super().merge("status" => "partially_failed", "result_count" => 10, "intended_result_count" => nil) }
-
-      before { stub_api_request("/search/evaluation/runs").with(query: hash_including("experiment_id" => "7")).and_return(paginated_response([run_attributes.merge("resource_id" => "9")])) }
-
-      it "does not offer a checkbox" do
-        page = Capybara.string(rendered_page.body)
-
-        expect(page).not_to have_field("run_ids[]", type: "checkbox")
       end
     end
   end
@@ -889,7 +856,7 @@ RSpec.describe EvaluationRunsController, type: :request do
         expect(rendered_page).to redirect_to(evaluation_runs_path(experiment_id: "7"))
 
         rendered_page
-        expect(session.dig("flash", "flashes", "alert")).to eq("Select exactly two finished runs from the same experiment to compare.")
+        expect(session.dig("flash", "flashes", "alert")).to eq("Select exactly two completed or partially failed runs from the same experiment to compare.")
       end
     end
 
@@ -915,6 +882,22 @@ RSpec.describe EvaluationRunsController, type: :request do
         it "bounces back rather than comparing a run that hasn't completed" do
           expect(rendered_page).to redirect_to(evaluation_runs_path(experiment_id: "7"))
         end
+      end
+    end
+
+    # The widened delete checkbox (AI-1441) makes this reachable through the UI for the first
+    # time -- a failed/cancelled run never had a checkbox at all before, so selecting two of
+    # them for Compare was previously only possible via a hand-edited URL.
+    context "when both selected runs are failed, not just one" do
+      before { stub_api_request("/search/evaluation/runs/10").and_return(jsonapi_response("run", run_b_attributes.merge("status" => "failed", "resource_id" => "10"))) }
+
+      let(:run_a_attributes) { super().merge("status" => "failed") }
+
+      it "explains that only completed or partially failed runs can be compared (AI-1441)" do
+        expect(rendered_page).to redirect_to(evaluation_runs_path(experiment_id: "7"))
+
+        rendered_page
+        expect(session.dig("flash", "flashes", "alert")).to eq("Select exactly two completed or partially failed runs from the same experiment to compare.")
       end
     end
 
@@ -979,7 +962,7 @@ RSpec.describe EvaluationRunsController, type: :request do
       it "bounces back rather than comparing across experiments" do
         expect(rendered_page).to have_http_status(:found)
         rendered_page
-        expect(session.dig("flash", "flashes", "alert")).to eq("Select exactly two finished runs from the same experiment to compare.")
+        expect(session.dig("flash", "flashes", "alert")).to eq("Select exactly two completed or partially failed runs from the same experiment to compare.")
       end
     end
 
@@ -988,6 +971,107 @@ RSpec.describe EvaluationRunsController, type: :request do
 
       it "bounces back with the same explanation, rather than a 404" do
         expect(rendered_page).to redirect_to(evaluation_runs_path(experiment_id: "7"))
+      end
+    end
+
+    context "when the user is not a technical operator" do
+      let(:current_user) { create(:user, :hmrc_admin) }
+
+      it { is_expected.to have_http_status :forbidden }
+    end
+  end
+
+  describe "GET #confirm_bulk_destroy" do
+    let(:make_request) { get confirm_bulk_destroy_evaluation_runs_path(run_ids: %w[9 10], experiment_id: "7") }
+
+    it "asks for confirmation and lists which runs will be lost" do
+      page = Capybara.string(rendered_page.body)
+
+      expect(page).to have_css("h1", text: "Are you sure you want to delete these runs?")
+      expect(page).to have_css(".govuk-warning-text", text: "2 runs")
+      expect(page).to have_content("Run #9")
+      expect(page).to have_content("Run #10")
+      expect(page).to have_button("Delete 2 runs")
+    end
+
+    context "when no runs are selected" do
+      let(:make_request) { get confirm_bulk_destroy_evaluation_runs_path }
+
+      it "bounces back to the run list instead of showing an empty confirmation" do
+        expect(rendered_page).to redirect_to(evaluation_runs_path)
+
+        rendered_page
+        expect(session.dig("flash", "flashes", "alert")).to eq("Select at least one run to delete.")
+      end
+    end
+
+    context "when the user is not a technical operator" do
+      let(:current_user) { create(:user, :hmrc_admin) }
+
+      it { is_expected.to have_http_status :forbidden }
+    end
+  end
+
+  describe "DELETE #bulk_destroy" do
+    let(:make_request) { delete bulk_destroy_evaluation_runs_path, params: { run_ids: %w[9 10], experiment_id: "7" } }
+
+    before { stub_api_request("/search/evaluation/runs/bulk_destroy", :delete).with(query: hash_including({})).and_return(status: 204, headers: json_headers, body: nil) }
+
+    it { is_expected.to redirect_to(evaluation_runs_path(experiment_id: "7")) }
+
+    it "confirms the deletion" do
+      rendered_page
+
+      expect(session.dig("flash", "flashes", "notice")).to eq("2 runs deleted.")
+    end
+
+    it "sends every selected id in one request" do
+      rendered_page
+
+      expect(WebMock).to(have_requested(:delete, %r{/search/evaluation/runs/bulk_destroy}).with do |request|
+        query = Rack::Utils.parse_nested_query(request.uri.query)
+        query["run_ids"].sort == %w[10 9]
+      end)
+    end
+
+    context "when one of the selected runs is queued or running" do
+      let(:detail) { "One or more selected runs are queued or running. Wait for them to finish, or cancel them, then try again." }
+
+      before do
+        stub_api_request("/search/evaluation/runs/bulk_destroy", :delete).with(query: hash_including({})).and_return(
+          status: 409, headers: json_headers, body: { errors: [{ status: "409", title: "Run is in use", detail: }] }.to_json,
+        )
+      end
+
+      it { is_expected.to redirect_to(evaluation_runs_path(experiment_id: "7")) }
+
+      it "explains why it was refused, using the backend's own wording" do
+        rendered_page
+
+        expect(session.dig("flash", "flashes", "alert")).to eq(detail)
+      end
+    end
+
+    context "when the backend refuses without saying why" do
+      before { stub_api_request("/search/evaluation/runs/bulk_destroy", :delete).with(query: hash_including({})).and_return(status: 409, headers: json_headers, body: "") }
+
+      it "falls back to the same wording" do
+        rendered_page
+
+        expect(session.dig("flash", "flashes", "alert")).to eq(
+          "One or more selected runs are queued or running. Wait for them to finish, or cancel them, then try again.",
+        )
+      end
+    end
+
+    context "when the backend cannot be reached" do
+      before { stub_api_request("/search/evaluation/runs/bulk_destroy", :delete).with(query: hash_including({})).and_return(status: 500, headers: json_headers, body: { error: "boom" }.to_json) }
+
+      it "redirects with a warning instead of an error page" do
+        expect(rendered_page).to redirect_to(evaluation_runs_path(experiment_id: "7"))
+
+        rendered_page
+        expect(session.dig("flash", "flashes", "alert")).to eq("Runs could not be deleted. Try again.")
       end
     end
 
