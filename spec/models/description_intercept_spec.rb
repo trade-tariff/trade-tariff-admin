@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/ExampleLength, RSpec/MultipleExpectations
 RSpec.describe DescriptionIntercept do
   subject(:intercept) { described_class.new(attributes) }
 
@@ -20,8 +19,8 @@ RSpec.describe DescriptionIntercept do
   end
 
   describe "#as_listing_json" do
-    it "returns the agreed listing shape" do
-      expect(intercept.as_listing_json).to eq(
+    let(:listing_json) do
+      {
         id: 123,
         term: "animal feed",
         excluded: false,
@@ -31,7 +30,11 @@ RSpec.describe DescriptionIntercept do
         behaviour: "Filters to selected short codes",
         escalates: true,
         created_at: "15 April 2026",
-      )
+      }
+    end
+
+    it "returns the agreed listing shape" do
+      expect(intercept.as_listing_json).to eq(listing_json)
     end
   end
 
@@ -72,42 +75,62 @@ RSpec.describe DescriptionIntercept do
   end
 
   describe "#normalize_serialized_attributes" do
-    it "defaults guidance metadata when a message is present" do
-      attrs = {
-        message: "Show this guidance message to the trader.",
-        message_header: "Check the term",
-        guidance_level: "warning",
-        guidance_location: "results",
-        filter_prefixes: %w[1201],
-        sources: %w[guided_search],
-      }
+    context "when a message is present" do
+      let(:attrs) do
+        {
+          message: "Show this guidance message to the trader.",
+          message_header: "Check the term",
+          guidance_level: "warning",
+          guidance_location: "results",
+          filter_prefixes: %w[1201],
+          sources: %w[guided_search],
+        }
+      end
 
-      intercept.normalize_serialized_attributes(attrs)
+      let(:default_guidance_metadata) do
+        {
+          guidance_level: "info",
+          guidance_location: "interstitial",
+        }
+      end
 
-      expect(attrs).to include(
-        guidance_level: "info",
-        guidance_location: "interstitial",
-      )
+      before do
+        intercept.normalize_serialized_attributes(attrs)
+      end
+
+      it "defaults guidance metadata when a message is present" do
+        expect(attrs).to include(default_guidance_metadata)
+      end
     end
 
-    it "clears guidance metadata when the message is blank" do
-      attrs = {
-        message: "",
-        message_header: "Stale header",
-        guidance_level: "warning",
-        guidance_location: "results",
-        filter_prefixes: %w[1201],
-        sources: %w[guided_search],
-      }
+    context "when the message is blank" do
+      let(:attrs) do
+        {
+          message: "",
+          message_header: "Stale header",
+          guidance_level: "warning",
+          guidance_location: "results",
+          filter_prefixes: %w[1201],
+          sources: %w[guided_search],
+        }
+      end
 
-      intercept.normalize_serialized_attributes(attrs)
+      let(:cleared_guidance_metadata) do
+        {
+          message: nil,
+          message_header: nil,
+          guidance_level: nil,
+          guidance_location: nil,
+        }
+      end
 
-      expect(attrs).to include(
-        message: nil,
-        message_header: nil,
-        guidance_level: nil,
-        guidance_location: nil,
-      )
+      before do
+        intercept.normalize_serialized_attributes(attrs)
+      end
+
+      it "clears guidance metadata when the message is blank" do
+        expect(attrs).to include(cleared_guidance_metadata)
+      end
     end
   end
 
@@ -138,6 +161,18 @@ RSpec.describe DescriptionIntercept do
   describe ".listing" do
     let(:params) { ActionController::Parameters.new(page: "2", q: "gift", ignored: "value") }
 
+    let(:listing) do
+      {
+        data: [intercept.as_listing_json],
+        pagination: {
+          page: 1,
+          per_page: 20,
+          total_count: 1,
+          total_pages: 1,
+        },
+      }
+    end
+
     before do
       allow(described_class).to receive(:all).and_return([described_class.new(attributes)])
     end
@@ -149,48 +184,57 @@ RSpec.describe DescriptionIntercept do
     end
 
     it "returns data and default pagination" do
-      expect(described_class.listing(params)).to eq(
-        data: [intercept.as_listing_json],
-        pagination: {
-          page: 1,
-          per_page: 20,
-          total_count: 1,
-          total_pages: 1,
-        },
-      )
+      expect(described_class.listing(params)).to eq(listing)
     end
   end
 
   describe ".bulk_import" do
-    it "posts CSV content to the backend and returns import counts" do
-      stub_api_request("/description_intercepts/bulk_import", :post)
-        .with { |request|
-          Rack::Utils.parse_nested_query(request.body).dig("data", "attributes", "csv") == "term,aliases,template\ngift,\"present,gifts\",generic\n"
-        }
-        .and_return(
-          status: 201,
-          headers: { "content-type" => "application/json; charset=utf-8" },
-          body: { data: { type: "description_intercept_bulk_import", attributes: { created: 1, updated: 2, total: 3 } } }.to_json,
-        )
+    context "when the backend accepts the CSV" do
+      let(:csv) { "term,aliases,template\ngift,\"present,gifts\",generic\n" }
+      let(:result) { described_class.bulk_import(csv) }
 
-      result = described_class.bulk_import("term,aliases,template\ngift,\"present,gifts\",generic\n")
+      before do
+        stub_api_request("/description_intercepts/bulk_import", :post)
+          .with { |request|
+            Rack::Utils.parse_nested_query(request.body).dig("data", "attributes", "csv") == csv
+          }
+          .and_return(
+            status: 201,
+            headers: { "content-type" => "application/json; charset=utf-8" },
+            body: { data: { type: "description_intercept_bulk_import", attributes: { created: 1, updated: 2, total: 3 } } }.to_json,
+          )
+      end
 
-      expect(result).to be_success
-      expect(result.message).to eq("Imported 3 description intercepts: 1 created, 2 updated.")
+      it "returns a successful result" do
+        expect(result).to be_success
+      end
+
+      it "returns import counts" do
+        expect(result.message).to eq("Imported 3 description intercepts: 1 created, 2 updated.")
+      end
     end
 
-    it "returns grouped backend validation errors" do
-      stub_api_request("/description_intercepts/bulk_import", :post)
-        .and_return(
-          status: 422,
-          headers: { "content-type" => "application/json; charset=utf-8" },
-          body: { errors: [{ detail: "foo and baz are not valid templates" }] }.to_json,
-        )
+    context "when the backend returns validation errors" do
+      let(:csv) { "term,aliases,template\ngift,\"present,gifts\",foo\n" }
+      let(:result) { described_class.bulk_import(csv) }
+      let(:import_errors) { [{ "detail" => "foo and baz are not valid templates" }] }
 
-      result = described_class.bulk_import("term,aliases,template\ngift,\"present,gifts\",foo\n")
+      before do
+        stub_api_request("/description_intercepts/bulk_import", :post)
+          .and_return(
+            status: 422,
+            headers: { "content-type" => "application/json; charset=utf-8" },
+            body: { errors: [{ detail: "foo and baz are not valid templates" }] }.to_json,
+          )
+      end
 
-      expect(result).not_to be_success
-      expect(result.errors).to eq([{ "detail" => "foo and baz are not valid templates" }])
+      it "is not successful" do
+        expect(result).not_to be_success
+      end
+
+      it "returns grouped backend validation errors" do
+        expect(result.errors).to eq(import_errors)
+      end
     end
   end
 
@@ -230,5 +274,3 @@ RSpec.describe DescriptionIntercept do
     end
   end
 end
-
-# rubocop:enable RSpec/ExampleLength, RSpec/MultipleExpectations
