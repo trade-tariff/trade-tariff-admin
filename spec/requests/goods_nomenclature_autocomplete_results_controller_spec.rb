@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/ExampleLength
 RSpec.describe GoodsNomenclatureAutocompleteResultsController, type: :request do
   subject(:rendered_page) { make_request && response }
 
@@ -6,6 +5,17 @@ RSpec.describe GoodsNomenclatureAutocompleteResultsController, type: :request do
 
   let(:current_user) { create(:user, :technical_operator) }
   let(:make_request) { get goods_nomenclature_autocomplete_results_path(format: :json), params: { q: "1201" } }
+  let(:expected_suggestions) do
+    [
+      {
+        "id" => "120190",
+        "goods_nomenclature_item_id" => "1201900000",
+        "description" => "Soya bean flour and meal, whether or not defatted",
+        "truncated_description" => "Soya bean flour and meal, whether or not defatted",
+        "label" => "1201900000 - Soya bean flour and meal, whether or not defatted",
+      },
+    ]
+  end
 
   before do
     stub_api_request("/goods_nomenclature_autocomplete")
@@ -34,16 +44,6 @@ RSpec.describe GoodsNomenclatureAutocompleteResultsController, type: :request do
   it "returns autocomplete suggestions" do
     json = JSON.parse(rendered_page.body)
 
-    expect(json).to eq([
-      {
-        "id" => "120190",
-        "goods_nomenclature_item_id" => "1201900000",
-        "description" => "Soya bean flour and meal, whether or not defatted",
-        "truncated_description" => "Soya bean flour and meal, whether or not defatted",
-        "label" => "1201900000 - Soya bean flour and meal, whether or not defatted",
-      },
-    ])
+    expect(json).to eq(expected_suggestions)
   end
 end
-
-# rubocop:enable RSpec/ExampleLength
