@@ -17,6 +17,7 @@ class EvaluationRun
   attributes :experiment_id,
              :experiment_name,
              :status,
+             :label,
              :gold_query_set_id,
              :intended_result_count,
              :effective_configuration,

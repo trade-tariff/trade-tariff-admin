@@ -78,7 +78,7 @@
                 <% end %>
               </td>
             <% end %>
-            <td class="govuk-table__cell"><%= link_to "Run ##{run.resource_id}", evaluation_run_path(run), class: "govuk-link" %></td>
+            <td class="govuk-table__cell"><%= link_to evaluation_run_display_name(run), evaluation_run_path(run), class: "govuk-link" %></td>
             <td class="govuk-table__cell"><%= run.experiment_name %></td>
             <td class="govuk-table__cell"><%= run.status %></td>
             <%# result_count already includes errored results (reconcile_aggregates! counts every

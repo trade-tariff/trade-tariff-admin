@@ -1,6 +1,5 @@
 require "search_reference"
 
-# rubocop:disable RSpec/NoExpectationExample
 RSpec.describe "Heading Search Reference management" do
   let(:chapter) { build :chapter, resource_id: "01" }
 
@@ -48,7 +47,7 @@ RSpec.describe "Heading Search Reference management" do
       ensure_on new_references_heading_search_reference_path(heading)
       fill_in "Search reference", with: "new title"
       click_button "Create Search reference"
-      verify current_path == references_heading_search_references_path(heading)
+      expect(current_path == references_heading_search_references_path(heading)).to be_truthy
     end
   end
 
@@ -167,7 +166,7 @@ RSpec.describe "Heading Search Reference management" do
       ensure_on edit_references_heading_search_reference_path(heading, heading_search_reference)
       fill_in "Search reference", with: "flim flam"
       click_button "Update Search reference"
-      verify current_path == references_heading_search_references_path(heading)
+      expect(current_path == references_heading_search_references_path(heading)).to be_truthy
     end
   end
 
@@ -208,4 +207,3 @@ RSpec.describe "Heading Search Reference management" do
     end
   end
 end
-# rubocop:enable RSpec/NoExpectationExample

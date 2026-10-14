@@ -2,6 +2,22 @@ module EvaluationRunsHelper
   MINIMUM_FINISHED_FOR_ESTIMATE = 3
   SLOW_RUN_THRESHOLD = 5.minutes
 
+  # "Run #123" normally, or "Run #123 — vector based retrieval" once the run's own
+  # auto-generated label exists (AI-1437) -- the one place every "Run #123"-only display
+  # (the runs list, the compare page's column headers and row labels) should build its text
+  # from, so the fallback for an unlabelled run stays identical everywhere.
+  def evaluation_run_display_name(run)
+    "Run ##{run.resource_id}#{evaluation_run_label_suffix(run)}"
+  end
+
+  # " — vector based retrieval" once the run has a label, or "" otherwise. Separate from
+  # evaluation_run_display_name because the run show page's heading isn't built from "Run
+  # #123" at all (it's "<experiment name> — Run ID: <id>") but still needs the same label
+  # suffix appended, with the same blank-when-absent behaviour.
+  def evaluation_run_label_suffix(run)
+    run.label.present? ? " — #{run.label}" : ""
+  end
+
   # nil when there isn't enough data yet to say anything useful — just started, already done, or
   # started_at is missing/unparseable (the backend sets it the moment a run enters "running"; a run
   # the eval app hasn't picked up yet has none, same as a malformed one — both mean "don't guess").
@@ -70,8 +86,8 @@ module EvaluationRunsHelper
   end
 
   def evaluation_run_comparison_rows(run_a, run_b)
-    label_a = "Run ##{run_a.resource_id}"
-    label_b = "Run ##{run_b.resource_id}"
+    label_a = evaluation_run_display_name(run_a)
+    label_b = evaluation_run_display_name(run_b)
 
     [
       evaluation_run_comparison_row("Top 1 accuracy", run_a.top1_rate, run_b.top1_rate, label_a, label_b, value_format: :rate, higher_is_better: true),

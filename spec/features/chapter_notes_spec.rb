@@ -1,8 +1,5 @@
-# rubocop:disable RSpec/NoExpectationExample
 RSpec.describe "Chapter Note management" do
-  # rubocop:disable RSpec/LetSetup
-  let!(:user) { create :user, :technical_operator }
-  # rubocop:enable RSpec/LetSetup
+  before { create :user, :technical_operator }
 
   describe "Chapter Note creation" do
     let(:section) { build :section, resource_id: 1 }
@@ -30,7 +27,7 @@ RSpec.describe "Chapter Note management" do
       ensure_on new_notes_chapter_chapter_note_path(chapter)
       fill_in "Content", with: "new content"
       click_button "Create Chapter note"
-      verify current_path == notes_section_chapters_path(section_id: chapter.section.id)
+      expect(current_path == notes_section_chapters_path(section_id: chapter.section.id)).to be_truthy
     end
   end
 
@@ -53,7 +50,7 @@ RSpec.describe "Chapter Note management" do
       ensure_on edit_notes_chapter_chapter_note_path(chapter)
       fill_in "Content", with: "new content"
       click_button "Update Chapter note"
-      verify current_path == notes_section_chapters_path(section_id: chapter.section.id)
+      expect(current_path == notes_section_chapters_path(section_id: chapter.section.id)).to be_truthy
     end
   end
 
@@ -75,8 +72,7 @@ RSpec.describe "Chapter Note management" do
     specify do
       ensure_on edit_notes_chapter_chapter_note_path(chapter)
       click_link "Remove"
-      verify current_path == notes_section_chapters_path(section_id: chapter.section.id)
+      expect(current_path == notes_section_chapters_path(section_id: chapter.section.id)).to be_truthy
     end
   end
 end
-# rubocop:enable RSpec/NoExpectationExample

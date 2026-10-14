@@ -1,6 +1,5 @@
 require "search_reference"
 
-# rubocop:disable RSpec/NoExpectationExample
 RSpec.describe "Chapter Search Reference management" do
   let(:section) { build :section, resource_id: 1 }
   let(:chapter) do
@@ -48,7 +47,7 @@ RSpec.describe "Chapter Search Reference management" do
       ensure_on new_references_chapter_search_reference_path(chapter)
       fill_in "Search reference", with: "new title"
       click_button "Create Search reference"
-      verify current_path == references_chapter_search_references_path(chapter)
+      expect(current_path == references_chapter_search_references_path(chapter)).to be_truthy
     end
 
     specify "requires at least one service selected" do
@@ -101,7 +100,7 @@ RSpec.describe "Chapter Search Reference management" do
       ensure_on references_chapter_search_references_path(chapter)
       within(dom_id_selector(chapter_search_reference)) { click_link "Remove" }
       click_button "Remove Search reference"
-      verify current_path == references_chapter_search_references_path(chapter)
+      expect(current_path == references_chapter_search_references_path(chapter)).to be_truthy
     end
   end
 
@@ -134,7 +133,7 @@ RSpec.describe "Chapter Search Reference management" do
       ensure_on edit_references_chapter_search_reference_path(chapter, chapter_search_reference)
       fill_in "Search reference", with: "new title"
       click_button "Update Search reference"
-      verify current_path == references_chapter_search_references_path(chapter)
+      expect(current_path == references_chapter_search_references_path(chapter)).to be_truthy
     end
 
     context "when selected counterpart service is missing" do
@@ -171,13 +170,12 @@ RSpec.describe "Chapter Search Reference management" do
         .to_return api_no_content_response
     end
 
-    specify "removes where present and reports missing counterpart" do
+    specify "removes where present and reports missing counterpart", :aggregate_failures do
       ensure_on references_chapter_search_references_path(chapter)
       within(dom_id_selector(chapter_search_reference)) { click_link "Remove" }
       click_button "Remove Search reference"
       expect(page).to have_content("Search reference was successfully removed only for UK. Not available in Northern Ireland.")
-      verify current_path == references_chapter_search_references_path(chapter)
+      expect(current_path == references_chapter_search_references_path(chapter)).to be_truthy
     end
   end
 end
-# rubocop:enable RSpec/NoExpectationExample

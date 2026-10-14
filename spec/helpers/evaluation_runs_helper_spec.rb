@@ -51,6 +51,34 @@ RSpec.describe EvaluationRunsHelper do
     end
   end
 
+  describe "#evaluation_run_display_name" do
+    it "is just the bare run id when the run has no label yet (AI-1437)" do
+      run = EvaluationRun.new(resource_id: "9", label: nil)
+
+      expect(helper.evaluation_run_display_name(run)).to eq("Run #9")
+    end
+
+    it "appends the label once it exists" do
+      run = EvaluationRun.new(resource_id: "9", label: "vector based retrieval")
+
+      expect(helper.evaluation_run_display_name(run)).to eq("Run #9 — vector based retrieval")
+    end
+  end
+
+  describe "#evaluation_run_label_suffix" do
+    it "is blank when the run has no label yet" do
+      run = EvaluationRun.new(resource_id: "9", label: nil)
+
+      expect(helper.evaluation_run_label_suffix(run)).to eq("")
+    end
+
+    it "is the label with a leading em dash once it exists" do
+      run = EvaluationRun.new(resource_id: "9", label: "vector based retrieval")
+
+      expect(helper.evaluation_run_label_suffix(run)).to eq(" — vector based retrieval")
+    end
+  end
+
   describe "#evaluation_run_comparison_rows" do
     let(:run_a) do
       EvaluationRun.new(
@@ -106,6 +134,15 @@ RSpec.describe EvaluationRunsHelper do
       rows = helper.evaluation_run_comparison_rows(run_a, run_b)
 
       expect(rows).to all(include(better: "Not available"))
+    end
+
+    it "names the winner by its label, not just its bare id, once one exists (AI-1437)" do
+      run_b = EvaluationRun.new(resource_id: "10", label: "vector based retrieval", gold_in_top1_count: 8, result_count: 10)
+
+      rows = helper.evaluation_run_comparison_rows(run_a, run_b)
+      top1_row = rows.find { |row| row[:label] == "Top 1 accuracy" }
+
+      expect(top1_row[:better]).to eq("Run #10 — vector based retrieval")
     end
   end
 
