@@ -1,13 +1,23 @@
-# rubocop:disable RSpec/ExampleLength, RSpec/MultipleExpectations, RSpec/MultipleMemoizedHelpers
 RSpec.describe EvaluationRunsController, type: :request do
   subject(:rendered_page) { make_request && response }
 
   include_context "with authenticated user"
 
   let(:current_user) { create(:user, :technical_operator, uid: "user-123") }
-  let(:experiment_attributes) { { "name" => "Baseline", "configuration_overrides" => {}, "gold_query_set_id" => 3 } }
-  let(:gold_query_set_attributes) { { "name" => "Set A", "atar_count" => 5, "synthetic_atar_count" => 0 } }
-  let(:configuration_response) do
+
+  def experiment_attributes
+    { "name" => "Baseline", "configuration_overrides" => {}, "gold_query_set_id" => 3 }
+  end
+
+  def gold_query_set_attributes
+    { "name" => "Set A", "atar_count" => 5, "synthetic_atar_count" => 0 }
+  end
+
+  def json_headers
+    { "content-type" => "application/json; charset=utf-8" }
+  end
+
+  def configuration_response
     {
       status: 200,
       headers: json_headers,
@@ -21,7 +31,10 @@ RSpec.describe EvaluationRunsController, type: :request do
       }.to_json,
     }
   end
-  let(:json_headers) { { "content-type" => "application/json; charset=utf-8" } }
+
+  def page
+    Capybara.string(rendered_page.body)
+  end
 
   def paginated_response(rows, type:, total_count: rows.length)
     {
@@ -45,53 +58,85 @@ RSpec.describe EvaluationRunsController, type: :request do
 
     it { is_expected.to have_http_status :success }
 
-    it "shows the form with a field for every allowed override" do
-      page = Capybara.string(rendered_page.body)
-
+    it "shows the launch heading" do
       expect(page).to have_css("h1", text: "Launch an evaluation")
+    end
+
+    it "offers the experiment choices" do
       expect(page).to have_select("Experiment", options: ["Choose an experiment", "Baseline"])
+    end
+
+    it "does not offer a gold query set select" do
       expect(page).not_to have_select("Gold query set")
+    end
+
+    it "offers the question model select" do
       expect(page).to have_select("Question model")
+    end
+
+    it "offers the max rounds field" do
       expect(page).to have_field("Max rounds")
+    end
+
+    it "offers the search non declarables fieldset" do
       expect(page).to have_css("fieldset", text: "Search non declarables")
+    end
+
+    it "offers the launch button" do
       expect(page).to have_button("Launch")
     end
 
-    it "puts the overrides inside a collapsible accordion, so the page isn't a wall of fields" do
-      page = Capybara.string(rendered_page.body)
-
+    it "puts overrides in an accordion" do
       accordion = page.find(".govuk-accordion[data-module='govuk-accordion']")
+
       expect(accordion).to have_css(".govuk-accordion__section-button", text: "Overrides")
+    end
+
+    it "keeps the question model inside the accordion" do
+      accordion = page.find(".govuk-accordion[data-module='govuk-accordion']")
+
       expect(accordion).to have_select("Question model")
+    end
+
+    it "keeps max rounds inside the accordion" do
+      accordion = page.find(".govuk-accordion[data-module='govuk-accordion']")
+
       expect(accordion).to have_field("Max rounds")
     end
 
-    it "embeds the experiment's gold query set name and item count in the preview data" do
-      page = Capybara.string(rendered_page.body)
+    it "embeds the gold query set name in the preview data" do
       experiments_data = JSON.parse(page.find("form")["data-run-preview-experiments-value"])
 
       expect(experiments_data.dig("7", "gold_query_set_name")).to eq("Set A")
+    end
+
+    it "embeds the gold query set item count in the preview data" do
+      experiments_data = JSON.parse(page.find("form")["data-run-preview-experiments-value"])
+
       expect(experiments_data.dig("7", "gold_query_set_item_count")).to eq(5)
     end
 
-    it "explains what each override does" do
-      page = Capybara.string(rendered_page.body)
-
+    it "explains the question model override" do
       expect(page).to have_css(".govuk-hint", text: "The AI model used to ask clarifying questions.")
+    end
+
+    it "explains the search non declarables override" do
       expect(page).to have_css(".govuk-hint", text: "Include non-declarable codes in the results.")
     end
 
-    it "tells the operator a number field can be left blank for the default, not just that an option exists" do
-      page = Capybara.string(rendered_page.body)
-
+    it "says a number field can be left blank" do
       expect(page).to have_css(".govuk-hint", text: "Leave blank to use the default.")
     end
 
-    it "puts the live-preview target on each individual boolean radio, not just the fieldset" do
-      page = Capybara.string(rendered_page.body)
-
+    it "renders three boolean override radios" do
       radios = page.all("input[type='radio'][data-override-key='search_non_declarables']")
+
       expect(radios.size).to eq(3)
+    end
+
+    it "puts the preview target on each boolean radio" do
+      radios = page.all("input[type='radio'][data-override-key='search_non_declarables']")
+
       expect(radios.map { |radio| radio["data-run-preview-target"] }).to all(eq("overrideField"))
     end
 
@@ -128,10 +173,13 @@ RSpec.describe EvaluationRunsController, type: :request do
     context "when the backend cannot be reached" do
       before { stub_api_request("/search/evaluation/configuration").to_raise(Faraday::ConnectionFailed) }
 
-      it "redirects to the experiment list with a warning instead of an error page" do
+      it "redirects to the experiment list" do
         expect(rendered_page).to redirect_to(evaluation_experiments_path)
+      end
 
+      it "warns that the launch form could not be loaded" do
         rendered_page
+
         expect(session.dig("flash", "flashes", "alert")).to eq("The launch form could not be loaded. Try again.")
       end
     end
@@ -204,17 +252,19 @@ RSpec.describe EvaluationRunsController, type: :request do
 
       it { is_expected.to have_http_status :unprocessable_content }
 
-      it "shows the error and keeps the same idempotency key" do
-        page = Capybara.string(rendered_page.body)
-
+      it "shows the error" do
         expect(page).to have_css(".govuk-error-summary", text: "must be between 1 and 20")
+      end
+
+      it "keeps the same idempotency key" do
         expect(page).to have_css("input[name='evaluation_run[idempotency_key]'][value='key-abc']", visible: false)
       end
 
-      it "also keeps the experiment selection and the typed override values" do
-        page = Capybara.string(rendered_page.body)
-
+      it "keeps the experiment selection" do
         expect(page).to have_select("Experiment", selected: "Baseline")
+      end
+
+      it "keeps the typed max rounds" do
         expect(page).to have_field("Max rounds", with: "3")
       end
     end
@@ -300,11 +350,15 @@ RSpec.describe EvaluationRunsController, type: :request do
         expect(rendered_page).to have_http_status(:unprocessable_content)
       end
 
-      it "keeps the same idempotency key and what was typed" do
-        page = Capybara.string(rendered_page.body)
-
+      it "keeps the same idempotency key" do
         expect(page).to have_css("input[name='evaluation_run[idempotency_key]'][value='key-abc']", visible: false)
+      end
+
+      it "keeps the experiment selection" do
         expect(page).to have_select("Experiment", selected: "Baseline")
+      end
+
+      it "keeps the typed max rounds" do
         expect(page).to have_field("Max rounds", with: "3")
       end
     end
@@ -329,8 +383,13 @@ RSpec.describe EvaluationRunsController, type: :request do
         stub_api_request("/search/evaluation/gold_query_sets").with(query: hash_including("per_page" => "200")).and_return(paginated_response([gold_query_set_attributes.merge("resource_id" => "3")], type: "gold_query_set"))
       end
 
-      it "shows a validation error instead of calling the backend at all" do
+      it "returns unprocessable content" do
         expect(rendered_page).to have_http_status(:unprocessable_content)
+      end
+
+      it "does not call the backend" do
+        rendered_page
+
         expect(a_request(:post, %r{/search/evaluation/runs\z})).not_to have_been_made
       end
 
@@ -399,10 +458,11 @@ RSpec.describe EvaluationRunsController, type: :request do
       end
     end
 
-    it "shows the live count and a cancel button while the run is in progress" do
-      page = Capybara.string(rendered_page.body)
-
+    it "shows the live count" do
       expect(page).to have_css("p", text: "4 of 30")
+    end
+
+    it "shows a cancel button while the run is in progress" do
       expect(page).to have_button("Cancel run")
     end
 
@@ -453,34 +513,47 @@ RSpec.describe EvaluationRunsController, type: :request do
         expect(page).to have_css("a.govuk-back-link", text: "Back to experiments")
       end
 
-      it "shows the full summary and the configuration breakdown, tagged by source" do
-        page = Capybara.string(rendered_page.body)
-
+      it "shows the result count" do
         expect(page).to have_css("dd", text: "10")
+      end
+
+      it "shows max rounds in the configuration" do
         expect(page).to have_css("td", text: "Max rounds")
+      end
+
+      it "tags max rounds as overridden for this run" do
         expect(page).to have_css("td", text: "Overridden for this run")
       end
 
-      it "shows accuracy and average latency, computed from the run's own counts" do
-        page = Capybara.string(rendered_page.body)
-
+      it "shows top-1 accuracy" do
         expect(page).to have_css("dd", text: "60%")
+      end
+
+      it "shows top-5 accuracy" do
         expect(page).to have_css("dd", text: "90%")
+      end
+
+      it "shows average latency" do
         expect(page).to have_css("dd", text: "2.5")
       end
 
-      it "explains in plain English what the accuracy, cost and latency figures mean" do
-        page = Capybara.string(rendered_page.body)
-
+      it "explains top-1 accuracy" do
         expect(page).to have_css("dd .govuk-hint", text: "top result")
+      end
+
+      it "explains the cost" do
         expect(page).to have_css("dd .govuk-hint", text: "clarifying question")
+      end
+
+      it "explains latency" do
         expect(page).to have_css("dd .govuk-hint", text: "simulating the trader")
       end
 
-      it "shows the costliest result with its type and commodity code, and a plain dash when there is no cheapest one" do
-        page = Capybara.string(rendered_page.body)
-
+      it "links the costliest result" do
         expect(page).to have_link("ATaR 600004365 (6404199000, $0.05)", href: evaluation_run_result_path(run_id, "55"))
+      end
+
+      it "shows a dash when there is no cheapest result" do
         expect(page).to have_css("dd", text: "-")
       end
     end
@@ -496,12 +569,19 @@ RSpec.describe EvaluationRunsController, type: :request do
         )
       end
 
-      it "shows each persona's own accuracy, cost and latency, so one persona can be compared against another" do
-        page = Capybara.string(rendered_page.body)
-
+      it "shows the generic search persona" do
         expect(page).to have_css("td", text: "Generic search")
+      end
+
+      it "shows the specific search persona" do
         expect(page).to have_css("td", text: "Specific search")
+      end
+
+      it "shows that persona's top-1 accuracy" do
         expect(page).to have_css("td", text: "50%")
+      end
+
+      it "shows that persona's average latency" do
         expect(page).to have_css("td", text: "2.5")
       end
     end
@@ -525,10 +605,11 @@ RSpec.describe EvaluationRunsController, type: :request do
       end
       let(:experiment_attributes) { super().merge("configuration_overrides" => { "rrf_k" => 40 }) }
 
-      it "tags it as the experiment default, not baseline" do
-        page = Capybara.string(rendered_page.body)
-
+      it "shows the rrf k setting" do
         expect(page).to have_css("td", text: "Rrf k")
+      end
+
+      it "tags it as the experiment default" do
         expect(page).to have_css("td", text: "From the experiment's own default")
       end
     end
@@ -601,10 +682,13 @@ RSpec.describe EvaluationRunsController, type: :request do
     context "when the backend cannot be reached" do
       before { stub_api_request("/search/evaluation/runs/#{run_id}").to_raise(Faraday::ConnectionFailed) }
 
-      it "redirects to the experiment list with a warning instead of an error page" do
+      it "redirects to the experiment list" do
         expect(rendered_page).to redirect_to(evaluation_experiments_path)
+      end
 
+      it "warns that the launch form could not be loaded" do
         rendered_page
+
         expect(session.dig("flash", "flashes", "alert")).to eq("The launch form could not be loaded. Try again.")
       end
     end
@@ -629,8 +713,13 @@ RSpec.describe EvaluationRunsController, type: :request do
     context "when the run has already finished" do
       before { stub_api_request("/search/evaluation/runs/#{run_id}").and_return(jsonapi_response("run", { "status" => "completed", "resource_id" => run_id })) }
 
-      it "does nothing and redirects without sending a cancel request" do
+      it "redirects to the run" do
         expect(rendered_page).to redirect_to(evaluation_run_path(run_id))
+      end
+
+      it "does not send a cancel request" do
+        rendered_page
+
         expect(a_request(:patch, %r{/runs/#{run_id}})).not_to have_been_made
       end
     end
@@ -680,18 +769,31 @@ RSpec.describe EvaluationRunsController, type: :request do
 
     it { is_expected.to have_http_status :success }
 
-    it "lists the runs with their experiment, status, progress, cost and timing" do
-      page = Capybara.string(rendered_page.body)
-
+    it "shows the heading" do
       expect(page).to have_css("h1", text: "Evaluation runs")
+    end
+
+    it "links to the run" do
       expect(page).to have_link("Run #9", href: evaluation_run_path("9"))
+    end
+
+    it "shows the experiment name" do
       expect(page).to have_css("td", text: "Baseline")
+    end
+
+    it "shows the status" do
       expect(page).to have_css("td", text: "completed")
-      # result_count already includes errored results (reconcile_aggregates! counts every
-      # ingested result, successes and failures alike) — "10 done, 2 failed" reads correctly;
-      # the old "result_count of (error_count + result_count)" text would have doubled every
-      # failure into the denominator, showing "10 of 12" for a run that reported on 10.
+    end
+
+    # result_count already includes errored results (reconcile_aggregates! counts every
+    # ingested result, successes and failures alike). "10 done, 2 failed" reads correctly.
+    # The old "result_count of (error_count + result_count)" text would have doubled every
+    # failure into the denominator, showing "10 of 12" for a run that reported on 10.
+    it "shows progress without double-counting failures" do
       expect(page).to have_css("td", text: "10 done, 2 failed")
+    end
+
+    it "shows the cost" do
       expect(page).to have_css("td", text: "0.0421")
     end
 
@@ -708,12 +810,19 @@ RSpec.describe EvaluationRunsController, type: :request do
       end
     end
 
-    it "offers a filter form for status, experiment and date range" do
-      page = Capybara.string(rendered_page.body)
-
+    it "offers a status filter" do
       expect(page).to have_select("Status", options: ["All", "Queued", "Running", "Completed", "Partially failed", "Failed", "Cancelled"])
+    end
+
+    it "offers an experiment filter" do
       expect(page).to have_select("Experiment", options: ["All experiments", "Baseline"])
+    end
+
+    it "offers a from field" do
       expect(page).to have_field("From")
+    end
+
+    it "offers a to field" do
       expect(page).to have_field("To")
     end
 
@@ -746,8 +855,11 @@ RSpec.describe EvaluationRunsController, type: :request do
     context "when the backend cannot be reached" do
       before { stub_api_request("/search/evaluation/runs").and_return(status: 500, headers: json_headers, body: { error: "boom" }.to_json) }
 
-      it "shows an empty list and a warning instead of an error page" do
+      it "returns success" do
         expect(rendered_page).to have_http_status(:success)
+      end
+
+      it "warns that runs could not be loaded" do
         expect(rendered_page.body).to include("Runs could not be loaded. Try again.")
       end
     end
@@ -763,20 +875,28 @@ RSpec.describe EvaluationRunsController, type: :request do
 
       before { stub_api_request("/search/evaluation/runs").with(query: hash_including("experiment_id" => "7")).and_return(paginated_response([run_attributes.merge("resource_id" => "9")])) }
 
-      it "offers a checkbox for each run, shared by Compare and Delete" do
-        page = Capybara.string(rendered_page.body)
-
+      it "offers a checkbox shared by compare and delete" do
         expect(page).to have_field("run_ids[]", type: "checkbox")
+      end
+
+      it "offers the compare button" do
         expect(page).to have_button("Compare selected runs")
+      end
+
+      it "offers the delete button" do
         expect(page).to have_button("Delete selected runs")
       end
     end
 
-    it "offers no checkboxes or action buttons when viewing all experiments together, to avoid selecting runs that can't be compared" do
-      page = Capybara.string(rendered_page.body)
-
+    it "does not offer a checkbox for mixed experiments" do
       expect(page).not_to have_field("run_ids[]", type: "checkbox")
+    end
+
+    it "does not offer the compare button for mixed experiments" do
       expect(page).not_to have_button("Compare selected runs")
+    end
+
+    it "does not offer the delete button for mixed experiments" do
       expect(page).not_to have_button("Delete selected runs")
     end
 
@@ -851,13 +971,23 @@ RSpec.describe EvaluationRunsController, type: :request do
 
     it { is_expected.to have_http_status :success }
 
-    it "shows both runs' metrics side by side" do
-      page = Capybara.string(rendered_page.body)
-
+    it "shows the first run" do
       expect(page).to have_css("th", text: "Run #9")
+    end
+
+    it "shows the second run" do
       expect(page).to have_css("th", text: "Run #10")
+    end
+
+    it "shows the top 1 accuracy label" do
       expect(page).to have_css("td", text: "Top 1 accuracy")
+    end
+
+    it "shows the first run's top 1 accuracy" do
       expect(page).to have_css("td", text: "60%")
+    end
+
+    it "shows the second run's top 1 accuracy" do
       expect(page).to have_css("td", text: "80%")
     end
 
@@ -885,10 +1015,13 @@ RSpec.describe EvaluationRunsController, type: :request do
     context "when fewer than two runs are selected" do
       let(:make_request) { get compare_evaluation_runs_path(run_ids: %w[9], experiment_id: "7") }
 
-      it "bounces back to the run list with an explanation, rather than erroring" do
+      it "redirects to the filtered run list" do
         expect(rendered_page).to redirect_to(evaluation_runs_path(experiment_id: "7"))
+      end
 
+      it "explains that exactly two completed or partially failed runs are required" do
         rendered_page
+
         expect(session.dig("flash", "flashes", "alert")).to eq("Select exactly two completed or partially failed runs from the same experiment to compare.")
       end
     end
@@ -926,10 +1059,13 @@ RSpec.describe EvaluationRunsController, type: :request do
 
       let(:run_a_attributes) { super().merge("status" => "failed") }
 
-      it "explains that only completed or partially failed runs can be compared (AI-1441)" do
+      it "redirects when both selected runs failed" do
         expect(rendered_page).to redirect_to(evaluation_runs_path(experiment_id: "7"))
+      end
 
+      it "explains that only completed or partially failed runs can be compared" do
         rendered_page
+
         expect(session.dig("flash", "flashes", "alert")).to eq("Select exactly two completed or partially failed runs from the same experiment to compare.")
       end
     end
@@ -942,11 +1078,15 @@ RSpec.describe EvaluationRunsController, type: :request do
     context "when one of the selected runs is partially_failed but every gold query still got a result" do
       before { stub_api_request("/search/evaluation/runs/10").and_return(jsonapi_response("run", run_b_attributes.merge("status" => "partially_failed", "intended_result_count" => 10, "resource_id" => "10"))) }
 
-      it "compares it, the same as a completed run, but flags it so its results aren't mistaken for a completed run's" do
+      it "returns success" do
         expect(rendered_page).to have_http_status(:success)
+      end
 
-        page = Capybara.string(rendered_page.body)
+      it "shows the second run" do
         expect(page).to have_css("th", text: "Run #10")
+      end
+
+      it "flags the partially failed run" do
         expect(page.find("th", text: "Run #10")).to have_css("span.govuk-tag", text: "Partially failed")
       end
     end
@@ -981,10 +1121,13 @@ RSpec.describe EvaluationRunsController, type: :request do
     context "when the backend can't be reached while loading a selected run" do
       before { stub_api_request("/search/evaluation/runs/10").to_raise(Faraday::ConnectionFailed) }
 
-      it "redirects to the experiment list with a warning, not the generic selection message" do
+      it "redirects to the experiment list" do
         expect(rendered_page).to redirect_to(evaluation_experiments_path)
+      end
 
+      it "warns that the launch form could not be loaded" do
         rendered_page
+
         expect(session.dig("flash", "flashes", "alert")).to eq("The launch form could not be loaded. Try again.")
       end
     end
@@ -992,9 +1135,13 @@ RSpec.describe EvaluationRunsController, type: :request do
     context "when the selected runs belong to different experiments" do
       before { stub_api_request("/search/evaluation/runs/10").and_return(jsonapi_response("run", run_b_attributes.merge("experiment_id" => 99, "resource_id" => "10"))) }
 
-      it "bounces back rather than comparing across experiments" do
+      it "returns found" do
         expect(rendered_page).to have_http_status(:found)
+      end
+
+      it "explains that the runs must belong to the same experiment" do
         rendered_page
+
         expect(session.dig("flash", "flashes", "alert")).to eq("Select exactly two completed or partially failed runs from the same experiment to compare.")
       end
     end
@@ -1017,23 +1164,36 @@ RSpec.describe EvaluationRunsController, type: :request do
   describe "GET #confirm_bulk_destroy" do
     let(:make_request) { get confirm_bulk_destroy_evaluation_runs_path(run_ids: %w[9 10], experiment_id: "7") }
 
-    it "asks for confirmation and lists which runs will be lost" do
-      page = Capybara.string(rendered_page.body)
-
+    it "asks for confirmation" do
       expect(page).to have_css("h1", text: "Are you sure you want to delete these runs?")
+    end
+
+    it "warns how many runs will be lost" do
       expect(page).to have_css(".govuk-warning-text", text: "2 runs")
+    end
+
+    it "lists the first selected run" do
       expect(page).to have_content("Run #9")
+    end
+
+    it "lists the second selected run" do
       expect(page).to have_content("Run #10")
+    end
+
+    it "offers the bulk delete button" do
       expect(page).to have_button("Delete 2 runs")
     end
 
     context "when no runs are selected" do
       let(:make_request) { get confirm_bulk_destroy_evaluation_runs_path }
 
-      it "bounces back to the run list instead of showing an empty confirmation" do
+      it "redirects instead of showing an empty confirmation" do
         expect(rendered_page).to redirect_to(evaluation_runs_path)
+      end
 
+      it "explains that a selection is required" do
         rendered_page
+
         expect(session.dig("flash", "flashes", "alert")).to eq("Select at least one run to delete.")
       end
     end
@@ -1100,10 +1260,13 @@ RSpec.describe EvaluationRunsController, type: :request do
     context "when the backend cannot be reached" do
       before { stub_api_request("/search/evaluation/runs/bulk_destroy", :delete).with(query: hash_including({})).and_return(status: 500, headers: json_headers, body: { error: "boom" }.to_json) }
 
-      it "redirects with a warning instead of an error page" do
+      it "redirects instead of showing an error page" do
         expect(rendered_page).to redirect_to(evaluation_runs_path(experiment_id: "7"))
+      end
 
+      it "warns that the runs could not be deleted" do
         rendered_page
+
         expect(session.dig("flash", "flashes", "alert")).to eq("Runs could not be deleted. Try again.")
       end
     end
@@ -1115,4 +1278,3 @@ RSpec.describe EvaluationRunsController, type: :request do
     end
   end
 end
-# rubocop:enable RSpec/ExampleLength, RSpec/MultipleExpectations, RSpec/MultipleMemoizedHelpers
