@@ -16,9 +16,8 @@ module GreenLanes
     def create
       authorize GreenLanes::MeasureTypeMapping, :create?
       @measure_type_mapping = GreenLanes::MeasureTypeMapping.new(mtm_params)
-      @measure_type_mapping.save
 
-      if @measure_type_mapping.errors.none?
+      if @measure_type_mapping.save && @measure_type_mapping.errors.none?
         redirect_to green_lanes_measure_type_mappings_path, notice: "MeasureTypeMapping created"
       else
         @themes = GreenLanes::Theme.all
