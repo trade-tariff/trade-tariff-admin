@@ -1099,34 +1099,19 @@ RSpec.describe ConfigurationsController, type: :request do
           .and_return(config_response)
       end
 
-      it "sends the updated value" do
+      it "updates the value and preserves protected attributes in the same request" do
         rendered_page
 
-        expect(update_with_attribute("value", "Updated prompt text")).to have_been_made
+        expect(update_with_permitted_attributes).to have_been_made
       end
 
-      it "keeps the original name" do
-        rendered_page
-
-        expect(update_with_attribute("name", config_name)).to have_been_made
-      end
-
-      it "keeps the markdown type" do
-        rendered_page
-
-        expect(update_with_attribute("config_type", "markdown")).to have_been_made
-      end
-
-      it "keeps the original description" do
-        rendered_page
-
-        expect(update_with_attribute("description", "System prompt for query expansion")).to have_been_made
-      end
-
-      def update_with_attribute(key, expected)
+      def update_with_permitted_attributes
         a_request(:patch, /admin_configurations/).with do |request|
           attrs = Rack::Utils.parse_nested_query(request.body).dig("data", "attributes")
-          attrs[key] == expected
+          attrs["value"] == "Updated prompt text" &&
+            attrs["name"] == config_name &&
+            attrs["config_type"] == "markdown" &&
+            attrs["description"] == "System prompt for query expansion"
         end
       end
     end
