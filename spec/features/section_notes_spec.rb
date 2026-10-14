@@ -1,8 +1,6 @@
-# rubocop:disable RSpec/NoExpectationExample
 RSpec.describe "Section Note management" do
-  # rubocop:disable RSpec/LetSetup
-  let!(:user) { create :user, :technical_operator }
-  # rubocop:enable RSpec/LetSetup
+  before { create :user, :technical_operator }
+
   let(:section_note) { build :section_note }
   let(:section)      { build :section, title: "new section" }
 
@@ -18,13 +16,13 @@ RSpec.describe "Section Note management" do
         .to_return jsonapi_success_response("section", [section.attributes])
     end
 
-    specify do
+    specify :aggregate_failures do
       ensure_on new_notes_section_section_note_path(section)
       expect(page).to have_css '.hott-markdown-preview[data-preview-linkify-code-references="true"]'
 
       fill_in "Content", with: section_note.content
       click_button "Create Section note"
-      verify current_path == customs_tariff_updates_path
+      expect(current_path == customs_tariff_updates_path).to be_truthy
     end
   end
 
@@ -44,13 +42,13 @@ RSpec.describe "Section Note management" do
         .to_return jsonapi_success_response("section", [section.attributes])
     end
 
-    specify do
+    specify :aggregate_failures do
       ensure_on edit_notes_section_section_note_path(section)
       expect(page).to have_css '.hott-markdown-preview[data-preview-linkify-code-references="true"]'
 
       fill_in "Content", with: "new content"
       click_button "Update Section note"
-      verify current_path == customs_tariff_updates_path
+      expect(current_path == customs_tariff_updates_path).to be_truthy
     end
   end
 
@@ -71,8 +69,7 @@ RSpec.describe "Section Note management" do
     it "can be removed" do
       ensure_on edit_notes_section_section_note_path(section)
       click_link "Remove"
-      verify current_path == customs_tariff_updates_path
+      expect(current_path == customs_tariff_updates_path).to be_truthy
     end
   end
 end
-# rubocop:enable RSpec/NoExpectationExample

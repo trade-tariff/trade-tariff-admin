@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/NoExpectationExample, RSpec/ExampleLength
 RSpec.describe "Entity search in references" do
   let(:section) { build(:section, resource_id: 1, numeral: "I", title: "Live animals; animal products") }
   let(:sections_url) { "#{TradeTariffAdmin::ServiceChooser.service_choices.fetch('uk')}/admin/sections" }
@@ -32,13 +31,13 @@ RSpec.describe "Entity search in references" do
             },
           ],
         )
-    end
 
-    specify :aggregate_failures do
       ensure_on references_search_path
       fill_in "Search tariff entities", with: "01"
       click_button "Search"
+    end
 
+    specify :aggregate_failures do
       expect(page).to have_content("Chapter")
       expect(page).to have_content("01")
       expect(page).to have_content("LIVE ANIMALS")
@@ -61,13 +60,13 @@ RSpec.describe "Entity search in references" do
             },
           ],
         )
-    end
 
-    specify :aggregate_failures do
       ensure_on references_search_path
       fill_in "Search tariff entities", with: "0101"
       click_button "Search"
+    end
 
+    specify :aggregate_failures do
       expect(page).to have_content("Heading")
       expect(page).to have_content("0101")
       expect(page).to have_content("Live horses, asses, mules and hinnies")
@@ -90,13 +89,13 @@ RSpec.describe "Entity search in references" do
             },
           ],
         )
-    end
 
-    specify :aggregate_failures do
       ensure_on references_search_path
       fill_in "Search tariff entities", with: "01012100"
       click_button "Search"
+    end
 
+    specify :aggregate_failures do
       expect(page).to have_content("Commodity")
       expect(page).to have_content("0101210000-80")
       expect(page).to have_content("Pure-bred breeding animals")
@@ -118,13 +117,13 @@ RSpec.describe "Entity search in references" do
             },
           ],
         )
-    end
 
-    specify :aggregate_failures do
       ensure_on references_search_path
       fill_in "Search tariff entities", with: "live animals"
       click_button "Search"
+    end
 
+    specify :aggregate_failures do
       expect(page).to have_content("Section")
       expect(page).to have_content("Live animals; animal products")
       expect(page).to have_content("Chapter")
@@ -136,13 +135,13 @@ RSpec.describe "Entity search in references" do
     before do
       stub_request(:post, internal_search_url)
         .to_return api_success_response(data: [])
-    end
 
-    specify :aggregate_failures do
       ensure_on references_search_path
       fill_in "Search tariff entities", with: "zzzznotfound"
       click_button "Search"
+    end
 
+    specify :aggregate_failures do
       expect(page).to have_content("No matching entities found")
       expect(page).to have_content("Try using Browse")
       expect(page).not_to have_css("table")
@@ -179,7 +178,7 @@ RSpec.describe "Entity search in references" do
       click_button "Search"
       click_link "Open"
 
-      verify current_path == references_heading_search_references_path("0101")
+      expect(current_path == references_heading_search_references_path("0101")).to be_truthy
     end
   end
 
@@ -192,4 +191,3 @@ RSpec.describe "Entity search in references" do
     end
   end
 end
-# rubocop:enable RSpec/NoExpectationExample, RSpec/ExampleLength

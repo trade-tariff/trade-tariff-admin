@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/NoExpectationExample
 RSpec.describe "Rollbacks management" do
   let(:current_user) { create(:user, :superadmin) }
 
@@ -23,8 +22,7 @@ RSpec.describe "Rollbacks management" do
       fill_in "Rollback to", with: rollback.date
       click_button "Create Rollback"
 
-      verify current_path == rollbacks_path
+      expect(current_path == rollbacks_path).to be_truthy
     end
   end
 end
-# rubocop:enable RSpec/NoExpectationExample

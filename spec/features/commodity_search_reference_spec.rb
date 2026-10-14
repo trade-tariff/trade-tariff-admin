@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/NoExpectationExample
 RSpec.describe "Commodity Search Reference management" do
   let(:heading) { build :heading }
 
@@ -47,7 +46,7 @@ RSpec.describe "Commodity Search Reference management" do
       ensure_on new_references_commodity_search_reference_path(commodity)
       fill_in "Search reference", with: title
       click_button "Create Search reference"
-      verify current_path == references_commodity_search_references_path(commodity)
+      expect(current_path == references_commodity_search_references_path(commodity)).to be_truthy
     end
   end
 
@@ -89,7 +88,7 @@ RSpec.describe "Commodity Search Reference management" do
       ensure_on references_commodity_search_references_path(commodity)
       within(dom_id_selector(commodity_search_reference)) { click_link "Remove" }
       click_button "Remove Search reference"
-      verify current_path == references_commodity_search_references_path(commodity)
+      expect(current_path == references_commodity_search_references_path(commodity)).to be_truthy
     end
   end
 
@@ -153,7 +152,7 @@ RSpec.describe "Commodity Search Reference management" do
       ensure_on edit_references_commodity_search_reference_path(commodity, commodity_search_reference)
       fill_in "Search reference", with: "new title"
       click_button "Update Search reference"
-      verify current_path == references_commodity_search_references_path(commodity)
+      expect(current_path == references_commodity_search_references_path(commodity)).to be_truthy
     end
   end
 
@@ -191,4 +190,3 @@ RSpec.describe "Commodity Search Reference management" do
     end
   end
 end
-# rubocop:enable RSpec/NoExpectationExample
