@@ -3,7 +3,7 @@ RSpec.describe ReportPolicy do
 
   let(:report) { Report.new }
 
-  permissions :index?, :show?, :run? do
+  permissions :index?, :run?, :show? do
     it "permits technical operators" do
       expect(report_policy).to permit(create(:user, :technical_operator), report)
     end
