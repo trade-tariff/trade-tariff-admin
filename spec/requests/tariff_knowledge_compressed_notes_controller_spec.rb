@@ -1,13 +1,19 @@
-# rubocop:disable RSpec/MultipleMemoizedHelpers
 RSpec.describe TariffKnowledgeCompressedNotesController, type: :request do
   subject(:rendered_page) { make_request && response }
 
   include_context "with authenticated user"
 
   let(:current_user) { create(:user, :technical_operator) }
-  let(:goods_nomenclature_sid) { 12_345 }
-  let(:commodity_code) { "0101210000" }
-  let(:compressed_note_attributes) do
+
+  def goods_nomenclature_sid
+    12_345
+  end
+
+  def commodity_code
+    "0101210000"
+  end
+
+  def compressed_note_attributes
     {
       "goods_nomenclature_sid" => goods_nomenclature_sid,
       "goods_nomenclature_item_id" => commodity_code,
@@ -29,7 +35,8 @@ RSpec.describe TariffKnowledgeCompressedNotesController, type: :request do
       "updated_at" => "#{Time.zone.today.iso8601}T10:00:00Z",
     }
   end
-  let(:compressed_note_response) do
+
+  def compressed_note_response
     {
       status: 200,
       headers: { "content-type" => "application/json; charset=utf-8" },
@@ -56,10 +63,20 @@ RSpec.describe TariffKnowledgeCompressedNotesController, type: :request do
 
     context "with JSON format" do
       let(:make_request) { get tariff_knowledge_compressed_notes_path(format: :json) }
-      let(:collection_response) do
+
+      def collection_response
         jsonapi_response("tariff_knowledge_compressed_note", [
           compressed_note_attributes.merge("content" => "Live horses are covered by chapter notes."),
         ])
+      end
+
+      def indexed_note
+        {
+          "goods_nomenclature_sid" => goods_nomenclature_sid,
+          "goods_nomenclature_item_id" => commodity_code,
+          "content" => "Live horses are covered by chapter notes.",
+          "score" => nil,
+        }
       end
 
       before do
@@ -70,33 +87,34 @@ RSpec.describe TariffKnowledgeCompressedNotesController, type: :request do
 
       it { is_expected.to have_http_status :success }
 
-      # rubocop:disable RSpec/ExampleLength, RSpec/MultipleExpectations
-      it "returns compressed note data with pagination" do
-        json = JSON.parse(rendered_page.body)
-
-        expect(json["data"].first).to include(
-          "goods_nomenclature_sid" => goods_nomenclature_sid,
-          "goods_nomenclature_item_id" => commodity_code,
-          "content" => "Live horses are covered by chapter notes.",
-          "score" => nil,
-        )
-        expect(json["pagination"]).to include("page", "total_count", "total_pages")
+      it "returns compressed note data" do
+        expect(JSON.parse(rendered_page.body)["data"].first).to include(indexed_note)
       end
-      # rubocop:enable RSpec/ExampleLength, RSpec/MultipleExpectations
+
+      it "returns pagination" do
+        expect(JSON.parse(rendered_page.body)["pagination"]).to include("page", "total_count", "total_pages")
+      end
     end
   end
 
   describe "GET descriptions page" do
     let(:make_request) { get goods_nomenclature_self_texts_path }
 
-    # rubocop:disable RSpec/MultipleExpectations
-    it "adds compressed notes as a reviewable generated content tab" do
+    it "shows the compressed notes tab" do
       expect(rendered_page.body).to include("Compressed notes")
+    end
+
+    it "anchors the compressed notes panel" do
       expect(rendered_page.body).to include('id="compressed-notes"')
+    end
+
+    it "renders the compressed notes table" do
       expect(rendered_page.body).to include("compressed-note-table-container")
+    end
+
+    it "loads notes from the JSON path" do
       expect(rendered_page.body).to include(tariff_knowledge_compressed_notes_path(format: :json))
     end
-    # rubocop:enable RSpec/MultipleExpectations
   end
 
   describe "GET #search" do
@@ -127,16 +145,29 @@ RSpec.describe TariffKnowledgeCompressedNotesController, type: :request do
     it { is_expected.to have_http_status :success }
     it { is_expected.to render_template(:show) }
 
-    # rubocop:disable RSpec/ExampleLength, RSpec/MultipleExpectations
-    it "displays note content and evidence keys without score controls" do
+    it "displays the commodity code" do
       expect(rendered_page.body).to include(commodity_code)
+    end
+
+    it "displays the note content" do
       expect(rendered_page.body).to include("Live horses are covered by chapter notes for chapter 1.")
+    end
+
+    it "displays the source node key" do
       expect(rendered_page.body).to include("chapter_note:01:fragment:1")
+    end
+
+    it "displays the range node key" do
       expect(rendered_page.body).to include("chapter:01")
+    end
+
+    it "displays the save control" do
       expect(rendered_page.body).to include("Save changes")
+    end
+
+    it "hides score controls" do
       expect(rendered_page.body).not_to include("Generate score")
     end
-    # rubocop:enable RSpec/ExampleLength, RSpec/MultipleExpectations
   end
 
   describe "PATCH #update" do
@@ -194,4 +225,3 @@ RSpec.describe TariffKnowledgeCompressedNotesController, type: :request do
     it { is_expected.to redirect_to(tariff_knowledge_compressed_note_path(goods_nomenclature_sid)) }
   end
 end
-# rubocop:enable RSpec/MultipleMemoizedHelpers
