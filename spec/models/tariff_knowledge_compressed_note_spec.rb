@@ -55,18 +55,15 @@ RSpec.describe TariffKnowledgeCompressedNote do
   end
 
   describe "#as_listing_json" do
-    # rubocop:disable RSpec/ExampleLength
-    it "uses content as the listing description and exposes lifecycle tags" do
-      record = described_class.new(attributes.merge(lifecycle_tag_attributes))
+    let(:record) { described_class.new(attributes.merge(lifecycle_tag_attributes)) }
 
+    it "uses content as the listing description and exposes lifecycle tags" do
       expect(record.as_listing_json).to include(
         lifecycle_tag_attributes.merge(
-          content: "Live horses are covered by chapter notes for chapter 1.",
-          score: nil,
+          content: "Live horses are covered by chapter notes for chapter 1.", score: nil,
         ),
       )
     end
-    # rubocop:enable RSpec/ExampleLength
   end
 
   describe "record date formatting" do
