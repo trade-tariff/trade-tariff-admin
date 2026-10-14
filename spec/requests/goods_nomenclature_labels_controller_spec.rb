@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/MultipleMemoizedHelpers
 RSpec.describe GoodsNomenclatureLabelsController, type: :request do
   subject(:rendered_page) { make_request && response }
 
@@ -29,7 +28,8 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
       "has_self_text" => true,
     }
   end
-  let(:label_response) do
+
+  def label_response
     {
       status: 200,
       headers: { "content-type" => "application/json; charset=utf-8" },
@@ -42,15 +42,39 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
       }.to_json,
     }
   end
-  let(:commodity_code) { "0101210000" }
-  let(:goods_nomenclature_sid) { 12_345 }
+
+  def commodity_code
+    "0101210000"
+  end
+
+  def goods_nomenclature_sid
+    12_345
+  end
 
   before do
     TradeTariffAdmin::ServiceChooser.service_choice = "uk"
   end
 
-  # rubocop:disable RSpec/NestedGroups
   describe "GET #index" do
+    def collection_response
+      jsonapi_response("goods_nomenclature_label", [
+        {
+          "goods_nomenclature_sid" => goods_nomenclature_sid,
+          "goods_nomenclature_item_id" => commodity_code,
+          "score" => 0.75,
+          "stale" => false,
+          "manually_edited" => false,
+          "original_description" => "Live horses",
+        },
+      ])
+    end
+
+    def stub_labels_index(api_response)
+      stub_api_request("/goods_nomenclature_labels", backend: "uk")
+        .with(query: hash_including({}))
+        .and_return(api_response)
+    end
+
     context "with HTML format" do
       let(:make_request) { get goods_nomenclature_labels_path }
 
@@ -59,52 +83,40 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
 
     context "with JSON format" do
       let(:make_request) { get goods_nomenclature_labels_path(format: :json) }
-      let(:collection_response) do
-        jsonapi_response("goods_nomenclature_label", [
-          {
-            "goods_nomenclature_sid" => goods_nomenclature_sid,
-            "goods_nomenclature_item_id" => commodity_code,
-            "score" => 0.75,
-            "stale" => false,
-            "manually_edited" => false,
-            "original_description" => "Live horses",
-          },
-        ])
+
+      before { stub_labels_index(collection_response) }
+
+      it { is_expected.to have_http_status :success }
+
+      it "returns an array of labels" do
+        expect(JSON.parse(rendered_page.body)["data"]).to be_an(Array)
       end
 
+      it "returns the commodity code" do
+        expect(JSON.parse(rendered_page.body)["data"].first["goods_nomenclature_item_id"]).to eq(commodity_code)
+      end
+
+      it "returns the score" do
+        expect(JSON.parse(rendered_page.body)["data"].first["score"]).to eq(0.75)
+      end
+
+      it "returns pagination" do
+        expect(JSON.parse(rendered_page.body)["pagination"]).to include("page", "total_count", "total_pages")
+      end
+    end
+
+    context "when the JSON API fails" do
+      let(:make_request) { get goods_nomenclature_labels_path(format: :json) }
+
       before do
-        stub_api_request("/goods_nomenclature_labels", backend: "uk")
-          .with(query: hash_including({}))
-          .and_return(collection_response)
+        stub_labels_index(collection_response)
+        stub_labels_index(status: 500, body: { error: "Internal Server Error" }.to_json)
       end
 
       it { is_expected.to have_http_status :success }
 
-      # rubocop:disable RSpec/MultipleExpectations
-      it "returns labels data with pagination" do
-        json = JSON.parse(rendered_page.body)
-
-        expect(json["data"]).to be_an(Array)
-        expect(json["data"].first["goods_nomenclature_item_id"]).to eq(commodity_code)
-        expect(json["data"].first["score"]).to eq(0.75)
-        expect(json["pagination"]).to include("page", "total_count", "total_pages")
-      end
-      # rubocop:enable RSpec/MultipleExpectations
-
-      context "when API fails" do
-        before do
-          stub_api_request("/goods_nomenclature_labels", backend: "uk")
-            .with(query: hash_including({}))
-            .and_return(status: 500, body: { error: "Internal Server Error" }.to_json)
-        end
-
-        it { is_expected.to have_http_status :success }
-
-        it "returns empty data" do
-          json = JSON.parse(rendered_page.body)
-
-          expect(json["data"]).to eq([])
-        end
+      it "returns empty data" do
+        expect(JSON.parse(rendered_page.body)["data"]).to eq([])
       end
     end
   end
@@ -146,6 +158,14 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
   end
 
   describe "GET #show" do
+    def versions_response
+      {
+        status: 200,
+        headers: { "content-type" => "application/json; charset=utf-8" },
+        body: { data: [] }.to_json,
+      }
+    end
+
     before do
       stub_api_request("/goods_nomenclatures/#{commodity_code}/goods_nomenclature_label", backend: "uk")
         .and_return(label_response)
@@ -154,31 +174,36 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
         .and_return(versions_response)
     end
 
-    let(:versions_response) do
-      {
-        status: 200,
-        headers: { "content-type" => "application/json; charset=utf-8" },
-        body: { data: [] }.to_json,
-      }
-    end
-
     let(:make_request) { get goods_nomenclature_label_path(commodity_code) }
 
     it { is_expected.to have_http_status :success }
     it { is_expected.to render_template(:show) }
 
-    # rubocop:disable RSpec/MultipleExpectations
-    it "displays the label information in an editable form" do
+    it "displays the commodity code" do
       expect(rendered_page.body).to include(commodity_code)
+    end
+
+    it "displays the description" do
       expect(rendered_page.body).to include("Horses (live)")
+    end
+
+    it "displays the save button" do
       expect(rendered_page.body).to include("Save changes")
     end
-    # rubocop:enable RSpec/MultipleExpectations
 
-    it "displays the record dates" do # rubocop:disable RSpec/MultipleExpectations
+    it "displays the record dates" do
       expect(rendered_page.body).to include("Created", "15 June 2025", "Last updated", "Today")
+    end
+
+    it "hides the record dates heading" do
       expect(rendered_page.body).not_to include("Record dates")
+    end
+
+    it "hides the created label with a colon" do
       expect(rendered_page.body).not_to include("Created:")
+    end
+
+    it "hides the updated label with a colon" do
       expect(rendered_page.body).not_to include("Updated:")
     end
 
@@ -186,9 +211,15 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
       expect(rendered_page.body).to include("View self-text")
     end
 
-    it "displays the lifecycle action buttons" do # rubocop:disable RSpec/MultipleExpectations
+    it "displays the needs review action" do
       expect(rendered_page.body).to include("Needs review")
+    end
+
+    it "displays the generate score action" do
       expect(rendered_page.body).to include("Generate score")
+    end
+
+    it "displays the regenerate label action" do
       expect(rendered_page.body).to include("Regenerate label")
     end
 
@@ -211,11 +242,23 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
         )
       end
 
-      it "displays all lifecycle tags" do # rubocop:disable RSpec/MultipleExpectations
+      it "displays the needs review tag" do
         expect(rendered_page.body).to include("Needs review")
+      end
+
+      it "displays the manually edited tag" do
         expect(rendered_page.body).to include("Manually edited")
+      end
+
+      it "displays the stale tag" do
         expect(rendered_page.body).to include("Stale")
+      end
+
+      it "displays the approved tag" do
         expect(rendered_page.body).to include("Approved")
+      end
+
+      it "displays the expired tag" do
         expect(rendered_page.body).to include("Expired")
       end
     end
@@ -231,7 +274,7 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
     context "when viewing a historical version via oid" do
       let(:make_request) { get goods_nomenclature_label_path(commodity_code, oid: "42") }
 
-      let(:historical_label_response) do
+      def historical_label_response
         {
           status: 200,
           headers: { "content-type" => "application/json; charset=utf-8" },
@@ -262,8 +305,11 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
         expect(rendered_page.body).not_to include("Save changes")
       end
 
-      it "hides the action buttons" do # rubocop:disable RSpec/MultipleExpectations
+      it "hides the generate score action" do
         expect(rendered_page.body).not_to include("Generate score")
+      end
+
+      it "hides the regenerate label action" do
         expect(rendered_page.body).not_to include("Regenerate label")
       end
     end
@@ -476,7 +522,6 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
       it { is_expected.to render_template(:show) }
     end
   end
-  # rubocop:enable RSpec/NestedGroups
 
   context "when user is HMRC admin (unauthorized)" do
     let(:current_user) { create(:user, :hmrc_admin) }
@@ -502,4 +547,3 @@ RSpec.describe GoodsNomenclatureLabelsController, type: :request do
     it { is_expected.to have_attributes body: /contact your Delivery Manager/ }
   end
 end
-# rubocop:enable RSpec/MultipleMemoizedHelpers
