@@ -20,7 +20,7 @@ module GreenLanes
       authorize GreenLanes::CategoryAssessment, :create?
       @category_assessment = GreenLanes::CategoryAssessment.new(ca_params)
 
-      if (@category_assessment = @category_assessment.save).errors.none?
+      if @category_assessment.save && @category_assessment.errors.none?
         redirect_to green_lanes_category_assessments_path, notice: "Category Assessment created"
       else
         @themes = GreenLanes::Theme.all
@@ -38,7 +38,7 @@ module GreenLanes
       @category_assessment = GreenLanes::CategoryAssessment.build(ca_params.merge(resource_id: params[:id]))
       authorize @category_assessment, :update?
 
-      if (@category_assessment = @category_assessment.save).errors.none?
+      if @category_assessment.save && @category_assessment.errors.none?
         redirect_to green_lanes_category_assessments_path, notice: "Category Assessment updated"
       else
         prepare_edit
