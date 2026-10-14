@@ -1,8 +1,7 @@
-RSpec.shared_context "with authenticated user" do # rubocop:disable RSpec/MultipleMemoizedHelpers
+RSpec.shared_context "with authenticated user" do
   let(:current_user) { create(:user, :technical_operator) }
   let(:session_token) { SecureRandom.uuid }
   let(:authenticate_user) { true }
-  let(:user_session) { authenticate_user ? create(:session, user: current_user, token: session_token, id_token: id_token) : nil }
 
   let(:decoded_id_token) do
     {
@@ -13,13 +12,25 @@ RSpec.shared_context "with authenticated user" do # rubocop:disable RSpec/Multip
     }
   end
 
-  let(:id_token) { "mock-id-token" }
+  let(:extra_session) { user_session.present? ? { token: session_token } : {} }
 
-  let(:verify_result) do
-    VerifyToken::Result.new(valid: true, payload: decoded_id_token, reason: nil)
+  def id_token
+    "mock-id-token"
   end
 
-  let(:extra_session) { user_session.present? ? { token: session_token } : {} }
+  # A second create with the same token fails uniqueness, so keep the session for this example.
+  def user_session
+    return instance_variable_get(:@user_session) if instance_variable_defined?(:@user_session)
+
+    instance_variable_set(
+      :@user_session,
+      authenticate_user ? create(:session, user: current_user, token: session_token, id_token: id_token) : nil,
+    )
+  end
+
+  def verify_result
+    VerifyToken::Result.new(valid: true, payload: decoded_id_token, reason: nil)
+  end
 
   before do |example|
     # Ensure user_session is created before stubbing
