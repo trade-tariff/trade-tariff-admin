@@ -1,12 +1,15 @@
-# rubocop:disable RSpec/MultipleMemoizedHelpers, RSpec/MultipleExpectations, RSpec/ExampleLength
 RSpec.describe ConfigurationsController, type: :request do
   subject(:rendered_page) { make_request && response }
 
   include_context "with authenticated user"
 
   let(:current_user) { create(:user, :superadmin) }
-  let(:config_name) { "expansion_prompt" }
-  let(:config_attributes) do
+
+  def config_name
+    "expansion_prompt"
+  end
+
+  def config_attributes
     {
       "name" => config_name,
       "value" => "You are a trade classification expert...",
@@ -16,17 +19,20 @@ RSpec.describe ConfigurationsController, type: :request do
       "deleted" => false,
     }
   end
-  let(:config_response) do
+
+  def config_response
     build_config_response(config_name, config_attributes)
   end
-  let(:historical_config_response) do
+
+  def historical_config_response
     build_config_response(
       config_name,
       config_attributes.merge("value" => "Old prompt text"),
       version: { current: false, oid: 41, previous_oid: 40, has_previous_version: true },
     )
   end
-  let(:collection_response) do
+
+  def collection_response
     {
       status: 200,
       headers: { "content-type" => "application/json; charset=utf-8" },
@@ -147,11 +153,23 @@ RSpec.describe ConfigurationsController, type: :request do
     it { is_expected.to have_http_status :success }
     it { is_expected.to render_template(:index) }
 
-    it "displays configurations with humanised names" do
+    it "displays the configurations heading" do
       expect(rendered_page.body).to include("Configurations")
+    end
+
+    it "displays the expansion prompt name" do
       expect(rendered_page.body).to include("Expansion Prompt")
+    end
+
+    it "displays the qa enabled name" do
       expect(rendered_page.body).to include("Qa Enabled")
+    end
+
+    it "displays the object template type" do
       expect(rendered_page.body).to include("Object template")
+    end
+
+    it "displays the template count" do
       expect(rendered_page.body).to include("1 template")
     end
 
@@ -171,13 +189,19 @@ RSpec.describe ConfigurationsController, type: :request do
       expect(boolean_pos).to be < markdown_pos
     end
 
-    it "displays boolean true values as green Yes tags" do
+    it "displays boolean true values as green tags" do
       expect(rendered_page.body).to include("govuk-tag--green")
+    end
+
+    it "displays boolean true values as yes" do
       expect(rendered_page.body).to match(/Yes\s*<\/strong>/)
     end
 
-    it "displays boolean false values as grey No tags" do
+    it "displays boolean false values as grey tags" do
       expect(rendered_page.body).to include("govuk-tag--grey")
+    end
+
+    it "displays boolean false values as no" do
       expect(rendered_page.body).to match(/No\s*<\/strong>/)
     end
 
@@ -211,8 +235,11 @@ RSpec.describe ConfigurationsController, type: :request do
     it { is_expected.to have_http_status :success }
     it { is_expected.to render_template(:show) }
 
-    it "displays configuration details" do
+    it "displays the configuration name" do
       expect(rendered_page.body).to include("Expansion Prompt")
+    end
+
+    it "displays the configuration description" do
       expect(rendered_page.body).to include("System prompt for query expansion")
     end
 
@@ -231,8 +258,11 @@ RSpec.describe ConfigurationsController, type: :request do
     end
 
     context "with an options config" do
-      let(:config_name) { "label_model" }
-      let(:config_attributes) do
+      def config_name
+        "label_model"
+      end
+
+      def config_attributes
         {
           "name" => "label_model",
           "value" => {
@@ -249,17 +279,29 @@ RSpec.describe ConfigurationsController, type: :request do
         }
       end
 
-      it "displays the options table with selected tag", :aggregate_failures do
+      it "displays the unselected option key" do
         expect(rendered_page.body).to include("gpt-4o")
+      end
+
+      it "displays the unselected option label" do
         expect(rendered_page.body).to include("GPT-4o (multimodal)")
+      end
+
+      it "displays the selected option key" do
         expect(rendered_page.body).to include("gpt-5.2")
+      end
+
+      it "displays the selected tag" do
         expect(rendered_page.body).to include("Selected")
       end
     end
 
     context "with a boolean config" do
-      let(:config_name) { "qa_enabled" }
-      let(:config_attributes) do
+      def config_name
+        "qa_enabled"
+      end
+
+      def config_attributes
         {
           "name" => "qa_enabled",
           "value" => true,
@@ -276,8 +318,11 @@ RSpec.describe ConfigurationsController, type: :request do
     end
 
     context "with a string config" do
-      let(:config_name) { "api_key_hint" }
-      let(:config_attributes) do
+      def config_name
+        "api_key_hint"
+      end
+
+      def config_attributes
         {
           "name" => "api_key_hint",
           "value" => "sk-abc...xyz",
@@ -294,8 +339,11 @@ RSpec.describe ConfigurationsController, type: :request do
     end
 
     context "with an object template config" do
-      let(:config_name) { "description_intercept_templates" }
-      let(:config_attributes) do
+      def config_name
+        "description_intercept_templates"
+      end
+
+      def config_attributes
         {
           "name" => "description_intercept_templates",
           "value" => {
@@ -316,24 +364,57 @@ RSpec.describe ConfigurationsController, type: :request do
         }
       end
 
-      it "displays templates as a structured table", :aggregate_failures do
+      it "displays the object templates heading" do
         expect(rendered_page.body).to include("Object templates")
+      end
+
+      it "displays the template key" do
         expect(rendered_page.body).to include("vague")
+      end
+
+      it "displays the template label" do
         expect(rendered_page.body).to include("Vague term")
+      end
+
+      it "displays the description column" do
         expect(rendered_page.body).to include("Description")
+      end
+
+      it "displays the escalate to webchat column" do
         expect(rendered_page.body).to include("Escalate to webchat")
+      end
+
+      it "displays the excluded column" do
         expect(rendered_page.body).to include("Excluded")
+      end
+
+      it "displays yes for a true template flag" do
         expect(rendered_page.body).to include("Yes")
+      end
+
+      it "displays no for a false template flag" do
         expect(rendered_page.body).to include("No")
+      end
+
+      it "displays the guided search source" do
         expect(rendered_page.body).to include("guided_search")
+      end
+
+      it "does not display the raw attribute key" do
         expect(rendered_page.body).not_to include(">escalate_to_webchat<")
+      end
+
+      it "does not display the raw template JSON" do
         expect(rendered_page.body).not_to include("<pre>{&quot;vague&quot;")
       end
     end
 
     context "with an integer config" do
-      let(:config_name) { "label_page_size" }
-      let(:config_attributes) do
+      def config_name
+        "label_page_size"
+      end
+
+      def config_attributes
         {
           "name" => "label_page_size",
           "value" => 250,
@@ -350,8 +431,11 @@ RSpec.describe ConfigurationsController, type: :request do
     end
 
     context "with a multi_options config" do
-      let(:config_name) { "interactive_search_excluded_chapters" }
-      let(:config_attributes) do
+      def config_name
+        "interactive_search_excluded_chapters"
+      end
+
+      def config_attributes
         {
           "name" => "interactive_search_excluded_chapters",
           "value" => {
@@ -369,9 +453,15 @@ RSpec.describe ConfigurationsController, type: :request do
         }
       end
 
-      it "displays selected values and available options", :aggregate_failures do
+      it "displays the selected chapter 98 label" do
         expect(rendered_page.body).to include("Chapter 98")
+      end
+
+      it "displays the selected chapter 99 label" do
         expect(rendered_page.body).to include("Chapter 99")
+      end
+
+      it "displays the unselected chapter 97 label" do
         expect(rendered_page.body).to include("Chapter 97")
       end
     end
@@ -416,22 +506,20 @@ RSpec.describe ConfigurationsController, type: :request do
     context "when current user is technical operator" do
       let(:current_user) { create(:user, :technical_operator) }
 
-      it "allows read-only access" do
-        rendered_page
+      it { is_expected.to have_http_status(:success) }
 
-        expect(response).to have_http_status(:success)
-        expect(response.body).not_to include("Edit")
+      it "hides the edit button" do
+        expect(rendered_page.body).not_to include("Edit")
       end
     end
 
     context "when current user is auditor" do
       let(:current_user) { create(:user, :auditor) }
 
-      it "allows read-only access" do
-        rendered_page
+      it { is_expected.to have_http_status(:success) }
 
-        expect(response).to have_http_status(:success)
-        expect(response.body).not_to include("Edit")
+      it "hides the edit button" do
+        expect(rendered_page.body).not_to include("Edit")
       end
     end
   end
@@ -454,8 +542,11 @@ RSpec.describe ConfigurationsController, type: :request do
     end
 
     context "with an options config" do
-      let(:config_name) { "label_model" }
-      let(:config_attributes) do
+      def config_name
+        "label_model"
+      end
+
+      def config_attributes
         {
           "name" => "label_model",
           "value" => {
@@ -472,34 +563,53 @@ RSpec.describe ConfigurationsController, type: :request do
         }
       end
 
-      it "renders a select dropdown with options", :aggregate_failures do
-        body = rendered_page.body
-        expect(body).to include("options-selected-value")
-        expect(body).to include("GPT-4o (multimodal)")
-        expect(body).to include("GPT-5.2 (latest flagship)")
+      it "renders the selected value field" do
+        expect(rendered_page.body).to include("options-selected-value")
+      end
+
+      it "renders the first option label" do
+        expect(rendered_page.body).to include("GPT-4o (multimodal)")
+      end
+
+      it "renders the second option label" do
+        expect(rendered_page.body).to include("GPT-5.2 (latest flagship)")
       end
 
       it "pre-selects the current value" do
         expect(rendered_page.body).to include('value="gpt-5.2" selected')
       end
 
-      it "does not render add or remove option buttons" do
+      it "does not render an add option button" do
         expect(rendered_page.body).not_to include("Add option")
+      end
+
+      it "does not render a remove button" do
         expect(rendered_page.body).not_to include("Remove")
       end
 
-      it "uses stimulus instead of inline javascript", :aggregate_failures do
-        body = rendered_page.body
-        expect(body).to include('data-controller="config-form"')
-        expect(body).to include('data-action="change->config-form#updateOption"')
-        expect(body).not_to include("onchange=")
-        expect(body).not_to include("<script>")
+      it "uses the config form controller" do
+        expect(rendered_page.body).to include('data-controller="config-form"')
+      end
+
+      it "updates the option on change" do
+        expect(rendered_page.body).to include('data-action="change->config-form#updateOption"')
+      end
+
+      it "does not use an onchange attribute" do
+        expect(rendered_page.body).not_to include("onchange=")
+      end
+
+      it "does not include a script tag" do
+        expect(rendered_page.body).not_to include("<script>")
       end
     end
 
     context "with a boolean config" do
-      let(:config_name) { "qa_enabled" }
-      let(:config_attributes) do
+      def config_name
+        "qa_enabled"
+      end
+
+      def config_attributes
         {
           "name" => "qa_enabled",
           "value" => true,
@@ -510,16 +620,21 @@ RSpec.describe ConfigurationsController, type: :request do
         }
       end
 
-      it "renders radio buttons for Yes/No" do
-        body = rendered_page.body
-        expect(body).to include("Yes")
-        expect(body).to include("No")
+      it "renders a yes choice" do
+        expect(rendered_page.body).to include("Yes")
+      end
+
+      it "renders a no choice" do
+        expect(rendered_page.body).to include("No")
       end
     end
 
     context "with a string config" do
-      let(:config_name) { "api_key_hint" }
-      let(:config_attributes) do
+      def config_name
+        "api_key_hint"
+      end
+
+      def config_attributes
         {
           "name" => "api_key_hint",
           "value" => "sk-abc...xyz",
@@ -536,8 +651,11 @@ RSpec.describe ConfigurationsController, type: :request do
     end
 
     context "with a description intercept templates config" do
-      let(:config_name) { "description_intercept_templates" }
-      let(:config_attributes) do
+      def config_name
+        "description_intercept_templates"
+      end
+
+      def config_attributes
         {
           "name" => "description_intercept_templates",
           "value" => {
@@ -554,16 +672,25 @@ RSpec.describe ConfigurationsController, type: :request do
         }
       end
 
-      it "renders the template registry as editable JSON" do
+      it "renders the template configuration label" do
         expect(rendered_page.body).to include("Template configuration")
+      end
+
+      it "renders the template key as JSON" do
         expect(rendered_page.body).to include("&quot;vague&quot;")
+      end
+
+      it "renders the label key as JSON" do
         expect(rendered_page.body).to include("&quot;label&quot;")
       end
     end
 
     context "with an integer config" do
-      let(:config_name) { "label_page_size" }
-      let(:config_attributes) do
+      def config_name
+        "label_page_size"
+      end
+
+      def config_attributes
         {
           "name" => "label_page_size",
           "value" => 250,
@@ -580,8 +707,11 @@ RSpec.describe ConfigurationsController, type: :request do
     end
 
     context "with a multi_options config" do
-      let(:config_name) { "interactive_search_excluded_chapters" }
-      let(:config_attributes) do
+      def config_name
+        "interactive_search_excluded_chapters"
+      end
+
+      def config_attributes
         {
           "name" => "interactive_search_excluded_chapters",
           "value" => {
@@ -599,25 +729,45 @@ RSpec.describe ConfigurationsController, type: :request do
         }
       end
 
-      it "renders checkboxes for available chapter options", :aggregate_failures do
+      it "renders a checkbox" do
         expect(rendered_page.body).to include('type="checkbox"')
+      end
+
+      it "renders chapter 97" do
         expect(rendered_page.body).to include("Chapter 97")
+      end
+
+      it "renders chapter 98" do
         expect(rendered_page.body).to include("Chapter 98")
+      end
+
+      it "renders chapter 99" do
         expect(rendered_page.body).to include("Chapter 99")
       end
 
-      it "uses stimulus instead of inline javascript", :aggregate_failures do
-        body = rendered_page.body
-        expect(body).to include('data-controller="config-form"')
-        expect(body).to include('data-action="change->config-form#updateMultiOption"')
-        expect(body).not_to include("onchange=")
-        expect(body).not_to include("<script>")
+      it "uses the config form controller" do
+        expect(rendered_page.body).to include('data-controller="config-form"')
+      end
+
+      it "updates the multi option on change" do
+        expect(rendered_page.body).to include('data-action="change->config-form#updateMultiOption"')
+      end
+
+      it "does not use an onchange attribute" do
+        expect(rendered_page.body).not_to include("onchange=")
+      end
+
+      it "does not include a script tag" do
+        expect(rendered_page.body).not_to include("<script>")
       end
     end
 
     context "with a nested_options config" do
-      let(:config_name) { "search_term_confidence_thresholds" }
-      let(:config_attributes) do
+      def config_name
+        "search_term_confidence_thresholds"
+      end
+
+      def config_attributes
         {
           "name" => "search_term_confidence_thresholds",
           "value" => {
@@ -649,21 +799,37 @@ RSpec.describe ConfigurationsController, type: :request do
         }
       end
 
-      it "uses stimulus instead of inline javascript", :aggregate_failures do
-        body = rendered_page.body
-        expect(body).to include('data-controller="config-form"')
-        expect(body).to include('data-action="change->config-form#updateNestedOption"')
-        expect(body).to include('data-config-form-target="nestedSubOptionsContainer"')
-        expect(body).not_to include("onchange=")
-        expect(body).not_to include("<script>")
+      it "uses the config form controller" do
+        expect(rendered_page.body).to include('data-controller="config-form"')
+      end
+
+      it "updates the nested option on change" do
+        expect(rendered_page.body).to include('data-action="change->config-form#updateNestedOption"')
+      end
+
+      it "marks the nested sub options container" do
+        expect(rendered_page.body).to include('data-config-form-target="nestedSubOptionsContainer"')
+      end
+
+      it "does not use an onchange attribute" do
+        expect(rendered_page.body).not_to include("onchange=")
+      end
+
+      it "does not include a script tag" do
+        expect(rendered_page.body).not_to include("<script>")
       end
     end
 
-    it "does not render editable name, type, or description fields", :aggregate_failures do
-      body = rendered_page.body
-      expect(body).not_to include('name="configuration[name]"')
-      expect(body).not_to include('name="configuration[config_type]"')
-      expect(body).not_to include('name="configuration[description]"')
+    it "does not render a name field" do
+      expect(rendered_page.body).not_to include('name="configuration[name]"')
+    end
+
+    it "does not render a type field" do
+      expect(rendered_page.body).not_to include('name="configuration[config_type]"')
+    end
+
+    it "does not render a description field" do
+      expect(rendered_page.body).not_to include('name="configuration[description]"')
     end
 
     context "when configuration is a historical version" do
@@ -721,11 +887,15 @@ RSpec.describe ConfigurationsController, type: :request do
     end
 
     context "with an options config JSON value" do
-      let(:config_name) { "label_model" }
-      let(:options_json) do
+      def config_name
+        "label_model"
+      end
+
+      def options_json
         '{"selected":"gpt-4o","options":[{"key":"gpt-4o","label":"GPT-4o"},{"key":"gpt-5.2","label":"GPT-5.2"}]}'
       end
-      let(:config_attributes) do
+
+      def config_attributes
         {
           "name" => "label_model",
           "value" => JSON.parse(options_json),
@@ -765,8 +935,11 @@ RSpec.describe ConfigurationsController, type: :request do
     end
 
     context "with a boolean config value" do
-      let(:config_name) { "qa_enabled" }
-      let(:config_attributes) do
+      def config_name
+        "qa_enabled"
+      end
+
+      def config_attributes
         {
           "name" => "qa_enabled",
           "value" => true,
@@ -794,8 +967,11 @@ RSpec.describe ConfigurationsController, type: :request do
     end
 
     context "with a string config value" do
-      let(:config_name) { "api_key_hint" }
-      let(:config_attributes) do
+      def config_name
+        "api_key_hint"
+      end
+
+      def config_attributes
         {
           "name" => "api_key_hint",
           "value" => "sk-abc...xyz",
@@ -823,8 +999,11 @@ RSpec.describe ConfigurationsController, type: :request do
     end
 
     context "with an integer config value" do
-      let(:config_name) { "label_page_size" }
-      let(:config_attributes) do
+      def config_name
+        "label_page_size"
+      end
+
+      def config_attributes
         {
           "name" => "label_page_size",
           "value" => 250,
@@ -852,11 +1031,15 @@ RSpec.describe ConfigurationsController, type: :request do
     end
 
     context "with a multi_options config JSON value" do
-      let(:config_name) { "interactive_search_excluded_chapters" }
-      let(:multi_options_json) do
+      def config_name
+        "interactive_search_excluded_chapters"
+      end
+
+      def multi_options_json
         '{"selected":["97","99"],"options":[{"key":"97","label":"Chapter 97"},{"key":"98","label":"Chapter 98"},{"key":"99","label":"Chapter 99"}]}'
       end
-      let(:config_attributes) do
+
+      def config_attributes
         {
           "name" => "interactive_search_excluded_chapters",
           "value" => JSON.parse(multi_options_json),
@@ -916,20 +1099,35 @@ RSpec.describe ConfigurationsController, type: :request do
           .and_return(config_response)
       end
 
-      it "ignores non-permitted params and keeps original values", :aggregate_failures do
+      it "sends the updated value" do
         rendered_page
 
-        # The PATCH was sent with the original model attributes, not the hacked ones
-        expect(
-          a_request(:patch, /admin_configurations/).with do |req|
-            body = Rack::Utils.parse_nested_query(req.body)
-            attrs = body.dig("data", "attributes")
-            attrs["value"] == "Updated prompt text" &&
-              attrs["name"] == config_name &&
-              attrs["config_type"] == "markdown" &&
-              attrs["description"] == "System prompt for query expansion"
-          end,
-        ).to have_been_made
+        expect(update_with_attribute("value", "Updated prompt text")).to have_been_made
+      end
+
+      it "keeps the original name" do
+        rendered_page
+
+        expect(update_with_attribute("name", config_name)).to have_been_made
+      end
+
+      it "keeps the markdown type" do
+        rendered_page
+
+        expect(update_with_attribute("config_type", "markdown")).to have_been_made
+      end
+
+      it "keeps the original description" do
+        rendered_page
+
+        expect(update_with_attribute("description", "System prompt for query expansion")).to have_been_made
+      end
+
+      def update_with_attribute(key, expected)
+        a_request(:patch, /admin_configurations/).with do |request|
+          attrs = Rack::Utils.parse_nested_query(request.body).dig("data", "attributes")
+          attrs[key] == expected
+        end
       end
     end
 
@@ -1078,4 +1276,3 @@ RSpec.describe ConfigurationsController, type: :request do
     }
   end
 end
-# rubocop:enable RSpec/MultipleMemoizedHelpers, RSpec/MultipleExpectations, RSpec/ExampleLength
