@@ -49,6 +49,8 @@ RSpec.describe ApiEntity do
   end
 
   describe "#save" do
+    subject(:saved_record) { entity.save }
+
     context "when a new record is accepted" do
       let(:entity) { persistence_class.new(title: "Note") }
 
@@ -59,11 +61,11 @@ RSpec.describe ApiEntity do
       end
 
       it "returns the record" do
-        expect(entity.save).to equal(entity)
+        expect(saved_record).to equal(entity)
       end
 
       it "posts the record" do
-        entity.save
+        saved_record
 
         expect(WebMock).to have_requested(:post, %r{#{Regexp.escape(collection_path)}\z})
       end
@@ -77,11 +79,11 @@ RSpec.describe ApiEntity do
       end
 
       it "returns the record" do
-        expect(entity.save).to equal(entity)
+        expect(saved_record).to equal(entity)
       end
 
       it "adds the API error" do
-        entity.save
+        saved_record
 
         expect(entity.errors[:title]).to include("Title is invalid")
       end
@@ -99,7 +101,7 @@ RSpec.describe ApiEntity do
       end
 
       it "propagates the Faraday error" do
-        expect { entity.save }.to raise_error(
+        expect { saved_record }.to raise_error(
           an_instance_of(Faraday::ServerError).and(having_attributes(response_status: 500)),
         )
       end
@@ -115,11 +117,11 @@ RSpec.describe ApiEntity do
       end
 
       it "returns the record" do
-        expect(entity.save).to equal(entity)
+        expect(saved_record).to equal(entity)
       end
 
       it "patches the record" do
-        entity.save
+        saved_record
 
         expect(WebMock).to have_requested(:patch, %r{#{Regexp.escape(member_path)}\z})
       end
@@ -127,6 +129,8 @@ RSpec.describe ApiEntity do
   end
 
   describe "#update" do
+    subject(:updated_record) { entity.update(title: "Updated") }
+
     let(:entity) { persistence_class.new(resource_id: "15", title: "Note") }
 
     before do
@@ -136,11 +140,11 @@ RSpec.describe ApiEntity do
     end
 
     it "returns the record" do
-      expect(entity.update(title: "Updated")).to equal(entity)
+      expect(updated_record).to equal(entity)
     end
 
     it "patches the new attributes" do
-      entity.update(title: "Updated")
+      updated_record
 
       expect(WebMock).to have_requested(:patch, member_request_url).with(&method(:updated_title?))
     end
@@ -154,7 +158,25 @@ RSpec.describe ApiEntity do
     end
   end
 
-  describe "#destroy" do
+  shared_examples "an unwrapped delete failure" do |status, error_class|
+    before do
+      stub_api_request(member_path, :delete).and_return(
+        status:,
+        headers: { "content-type" => "application/json" },
+        body: { errors: [{ detail: "rejected" }] }.to_json,
+      )
+    end
+
+    it "raises the Faraday error" do
+      expect { delete_response }.to raise_error(
+        an_instance_of(error_class).and(having_attributes(response_status: status)),
+      )
+    end
+  end
+
+  shared_examples "a delete contract" do |delete_action|
+    subject(:delete_response) { entity.public_send(delete_action) }
+
     let(:entity) { persistence_class.new(resource_id: "15", title: "Note") }
 
     context "when the API deletes the record" do
@@ -167,31 +189,15 @@ RSpec.describe ApiEntity do
       end
 
       it "returns the delete response" do
-        expect(entity.destroy).to be_a(Faraday::Response).and(
+        expect(delete_response).to be_a(Faraday::Response).and(
           have_attributes(status: 200, body: { "deleted" => true }),
         )
       end
 
       it "sends a delete request" do
-        entity.destroy
+        delete_response
 
         expect(WebMock).to have_requested(:delete, %r{#{Regexp.escape(member_path)}\z})
-      end
-    end
-
-    shared_examples "an unwrapped delete failure" do |status, error_class|
-      before do
-        stub_api_request(member_path, :delete).and_return(
-          status:,
-          headers: { "content-type" => "application/json" },
-          body: { errors: [{ detail: "rejected" }] }.to_json,
-        )
-      end
-
-      it "raises the Faraday error" do
-        expect { entity.destroy }.to raise_error(
-          an_instance_of(error_class).and(having_attributes(response_status: status)),
-        )
       end
     end
 
@@ -210,5 +216,13 @@ RSpec.describe ApiEntity do
     context "when the API returns 500" do
       include_examples "an unwrapped delete failure", 500, Faraday::ServerError
     end
+  end
+
+  describe "#destroy" do
+    include_examples "a delete contract", :destroy
+  end
+
+  describe "#destroy!" do
+    include_examples "a delete contract", :destroy!
   end
 end
