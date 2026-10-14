@@ -27,14 +27,16 @@ module RoutingFilter
 
         if service_choice.present? && service_choice != service_choice_default
           prepended_url = prepend_segment(result.url, service_choice)
-
-          result.update(prepended_url)
-          # rubocop:enable Rails/SaveBang
+          apply_prepended_url(result, prepended_url)
         end
       end
     end
 
   private
+
+    def apply_prepended_url(result, prepended_url)
+      result.update(prepended_url)
+    end
 
     def service_choice_default
       ::TradeTariffAdmin::ServiceChooser.service_default
