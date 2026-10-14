@@ -158,6 +158,20 @@ RSpec.describe CustomsTariff::Updates::SectionNotesController, type: :request do
         expect(session.dig("flash", "flashes", "notice")).to eq("Section note removed.")
       end
     end
+
+    context "when the backend returns 404" do
+      before do
+        stub_api_request("/customs_tariff_updates/#{update_version}/section_notes/#{section_id}", :delete)
+          .and_return(status: 404, body: "", headers: {})
+      end
+
+      it { is_expected.to redirect_to(customs_tariff_update_path(update_version)) }
+
+      it "sets an alert flash" do
+        make_request
+        expect(session.dig("flash", "flashes", "alert")).to eq("Section note could not be found.")
+      end
+    end
   end
 
   describe "POST #preview" do

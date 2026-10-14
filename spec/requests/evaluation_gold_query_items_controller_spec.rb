@@ -328,6 +328,36 @@ RSpec.describe EvaluationGoldQueryItemsController, type: :request do
       expect(session.dig("flash", "flashes", "notice")).to eq("Item deleted successfully.")
     end
 
+    context "when the backend returns 404" do
+      before do
+        stub_api_request(item_path, :delete).and_return(
+          status: 404, headers: json_headers, body: { errors: [{ detail: "not found" }] }.to_json,
+        )
+      end
+
+      it { is_expected.to redirect_to(evaluation_gold_query_set_path(set_id)) }
+
+      it "says the item was not found" do
+        rendered_page
+        expect(session.dig("flash", "flashes", "alert")).to eq("Gold query set item not found.")
+      end
+    end
+
+    context "when the backend returns 500" do
+      before do
+        stub_api_request(item_path, :delete).and_return(
+          status: 500, headers: json_headers, body: { error: "boom" }.to_json,
+        )
+      end
+
+      it { is_expected.to redirect_to(evaluation_gold_query_sets_path) }
+
+      it "shows a warning instead of an error page" do
+        rendered_page
+        expect(session.dig("flash", "flashes", "alert")).to eq("The gold query set could not be loaded. Try again.")
+      end
+    end
+
     context "when the user is not a technical operator" do
       let(:current_user) { create(:user, :hmrc_admin) }
 
