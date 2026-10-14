@@ -1,8 +1,7 @@
 require "rails_helper"
 require "json"
 
-# rubocop:disable RSpec/DescribeClass
-RSpec.describe "Importmap configuration" do
+RSpec.describe TradeTariffAdmin::Application do
   def importmap_imports
     JSON.parse(
       Rails.application.importmap.to_json(resolver: ApplicationController.helpers),
@@ -30,4 +29,3 @@ RSpec.describe "Importmap configuration" do
     expect(source).not_to match(split_module_import)
   end
 end
-# rubocop:enable RSpec/DescribeClass

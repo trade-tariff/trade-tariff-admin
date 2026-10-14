@@ -1,5 +1,4 @@
-# rubocop:disable RSpec/DescribeClass
-RSpec.describe "Database configuration" do
+RSpec.describe TradeTariffAdmin::Application do
   subject(:database_config) do
     YAML.safe_load(
       ERB.new(Rails.root.join("config/database.yml").read).result,
@@ -31,4 +30,3 @@ RSpec.describe "Database configuration" do
     end
   end
 end
-# rubocop:enable RSpec/DescribeClass
