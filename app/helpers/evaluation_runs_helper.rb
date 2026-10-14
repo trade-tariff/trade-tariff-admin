@@ -2,13 +2,10 @@ module EvaluationRunsHelper
   MINIMUM_FINISHED_FOR_ESTIMATE = 3
   SLOW_RUN_THRESHOLD = 5.minutes
 
-  # nil when there isn't enough data yet to say anything useful — just started, already done, or
-  # started_at is missing/unparseable (the backend sets it the moment a run enters "running"; a run
-  # the eval app hasn't picked up yet has none, same as a malformed one — both mean "don't guess").
   # "Run #123" normally, or "Run #123 — vector based retrieval" once the run's own
   # auto-generated label exists (AI-1437) -- the one place every "Run #123"-only display
-  # (the runs list, the compare page's row labels) should build its text from, so the
-  # fallback for an unlabelled run stays identical everywhere.
+  # (the runs list, the compare page's column headers and row labels) should build its text
+  # from, so the fallback for an unlabelled run stays identical everywhere.
   def evaluation_run_display_name(run)
     "Run ##{run.resource_id}#{evaluation_run_label_suffix(run)}"
   end
@@ -21,6 +18,9 @@ module EvaluationRunsHelper
     run.label.present? ? " — #{run.label}" : ""
   end
 
+  # nil when there isn't enough data yet to say anything useful — just started, already done, or
+  # started_at is missing/unparseable (the backend sets it the moment a run enters "running"; a run
+  # the eval app hasn't picked up yet has none, same as a malformed one — both mean "don't guess").
   def evaluation_run_eta(run, total_items)
     return nil unless run.finished_count >= MINIMUM_FINISHED_FOR_ESTIMATE
     return nil unless total_items > run.finished_count

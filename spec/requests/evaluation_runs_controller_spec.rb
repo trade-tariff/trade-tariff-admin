@@ -894,6 +894,16 @@ RSpec.describe EvaluationRunsController, type: :request do
       expect(page).to have_css("td", text: "80%")
     end
 
+    context "when a compared run has a generated label (AI-1437)" do
+      let(:run_b_attributes) { super().merge("label" => "vector based retrieval") }
+
+      it "shows the label on that run's column header, not just its bare id" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("th", text: "Run #10 — vector based retrieval")
+      end
+    end
+
     context "when the two runs were started in the opposite order" do
       let(:make_request) { get compare_evaluation_runs_path(run_ids: %w[10 9], experiment_id: "7") }
 
