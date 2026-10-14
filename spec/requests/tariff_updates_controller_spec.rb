@@ -23,6 +23,65 @@ RSpec.describe TariffUpdatesController do
       jsonapi_response(:update, update_attributes)
   end
 
+  def stub_tariff_update_command(path, response)
+    TradeTariffAdmin::ServiceChooser.service_choice = "uk"
+    stub_api_request(path, :post).to_return(response)
+  end
+
+  def unprocessable_tariff_update_response(detail)
+    {
+      status: 422,
+      headers: { "content-type" => "application/json" },
+      body: {
+        errors: [
+          {
+            status: "422",
+            detail:,
+            source: { pointer: "/data/attributes/base" },
+          },
+        ],
+      }.to_json,
+    }
+  end
+
+  def tariff_update_server_error_response
+    {
+      status: 500,
+      headers: { "content-type" => "application/json" },
+      body: { error: "Internal Server Error" }.to_json,
+    }
+  end
+
+  def unexpected_tariff_update_alert(path)
+    "Unexpected error: the server responded with status 500 for POST #{TradeTariffAdmin::ServiceChooser.uk_host}#{path}"
+  end
+
+  def tariff_update_command_payload(type, attributes = nil)
+    data = { "type" => type }
+    data["attributes"] = attributes if attributes
+    { "data" => data }
+  end
+
+  def tariff_update_command_request(path, payload)
+    a_request(:post, %r{#{Regexp.escape(path)}\z}).with(body: payload)
+  end
+
+  def cds_notification_filename
+    "2026-04-01_TGB22037.xml"
+  end
+
+  def cds_notification_payload
+    tariff_update_command_payload(
+      "cds_update_notification",
+      "filename" => cds_notification_filename,
+    )
+  end
+
+  def post_cds_update_notification
+    post "/tariff_updates/resend_cds_update_notification",
+         params: { cds_update_notification: { filename: cds_notification_filename } }
+  end
+
   describe "GET #index" do
     before { stub_tariff_updates_index }
 
@@ -208,6 +267,67 @@ RSpec.describe TariffUpdatesController do
         expect(response).to have_http_status(:forbidden)
       end
     end
+
+    context "when the backend returns 422" do
+      before do
+        stub_tariff_update_command(
+          "/admin/downloads",
+          unprocessable_tariff_update_response("Download could not be scheduled"),
+        )
+        post "/tariff_updates/download"
+      end
+
+      it "responds with found" do
+        expect(response).to have_http_status(:found)
+      end
+
+      it "redirects to the updates page" do
+        expect(response).to redirect_to(tariff_updates_path)
+      end
+
+      it "keeps the scheduled notice" do
+        expect(flash[:notice]).to eq("Download was scheduled")
+      end
+
+      it "does not set an alert" do
+        expect(flash[:alert]).to be_nil
+      end
+
+      it "stores the backend error" do
+        expect(assigns(:download).errors[:base]).to eq(["Download could not be scheduled"])
+      end
+
+      it "posts the download payload" do
+        expect(tariff_update_command_request("/admin/downloads", tariff_update_command_payload("download"))).to have_been_made.once
+      end
+    end
+
+    context "when the backend returns 500" do
+      before do
+        stub_tariff_update_command("/admin/downloads", tariff_update_server_error_response)
+        post "/tariff_updates/download"
+      end
+
+      it "responds with found" do
+        expect(response).to have_http_status(:found)
+      end
+
+      it "redirects to the updates page" do
+        expect(response).to redirect_to(tariff_updates_path)
+      end
+
+      it "sets the unexpected error alert" do
+        expect(flash[:alert]).to eq(unexpected_tariff_update_alert("/admin/downloads"))
+      end
+
+      it "does not set a notice" do
+        expect(flash[:notice]).to be_nil
+      end
+
+      it "posts the download payload" do
+        expect(tariff_update_command_request("/admin/downloads", tariff_update_command_payload("download"))).to have_been_made.once
+      end
+    end
   end
 
   describe "POST #apply_and_clear_cache" do
@@ -230,6 +350,67 @@ RSpec.describe TariffUpdatesController do
         post "/tariff_updates/apply_and_clear_cache"
 
         expect(response).to have_http_status(:forbidden)
+      end
+    end
+
+    context "when the backend returns 422" do
+      before do
+        stub_tariff_update_command(
+          "/admin/applies",
+          unprocessable_tariff_update_response("Apply could not be scheduled"),
+        )
+        post "/tariff_updates/apply_and_clear_cache"
+      end
+
+      it "responds with found" do
+        expect(response).to have_http_status(:found)
+      end
+
+      it "redirects to the updates page" do
+        expect(response).to redirect_to(tariff_updates_path)
+      end
+
+      it "keeps the scheduled notice" do
+        expect(flash[:notice]).to eq("Apply & ClearCache was scheduled")
+      end
+
+      it "does not set an alert" do
+        expect(flash[:alert]).to be_nil
+      end
+
+      it "stores the backend error" do
+        expect(assigns(:apply).errors[:base]).to eq(["Apply could not be scheduled"])
+      end
+
+      it "posts the apply payload" do
+        expect(tariff_update_command_request("/admin/applies", tariff_update_command_payload("apply"))).to have_been_made.once
+      end
+    end
+
+    context "when the backend returns 500" do
+      before do
+        stub_tariff_update_command("/admin/applies", tariff_update_server_error_response)
+        post "/tariff_updates/apply_and_clear_cache"
+      end
+
+      it "responds with found" do
+        expect(response).to have_http_status(:found)
+      end
+
+      it "redirects to the updates page" do
+        expect(response).to redirect_to(tariff_updates_path)
+      end
+
+      it "sets the unexpected error alert" do
+        expect(flash[:alert]).to eq(unexpected_tariff_update_alert("/admin/applies"))
+      end
+
+      it "does not set a notice" do
+        expect(flash[:notice]).to be_nil
+      end
+
+      it "posts the apply payload" do
+        expect(tariff_update_command_request("/admin/applies", tariff_update_command_payload("apply"))).to have_been_made.once
       end
     end
   end
@@ -255,6 +436,67 @@ RSpec.describe TariffUpdatesController do
         post "/tariff_updates/resend_cds_update_notification", params: { cds_update_notification: { filename: "filename" } }
 
         expect(response).to have_http_status(:forbidden)
+      end
+    end
+
+    context "when the backend returns 422" do
+      before do
+        stub_tariff_update_command(
+          "/admin/cds_update_notifications",
+          unprocessable_tariff_update_response("CDS update notification could not be scheduled"),
+        )
+        post_cds_update_notification
+      end
+
+      it "responds with found" do
+        expect(response).to have_http_status(:found)
+      end
+
+      it "redirects to the updates page" do
+        expect(response).to redirect_to(tariff_updates_path)
+      end
+
+      it "keeps the scheduled notice" do
+        expect(flash[:notice]).to eq("CDS Updates notification was scheduled")
+      end
+
+      it "does not set an alert" do
+        expect(flash[:alert]).to be_nil
+      end
+
+      it "stores the backend error" do
+        expect(assigns(:cds_update).errors[:base]).to eq(["CDS update notification could not be scheduled"])
+      end
+
+      it "posts the notification payload" do
+        expect(tariff_update_command_request("/admin/cds_update_notifications", cds_notification_payload)).to have_been_made.once
+      end
+    end
+
+    context "when the backend returns 500" do
+      before do
+        stub_tariff_update_command("/admin/cds_update_notifications", tariff_update_server_error_response)
+        post_cds_update_notification
+      end
+
+      it "responds with found" do
+        expect(response).to have_http_status(:found)
+      end
+
+      it "redirects to the updates page" do
+        expect(response).to redirect_to(tariff_updates_path)
+      end
+
+      it "sets the unexpected error alert" do
+        expect(flash[:alert]).to eq(unexpected_tariff_update_alert("/admin/cds_update_notifications"))
+      end
+
+      it "does not set a notice" do
+        expect(flash[:notice]).to be_nil
+      end
+
+      it "posts the notification payload" do
+        expect(tariff_update_command_request("/admin/cds_update_notifications", cds_notification_payload)).to have_been_made.once
       end
     end
   end
