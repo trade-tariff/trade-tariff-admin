@@ -1,7 +1,6 @@
 # Comprehensive RBAC test suite
 # Tests that all roles behave exactly as specified in the RBAC contract
-# rubocop:disable RSpec/DescribeClass
-RSpec.describe "RBAC Comprehensive Rules" do
+RSpec.describe ApplicationPolicy do
   describe "GUEST role - deny-by-default" do
     let(:guest_user) { create(:user, :guest) }
 
@@ -337,4 +336,3 @@ RSpec.describe "RBAC Comprehensive Rules" do
     end
   end
 end
-# rubocop:enable RSpec/DescribeClass
