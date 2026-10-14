@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/MultipleExpectations
 # The single-sheet behaviour is covered by description_intercept_import_file_spec.rb.
 # This spec covers picking a sheet by name in a workbook with several sheets.
 RSpec.describe SpreadsheetImportFile do
@@ -17,11 +16,16 @@ RSpec.describe SpreadsheetImportFile do
       described_class.new(xlsx_upload(sheets), sheet_name:).call
     end
 
-    it "reads the named sheet even when it is not the first one" do
-      result = call([instructions, classifications, progress])
+    context "when the named sheet is not the first one" do
+      let(:result) { call([instructions, classifications, progress]) }
 
-      expect(result).to be_success
-      expect(result.csv_content).to eq("Chapter,Status\n39,Done\n")
+      it "returns a successful result" do
+        expect(result).to be_success
+      end
+
+      it "reads the named sheet even when it is not the first one" do
+        expect(result.csv_content).to eq("Chapter,Status\n39,Done\n")
+      end
     end
 
     it "finds the sheet through the relationships file, not by its position" do
@@ -52,11 +56,16 @@ RSpec.describe SpreadsheetImportFile do
       expect(call([instructions, tricky]).csv_content).to eq(%(Description\n"Box, plastic\nwith lid"\n))
     end
 
-    it "reports a workbook that has no sheet with that name" do
-      result = call([instructions, progress])
+    context "when the workbook has no sheet with that name" do
+      let(:result) { call([instructions, progress]) }
 
-      expect(result).not_to be_success
-      expect(result.errors).to eq([{ "detail" => %(The workbook has no sheet called "Classifications".) }])
+      it "is not successful" do
+        expect(result).not_to be_success
+      end
+
+      it "reports a workbook that has no sheet with that name" do
+        expect(result.errors).to eq([{ "detail" => %(The workbook has no sheet called "Classifications".) }])
+      end
     end
   end
 
@@ -69,13 +78,20 @@ RSpec.describe SpreadsheetImportFile do
   end
 
   describe "#call with other files" do
-    it "returns CSV text unchanged" do
-      upload = upload("Chapter,Status\n39,Done\n", filename: "data.csv", content_type: "text/csv")
+    context "with a CSV file" do
+      let(:result) do
+        file = upload("Chapter,Status\n39,Done\n", filename: "data.csv", content_type: "text/csv")
 
-      result = described_class.new(upload, sheet_name: "Classifications").call
+        described_class.new(file, sheet_name: "Classifications").call
+      end
 
-      expect(result).to be_success
-      expect(result.csv_content).to eq("Chapter,Status\n39,Done\n")
+      it "returns a successful result" do
+        expect(result).to be_success
+      end
+
+      it "returns CSV text unchanged" do
+        expect(result.csv_content).to eq("Chapter,Status\n39,Done\n")
+      end
     end
 
     it "asks for a file when there is none" do
@@ -95,4 +111,3 @@ RSpec.describe SpreadsheetImportFile do
     end
   end
 end
-# rubocop:enable RSpec/MultipleExpectations
