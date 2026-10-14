@@ -12,9 +12,8 @@ class RollbacksController < AuthenticatedController
   def create
     authorize Rollback, :create?
     @rollback = Rollback.new(rollback_params)
-    @rollback.save
 
-    if @rollback.errors.none?
+    if @rollback.save && @rollback.errors.none?
       redirect_to rollbacks_path, notice: "Rollback was scheduled"
     else
       render :new, status: :unprocessable_content
