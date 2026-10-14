@@ -1,6 +1,9 @@
 RSpec.describe BasicSessionAuth, type: :controller do
+  # The controller helper evaluates this block on AnonymousController.
+  described_class = self.described_class
+
   controller(ApplicationController) do
-    include BasicSessionAuth # rubocop:disable RSpec/DescribedClass
+    include described_class
 
     def index
       render plain: current_user&.uid || "anonymous"

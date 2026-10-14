@@ -1,6 +1,9 @@
 RSpec.describe PasswordlessAuth, type: :controller do
+  # The controller helper evaluates this block on AnonymousController.
+  described_class = self.described_class
+
   controller(ApplicationController) do
-    include PasswordlessAuth # rubocop:disable RSpec/DescribedClass
+    include described_class
 
     def index
       render plain: "ok"
