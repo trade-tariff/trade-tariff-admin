@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/MultipleExpectations, RSpec/MultipleMemoizedHelpers, RSpec/ExampleLength
 RSpec.describe EvaluationExperimentsController, type: :request do
   subject(:rendered_page) { make_request && response }
 
@@ -6,7 +5,6 @@ RSpec.describe EvaluationExperimentsController, type: :request do
 
   let(:current_user) { create(:user, :technical_operator) }
   let(:experiment_id) { "7" }
-  let(:json_headers) { { "content-type" => "application/json; charset=utf-8" } }
   let(:experiment_attributes) do
     {
       "name" => "Baseline",
@@ -19,7 +17,18 @@ RSpec.describe EvaluationExperimentsController, type: :request do
       "created_at" => "2026-10-01T10:00:00Z",
     }
   end
-  let(:experiment_response) { jsonapi_response("experiment", experiment_attributes.merge("resource_id" => experiment_id)) }
+
+  def json_headers
+    { "content-type" => "application/json; charset=utf-8" }
+  end
+
+  def experiment_response
+    jsonapi_response("experiment", experiment_attributes.merge("resource_id" => experiment_id))
+  end
+
+  def page
+    Capybara.string(rendered_page.body)
+  end
 
   def paginated_response(rows, total_count: rows.length)
     {
@@ -51,13 +60,23 @@ RSpec.describe EvaluationExperimentsController, type: :request do
       end
     end
 
-    it "lists the experiments" do
-      page = Capybara.string(rendered_page.body)
-
+    it "shows the heading" do
       expect(page).to have_css("h1", text: "Evaluation experiments")
+    end
+
+    it "links to the experiment" do
       expect(page).to have_link("Baseline")
+    end
+
+    it "shows the creator" do
       expect(page).to have_css("td", text: "Alex Example")
+    end
+
+    it "links to a new experiment" do
       expect(page).to have_link("New experiment", href: new_evaluation_experiment_path)
+    end
+
+    it "links to that experiment's runs" do
       expect(page).to have_link("View runs", href: evaluation_runs_path(experiment_id: experiment_id))
     end
 
@@ -66,8 +85,6 @@ RSpec.describe EvaluationExperimentsController, type: :request do
     # mixes every experiment's runs together and doesn't fit the run-comparison feature, which
     # only makes sense once you're already looking at one experiment's runs.
     it "offers no unscoped way to view every experiment's runs mixed together" do
-      page = Capybara.string(rendered_page.body)
-
       expect(page).not_to have_link("View all runs")
     end
 
@@ -82,8 +99,11 @@ RSpec.describe EvaluationExperimentsController, type: :request do
     context "when the backend cannot be reached" do
       before { stub_api_request("/search/evaluation/experiments").and_return(status: 500, headers: json_headers, body: { error: "boom" }.to_json) }
 
-      it "shows an empty list and a warning instead of an error page" do
+      it "returns success" do
         expect(rendered_page).to have_http_status(:success)
+      end
+
+      it "warns that experiments could not be loaded" do
         expect(rendered_page.body).to include("Experiments could not be loaded. Try again.")
       end
     end
@@ -100,11 +120,15 @@ RSpec.describe EvaluationExperimentsController, type: :request do
 
     before { stub_api_request("/search/evaluation/gold_query_sets").with(query: hash_including("per_page" => "200")).and_return(paginated_response([])) }
 
-    it "shows the form" do
-      page = Capybara.string(rendered_page.body)
-
+    it "shows the heading" do
       expect(page).to have_css("h1", text: "New experiment")
+    end
+
+    it "shows the name field" do
       expect(page).to have_field("Name")
+    end
+
+    it "shows the create button" do
       expect(page).to have_button("Create experiment")
     end
   end
@@ -136,10 +160,11 @@ RSpec.describe EvaluationExperimentsController, type: :request do
 
       it { is_expected.to have_http_status :unprocessable_content }
 
-      it "shows the error and keeps what was typed" do
-        page = Capybara.string(rendered_page.body)
-
+      it "shows the error" do
         expect(page).to have_css(".govuk-error-summary", text: "is already taken")
+      end
+
+      it "keeps the typed name" do
         expect(page).to have_field("Name", with: "Baseline")
       end
     end
@@ -147,10 +172,13 @@ RSpec.describe EvaluationExperimentsController, type: :request do
     context "when the backend cannot be reached" do
       before { stub_api_request("/search/evaluation/experiments", :post).and_return(status: 500, headers: json_headers, body: { error: "boom" }.to_json) }
 
-      it "redirects with a warning instead of an error page" do
+      it "redirects to the experiments list" do
         expect(rendered_page).to redirect_to(evaluation_experiments_path)
+      end
 
+      it "warns that the experiment could not be loaded" do
         rendered_page
+
         expect(session.dig("flash", "flashes", "alert")).to eq("The experiment could not be loaded. Try again.")
       end
     end
@@ -164,21 +192,28 @@ RSpec.describe EvaluationExperimentsController, type: :request do
       stub_api_request("/search/evaluation/runs", :get).with(query: hash_including("experiment_id" => experiment_id)).and_return(paginated_response([], total_count: 2))
     end
 
-    it "asks for confirmation and says how many runs will be lost" do
-      page = Capybara.string(rendered_page.body)
-
+    it "asks for confirmation" do
       expect(page).to have_css("h1", text: "Are you sure you want to delete this experiment?")
+    end
+
+    it "says how many runs will be lost" do
       expect(page).to have_css(".govuk-warning-text", text: "2 runs")
+    end
+
+    it "shows the delete button" do
       expect(page).to have_button("Delete experiment")
     end
 
     context "when the backend cannot be reached" do
       before { stub_api_request("/search/evaluation/runs", :get).with(query: hash_including("experiment_id" => experiment_id)).and_return(status: 500, headers: json_headers, body: { error: "boom" }.to_json) }
 
-      it "redirects with a warning instead of an error page" do
+      it "redirects to the experiments list" do
         expect(rendered_page).to redirect_to(evaluation_experiments_path)
+      end
 
+      it "warns that the experiment could not be loaded" do
         rendered_page
+
         expect(session.dig("flash", "flashes", "alert")).to eq("The experiment could not be loaded. Try again.")
       end
     end
@@ -241,13 +276,15 @@ RSpec.describe EvaluationExperimentsController, type: :request do
     context "when the backend cannot be reached" do
       before { stub_api_request("/search/evaluation/experiments/#{experiment_id}", :delete).and_return(status: 500, headers: json_headers, body: { error: "boom" }.to_json) }
 
-      it "redirects with a warning instead of an error page" do
+      it "redirects to the experiments list" do
         expect(rendered_page).to redirect_to(evaluation_experiments_path)
+      end
 
+      it "warns that the experiment could not be loaded" do
         rendered_page
+
         expect(session.dig("flash", "flashes", "alert")).to eq("The experiment could not be loaded. Try again.")
       end
     end
   end
 end
-# rubocop:enable RSpec/MultipleExpectations, RSpec/MultipleMemoizedHelpers, RSpec/ExampleLength
