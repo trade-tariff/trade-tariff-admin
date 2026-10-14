@@ -25,9 +25,9 @@ RSpec.describe UkSidekiqWeb do
     allow(Sidekiq::RedisConnection).to receive(:create).and_return(instance_double(ConnectionPool))
 
     first_pool = described_class.redis_pool
-    second_pool = described_class.redis_pool
 
-    expect(second_pool).to be(first_pool)
+    expect(described_class.redis_pool).to be(first_pool)
+    expect(described_class.instance_variable_get(:@pool)).to be(first_pool)
     expect(Sidekiq::RedisConnection).to have_received(:create).once
   end
 
