@@ -38,10 +38,12 @@
 <% comparing_experiment = params[:experiment_id].present? %>
 
 <% if @runs.any? %>
-  <%# Checkboxes (and the button below) only render once the list is already filtered to one
+  <%# Checkboxes (and the buttons below) only render once the list is already filtered to one
       experiment -- comparing across experiments isn't supported, and an unfiltered "all
       experiments" list would make picking two comparable runs confusing rather than obviously
-      restricted (AI-1427). %>
+      restricted (AI-1427). Delete keeps the same restriction for now, for consistency with
+      Compare, though nothing about deleting itself requires one experiment at a time -- worth
+      revisiting on review if that turns out to matter (AI-1441). %>
   <%= form_with url: compare_evaluation_runs_path, method: :get, local: true do %>
     <% if comparing_experiment %>
       <%= hidden_field_tag :experiment_id, params[:experiment_id] %>
@@ -52,7 +54,7 @@
       <thead class="govuk-table__head">
         <tr class="govuk-table__row">
           <% if comparing_experiment %>
-            <th class="govuk-table__header" scope="col"><span class="govuk-visually-hidden">Select to compare</span></th>
+            <th class="govuk-table__header" scope="col"><span class="govuk-visually-hidden">Select</span></th>
           <% end %>
           <th class="govuk-table__header" scope="col">Run</th>
           <th class="govuk-table__header" scope="col">Experiment</th>
@@ -68,7 +70,10 @@
           <tr class="govuk-table__row">
             <% if comparing_experiment %>
               <td class="govuk-table__cell">
-                <% if comparable_run?(run) %>
+                <%# Shown for any run that isn't still queued/running (AI-1441) -- broader than
+                    comparable_run?, which only matters for Compare's own validation once a
+                    selection is submitted, not for whether the checkbox appears at all. %>
+                <% unless run.generating? %>
                   <%= check_box_tag "run_ids[]", run.resource_id, false, id: "run_ids_#{run.resource_id}" %>
                 <% end %>
               </td>
@@ -88,7 +93,11 @@
     </table>
 
     <% if comparing_experiment %>
-      <%= submit_tag "Compare selected runs", class: "govuk-button" %>
+      <div class="govuk-button-group">
+        <%= submit_tag "Compare selected runs", class: "govuk-button" %>
+        <%= submit_tag "Delete selected runs", class: "govuk-button govuk-button--warning",
+                       formaction: confirm_bulk_destroy_evaluation_runs_path(experiment_id: params[:experiment_id]) %>
+      </div>
     <% end %>
   <% end %>
 
