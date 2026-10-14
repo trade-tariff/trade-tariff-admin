@@ -17,7 +17,7 @@ class NewsItemsController < AuthenticatedController
     @news_item = News::Item.new(news_item_params)
     @news_item.generate_or_normalise_slug!
 
-    if (@news_item = @news_item.save).errors.none?
+    if @news_item.save && @news_item.errors.none?
       redirect_to news_items_path, notice: "News item created"
     else
       @collections = collection_options
@@ -36,7 +36,7 @@ class NewsItemsController < AuthenticatedController
     authorize @news_item, :update?
     @news_item.generate_or_normalise_slug!
 
-    if (@news_item = @news_item.save).errors.none?
+    if @news_item.save && @news_item.errors.none?
       redirect_to news_items_path, notice: "News item updated"
     else
       @collections = collection_options

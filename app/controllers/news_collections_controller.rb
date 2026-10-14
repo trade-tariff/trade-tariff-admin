@@ -14,7 +14,7 @@ class NewsCollectionsController < AuthenticatedController
     @news_collection = News::Collection.new(news_collection_params)
     @news_collection.generate_or_normalise_slug!
 
-    if (@news_collection = @news_collection.save).errors.none?
+    if @news_collection.save && @news_collection.errors.none?
       redirect_to news_collections_path, notice: "News collection created"
     else
       render :new
@@ -31,7 +31,7 @@ class NewsCollectionsController < AuthenticatedController
     authorize @news_collection, :update?
     @news_collection.generate_or_normalise_slug!
 
-    if (@news_collection = @news_collection.save).errors.none?
+    if @news_collection.save && @news_collection.errors.none?
       redirect_to news_collections_path, notice: "News collection updated"
     else
       render :edit
