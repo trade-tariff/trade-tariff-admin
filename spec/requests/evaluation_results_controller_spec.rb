@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/MultipleExpectations, RSpec/ExampleLength
 RSpec.describe EvaluationResultsController, type: :request do
   subject(:rendered_page) { make_request && response }
 
@@ -48,13 +47,33 @@ RSpec.describe EvaluationResultsController, type: :request do
 
     it { is_expected.to have_http_status :success }
 
-    it "lists the results with pass/fail, cost and latency" do
+    it "shows the Results heading" do
       page = Capybara.string(rendered_page.body)
 
       expect(page).to have_css("h1", text: "Results")
+    end
+
+    it "links the source id to the result" do
+      page = Capybara.string(rendered_page.body)
+
       expect(page).to have_link("600004365", href: evaluation_run_result_path(run_id, "55"))
+    end
+
+    it "shows Pass for a correct result" do
+      page = Capybara.string(rendered_page.body)
+
       expect(page).to have_css("td", text: "Pass")
+    end
+
+    it "shows the cost" do
+      page = Capybara.string(rendered_page.body)
+
       expect(page).to have_css("td", text: "0.0034")
+    end
+
+    it "shows the latency" do
+      page = Capybara.string(rendered_page.body)
+
       expect(page).to have_css("td", text: "1.25")
     end
 
@@ -100,10 +119,15 @@ RSpec.describe EvaluationResultsController, type: :request do
         stub_api_request("/search/evaluation/results").with(query: hash_including("run_id" => run_id)).and_return(paginated_response([result_attributes.merge("resource_id" => "55")]))
       end
 
-      it "shows that the cost is unknown, not the misleadingly precise partial figure" do
+      it "shows that the cost is unknown" do
         page = Capybara.string(rendered_page.body)
 
         expect(page).to have_css("td", text: "Unknown")
+      end
+
+      it "does not show the misleadingly precise partial figure" do
+        page = Capybara.string(rendered_page.body)
+
         expect(page).not_to have_css("td", text: "0.0034")
       end
     end
@@ -123,8 +147,11 @@ RSpec.describe EvaluationResultsController, type: :request do
     context "when the backend cannot be reached" do
       before { stub_api_request("/search/evaluation/results").with(query: hash_including("run_id" => run_id)).and_return(status: 500, headers: json_headers, body: { error: "boom" }.to_json) }
 
-      it "shows an empty list and a warning instead of an error page" do
+      it "returns success instead of an error page" do
         expect(rendered_page).to have_http_status(:success)
+      end
+
+      it "warns that results could not be loaded" do
         expect(rendered_page.body).to include("Results could not be loaded. Try again.")
       end
     end
@@ -139,10 +166,15 @@ RSpec.describe EvaluationResultsController, type: :request do
         stub_api_request("/search/evaluation/results").with(query: hash_including("run_id" => run_id)).and_return(paginated_response([result_attributes.merge("resource_id" => "55")]))
       end
 
-      it "shows Error, not Fail, in the Outcome column" do
+      it "shows Error in the Outcome column" do
         page = Capybara.string(rendered_page.body)
 
         expect(page).to have_css("td", text: "Error")
+      end
+
+      it "does not show Fail in the Outcome column" do
+        page = Capybara.string(rendered_page.body)
+
         expect(page).not_to have_css("td", text: "Fail")
       end
     end
@@ -183,10 +215,15 @@ RSpec.describe EvaluationResultsController, type: :request do
       end
     end
 
-    it "offers filter dropdowns for persona and outcome" do
+    it "offers a persona filter" do
       page = Capybara.string(rendered_page.body)
 
       expect(page).to have_select("Persona", options: ["All", "Generic search", "Ordinary search", "Specific search"])
+    end
+
+    it "offers an outcome filter" do
+      page = Capybara.string(rendered_page.body)
+
       expect(page).to have_select("Outcome", options: %w[All Pass Fail Error])
     end
 
@@ -219,12 +256,27 @@ RSpec.describe EvaluationResultsController, type: :request do
 
     it { is_expected.to have_http_status :success }
 
-    it "shows the result and its trace, one row per round" do
+    it "shows the source id in the heading" do
       page = Capybara.string(rendered_page.body)
 
       expect(page).to have_css("h1", text: "600004365")
+    end
+
+    it "shows the question for the round" do
+      page = Capybara.string(rendered_page.body)
+
       expect(page).to have_css("td", text: "What material?")
+    end
+
+    it "shows the chosen answer for the round" do
+      page = Capybara.string(rendered_page.body)
+
       expect(page).to have_css("td", text: "Rubber")
+    end
+
+    it "shows the reasoning for the round" do
+      page = Capybara.string(rendered_page.body)
+
       expect(page).to have_css("details", text: "oracle text says rubber sole")
     end
 
@@ -234,12 +286,27 @@ RSpec.describe EvaluationResultsController, type: :request do
       expect(page).to have_css("a.govuk-back-link", text: "Back to results")
     end
 
-    it "shows rank, accuracy, cost and latency, not just the bare outcome" do
+    it "shows the rank" do
       page = Capybara.string(rendered_page.body)
 
       expect(page).to have_css("dd", text: "1")
+    end
+
+    it "shows the top-1 accuracy" do
+      page = Capybara.string(rendered_page.body)
+
       expect(page).to have_css("dd", text: "Yes")
+    end
+
+    it "shows the cost" do
+      page = Capybara.string(rendered_page.body)
+
       expect(page).to have_css("dd", text: "0.0034")
+    end
+
+    it "shows the latency" do
+      page = Capybara.string(rendered_page.body)
+
       expect(page).to have_css("dd", text: "1.25")
     end
 
@@ -252,10 +319,15 @@ RSpec.describe EvaluationResultsController, type: :request do
     context "when the cost is not fully known" do
       let(:result_attributes) { super().merge("pricing_known" => false) }
 
-      it "shows that the cost is unknown, not the misleadingly precise partial figure" do
+      it "shows that the cost is unknown" do
         page = Capybara.string(rendered_page.body)
 
         expect(page).to have_css("dd", text: "Unknown")
+      end
+
+      it "does not show the misleadingly precise partial figure" do
+        page = Capybara.string(rendered_page.body)
+
         expect(page).not_to have_css("dd", text: "0.0034")
       end
     end
@@ -280,10 +352,15 @@ RSpec.describe EvaluationResultsController, type: :request do
         expect(rendered_page.body).to include("could not reach the search service: timeout")
       end
 
-      it "shows Error, not Fail, as the outcome" do
+      it "shows Error as the outcome" do
         page = Capybara.string(rendered_page.body)
 
         expect(page).to have_css("dd", text: "Error")
+      end
+
+      it "does not show Fail as the outcome" do
+        page = Capybara.string(rendered_page.body)
+
         expect(page).not_to have_css("dd", text: "Fail")
       end
     end
@@ -302,10 +379,15 @@ RSpec.describe EvaluationResultsController, type: :request do
     context "when a round has no request_id (recorded before this link existed)" do
       let(:result_attributes) { super().deep_merge("trace" => { "question_trace" => [{ "round" => 1 }] }) }
 
-      it "shows a dash instead of a dead link" do
+      it "does not link to search internals" do
         page = Capybara.string(rendered_page.body)
 
         expect(page).not_to have_link("View search internals")
+      end
+
+      it "shows a dash instead of a dead link" do
+        page = Capybara.string(rendered_page.body)
+
         expect(page).to have_css("td", text: "-")
       end
     end
@@ -313,16 +395,21 @@ RSpec.describe EvaluationResultsController, type: :request do
     context "when the result has no trace" do
       let(:result_attributes) { super().merge("trace" => {}) }
 
-      it "explains why, instead of leaving an operator wondering if something's broken" do
-        # The two real causes read very differently to an operator: a search that converged on
-        # its first round never had a question to record (expected, not a gap); a result from
-        # before this trace-recording feature shipped (AI-1068 Task 3) genuinely has none. A bare
-        # "No Q&A trace recorded" either way reads as a bug report either way to someone who just
-        # watched a different result show a full trace moments earlier. have_css, not a raw body
-        # substring check, since the view's own text wraps across lines in the rendered HTML.
+      # The two real causes read very differently to an operator: a search that converged on
+      # its first round never had a question to record (expected, not a gap); a result from
+      # before this trace-recording feature shipped (AI-1068 Task 3) genuinely has none. A bare
+      # "No Q&A trace recorded" either way reads as a bug report either way to someone who just
+      # watched a different result show a full trace moments earlier. have_css, not a raw body
+      # substring check, since the view's own text wraps across lines in the rendered HTML.
+      it "explains that no clarifying questions were recorded" do
         page = Capybara.string(rendered_page.body)
 
         expect(page).to have_css("p", text: "No clarifying questions were recorded for this result")
+      end
+
+      it "explains that the search converged on the first search" do
+        page = Capybara.string(rendered_page.body)
+
         expect(page).to have_css("p", text: "converged on the first search")
       end
     end
@@ -330,10 +417,14 @@ RSpec.describe EvaluationResultsController, type: :request do
     context "when the backend cannot be reached" do
       before { stub_api_request("/search/evaluation/results/55").to_raise(Faraday::ConnectionFailed) }
 
-      it "redirects to the results list with a warning instead of an error page — Review Focus item 5, same rule as every other screen in this slice" do
+      # Review Focus item 5, same rule as every other screen in this slice.
+      it "redirects to the results list instead of an error page" do
         expect(rendered_page).to redirect_to(evaluation_run_results_path(run_id))
+      end
 
+      it "warns that the result could not be loaded" do
         rendered_page
+
         expect(session.dig("flash", "flashes", "alert")).to eq("Result could not be loaded. Try again.")
       end
     end
@@ -351,4 +442,3 @@ RSpec.describe EvaluationResultsController, type: :request do
     end
   end
 end
-# rubocop:enable RSpec/MultipleExpectations, RSpec/ExampleLength
