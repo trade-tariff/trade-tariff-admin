@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/RepeatedExample, RSpec/RepeatedDescription
 RSpec.describe ChapterNotePolicy do
   subject(:chapter_note_policy) { described_class }
 
@@ -26,7 +25,7 @@ RSpec.describe ChapterNotePolicy do
     end
   end
 
-  permissions :create?, :update?, :destroy? do
+  permissions :create?, :destroy?, :update? do
     it "grants access to technical operator" do
       user = create(:user, :technical_operator)
       expect(chapter_note_policy).to permit(user, chapter_note)
@@ -48,4 +47,3 @@ RSpec.describe ChapterNotePolicy do
     end
   end
 end
-# rubocop:enable RSpec/RepeatedExample, RSpec/RepeatedDescription

@@ -21,3 +21,9 @@ AllCops:
 
 Rails/SaveBang:
   Enabled: false
+
+RSpec:
+  Language:
+    ExampleGroups:
+      Regular:
+        - permissions

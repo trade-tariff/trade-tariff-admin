@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/RepeatedExample, RSpec/RepeatedDescription
 RSpec.describe SearchReferencePolicy do
   subject(:search_reference_policy) { described_class }
 
@@ -70,4 +69,3 @@ RSpec.describe SearchReferencePolicy do
     end
   end
 end
-# rubocop:enable RSpec/RepeatedExample, RSpec/RepeatedDescription

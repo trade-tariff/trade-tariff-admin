@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/RepeatedExample
 RSpec.describe AdminConfigurationPolicy do
   subject(:policy) { described_class }
 
@@ -55,4 +54,3 @@ RSpec.describe AdminConfigurationPolicy do
     end
   end
 end
-# rubocop:enable RSpec/RepeatedExample
