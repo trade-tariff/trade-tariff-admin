@@ -10,9 +10,8 @@ module GreenLanes
     def create
       authorize GreenLanes::ExemptingOverride, :create?
       @exempting_certificate_override = GreenLanes::ExemptingCertificateOverride.new(eco_params)
-      @exempting_certificate_override.save
 
-      if @exempting_certificate_override.errors.none?
+      if @exempting_certificate_override.save && @exempting_certificate_override.errors.none?
         redirect_to green_lanes_exempting_overrides_path, notice: "Exempting Certificate Override created"
       else
         render :new
