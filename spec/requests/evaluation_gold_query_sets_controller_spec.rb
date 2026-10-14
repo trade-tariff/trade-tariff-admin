@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/ExampleLength, RSpec/MultipleExpectations, RSpec/MultipleMemoizedHelpers
 RSpec.describe EvaluationGoldQuerySetsController, type: :request do
   subject(:rendered_page) { make_request && response }
 
@@ -6,7 +5,6 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
 
   let(:current_user) { create(:user, :technical_operator) }
   let(:set_id) { "3" }
-  let(:json_headers) { { "content-type" => "application/json; charset=utf-8" } }
   let(:set_attributes) do
     {
       "name" => "Baseline",
@@ -23,9 +21,16 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
       "synthetic_atar_count" => 4,
     }
   end
-  let(:set_response) { jsonapi_response("gold_query_set", set_attributes.merge("resource_id" => set_id)) }
 
-  let(:item_rows) do
+  def json_headers
+    { "content-type" => "application/json; charset=utf-8" }
+  end
+
+  def set_response
+    jsonapi_response("gold_query_set", set_attributes.merge("resource_id" => set_id))
+  end
+
+  def item_rows
     [
       {
         "resource_id" => "atar-600000001",
@@ -70,6 +75,10 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
       .and_return(paginated_response(rows, type: "gold_query_set_item"))
   end
 
+  def page
+    Capybara.string(rendered_page.body)
+  end
+
   describe "GET #index" do
     let(:make_request) { get evaluation_gold_query_sets_path }
 
@@ -89,16 +98,35 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
       end
     end
 
-    it "lists the sets with their status, progress and mix" do
-      page = Capybara.string(rendered_page.body)
-
+    it "shows the heading" do
       expect(page).to have_css("h1", text: "Gold query sets")
+    end
+
+    it "shows the set count" do
       expect(page).to have_css("caption", text: "1 gold query set")
+    end
+
+    it "links to the set" do
       expect(page).to have_link("Baseline", href: evaluation_gold_query_set_path(set_id))
+    end
+
+    it "shows the partly failed status" do
       expect(page).to have_css("strong.govuk-tag--yellow", text: "Partly failed")
+    end
+
+    it "shows the progress" do
       expect(page).to have_css("td", text: "10 of 10 done, 1 failed")
+    end
+
+    it "shows the source mix" do
       expect(page).to have_css("td", text: "5 ATaR, 4 synthetic ATaR")
+    end
+
+    it "shows the creator" do
       expect(page).to have_css("td", text: "Alex Example")
+    end
+
+    it "links to a new gold query set" do
       expect(page).to have_link("New gold query set", href: new_evaluation_gold_query_set_path)
     end
 
@@ -117,8 +145,11 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
         stub_api_request("/search/evaluation/gold_query_sets").and_return(status: 400, headers: json_headers, body: { error: "bad request" }.to_json)
       end
 
-      it "shows an empty list and a warning instead of an error page" do
+      it "returns success" do
         expect(rendered_page).to have_http_status(:success)
+      end
+
+      it "warns that sets could not be loaded" do
         expect(rendered_page.body).to include("Gold query sets could not be loaded. Try again.")
       end
     end
@@ -133,13 +164,23 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
   describe "GET #new" do
     let(:make_request) { get new_evaluation_gold_query_set_path }
 
-    it "shows the form, with real ATaR rulings only as the starting mix" do
-      page = Capybara.string(rendered_page.body)
-
+    it "shows the heading" do
       expect(page).to have_css("h1", text: "New gold query set")
+    end
+
+    it "shows the name field" do
       expect(page).to have_field("Name")
+    end
+
+    it "shows the size field" do
       expect(page).to have_field("Number of source items")
+    end
+
+    it "starts with real ATaR rulings only" do
       expect(page).to have_field("Percentage from real ATaR rulings", with: "100")
+    end
+
+    it "shows the create button" do
       expect(page).to have_button("Create gold query set")
     end
 
@@ -184,13 +225,23 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
 
       it { is_expected.to have_http_status :unprocessable_content }
 
-      it "shows the error in the summary and on the field, and keeps what was typed" do
-        page = Capybara.string(rendered_page.body)
-
+      it "shows the error in the summary" do
         expect(page).to have_css(".govuk-error-summary", text: "is already taken")
+      end
+
+      it "shows the error on the field" do
         expect(page).to have_css(".govuk-error-message", text: "is already taken")
+      end
+
+      it "keeps the name" do
         expect(page).to have_field("Name", with: "Baseline")
+      end
+
+      it "keeps the number of source items" do
         expect(page).to have_field("Number of source items", with: "12")
+      end
+
+      it "keeps the ATaR percentage" do
         expect(page).to have_field("Percentage from real ATaR rulings", with: "60")
       end
     end
@@ -213,22 +264,39 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
 
     it { is_expected.to have_http_status :success }
 
-    it "shows the set" do
-      page = Capybara.string(rendered_page.body)
-
+    it "shows the name" do
       expect(page).to have_css("h1", text: "Baseline")
+    end
+
+    it "shows the partly failed status" do
       expect(page).to have_css("strong.govuk-tag--yellow", text: "Partly failed")
+    end
+
+    it "shows the source mix" do
       expect(page).to have_css(".govuk-summary-list__value", text: "60% ATaR rulings, 40% synthetic ATaRs")
+    end
+
+    it "shows the requested size" do
       expect(page).to have_css(".govuk-summary-list__value", text: "12")
+    end
+
+    it "shows the creator" do
       expect(page).to have_css(".govuk-summary-list__value", text: "Alex Example")
+    end
+
+    it "links to delete the set" do
       expect(page).to have_link("Delete gold query set", href: delete_evaluation_gold_query_set_path(set_id))
     end
 
-    it "lists each item that failed, with its error" do
-      page = Capybara.string(rendered_page.body)
-
+    it "shows the failed items heading" do
       expect(page).to have_css("h2", text: "Items that failed")
+    end
+
+    it "shows the failed source id" do
       expect(page).to have_css("td", text: "600000009")
+    end
+
+    it "shows the failure" do
       expect(page).to have_css("td", text: "the model did not return acceptable phrases after 3 attempts")
     end
 
@@ -236,19 +304,27 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
       expect(rendered_page.body).not_to include("still being generated")
     end
 
-    it "lists each item with its source, code and three test searches" do
-      page = Capybara.string(rendered_page.body)
-
+    it "shows the items heading" do
       expect(page).to have_css("h2", text: "Items")
+    end
+
+    it "shows the item count" do
       expect(page).to have_css("caption", text: "2 items")
+    end
+
+    it "lists the ATaR item" do
       expect(page).to have_css("tr", text: "ATaR 600000001 6302100000 sheets cotton bed sheets printed cotton bed sheets", normalize_ws: true)
+    end
+
+    it "lists the synthetic ATaR item" do
       expect(page).to have_css("tr", text: "Synthetic ATaR 12 Real search: a made up search 4201000000 saddle leather saddle leather riding saddle for a pony", normalize_ws: true)
     end
 
-    it "links each item to its edit and delete pages" do
-      page = Capybara.string(rendered_page.body)
-
+    it "links to edit an item" do
       expect(page).to have_link("Edit", href: edit_evaluation_gold_query_set_item_path(set_id, "atar-600000001"))
+    end
+
+    it "links to delete an item" do
       expect(page).to have_link("Delete", href: delete_evaluation_gold_query_set_item_path(set_id, "synthetic_atar-12"))
     end
 
@@ -265,42 +341,55 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
         stub_api_request("/search/evaluation/gold_query_sets/#{set_id}/items").and_return(status: 500, headers: json_headers, body: { error: "boom" }.to_json)
       end
 
-      it "still shows the set, with a warning instead of the items" do
+      it "returns success" do
         expect(rendered_page).to have_http_status(:success)
+      end
+
+      it "warns that the items could not be loaded" do
         expect(rendered_page.body).to include("The items of this set could not be loaded. Try again.")
-        expect(Capybara.string(rendered_page.body)).to have_css("h1", text: "Baseline")
+      end
+
+      it "still shows the set" do
+        expect(page).to have_css("h1", text: "Baseline")
       end
     end
 
     context "when the set is still generating" do
       let(:set_attributes) { super().merge("status" => "generating", "generated_count" => 4, "failed_count" => 0, "failures" => []) }
 
-      it "says so, and how far it has got, without asking the operator to reload" do
-        page = Capybara.string(rendered_page.body)
-
+      it "says the set is still being generated" do
         expect(page).to have_css(".govuk-notification-banner", text: "still being generated")
+      end
+
+      it "shows how far generation has got" do
         expect(page).to have_css(".govuk-notification-banner", text: "4 of 10")
+      end
+
+      it "hides the failed items" do
         expect(page).not_to have_css("h2", text: "Items that failed")
+      end
+
+      it "does not ask the operator to reload" do
         expect(rendered_page.body).not_to include("Reload the page")
       end
 
       it "shows a spinner, the same visual cue the run tracking page uses" do
-        page = Capybara.string(rendered_page.body)
-
         expect(page).to have_css(".govuk-notification-banner .app-spinner")
       end
 
-      it "lists the items written so far but offers no edit or delete until it has finished" do
-        page = Capybara.string(rendered_page.body)
-
+      it "lists the items written so far" do
         expect(page).to have_css("td", text: "6302100000")
+      end
+
+      it "offers no edit until generation has finished" do
         expect(page).not_to have_link("Edit")
+      end
+
+      it "offers no item delete until generation has finished" do
         expect(page).not_to have_link("Delete", href: %r{/items/})
       end
 
-      it "sets up live polling instead of a static page" do
-        page = Capybara.string(rendered_page.body)
-
+      it "sets up live polling" do
         expect(page).to have_css("[data-controller='run-tracking'][data-run-tracking-pending-value='true'][data-run-tracking-url-value]")
       end
     end
@@ -309,22 +398,24 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
       let(:make_request) { get evaluation_gold_query_set_path(set_id, format: :json) }
       let(:set_attributes) { super().merge("status" => "generating", "generated_count" => 4, "failed_count" => 0, "failures" => []) }
 
-      it "says the set is still pending, with the status partial's HTML" do
-        body = JSON.parse(rendered_page.body)
+      it "says the set is still pending" do
+        expect(JSON.parse(rendered_page.body)["pending"]).to be(true)
+      end
 
-        expect(body["pending"]).to be(true)
-        expect(Capybara.string(body["html"])).to have_css(".govuk-notification-banner", text: "4 of 10")
+      it "includes the status partial" do
+        expect(Capybara.string(JSON.parse(rendered_page.body)["html"])).to have_css(".govuk-notification-banner", text: "4 of 10")
       end
     end
 
     context "with the polling JSON response once finished" do
       let(:make_request) { get evaluation_gold_query_set_path(set_id, format: :json) }
 
-      it "says the set is no longer pending, with the finished HTML" do
-        body = JSON.parse(rendered_page.body)
+      it "says the set is no longer pending" do
+        expect(JSON.parse(rendered_page.body)["pending"]).to be(false)
+      end
 
-        expect(body["pending"]).to be(false)
-        expect(Capybara.string(body["html"])).to have_css("h2", text: "Items that failed")
+      it "includes the finished items" do
+        expect(Capybara.string(JSON.parse(rendered_page.body)["html"])).to have_css("h2", text: "Items that failed")
       end
     end
 
@@ -370,12 +461,19 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
       stub_api_request("/search/evaluation/gold_query_sets/#{set_id}").and_return(set_response)
     end
 
-    it "asks for confirmation and says what will be lost" do
-      page = Capybara.string(rendered_page.body)
-
+    it "asks for confirmation" do
       expect(page).to have_css("h1", text: "Are you sure you want to delete this gold query set?")
+    end
+
+    it "says what will be lost" do
       expect(page).to have_css(".govuk-warning-text", text: "all of its gold queries and their history")
+    end
+
+    it "shows the set name" do
       expect(page).to have_text("Baseline")
+    end
+
+    it "shows the delete button" do
       expect(page).to have_button("Delete gold query set")
     end
   end
@@ -420,4 +518,3 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
     end
   end
 end
-# rubocop:enable RSpec/ExampleLength, RSpec/MultipleExpectations, RSpec/MultipleMemoizedHelpers
