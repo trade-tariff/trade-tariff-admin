@@ -6,7 +6,7 @@ RSpec.describe SearchExportWorkbooksController, :aggregate_failures do
   end
 
   before do
-    allow(SearchExportWorkbook).to receive(:create).and_return(export)
+    allow(SearchExportWorkbook).to receive(:enqueue).and_return(export)
     allow(SearchExportWorkbook).to receive(:find).with("42").and_return(export)
   end
 
@@ -36,7 +36,7 @@ RSpec.describe SearchExportWorkbooksController, :aggregate_failures do
   end
 
   it "handles a backend outage during creation" do
-    allow(SearchExportWorkbook).to receive(:create).and_raise(Faraday::ConnectionFailed)
+    allow(SearchExportWorkbook).to receive(:enqueue).and_raise(Faraday::ConnectionFailed)
 
     post search_export_workbooks_path, params: { from: "2026-09-23", to: "2026-09-24" }
 
@@ -59,7 +59,7 @@ RSpec.describe SearchExportWorkbooksController, :aggregate_failures do
     end
 
     it "queues the selected dates" do
-      expect(SearchExportWorkbook).to have_received(:create).with(from: "2026-09-23", to: "2026-09-24")
+      expect(SearchExportWorkbook).to have_received(:enqueue).with(from: "2026-09-23", to: "2026-09-24")
     end
 
     it "redirects to progress" do
@@ -74,7 +74,7 @@ RSpec.describe SearchExportWorkbooksController, :aggregate_failures do
       end
 
       it "does not send a backend request" do
-        expect(SearchExportWorkbook).not_to have_received(:create)
+        expect(SearchExportWorkbook).not_to have_received(:enqueue)
       end
     end
   end

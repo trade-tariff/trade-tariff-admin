@@ -1,5 +1,5 @@
 RSpec.describe SearchExportWorkbook do
-  describe ".create" do
+  describe ".enqueue" do
     before do
       stub_api_request("/search_export/workbooks", :post)
         .with(body: { from: "2026-09-23", to: "2026-09-24" }.to_json,
@@ -8,7 +8,7 @@ RSpec.describe SearchExportWorkbook do
     end
 
     it "posts the date range and parses the queued resource" do
-      expect(described_class.create(from: "2026-09-23", to: "2026-09-24"))
+      expect(described_class.enqueue(from: "2026-09-23", to: "2026-09-24"))
         .to have_attributes(resource_id: "42", status: "queued")
     end
   end
