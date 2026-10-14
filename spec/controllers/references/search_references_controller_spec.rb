@@ -37,7 +37,7 @@ RSpec.describe References::SearchReferencesController do
       end
 
       it "renders the failed reference" do
-        controller.create
+        controller.public_send(:create)
 
         expect(controller).to have_received(:render).with(:new, status: :unprocessable_content)
       end
@@ -74,13 +74,13 @@ RSpec.describe References::SearchReferencesController do
     end
 
     it "renders edit when no update service is selected" do
-      controller.update
+      controller.public_send(:update)
 
       expect(controller).to have_received(:render).with(:edit, status: :unprocessable_contents)
     end
 
     it "renders remove when no destroy service is selected" do
-      controller.destroy
+      controller.public_send(:destroy)
 
       expect(controller).to have_received(:render).with(:remove, status: :unprocessable_content)
     end
@@ -92,13 +92,13 @@ RSpec.describe References::SearchReferencesController do
       end
 
       it "renders a reference that fails to update" do
-        controller.update
+        controller.public_send(:update)
 
         expect(controller).to have_received(:render).with(:edit, status: :unprocessable_content)
       end
 
       it "redirects after a reference fails to be destroyed" do
-        controller.destroy
+        controller.public_send(:destroy)
 
         expect(controller).to have_received(:redirect_to).with(
           [:references, parent, :search_references],

@@ -7,7 +7,7 @@ RSpec.describe CustomsTariff::Updates::SectionNotesController, type: :request do
   let(:section_note_id) { "127" }
   let(:section_id) { "5" }
 
-  def update_attributes
+  def customs_tariff_update_attributes
     {
       "version" => update_version,
       "status" => "pending",
@@ -28,7 +28,7 @@ RSpec.describe CustomsTariff::Updates::SectionNotesController, type: :request do
         data: {
           type: "customs_tariff_update",
           id: update_version,
-          attributes: update_attributes,
+          attributes: customs_tariff_update_attributes,
         },
       }.to_json,
     }

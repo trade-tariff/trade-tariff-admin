@@ -5,7 +5,7 @@ RSpec.describe CustomsTariff::UpdatesController, type: :request do
 
   let(:update_version) { "1.31" }
 
-  let(:update_attributes) do
+  let(:customs_tariff_update_attributes) do
     {
       "version" => update_version,
       "status" => "pending",
@@ -26,7 +26,7 @@ RSpec.describe CustomsTariff::UpdatesController, type: :request do
         data: {
           type: "customs_tariff_update",
           id: update_version,
-          attributes: update_attributes,
+          attributes: customs_tariff_update_attributes,
         },
       }.to_json,
     }
@@ -41,7 +41,7 @@ RSpec.describe CustomsTariff::UpdatesController, type: :request do
           {
             type: "customs_tariff_update",
             id: update_version,
-            attributes: update_attributes,
+            attributes: customs_tariff_update_attributes,
           },
         ],
       }.to_json,
@@ -58,7 +58,7 @@ RSpec.describe CustomsTariff::UpdatesController, type: :request do
           status: 200,
           headers: { "content-type" => "application/json; charset=utf-8" },
           body: {
-            data: [{ type: "customs_tariff_update", id: update_version, attributes: update_attributes }],
+            data: [{ type: "customs_tariff_update", id: update_version, attributes: customs_tariff_update_attributes }],
             meta: {
               pagination: {
                 page: 1,
@@ -93,7 +93,7 @@ RSpec.describe CustomsTariff::UpdatesController, type: :request do
                 {
                   type: "customs_tariff_update",
                   id: "9.26",
-                  attributes: update_attributes.merge("version" => "9.26"),
+                  attributes: customs_tariff_update_attributes.merge("version" => "9.26"),
                 },
               ],
               meta: {
@@ -180,11 +180,11 @@ RSpec.describe CustomsTariff::UpdatesController, type: :request do
           headers: { "content-type" => "application/json; charset=utf-8" },
           body: {
             data: [
-              { type: "customs_tariff_update", id: update_version, attributes: update_attributes },
+              { type: "customs_tariff_update", id: update_version, attributes: customs_tariff_update_attributes },
               {
                 type: "customs_tariff_update",
                 id: "1.30",
-                attributes: update_attributes.merge("version" => "1.30", "status" => "pending", "validity_start_date" => "2025-12-01"),
+                attributes: customs_tariff_update_attributes.merge("version" => "1.30", "status" => "pending", "validity_start_date" => "2025-12-01"),
               },
             ],
           }.to_json,

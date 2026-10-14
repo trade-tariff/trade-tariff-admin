@@ -3,10 +3,10 @@ require "rails_helper"
 RSpec.describe SidekiqWebConstraint do
   subject(:constraint) { described_class.new }
 
-  let(:request) do
-    ActionDispatch::TestRequest.create.tap do |test_request|
-      test_request.session = ActionController::TestSession.new
-    end
+  let(:request) { ActionDispatch::TestRequest.create }
+
+  before do
+    request.session = ActionController::TestSession.new
   end
 
   describe "#matches? with the none auth strategy" do
