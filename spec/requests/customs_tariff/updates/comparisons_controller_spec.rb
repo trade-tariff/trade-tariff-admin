@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/MultipleMemoizedHelpers
 RSpec.describe CustomsTariff::Updates::ComparisonsController, type: :request do
   subject(:rendered_page) { make_request && response }
 
@@ -9,7 +8,7 @@ RSpec.describe CustomsTariff::Updates::ComparisonsController, type: :request do
   let(:section_note_id) { "42" }
   let(:section_id) { "5" }
 
-  let(:update_attributes) do
+  def update_attributes
     {
       "version" => update_version,
       "status" => "pending",
@@ -22,7 +21,7 @@ RSpec.describe CustomsTariff::Updates::ComparisonsController, type: :request do
     }
   end
 
-  let(:update_response) do
+  def update_response
     {
       status: 200,
       headers: { "content-type" => "application/json; charset=utf-8" },
@@ -36,7 +35,7 @@ RSpec.describe CustomsTariff::Updates::ComparisonsController, type: :request do
     }
   end
 
-  let(:section_note_attributes) do
+  def section_note_attributes
     {
       "id" => section_note_id,
       "section_id" => section_id.to_i,
@@ -47,7 +46,7 @@ RSpec.describe CustomsTariff::Updates::ComparisonsController, type: :request do
     }
   end
 
-  let(:section_notes_response) do
+  def section_notes_response
     {
       status: 200,
       headers: { "content-type" => "application/json; charset=utf-8" },
@@ -64,12 +63,7 @@ RSpec.describe CustomsTariff::Updates::ComparisonsController, type: :request do
   end
 
   describe "GET #show" do
-    let(:make_request) do
-      get customs_tariff_update_comparison_section_note_path(update_version, section_id),
-          params: { compare_version: }
-    end
-
-    let(:single_note_response) do
+    def single_note_response
       {
         status: 200,
         headers: { "content-type" => "application/json; charset=utf-8" },
@@ -81,6 +75,11 @@ RSpec.describe CustomsTariff::Updates::ComparisonsController, type: :request do
           },
         }.to_json,
       }
+    end
+
+    let(:make_request) do
+      get customs_tariff_update_comparison_section_note_path(update_version, section_id),
+          params: { compare_version: }
     end
 
     before do
@@ -107,9 +106,11 @@ RSpec.describe CustomsTariff::Updates::ComparisonsController, type: :request do
   end
 
   describe "GET #show_chapter_note" do
-    let(:chapter_note_id) { "2164" }
+    def chapter_note_id
+      "2164"
+    end
 
-    let(:chapter_note_attributes) do
+    def chapter_note_attributes
       {
         "chapter_id" => "41",
         "content" => "## Chapter 41\n\nSome content.",
@@ -119,7 +120,7 @@ RSpec.describe CustomsTariff::Updates::ComparisonsController, type: :request do
       }
     end
 
-    let(:chapter_note_response) do
+    def chapter_note_response
       {
         status: 200,
         headers: { "content-type" => "application/json; charset=utf-8" },
@@ -193,4 +194,3 @@ RSpec.describe CustomsTariff::Updates::ComparisonsController, type: :request do
     end
   end
 end
-# rubocop:enable RSpec/MultipleMemoizedHelpers
