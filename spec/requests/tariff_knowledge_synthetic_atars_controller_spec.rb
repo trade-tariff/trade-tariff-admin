@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/ExampleLength, RSpec/MultipleExpectations, RSpec/MultipleMemoizedHelpers
 RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
   subject(:rendered_page) { make_request && response }
 
@@ -6,9 +5,16 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
   include XlsxWorkbookHelper
 
   let(:current_user) { create(:user, :technical_operator) }
-  let(:synthetic_atar_id) { "12" }
-  let(:json_headers) { { "content-type" => "application/json; charset=utf-8" } }
-  let(:synthetic_atar_attributes) do
+
+  def synthetic_atar_id
+    "12"
+  end
+
+  def json_headers
+    { "content-type" => "application/json; charset=utf-8" }
+  end
+
+  def synthetic_atar_attributes
     {
       "chapter" => "39",
       "real_user_search" => "plastic box",
@@ -22,10 +28,12 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
       "updated_at" => "2026-09-25T10:30:00Z",
     }
   end
-  let(:synthetic_atar_response) do
+
+  def synthetic_atar_response
     jsonapi_response("tariff_knowledge_synthetic_atar", synthetic_atar_attributes.merge("resource_id" => synthetic_atar_id))
   end
-  let(:versions_response) do
+
+  def versions_response
     {
       status: 200,
       headers: json_headers,
@@ -78,6 +86,10 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
       .and_return(versions_response)
   end
 
+  def page
+    Capybara.string(rendered_page.body)
+  end
+
   describe "GET #index" do
     let(:make_request) { get tariff_knowledge_synthetic_atars_path }
 
@@ -96,21 +108,35 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
       end
     end
 
-    it "lists the synthetic ATaRs" do
-      page = Capybara.string(rendered_page.body)
-
+    it "shows the synthetic ATaRs heading" do
       expect(page).to have_css("h1", text: "Synthetic ATaRs")
+    end
+
+    it "shows the synthetic ATaR count" do
       expect(page).to have_css("caption", text: "1 synthetic ATaR")
+    end
+
+    it "links to the synthetic ATaR" do
       expect(page).to have_link("plastic box", href: tariff_knowledge_synthetic_atar_path(synthetic_atar_id))
+    end
+
+    it "shows the commodity code" do
       expect(page).to have_css("td", text: "3924100000")
+    end
+
+    it "shows who completed it" do
       expect(page).to have_css("td", text: "AB")
+    end
+
+    it "links to a new synthetic ATaR" do
       expect(page).to have_link("New synthetic ATaR", href: new_tariff_knowledge_synthetic_atar_path)
     end
 
-    it "keeps the search and chapter filters on the same row" do
-      page = Capybara.string(rendered_page.body)
-
+    it "shows the search filter" do
       expect(page).to have_css(".synthetic-atar-filters #synthetic-atar-search")
+    end
+
+    it "shows the chapter filter" do
       expect(page).to have_css(".synthetic-atar-filters #synthetic-atar-chapter")
     end
 
@@ -123,11 +149,15 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
           .and_return(paginated_response([synthetic_atar_attributes.merge("resource_id" => synthetic_atar_id)]))
       end
 
-      it "passes the filters to the backend and keeps them in the form" do
-        page = Capybara.string(rendered_page.body)
-
+      it "keeps the search term in the form" do
         expect(page).to have_field("Search", with: "plastic")
+      end
+
+      it "keeps the chapter in the form" do
         expect(page).to have_field("Chapter", with: "39")
+      end
+
+      it "shows the matching synthetic ATaR" do
         expect(page).to have_link("plastic box")
       end
     end
@@ -147,8 +177,11 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
         stub_api_request("/tariff_knowledge_synthetic_atars").and_return(status: 400, headers: json_headers, body: { error: "bad request" }.to_json)
       end
 
-      it "shows an empty list and a warning instead of an error page" do
+      it "returns success" do
         expect(rendered_page).to have_http_status(:success)
+      end
+
+      it "shows a warning instead of an error page" do
         expect(rendered_page.body).to include("Synthetic ATaRs could not be loaded. Try again.")
       end
     end
@@ -165,14 +198,27 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
 
     it { is_expected.to have_http_status :success }
 
-    it "explains the import and shows the upload form" do
-      page = Capybara.string(rendered_page.body)
-
+    it "shows the import heading" do
       expect(page).to have_css("h1", text: "Import synthetic ATaRs")
+    end
+
+    it "mentions the Classifications sheet" do
       expect(page).to have_text("Classifications")
+    end
+
+    it "explains that only Done rows are imported" do
       expect(page).to have_text("Only rows with the status Done")
+    end
+
+    it "links to the example file" do
       expect(page).to have_link("Download an example file with the column headings", href: example_import_tariff_knowledge_synthetic_atars_path)
+    end
+
+    it "shows the file field" do
       expect(page).to have_field("Import file", type: "file")
+    end
+
+    it "shows the import button" do
       expect(page).to have_button("Import synthetic ATaRs")
     end
 
@@ -186,9 +232,15 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
   describe "GET #example_import" do
     let(:make_request) { get example_import_tariff_knowledge_synthetic_atars_path }
 
-    it "downloads a CSV with only the column headings" do
+    it "returns success" do
       expect(rendered_page).to have_http_status(:success)
+    end
+
+    it "sends a CSV content type" do
       expect(rendered_page.headers["Content-Type"]).to include("text/csv")
+    end
+
+    it "sends only the column headings" do
       expect(rendered_page.body).to eq("Chapter,Real user search,Times searched,Likely heading,Full product description,Commodity code (10 digits),Status,Completed by,Notes\n")
     end
   end
@@ -246,8 +298,11 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
     context "when the workbook has no Classifications sheet" do
       let(:upload) { xlsx_upload([xlsx_sheet("Instructions", [["Read this first"]], 1)]) }
 
-      it "shows the problem and does not call the backend" do
+      it "returns unprocessable content" do
         expect(rendered_page).to have_http_status(:unprocessable_content)
+      end
+
+      it "explains that the Classifications sheet is missing" do
         expect(rendered_page.body).to include("The workbook has no sheet called &quot;Classifications&quot;.")
       end
     end
@@ -255,8 +310,11 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
     context "when no file is chosen" do
       let(:make_request) { post bulk_import_tariff_knowledge_synthetic_atars_path }
 
-      it "asks for a file" do
+      it "returns unprocessable content" do
         expect(rendered_page).to have_http_status(:unprocessable_content)
+      end
+
+      it "asks for a file" do
         expect(rendered_page.body).to include("Choose a CSV or XLSX file to upload.")
       end
     end
@@ -271,12 +329,19 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
           )
       end
 
-      it "lists every problem and says that nothing was imported" do
-        page = Capybara.string(rendered_page.body)
-
+      it "returns unprocessable content" do
         expect(rendered_page).to have_http_status(:unprocessable_content)
+      end
+
+      it "says that nothing was imported" do
         expect(page).to have_css(".govuk-error-summary", text: "Nothing was imported")
+      end
+
+      it "shows the commodity code problem" do
         expect(page).to have_css(".govuk-error-summary li", text: "Line 3: Commodity code must be exactly 10 digits")
+      end
+
+      it "shows the duplicate search problem" do
         expect(page).to have_css(".govuk-error-summary li", text: "Line 9: Real user search appears more than once")
       end
     end
@@ -286,10 +351,11 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
         stub_api_request("/tariff_knowledge_synthetic_atars/bulk_import", :post).to_raise(Faraday::ConnectionFailed)
       end
 
-      it "shows a clear message instead of a generic error page" do
-        page = Capybara.string(rendered_page.body)
-
+      it "returns unprocessable content" do
         expect(rendered_page).to have_http_status(:unprocessable_content)
+      end
+
+      it "explains that the import could not be completed" do
         expect(page).to have_css(".govuk-error-summary", text: "The import could not be completed. Check the list before you try again. Uploading the same file again is safe.")
       end
     end
@@ -306,14 +372,27 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
 
     it { is_expected.to have_http_status :success }
 
-    it "shows the form" do
-      page = Capybara.string(rendered_page.body)
-
+    it "shows the new heading" do
       expect(page).to have_css("h1", text: "New synthetic ATaR")
+    end
+
+    it "shows the real user search field" do
       expect(page).to have_field("Real user search")
+    end
+
+    it "shows the chapter field" do
       expect(page).to have_field("Chapter")
+    end
+
+    it "shows the description field" do
       expect(page).to have_field("Full product description")
+    end
+
+    it "shows the commodity code field" do
       expect(page).to have_field("Commodity code")
+    end
+
+    it "shows the create button" do
       expect(page).to have_button("Create synthetic ATaR")
     end
   end
@@ -345,6 +424,7 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
 
       it "confirms the creation" do
         rendered_page
+
         expect(session.dig("flash", "flashes", "notice")).to eq("Synthetic ATaR created successfully.")
       end
     end
@@ -357,11 +437,15 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
 
       it { is_expected.to have_http_status :unprocessable_content }
 
-      it "shows the error in the summary and on the field" do
-        page = Capybara.string(rendered_page.body)
-
+      it "shows the error in the summary" do
         expect(page).to have_css(".govuk-error-summary", text: "is already used by another synthetic ATaR")
+      end
+
+      it "shows the error on the field" do
         expect(page).to have_css(".govuk-error-message", text: "is already used by another synthetic ATaR")
+      end
+
+      it "keeps the real user search" do
         expect(page).to have_field("Real user search", with: "plastic box")
       end
     end
@@ -377,16 +461,35 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
 
     it { is_expected.to have_http_status :success }
 
-    it "shows the details, the actions and the version history" do
-      page = Capybara.string(rendered_page.body)
-
+    it "shows the search as the heading" do
       expect(page).to have_css("h1", text: "plastic box")
+    end
+
+    it "shows the commodity code" do
       expect(page).to have_text("3924100000")
+    end
+
+    it "shows the description" do
       expect(page).to have_text("Reusable plastic food storage box")
+    end
+
+    it "links to edit" do
       expect(page).to have_link("Edit", href: edit_tariff_knowledge_synthetic_atar_path(synthetic_atar_id))
+    end
+
+    it "links to delete" do
       expect(page).to have_link("Delete synthetic ATaR", href: delete_tariff_knowledge_synthetic_atar_path(synthetic_atar_id))
+    end
+
+    it "shows the version history count" do
       expect(page).to have_text("Version history (2)")
+    end
+
+    it "shows the initial version" do
       expect(page).to have_text("Initial version")
+    end
+
+    it "shows the changed notes" do
       expect(page).to have_text("Changed: Notes")
     end
 
@@ -399,6 +502,7 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
 
       it "explains why" do
         rendered_page
+
         expect(session.dig("flash", "flashes", "alert")).to eq("Synthetic ATaR not found.")
       end
     end
@@ -419,11 +523,15 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
 
     it { is_expected.to have_http_status :success }
 
-    it "shows the form filled in" do
-      page = Capybara.string(rendered_page.body)
-
+    it "fills in the real user search" do
       expect(page).to have_field("Real user search", with: "plastic box")
+    end
+
+    it "fills in the commodity code" do
       expect(page).to have_field("Commodity code", with: "3924100000")
+    end
+
+    it "shows the save button" do
       expect(page).to have_button("Save changes")
     end
   end
@@ -472,10 +580,14 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
     end
 
     it "asks for confirmation" do
-      page = Capybara.string(rendered_page.body)
-
       expect(page).to have_css("h1", text: "Are you sure you want to delete this synthetic ATaR?")
+    end
+
+    it "shows the search being deleted" do
       expect(page).to have_text("plastic box")
+    end
+
+    it "shows the delete button" do
       expect(page).to have_button("Delete synthetic ATaR")
     end
   end
@@ -492,8 +604,8 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
 
     it "confirms the deletion" do
       rendered_page
+
       expect(session.dig("flash", "flashes", "notice")).to eq("Synthetic ATaR deleted successfully.")
     end
   end
 end
-# rubocop:enable RSpec/ExampleLength, RSpec/MultipleExpectations, RSpec/MultipleMemoizedHelpers
