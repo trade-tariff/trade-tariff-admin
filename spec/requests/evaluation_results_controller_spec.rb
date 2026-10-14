@@ -343,7 +343,7 @@ RSpec.describe EvaluationResultsController, type: :request do
         expect(page).to have_css("p", text: "No clarifying questions were recorded for this result")
       end
 
-      it "explains that the search converged on the first search round and never needed to ask one" do
+      it "explains that the search converged on the first round" do
         expect(page).to have_css("p", text: "converged on the first search")
       end
     end
