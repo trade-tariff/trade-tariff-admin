@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/ExampleLength, RSpec/MultipleExpectations, RSpec/MultipleMemoizedHelpers
 RSpec.describe EvaluationGoldQueryItemsController, type: :request do
   subject(:rendered_page) { make_request && response }
 
@@ -7,8 +6,6 @@ RSpec.describe EvaluationGoldQueryItemsController, type: :request do
   let(:current_user) { create(:user, :technical_operator) }
   let(:set_id) { "3" }
   let(:item_id) { "synthetic_atar-12" }
-  let(:item_path) { "/search/evaluation/gold_query_sets/#{set_id}/items/#{item_id}" }
-  let(:json_headers) { { "content-type" => "application/json; charset=utf-8" } }
   let(:item_attributes) do
     {
       "gold_query_set_id" => 3,
@@ -25,8 +22,20 @@ RSpec.describe EvaluationGoldQueryItemsController, type: :request do
       "emu_specific_notes" => "checked with the analysts",
     }
   end
-  let(:item_response) { jsonapi_response("gold_query_set_item", item_attributes.merge("resource_id" => item_id)) }
-  let(:versions_response) do
+
+  def item_path
+    "/search/evaluation/gold_query_sets/#{set_id}/items/#{item_id}"
+  end
+
+  def json_headers
+    { "content-type" => "application/json; charset=utf-8" }
+  end
+
+  def item_response
+    jsonapi_response("gold_query_set_item", item_attributes.merge("resource_id" => item_id))
+  end
+
+  def versions_response
     {
       status: 200,
       headers: json_headers,
@@ -62,6 +71,10 @@ RSpec.describe EvaluationGoldQueryItemsController, type: :request do
     }
   end
 
+  def page
+    Capybara.string(rendered_page.body)
+  end
+
   before do
     stub_api_request("/search/evaluation/gold_query_sets/#{set_id}")
       .and_return(jsonapi_response("gold_query_set", { "resource_id" => set_id, "name" => "Baseline", "status" => "ready" }))
@@ -82,35 +95,71 @@ RSpec.describe EvaluationGoldQueryItemsController, type: :request do
       end
     end
 
-    it "shows where the item came from and the text the test searches were written from" do
-      page = Capybara.string(rendered_page.body)
-
+    it "shows the edit heading" do
       expect(page).to have_css("h1", text: "Edit test searches")
+    end
+
+    it "shows the synthetic ATaR source" do
       expect(page).to have_css(".govuk-summary-list__value", text: "Synthetic ATaR")
+    end
+
+    it "shows the real user search" do
       expect(page).to have_css(".govuk-summary-list__value", text: "a made up search")
+    end
+
+    it "shows the oracle text" do
       expect(page).to have_css(".govuk-summary-list__value", text: "Woven cotton bed linen with a printed floral pattern.")
+    end
+
+    it "links cancel to the gold query set" do
       expect(page).to have_link("Cancel", href: evaluation_gold_query_set_path(set_id))
+    end
+
+    it "links the gold query set name" do
       expect(page).to have_link("Baseline", href: evaluation_gold_query_set_path(set_id))
     end
 
-    it "fills the form with the current values" do
-      page = Capybara.string(rendered_page.body)
-
+    it "fills the expected commodity code" do
       expect(page).to have_field("Expected commodity code", with: "6302100000")
+    end
+
+    it "fills the generic search" do
       expect(page).to have_field("Generic search", with: "sheets")
+    end
+
+    it "fills the ordinary search" do
       expect(page).to have_field("Ordinary search", with: "cotton bed sheets")
+    end
+
+    it "fills the specific search" do
       expect(page).to have_field("Specific search", with: "printed cotton bed sheets")
+    end
+
+    it "fills the notes on the specific search" do
       expect(page).to have_field("Notes on the specific search", with: "checked with the analysts")
+    end
+
+    it "shows the save button" do
       expect(page).to have_button("Save changes")
     end
 
-    it "shows the history of the item's three rows, read only" do
-      page = Capybara.string(rendered_page.body)
-
+    it "shows the history heading" do
       expect(page).to have_css("h2", text: "History")
+    end
+
+    it "shows the generic search in the history" do
       expect(page).to have_css("td", text: "Generic search")
+    end
+
+    it "shows the changed query" do
       expect(page).to have_css("td", text: "Changed: Query")
+    end
+
+    it "shows the initial version" do
       expect(page).to have_css("td", text: "Initial version")
+    end
+
+    it "hides restore" do
       expect(page).not_to have_button("Restore")
     end
 
@@ -118,10 +167,11 @@ RSpec.describe EvaluationGoldQueryItemsController, type: :request do
       let(:item_attributes) { super().merge("source_type" => "atar", "source_id" => "600000001", "real_user_search" => nil) }
       let(:item_id) { "atar-600000001" }
 
-      it "does not show a real user search" do
-        page = Capybara.string(rendered_page.body)
-
+      it "shows the ATaR source" do
         expect(page).to have_css(".govuk-summary-list__value", text: "ATaR")
+      end
+
+      it "hides the real user search" do
         expect(page).not_to have_css(".govuk-summary-list__key", text: "Real user search")
       end
     end
@@ -131,8 +181,11 @@ RSpec.describe EvaluationGoldQueryItemsController, type: :request do
         stub_api_request("#{item_path}/versions").and_return(status: 500, headers: json_headers, body: { error: "boom" }.to_json)
       end
 
-      it "still shows the form" do
+      it "returns success" do
         expect(rendered_page).to have_http_status(:success)
+      end
+
+      it "still shows the form" do
         expect(Capybara.string(rendered_page.body)).to have_field("Generic search", with: "sheets")
       end
     end
@@ -146,7 +199,6 @@ RSpec.describe EvaluationGoldQueryItemsController, type: :request do
 
       it "says so" do
         rendered_page
-
         expect(session.dig("flash", "flashes", "alert")).to eq("Gold query set item not found.")
       end
     end
@@ -160,7 +212,6 @@ RSpec.describe EvaluationGoldQueryItemsController, type: :request do
 
       it "shows a warning instead of an error page" do
         rendered_page
-
         expect(session.dig("flash", "flashes", "alert")).to eq("The gold query set could not be loaded. Try again.")
       end
     end
@@ -199,7 +250,6 @@ RSpec.describe EvaluationGoldQueryItemsController, type: :request do
 
       it "confirms the change" do
         rendered_page
-
         expect(session.dig("flash", "flashes", "notice")).to eq("Test searches updated successfully.")
       end
     end
@@ -212,13 +262,23 @@ RSpec.describe EvaluationGoldQueryItemsController, type: :request do
 
       it { is_expected.to have_http_status :unprocessable_content }
 
-      it "shows each error on its field and keeps what was typed" do
-        page = Capybara.string(rendered_page.body)
-
+      it "shows the expected code error" do
         expect(page).to have_css(".govuk-error-summary", text: "must be 6, 8 or 10 digits")
+      end
+
+      it "shows the generic search error" do
         expect(page).to have_css(".govuk-error-message", text: "is not present")
+      end
+
+      it "keeps the expected commodity code" do
         expect(page).to have_field("Expected commodity code", with: "6302100090")
+      end
+
+      it "keeps the generic search" do
         expect(page).to have_field("Generic search", with: "cotton sheets")
+      end
+
+      it "shows the history heading" do
         expect(page).to have_css("h2", text: "History")
       end
     end
@@ -233,13 +293,23 @@ RSpec.describe EvaluationGoldQueryItemsController, type: :request do
   describe "GET #confirm_destroy" do
     let(:make_request) { get delete_evaluation_gold_query_set_item_path(set_id, item_id) }
 
-    it "asks for confirmation and says what will be deleted" do
-      page = Capybara.string(rendered_page.body)
-
+    it "asks for confirmation" do
       expect(page).to have_css("h1", text: "Are you sure you want to delete this item?")
+    end
+
+    it "warns that all three test searches are deleted" do
       expect(page).to have_css(".govuk-warning-text", text: "all three of its test searches")
+    end
+
+    it "shows the real user search" do
       expect(page).to have_text("a made up search")
+    end
+
+    it "shows the specific search" do
       expect(page).to have_text("printed cotton bed sheets")
+    end
+
+    it "shows the delete button" do
       expect(page).to have_button("Delete item")
     end
   end
@@ -255,7 +325,6 @@ RSpec.describe EvaluationGoldQueryItemsController, type: :request do
 
     it "confirms the deletion" do
       rendered_page
-
       expect(session.dig("flash", "flashes", "notice")).to eq("Item deleted successfully.")
     end
 
@@ -266,4 +335,3 @@ RSpec.describe EvaluationGoldQueryItemsController, type: :request do
     end
   end
 end
-# rubocop:enable RSpec/ExampleLength, RSpec/MultipleExpectations, RSpec/MultipleMemoizedHelpers
