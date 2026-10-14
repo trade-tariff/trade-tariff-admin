@@ -13,9 +13,8 @@ class NewsCollectionsController < AuthenticatedController
     authorize News::Collection, :create?
     @news_collection = News::Collection.new(news_collection_params)
     @news_collection.generate_or_normalise_slug!
-    @news_collection.save
 
-    if @news_collection.errors.none?
+    if (@news_collection = @news_collection.save).errors.none?
       redirect_to news_collections_path, notice: "News collection created"
     else
       render :new
@@ -31,9 +30,8 @@ class NewsCollectionsController < AuthenticatedController
     @news_collection = News::Collection.build(news_collection_params.merge(resource_id: params[:id]))
     authorize @news_collection, :update?
     @news_collection.generate_or_normalise_slug!
-    @news_collection.save
 
-    if @news_collection.errors.none?
+    if (@news_collection = @news_collection.save).errors.none?
       redirect_to news_collections_path, notice: "News collection updated"
     else
       render :edit
