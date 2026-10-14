@@ -7,7 +7,6 @@ RSpec.describe VersionsController, type: :request do
 
   before do
     TradeTariffAdmin::ServiceChooser.service_choice = "uk"
-    allow(User).to receive(:basic_auth_user!).and_return(current_user)
   end
 
   describe "GET #index" do
