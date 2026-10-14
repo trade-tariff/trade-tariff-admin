@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/ExampleLength
 RSpec.describe GoodsNomenclatureAutocompleteResult do
   subject(:result) { described_class.new(attributes) }
 
@@ -43,14 +42,8 @@ RSpec.describe GoodsNomenclatureAutocompleteResult do
       }
     end
 
-    before do
-      stub_api_request("/goods_nomenclature_autocomplete")
-        .with(query: hash_including("q" => "1201", "filter" => hash_including("goods_nomenclature_class" => %w[Chapter Heading])))
-        .and_return(response)
-    end
-
-    it "returns the proxy listing data" do
-      expect(described_class.listing("1201", filters: { goods_nomenclature_class: %w[Chapter Heading] })).to eq([
+    let(:expected_listing) do
+      [
         {
           id: "120190",
           goods_nomenclature_item_id: "1201900000",
@@ -58,9 +51,17 @@ RSpec.describe GoodsNomenclatureAutocompleteResult do
           truncated_description: "Soya bean flour and meal, whether or not defatted",
           label: "1201900000 - Soya bean flour and meal, whether or not defatted",
         },
-      ])
+      ]
+    end
+
+    before do
+      stub_api_request("/goods_nomenclature_autocomplete")
+        .with(query: hash_including("q" => "1201", "filter" => hash_including("goods_nomenclature_class" => %w[Chapter Heading])))
+        .and_return(response)
+    end
+
+    it "returns the proxy listing data" do
+      expect(described_class.listing("1201", filters: { goods_nomenclature_class: %w[Chapter Heading] })).to eq(expected_listing)
     end
   end
 end
-
-# rubocop:enable RSpec/ExampleLength
