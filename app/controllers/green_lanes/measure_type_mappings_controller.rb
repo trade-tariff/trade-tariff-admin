@@ -28,7 +28,7 @@ module GreenLanes
     def destroy
       @measure_type_mapping = GreenLanes::MeasureTypeMapping.find(params[:id])
       authorize @measure_type_mapping, :destroy?
-      @measure_type_mapping.destroy
+      @measure_type_mapping.destroy!
 
       redirect_to green_lanes_measure_type_mappings_path, notice: "MeasureTypeMapping removed"
     end

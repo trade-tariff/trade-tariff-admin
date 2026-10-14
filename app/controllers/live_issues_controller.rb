@@ -40,7 +40,7 @@ class LiveIssuesController < AuthenticatedController
   def destroy
     @live_issue = LiveIssue.find(params[:id])
     authorize @live_issue, :destroy?
-    @live_issue.destroy
+    @live_issue.destroy!
 
     redirect_to live_issues_path, notice: "Live issue deleted"
   end

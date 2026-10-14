@@ -96,7 +96,7 @@ module CustomsTariff
         )
         authorize @chapter_note, :destroy?
         @section_id = params[:section_id]
-        @chapter_note.destroy
+        @chapter_note.destroy!
         redirect_to customs_tariff_update_section_chapter_notes_path(params[:update_version], @section_id),
                     notice: "Chapter note removed."
       rescue Faraday::ResourceNotFound

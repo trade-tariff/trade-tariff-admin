@@ -73,7 +73,7 @@ class TariffKnowledgeSyntheticAtarsController < AuthenticatedController
   def destroy
     authorize @synthetic_atar, :destroy?
 
-    @synthetic_atar.destroy
+    @synthetic_atar.destroy!
     redirect_to tariff_knowledge_synthetic_atars_path, notice: "Synthetic ATaR deleted successfully."
   end
 

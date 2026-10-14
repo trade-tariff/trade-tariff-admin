@@ -114,7 +114,7 @@ module References
         reference = search_reference_for_action
         next :missing if reference.blank?
 
-        reference.destroy
+        reference.destroy!
         reference
       end
 

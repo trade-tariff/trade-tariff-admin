@@ -21,7 +21,7 @@ module GreenLanes
     def destroy
       authorize GreenLanes::ExemptingOverride, :destroy?
       @exempting_certificate_override = GreenLanes::ExemptingCertificateOverride.build(resource_id: params[:id])
-      @exempting_certificate_override.destroy
+      @exempting_certificate_override.destroy!
 
       redirect_to green_lanes_exempting_overrides_path, notice: "Exempting Certificate Override removed"
     end

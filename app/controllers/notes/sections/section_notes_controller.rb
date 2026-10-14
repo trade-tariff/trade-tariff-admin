@@ -37,7 +37,7 @@ module Notes
       def destroy
         @section_note = section.section_note
         authorize @section_note, :destroy?
-        @section_note.destroy
+        @section_note.destroy!
 
         redirect_to dashboard_url, notice: "Section note was successfully removed."
       end

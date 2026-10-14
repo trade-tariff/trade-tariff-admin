@@ -37,7 +37,7 @@ module Notes
       def destroy
         @chapter_note = chapter.chapter_note
         authorize @chapter_note, :destroy?
-        @chapter_note.destroy
+        @chapter_note.destroy!
 
         redirect_to notes_section_chapters_url(section_id: chapter.section.id), notice: "Chapter note was successfully removed."
       end

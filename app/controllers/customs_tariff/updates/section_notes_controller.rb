@@ -70,7 +70,7 @@ module CustomsTariff
           customs_tariff_update_version: params[:update_version],
         )
         authorize @section_note, :destroy?
-        @section_note.destroy
+        @section_note.destroy!
         redirect_to customs_tariff_update_path(params[:update_version]),
                     notice: "Section note removed."
       rescue Faraday::ResourceNotFound

@@ -21,7 +21,7 @@ module GreenLanes
     def destroy
       authorize GreenLanes::ExemptingOverride, :destroy?
       @exempting_additional_code_override = GreenLanes::ExemptingAdditionalCodeOverride.build(resource_id: params[:id])
-      @exempting_additional_code_override.destroy
+      @exempting_additional_code_override.destroy!
 
       redirect_to green_lanes_exempting_overrides_path, notice: "Exempting Additional Code Override removed"
     end
