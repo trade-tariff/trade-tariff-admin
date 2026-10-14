@@ -1,8 +1,4 @@
 RSpec.describe SearchReferencesController, type: :request do
-  # Rails includes the auth module at boot. This environment boots with no auth,
-  # so include passwordless auth and use the session user for these examples.
-  described_class.include PasswordlessAuth unless described_class < PasswordlessAuth
-
   subject(:rendered_page) { make_request && response }
 
   include_context "with authenticated user"
