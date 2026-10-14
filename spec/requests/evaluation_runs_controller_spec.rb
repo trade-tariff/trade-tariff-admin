@@ -389,6 +389,16 @@ RSpec.describe EvaluationRunsController, type: :request do
       expect(page).to have_css("h1", text: "Baseline — Run ID: 9")
     end
 
+    context "when the run has a generated label (AI-1437)" do
+      let(:run_attributes) { super().merge("label" => "vector based retrieval") }
+
+      it "appends the label to the heading" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("h1", text: "Baseline — Run ID: 9 — vector based retrieval")
+      end
+    end
+
     it "shows the live count and a cancel button while the run is in progress" do
       page = Capybara.string(rendered_page.body)
 
@@ -685,6 +695,19 @@ RSpec.describe EvaluationRunsController, type: :request do
       expect(page).to have_css("td", text: "0.0421")
     end
 
+    context "when a run has a generated label (AI-1437)" do
+      before do
+        stub_api_request("/search/evaluation/runs")
+          .and_return(paginated_response([run_attributes.merge("resource_id" => "9", "label" => "vector based retrieval")]))
+      end
+
+      it "shows the label next to the run's id" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_link("Run #9 — vector based retrieval", href: evaluation_run_path("9"))
+      end
+    end
+
     it "offers a filter form for status, experiment and date range" do
       page = Capybara.string(rendered_page.body)
 
@@ -869,6 +892,16 @@ RSpec.describe EvaluationRunsController, type: :request do
       expect(page).to have_css("td", text: "Top 1 accuracy")
       expect(page).to have_css("td", text: "60%")
       expect(page).to have_css("td", text: "80%")
+    end
+
+    context "when a compared run has a generated label (AI-1437)" do
+      let(:run_b_attributes) { super().merge("label" => "vector based retrieval") }
+
+      it "shows the label on that run's column header, not just its bare id" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css("th", text: "Run #10 — vector based retrieval")
+      end
     end
 
     context "when the two runs were started in the opposite order" do
