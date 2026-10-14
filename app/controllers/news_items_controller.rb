@@ -47,7 +47,7 @@ class NewsItemsController < AuthenticatedController
   def destroy
     @news_item = News::Item.find(params[:id])
     authorize @news_item, :destroy?
-    @news_item.destroy
+    @news_item.destroy!
 
     redirect_to news_items_path, notice: "News item removed"
   end

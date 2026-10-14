@@ -36,7 +36,7 @@ class EvaluationGoldQueryItemsController < AuthenticatedController
   def destroy
     authorize @item, :destroy?
 
-    @item.destroy
+    @item.destroy!
     redirect_to evaluation_gold_query_set_path(params[:evaluation_gold_query_set_id]), notice: "Item deleted successfully."
   end
 

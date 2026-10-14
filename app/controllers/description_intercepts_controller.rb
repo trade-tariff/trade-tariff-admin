@@ -74,7 +74,7 @@ class DescriptionInterceptsController < AuthenticatedController
   def destroy
     authorize @description_intercept, :destroy?
 
-    @description_intercept.destroy
+    @description_intercept.destroy!
     redirect_to description_intercepts_path, notice: "Description intercept deleted successfully."
   rescue Faraday::ResourceNotFound
     redirect_to description_intercepts_path, alert: "Description intercept not found."

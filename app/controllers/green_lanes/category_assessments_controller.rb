@@ -109,7 +109,7 @@ module GreenLanes
     def destroy
       @category_assessment = GreenLanes::CategoryAssessment.find(params[:id])
       authorize @category_assessment, :destroy?
-      @category_assessment.destroy
+      @category_assessment.destroy!
 
       redirect_to green_lanes_category_assessments_path, notice: "Category Assessment removed"
     end

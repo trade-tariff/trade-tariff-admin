@@ -48,7 +48,7 @@ class EvaluationGoldQuerySetsController < AuthenticatedController
   def destroy
     authorize @gold_query_set, :destroy?
 
-    @gold_query_set.destroy
+    @gold_query_set.destroy!
     redirect_to evaluation_gold_query_sets_path, notice: "Gold query set deleted successfully."
   rescue Faraday::ConflictError => e
     redirect_to evaluation_gold_query_set_path(@gold_query_set),

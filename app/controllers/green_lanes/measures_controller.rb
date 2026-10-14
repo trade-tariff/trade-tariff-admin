@@ -11,7 +11,7 @@ module GreenLanes
       @measure = GreenLanes::Measure.build(resource_id: params[:id])
       authorize @measure, :destroy?
       category_assessment_id = params[:category_assessment_id]
-      @measure.destroy
+      @measure.destroy!
 
       if category_assessment_id.present?
         redirect_to edit_green_lanes_category_assessment_path(id: category_assessment_id), notice: "Measure removed"
