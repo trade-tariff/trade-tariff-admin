@@ -607,5 +607,32 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
 
       expect(session.dig("flash", "flashes", "notice")).to eq("Synthetic ATaR deleted successfully.")
     end
+
+    context "when the backend returns 404" do
+      before do
+        stub_api_request("/tariff_knowledge_synthetic_atars/#{synthetic_atar_id}", :delete)
+          .and_return(status: 404, headers: json_headers, body: { error: "not found" }.to_json)
+      end
+
+      it { is_expected.to redirect_to(tariff_knowledge_synthetic_atars_path) }
+
+      it "explains why" do
+        rendered_page
+        expect(session.dig("flash", "flashes", "alert")).to eq("Synthetic ATaR not found.")
+      end
+    end
+
+    context "when the backend returns 500" do
+      before do
+        stub_api_request("/tariff_knowledge_synthetic_atars/#{synthetic_atar_id}", :delete)
+          .and_return(status: 500, headers: json_headers, body: { error: "boom" }.to_json)
+      end
+
+      it { is_expected.to have_http_status :internal_server_error }
+
+      it "shows the error page" do
+        expect(rendered_page.body).to include("We are experiencing technical difficulties")
+      end
+    end
   end
 end

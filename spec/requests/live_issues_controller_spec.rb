@@ -136,6 +136,26 @@ RSpec.describe LiveIssuesController, type: :request do
         session.dig("flash", "flashes", "notice"),
       ).to eql("Live issue deleted")
     end
+
+    context "when the backend returns 404" do
+      before do
+        stub_api_request("/live_issues/#{live_issue.id}", :delete)
+          .and_return(status: 404, body: "", headers: {})
+      end
+
+      it { is_expected.to have_http_status :not_found }
+      it { is_expected.to have_attributes body: /Page not found/ }
+    end
+
+    context "when the backend returns 500" do
+      before do
+        stub_api_request("/live_issues/#{live_issue.id}", :delete)
+          .and_return(status: 500, body: "", headers: {})
+      end
+
+      it { is_expected.to have_http_status :internal_server_error }
+      it { is_expected.to have_attributes body: /We are experiencing technical difficulties/ }
+    end
   end
 
   context "when unauthenticated" do
