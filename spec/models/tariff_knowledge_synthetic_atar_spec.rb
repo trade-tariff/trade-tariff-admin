@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/MultipleExpectations
 RSpec.describe TariffKnowledgeSyntheticAtar do
   subject(:synthetic_atar) { described_class.new(attributes) }
 
@@ -14,8 +13,11 @@ RSpec.describe TariffKnowledgeSyntheticAtar do
     }
   end
 
-  it "talks to the flat prefixed backend endpoint" do
+  it "uses the flat prefixed collection path" do
     expect(described_class.collection_path).to eq("admin/tariff_knowledge_synthetic_atars")
+  end
+
+  it "uses the flat prefixed singular path" do
     expect(synthetic_atar.singular_path).to eq("admin/tariff_knowledge_synthetic_atars/12")
   end
 
@@ -24,8 +26,11 @@ RSpec.describe TariffKnowledgeSyntheticAtar do
   end
 
   describe "#description_summary" do
-    it "truncates a long description" do
+    it "limits a long description to 90 characters" do
       expect(synthetic_atar.description_summary.length).to be <= 90
+    end
+
+    it "ends a long description with an ellipsis" do
       expect(synthetic_atar.description_summary).to end_with("...")
     end
 
@@ -45,18 +50,26 @@ RSpec.describe TariffKnowledgeSyntheticAtar do
   end
 
   describe TariffKnowledgeSyntheticAtar::BulkImportResult do
-    it "summarises the counts" do
-      result = described_class.new(created: 2, updated: 1, unchanged: 3, skipped: 470)
+    subject(:result) { described_class.new(created: 2, updated: 1, unchanged: 3, skipped: 470) }
 
+    it "is a success" do
       expect(result).to be_success
+    end
+
+    it "returns the imported total" do
       expect(result.total).to eq(6)
+    end
+
+    it "summarises the counts" do
       expect(result.message).to eq("Imported 6 synthetic ATaRs: 2 created, 1 updated, 3 unchanged. 470 rows skipped because they are not finished.")
     end
 
-    it "uses the singular for one" do
-      result = described_class.new(created: 1, skipped: 1)
+    context "with one created row and one skipped row" do
+      subject(:result) { described_class.new(created: 1, skipped: 1) }
 
-      expect(result.message).to eq("Imported 1 synthetic ATaR: 1 created, 0 updated, 0 unchanged. 1 row skipped because they are not finished.")
+      it "uses the singular for one" do
+        expect(result.message).to eq("Imported 1 synthetic ATaR: 1 created, 0 updated, 0 unchanged. 1 row skipped because they are not finished.")
+      end
     end
 
     it "is not a success when there are errors" do
@@ -64,4 +77,3 @@ RSpec.describe TariffKnowledgeSyntheticAtar do
     end
   end
 end
-# rubocop:enable RSpec/MultipleExpectations

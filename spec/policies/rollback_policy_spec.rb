@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/RepeatedExample, RSpec/RepeatedDescription
 RSpec.describe RollbackPolicy do
   subject(:rollback_policy) { described_class }
 
@@ -58,4 +57,3 @@ RSpec.describe RollbackPolicy do
     end
   end
 end
-# rubocop:enable RSpec/RepeatedExample, RSpec/RepeatedDescription

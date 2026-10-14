@@ -3,7 +3,7 @@ RSpec.describe EvaluationGoldQuerySetPolicy do
 
   let(:gold_query_set) { EvaluationGoldQuerySet.new(resource_id: 3, name: "Baseline") }
 
-  permissions :index?, :show?, :create?, :destroy? do
+  permissions :index?, :create?, :destroy?, :show? do
     it "grants access to technical operator" do
       user = create(:user, :technical_operator)
       expect(policy).to permit(user, gold_query_set)

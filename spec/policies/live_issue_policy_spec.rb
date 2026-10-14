@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/RepeatedExample, RSpec/RepeatedDescription
 RSpec.describe LiveIssuePolicy do
   subject(:live_issue_policy) { described_class }
 
@@ -70,4 +69,3 @@ RSpec.describe LiveIssuePolicy do
     end
   end
 end
-# rubocop:enable RSpec/RepeatedExample, RSpec/RepeatedDescription

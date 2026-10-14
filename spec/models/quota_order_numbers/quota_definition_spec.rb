@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/NestedGroups
 RSpec.describe QuotaOrderNumbers::QuotaDefinition do
   subject(:quota_definition) { build(:quota_definition) }
 
@@ -39,49 +38,21 @@ RSpec.describe QuotaOrderNumbers::QuotaDefinition do
     context "when there are quota balance events" do
       subject(:quota_definition) { build(:quota_definition, :with_quota_balance_events) }
 
-      describe "#occurrence_timestamps" do
-        it { expect(quota_definition.occurrence_timestamps).to eq(["12 Jan 2022"]) }
-      end
-
-      describe "#imported_amounts" do
-        it { expect(quota_definition.imported_amounts).to eq(["35040.0"]) }
-      end
-
-      describe "#new_balances" do
-        it { expect(quota_definition.new_balances).to eq(["18145960.0"]) }
-      end
-
-      describe "#critical_thresholds" do
-        it { expect(quota_definition.critical_thresholds).to eq([1_818_100.0]) }
-      end
-
-      describe "#initial_volumes" do
-        it { expect(quota_definition.initial_volumes).to eq(["18181000.0"]) }
-      end
+      it { expect(quota_definition.occurrence_timestamps).to eq(["12 Jan 2022"]) }
+      it { expect(quota_definition.imported_amounts).to eq(["35040.0"]) }
+      it { expect(quota_definition.new_balances).to eq(["18145960.0"]) }
+      it { expect(quota_definition.critical_thresholds).to eq([1_818_100.0]) }
+      it { expect(quota_definition.initial_volumes).to eq(["18181000.0"]) }
     end
 
     context "when there are no quota balance events" do
       subject(:quota_definition) { build(:quota_definition, :without_quota_balance_events) }
 
-      describe "#occurrence_timestamps" do
-        it { expect(quota_definition.occurrence_timestamps).to eq([]) }
-      end
-
-      describe "#imported_amounts" do
-        it { expect(quota_definition.imported_amounts).to eq([]) }
-      end
-
-      describe "#new_balances" do
-        it { expect(quota_definition.new_balances).to eq([]) }
-      end
-
-      describe "#critical_thresholds" do
-        it { expect(quota_definition.critical_thresholds).to eq([]) }
-      end
-
-      describe "#initial_volumes" do
-        it { expect(quota_definition.initial_volumes).to eq([]) }
-      end
+      it { expect(quota_definition.occurrence_timestamps).to eq([]) }
+      it { expect(quota_definition.imported_amounts).to eq([]) }
+      it { expect(quota_definition.new_balances).to eq([]) }
+      it { expect(quota_definition.critical_thresholds).to eq([]) }
+      it { expect(quota_definition.initial_volumes).to eq([]) }
     end
   end
 
@@ -225,4 +196,3 @@ RSpec.describe QuotaOrderNumbers::QuotaDefinition do
     it { is_expected.to eq("New balance (kg)") }
   end
 end
-# rubocop:enable RSpec/NestedGroups

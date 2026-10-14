@@ -3,7 +3,7 @@ RSpec.describe TariffKnowledgeSyntheticAtarPolicy do
 
   let(:synthetic_atar) { TariffKnowledgeSyntheticAtar.new(resource_id: 12, real_user_search: "plastic box") }
 
-  permissions :index?, :show?, :create?, :update?, :destroy? do
+  permissions :index?, :create?, :destroy?, :show?, :update? do
     it "grants access to technical operator" do
       user = create(:user, :technical_operator)
       expect(policy).to permit(user, synthetic_atar)

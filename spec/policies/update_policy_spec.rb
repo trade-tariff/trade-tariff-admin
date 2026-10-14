@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/RepeatedExample, RSpec/RepeatedDescription
 RSpec.describe UpdatePolicy do
   subject(:update_policy) { described_class }
 
@@ -85,4 +84,3 @@ RSpec.describe UpdatePolicy do
     end
   end
 end
-# rubocop:enable RSpec/RepeatedExample, RSpec/RepeatedDescription

@@ -33,7 +33,7 @@ RSpec.describe VersionPolicy do
   # A restore writes the record that the version belongs to, so VersionPolicy
   # does not decide it. VersionsController authorises a restore against the
   # policy of that record type. See VersionsController::RESTORE_POLICIES.
-  permissions :create?, :update?, :destroy? do
+  permissions :create?, :destroy?, :update? do
     it "denies access to superadmin" do
       user = create(:user, :superadmin)
       expect(policy).not_to permit(user, version)

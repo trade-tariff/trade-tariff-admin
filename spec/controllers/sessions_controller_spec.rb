@@ -88,48 +88,92 @@ RSpec.describe SessionsController do
 
         expect(Session.last.token).to eq(Session.digest(plain_token))
       end
+    end
 
-      # rubocop:disable RSpec/ExampleLength
-      it "redirects and clears cookies when token is invalid", :aggregate_failures do
+    context "when the token is invalid" do
+      before do
+        create(:user, email: "user@example.com")
+        cookies[:id_token] = "encoded-token"
         invalid_result = VerifyToken::Result.new(valid: false, payload: nil, reason: :invalid)
         allow(VerifyToken).to receive(:new).and_return(instance_double(VerifyToken, call: invalid_result))
         allow(TradeTariffAdmin).to receive_messages(identity_consumer_url: "http://identity.example.com/admin",
                                                     identity_cookie_domain: ".example.com")
         cookies[:refresh_token] = "refresh-token"
+      end
+
+      it "redirects to the identity service" do
         get :handle_redirect
+
         expect(response).to redirect_to("http://identity.example.com/admin")
+      end
+
+      it "clears the id token cookie" do
+        get :handle_redirect
+
         # NOTE: These are positive instructions to delete the cookies and not the current cookie values. Refresh token is not deleted here since we'll reuse it for reauthentication.
         expect(response.cookies).to eq("id_token" => nil)
       end
+    end
 
-      it "redirects without clearing cookies when token is expired", :aggregate_failures do
+    context "when the token is expired" do
+      before do
+        create(:user, email: "user@example.com")
+        cookies[:id_token] = "encoded-token"
         expired_result = VerifyToken::Result.new(valid: false, payload: nil, reason: :expired)
         allow(VerifyToken).to receive(:new).and_return(instance_double(VerifyToken, call: expired_result))
         allow(TradeTariffAdmin).to receive(:identity_consumer_url).and_return("http://identity.example.com/admin")
         cookies[:refresh_token] = "refresh-token"
+      end
+
+      it "redirects to the identity service" do
         get :handle_redirect
+
         expect(response).to redirect_to("http://identity.example.com/admin")
+      end
+
+      it "keeps the id token cookie" do
+        get :handle_redirect
+
         expect(cookies["id_token"]).to eq("encoded-token")
+      end
+
+      it "keeps the refresh token cookie" do
+        get :handle_redirect
+
         expect(cookies["refresh_token"]).to eq("refresh-token")
       end
-      # rubocop:enable RSpec/ExampleLength
     end
 
     context "when the user does not exist" do
-      # rubocop:disable RSpec/ExampleLength
-      it "redirects to landing page with access denied message and clears cookies", :aggregate_failures do
+      before do
         allow(TradeTariffAdmin).to receive_messages(identity_consumer_url: "http://identity.example.com/admin",
                                                     identity_cookie_domain: ".example.com")
         cookies[:id_token] = "encoded-token"
         cookies[:refresh_token] = "refresh-token"
+      end
+
+      it "does not create a user" do
         expect { get :handle_redirect }.not_to change(User, :count)
+      end
+
+      it "redirects to the landing page" do
+        get :handle_redirect
+
         expect(response).to redirect_to(root_path)
+      end
+
+      it "includes an access denied message" do
+        get :handle_redirect
+
         expect(flash[:alert]).to include("You do not have access to the Admin Portal")
+      end
+
+      it "clears the id token cookie" do
+        get :handle_redirect
 
         # NOTE: These are positive instructions to delete the cookies and not the current cookie values. Refresh token is not deleted here since we'll reuse it for reauthentication.
         expect(response.cookies).to eq("id_token" => nil)
       end
-      # rubocop:enable RSpec/ExampleLength
     end
   end
 end

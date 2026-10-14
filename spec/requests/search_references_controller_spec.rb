@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/MultipleExpectations, RSpec/MultipleMemoizedHelpers
 RSpec.describe SearchReferencesController, type: :request do
   subject(:rendered_page) { make_request && response }
 
@@ -7,7 +6,6 @@ RSpec.describe SearchReferencesController, type: :request do
   let(:current_user) { create(:user, :technical_operator) }
   let(:search_reference_id) { "34" }
   let(:make_request) { get search_reference_path(search_reference_id) }
-  let(:page) { Capybara.string(rendered_page.body) }
   let(:version_meta) do
     { current: true, oid: 5, previous_oid: 4, has_previous_version: true, latest_event: "update" }
   end
@@ -34,7 +32,18 @@ RSpec.describe SearchReferencesController, type: :request do
     }
   end
 
-  let(:versions_response) do
+  before do
+    stub_api_request("/search_references/#{search_reference_id}").and_return(search_reference_response)
+    stub_api_request("/versions")
+      .with(query: hash_including("item_type" => "SearchReference", "item_id" => search_reference_id))
+      .and_return(versions_response)
+  end
+
+  def page
+    Capybara.string(rendered_page.body)
+  end
+
+  def versions_response
     {
       status: 200,
       headers: { "content-type" => "application/json; charset=utf-8" },
@@ -47,18 +56,17 @@ RSpec.describe SearchReferencesController, type: :request do
     }
   end
 
-  before do
-    stub_api_request("/search_references/#{search_reference_id}").and_return(search_reference_response)
-    stub_api_request("/versions")
-      .with(query: hash_including("item_type" => "SearchReference", "item_id" => search_reference_id))
-      .and_return(versions_response)
-  end
-
   it { is_expected.to have_http_status :success }
 
-  it "shows the search reference" do
+  it "shows the search reference title" do
     expect(page).to have_css("h1", text: "horses")
+  end
+
+  it "shows the commodity code" do
     expect(page).to have_text("0101000000-80")
+  end
+
+  it "shows the public search usage" do
     expect(page).to have_text("Public search and FPO training")
   end
 
@@ -66,8 +74,11 @@ RSpec.describe SearchReferencesController, type: :request do
     expect(page).to have_link("Manage search references for heading 0101000000-80", href: references_heading_search_references_path("0101"))
   end
 
-  it "shows the version history with restore controls" do
+  it "shows the version history" do
     expect(page).to have_text("Version history (2)")
+  end
+
+  it "shows restore controls" do
     expect(page).to have_button("Restore", visible: :all)
   end
 
@@ -85,6 +96,9 @@ RSpec.describe SearchReferencesController, type: :request do
 
     it "shows the historical version banner" do
       expect(page).to have_text("You are viewing a historical version of this search reference.")
+    end
+
+    it "links to the current version" do
       expect(page).to have_link("View current version", href: search_reference_path(search_reference_id))
     end
 
@@ -105,9 +119,15 @@ RSpec.describe SearchReferencesController, type: :request do
         .and_return(search_reference_response)
     end
 
-    it "explains that it has been deleted and offers a restore" do
+    it "explains that it has been deleted" do
       expect(page).to have_text("This search reference has been deleted.")
+    end
+
+    it "offers a restore" do
       expect(page).to have_button("Restore this version")
+    end
+
+    it "does not link to the current version" do
       expect(page).to have_no_link("View current version")
     end
   end
@@ -123,8 +143,11 @@ RSpec.describe SearchReferencesController, type: :request do
   context "when the user is an auditor" do
     let(:current_user) { create(:user, :auditor) }
 
-    it "shows the page without restore controls" do
+    it "returns success" do
       expect(rendered_page).to have_http_status :success
+    end
+
+    it "hides restore controls" do
       expect(page).to have_no_button("Restore", visible: :all)
     end
   end
@@ -135,4 +158,3 @@ RSpec.describe SearchReferencesController, type: :request do
     it { is_expected.to have_http_status :forbidden }
   end
 end
-# rubocop:enable RSpec/MultipleExpectations, RSpec/MultipleMemoizedHelpers

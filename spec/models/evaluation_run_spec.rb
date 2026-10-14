@@ -59,20 +59,17 @@ RSpec.describe EvaluationRun do
     end
 
     let(:experiment) { EvaluationExperiment.new(configuration_overrides: { "max_rounds" => 3 }) }
-
-    # rubocop:disable RSpec/ExampleLength -- one coherent check of the whole breakdown shape; splitting
-    # the three contain_exactly entries into separate examples would just repeat the same setup three
-    # times for no gain in clarity.
-    it "tags each key by where its value actually came from" do
-      breakdown = run.configuration_breakdown(experiment)
-
-      expect(breakdown).to contain_exactly(
+    let(:expected_breakdown) do
+      [
         { name: "question_model", value: "gpt-5.6", source: "run" },
         { name: "max_rounds", value: 3, source: "experiment" },
         { name: "rrf_k", value: 60, source: "baseline" },
-      )
+      ]
     end
-    # rubocop:enable RSpec/ExampleLength
+
+    it "tags each key by where its value actually came from" do
+      expect(run.configuration_breakdown(experiment)).to match_array(expected_breakdown)
+    end
   end
 
   describe "#top1_rate and #top5_rate" do
@@ -116,24 +113,24 @@ RSpec.describe EvaluationRun do
   end
 
   describe "#persona_rows" do
-    # rubocop:disable RSpec/ExampleLength -- one coherent check of the whole breakdown shape; splitting
-    # the fixture setup from the eq assertion would just scatter one scenario across two examples.
-    it "breaks each persona out with its own top1, top5, cost and latency numbers, sorted by persona" do
-      run = described_class.new(
-        "persona_breakdown" => {
-          "emu_specific" => { "result_count" => 1, "gold_in_top1_count" => 1, "gold_in_top5_count" => 1, "total_cost_usd" => 0.05, "total_latency_seconds" => 1.0 },
-          "emu_generic" => { "result_count" => 2, "gold_in_top1_count" => 1, "gold_in_top5_count" => 2, "total_cost_usd" => 0.03, "total_latency_seconds" => 5.0 },
-        },
-      )
-
-      expect(run.persona_rows).to eq(
-        [
-          { persona: "emu_generic", result_count: 2, top1_rate: 50.0, top5_rate: 100.0, total_cost_usd: 0.03, average_latency_seconds: 2.5 },
-          { persona: "emu_specific", result_count: 1, top1_rate: 100.0, top5_rate: 100.0, total_cost_usd: 0.05, average_latency_seconds: 1.0 },
-        ],
-      )
+    let(:persona_breakdown) do
+      {
+        "emu_specific" => { "result_count" => 1, "gold_in_top1_count" => 1, "gold_in_top5_count" => 1, "total_cost_usd" => 0.05, "total_latency_seconds" => 1.0 },
+        "emu_generic" => { "result_count" => 2, "gold_in_top1_count" => 1, "gold_in_top5_count" => 2, "total_cost_usd" => 0.03, "total_latency_seconds" => 5.0 },
+      }
     end
-    # rubocop:enable RSpec/ExampleLength
+    let(:expected_persona_rows) do
+      [
+        { persona: "emu_generic", result_count: 2, top1_rate: 50.0, top5_rate: 100.0, total_cost_usd: 0.03, average_latency_seconds: 2.5 },
+        { persona: "emu_specific", result_count: 1, top1_rate: 100.0, top5_rate: 100.0, total_cost_usd: 0.05, average_latency_seconds: 1.0 },
+      ]
+    end
+
+    it "breaks each persona out with its own top1, top5, cost and latency numbers, sorted by persona" do
+      run = described_class.new("persona_breakdown" => persona_breakdown)
+
+      expect(run.persona_rows).to eq(expected_persona_rows)
+    end
 
     it "is an empty list, not an error, when the run has no persona breakdown yet" do
       run = described_class.new("persona_breakdown" => {})
@@ -175,6 +172,28 @@ RSpec.describe EvaluationRun do
       run = described_class.new("result_count" => 30, "intended_result_count" => nil)
 
       expect(run.fully_scored?).to be(false)
+    end
+  end
+
+  describe "#respond_to_missing? and #method_missing" do
+    subject(:run) { described_class.new }
+
+    it "does not respond to policy_class on a fresh run" do
+      expect(run).not_to respond_to(:policy_class)
+    end
+
+    it "lets Pundit infer EvaluationRunPolicy" do
+      expect(Pundit::PolicyFinder.new(run).policy).to eq(EvaluationRunPolicy)
+    end
+
+    it "returns nil for an unset non-attribute getter" do
+      expect(run.public_send(:question_model)).to be_nil
+    end
+
+    it "returns an assigned attribute value" do
+      assigned = described_class.new("label" => "nightly")
+
+      expect(assigned.public_send(:label)).to eq("nightly")
     end
   end
 end

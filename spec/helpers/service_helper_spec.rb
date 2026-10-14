@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/NestedGroups
 RSpec.describe ServiceHelper, type: :helper do
   describe ".service_update_type" do
     subject { service_update_type }
@@ -83,13 +82,15 @@ RSpec.describe ServiceHelper, type: :helper do
       it "returns the link to the current UK service" do
         expect(switch_service_link).to eq(link_to("Switch to UK service", "/rollbacks/new"))
       end
+    end
 
-      context "when using the root path" do
-        let(:path) { "/xi" }
+    context "when the selected service choice is xi and using the root path" do
+      include_context "with XI service"
 
-        it "returns the link to the current UK service" do
-          expect(switch_service_link).to eq(link_to("Switch to UK service", "/"))
-        end
+      let(:path) { "/xi" }
+
+      it "returns the link to the current UK service" do
+        expect(switch_service_link).to eq(link_to("Switch to UK service", "/"))
       end
     end
 
@@ -107,101 +108,112 @@ RSpec.describe ServiceHelper, type: :helper do
   describe ".replace_service_tags" do
     subject { replace_service_tags content }
 
-    context "with UK service" do
+    context "with UK service and without tags" do
       include_context "with UK service"
 
-      context "without tags" do
-        let(:content) { "this is some sample content" }
+      let(:content) { "this is some sample content" }
 
-        it { is_expected.to eql "this is some sample content" }
-      end
-
-      context "with SERVICE_NAME tag" do
-        let(:content) { "You are on the [[SERVICE_NAME]]" }
-
-        it { is_expected.to eql "You are on the UK Integrated Online Tariff" }
-      end
-
-      context "with SERVICE_PATH tag" do
-        let(:content) { '<a href="[[SERVICE_PATH]]/browse">Browse</a>' }
-
-        it { is_expected.to eql '<a href="/browse">Browse</a>' }
-      end
-
-      context "with SERVICE_REGION" do
-        let(:content) { "within [[SERVICE_REGION]]" }
-
-        it { is_expected.to eql "within the UK" }
-      end
-
-      context "with multiple tags" do
-        let :content do
-          <<~END_OF_CONTENT
-            [[SERVICE_NAME]]
-            * [Find commodity]([[SERVICE_PATH]]/find_commodity)
-            * [Browse]([[SERVICE_PATH]]/browse)
-          END_OF_CONTENT
-        end
-
-        let :expected do
-          <<~END_OF_EXPECTED
-            UK Integrated Online Tariff
-            * [Find commodity](/find_commodity)
-            * [Browse](/browse)
-          END_OF_EXPECTED
-        end
-
-        it { is_expected.to eql expected }
-      end
+      it { is_expected.to eql "this is some sample content" }
     end
 
-    context "with XI service" do
+    context "with UK service and SERVICE_NAME tag" do
+      include_context "with UK service"
+
+      let(:content) { "You are on the [[SERVICE_NAME]]" }
+
+      it { is_expected.to eql "You are on the UK Integrated Online Tariff" }
+    end
+
+    context "with UK service and SERVICE_PATH tag" do
+      include_context "with UK service"
+
+      let(:content) { '<a href="[[SERVICE_PATH]]/browse">Browse</a>' }
+
+      it { is_expected.to eql '<a href="/browse">Browse</a>' }
+    end
+
+    context "with UK service and SERVICE_REGION" do
+      include_context "with UK service"
+
+      let(:content) { "within [[SERVICE_REGION]]" }
+
+      it { is_expected.to eql "within the UK" }
+    end
+
+    context "with UK service and multiple tags" do
+      include_context "with UK service"
+
+      let :content do
+        <<~END_OF_CONTENT
+          [[SERVICE_NAME]]
+          * [Find commodity]([[SERVICE_PATH]]/find_commodity)
+          * [Browse]([[SERVICE_PATH]]/browse)
+        END_OF_CONTENT
+      end
+
+      let :expected do
+        <<~END_OF_EXPECTED
+          UK Integrated Online Tariff
+          * [Find commodity](/find_commodity)
+          * [Browse](/browse)
+        END_OF_EXPECTED
+      end
+
+      it { is_expected.to eql expected }
+    end
+
+    context "with XI service and without tags" do
       include_context "with XI service"
 
-      context "without tags" do
-        let(:content) { "this is some sample content" }
+      let(:content) { "this is some sample content" }
 
-        it { is_expected.to eql "this is some sample content" }
+      it { is_expected.to eql "this is some sample content" }
+    end
+
+    context "with XI service and SERVICE_NAME tag" do
+      include_context "with XI service"
+
+      let(:content) { "You are on the [[SERVICE_NAME]]" }
+
+      it { is_expected.to eql "You are on the Northern Ireland Online Tariff" }
+    end
+
+    context "with XI service and SERVICE_PATH tag" do
+      include_context "with XI service"
+
+      let(:content) { '<a href="[[SERVICE_PATH]]/browse">Browse</a>' }
+
+      it { is_expected.to eql '<a href="/xi/browse">Browse</a>' }
+    end
+
+    context "with XI service and SERVICE_REGION" do
+      include_context "with XI service"
+
+      let(:content) { "within [[SERVICE_REGION]]" }
+
+      it { is_expected.to eql "within Northern Ireland" }
+    end
+
+    context "with XI service and multiple tags" do
+      include_context "with XI service"
+
+      let :content do
+        <<~END_OF_CONTENT
+          [[SERVICE_NAME]]
+          * [Find commodity]([[SERVICE_PATH]]/find_commodity)
+          * [Browse]([[SERVICE_PATH]]/browse)
+        END_OF_CONTENT
       end
 
-      context "with SERVICE_NAME tag" do
-        let(:content) { "You are on the [[SERVICE_NAME]]" }
-
-        it { is_expected.to eql "You are on the Northern Ireland Online Tariff" }
+      let :expected do
+        <<~END_OF_EXPECTED
+          Northern Ireland Online Tariff
+          * [Find commodity](/xi/find_commodity)
+          * [Browse](/xi/browse)
+        END_OF_EXPECTED
       end
 
-      context "with SERVICE_PATH tag" do
-        let(:content) { '<a href="[[SERVICE_PATH]]/browse">Browse</a>' }
-
-        it { is_expected.to eql '<a href="/xi/browse">Browse</a>' }
-      end
-
-      context "with SERVICE_REGION" do
-        let(:content) { "within [[SERVICE_REGION]]" }
-
-        it { is_expected.to eql "within Northern Ireland" }
-      end
-
-      context "with multiple tags" do
-        let :content do
-          <<~END_OF_CONTENT
-            [[SERVICE_NAME]]
-            * [Find commodity]([[SERVICE_PATH]]/find_commodity)
-            * [Browse]([[SERVICE_PATH]]/browse)
-          END_OF_CONTENT
-        end
-
-        let :expected do
-          <<~END_OF_EXPECTED
-            Northern Ireland Online Tariff
-            * [Find commodity](/xi/find_commodity)
-            * [Browse](/xi/browse)
-          END_OF_EXPECTED
-        end
-
-        it { is_expected.to eql expected }
-      end
+      it { is_expected.to eql expected }
     end
   end
 end
-# rubocop:enable RSpec/NestedGroups

@@ -1,42 +1,55 @@
-# rubocop:disable RSpec/MultipleExpectations
 require "zip"
 
 RSpec.describe DescriptionInterceptImportFile do
   describe "#call" do
-    it "passes CSV uploads through unchanged" do
-      upload = Rack::Test::UploadedFile.new(StringIO.new("term,aliases,template\ngift,\"present,gifts\",generic\n"), "text/csv", original_filename: "intercepts.csv")
+    subject(:result) { described_class.new(upload).call }
 
-      result = described_class.new(upload).call
+    context "when the upload is CSV" do
+      let(:upload) { Rack::Test::UploadedFile.new(StringIO.new("term,aliases,template\ngift,\"present,gifts\",generic\n"), "text/csv", original_filename: "intercepts.csv") }
 
-      expect(result).to be_success
-      expect(result.csv_content).to eq("term,aliases,template\ngift,\"present,gifts\",generic\n")
+      it "returns a successful result" do
+        expect(result).to be_success
+      end
+
+      it "passes the CSV through unchanged" do
+        expect(result.csv_content).to eq("term,aliases,template\ngift,\"present,gifts\",generic\n")
+      end
     end
 
-    it "converts a single-sheet XLSX upload to CSV" do
-      upload = Rack::Test::UploadedFile.new(StringIO.new(xlsx_content), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", original_filename: "intercepts.xlsx")
+    context "when the upload is a single-sheet XLSX" do
+      let(:upload) { Rack::Test::UploadedFile.new(StringIO.new(xlsx_content), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", original_filename: "intercepts.xlsx") }
 
-      result = described_class.new(upload).call
+      it "returns a successful result" do
+        expect(result).to be_success
+      end
 
-      expect(result).to be_success
-      expect(result.csv_content).to eq("term,aliases,template\ngift,\"present,gifts\",generic\n")
+      it "converts the workbook to CSV" do
+        expect(result.csv_content).to eq("term,aliases,template\ngift,\"present,gifts\",generic\n")
+      end
     end
 
-    it "rejects unsupported file types" do
-      upload = Rack::Test::UploadedFile.new(StringIO.new("hello"), "text/plain", original_filename: "intercepts.txt")
+    context "when the file type is unsupported" do
+      let(:upload) { Rack::Test::UploadedFile.new(StringIO.new("hello"), "text/plain", original_filename: "intercepts.txt") }
 
-      result = described_class.new(upload).call
+      it "is not successful" do
+        expect(result).not_to be_success
+      end
 
-      expect(result).not_to be_success
-      expect(result.errors).to eq([{ "detail" => "Upload a CSV or XLSX file." }])
+      it "asks for a CSV or XLSX file" do
+        expect(result.errors).to eq([{ "detail" => "Upload a CSV or XLSX file." }])
+      end
     end
 
-    it "rejects XLSX files with more than one worksheet" do
-      upload = Rack::Test::UploadedFile.new(StringIO.new(xlsx_content(sheet_count: 2)), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", original_filename: "intercepts.xlsx")
+    context "when the XLSX file has more than one worksheet" do
+      let(:upload) { Rack::Test::UploadedFile.new(StringIO.new(xlsx_content(sheet_count: 2)), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", original_filename: "intercepts.xlsx") }
 
-      result = described_class.new(upload).call
+      it "is not successful" do
+        expect(result).not_to be_success
+      end
 
-      expect(result).not_to be_success
-      expect(result.errors).to eq([{ "detail" => "Upload an XLSX file with a single worksheet." }])
+      it "asks for a single worksheet" do
+        expect(result.errors).to eq([{ "detail" => "Upload an XLSX file with a single worksheet." }])
+      end
     end
   end
 
@@ -80,5 +93,3 @@ RSpec.describe DescriptionInterceptImportFile do
     buffer.string
   end
 end
-
-# rubocop:enable RSpec/MultipleExpectations
