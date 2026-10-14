@@ -19,9 +19,6 @@ AllCops:
     - 'config/**/*'
     - 'node_modules/**/*'
 
-Rails/SaveBang:
-  Enabled: false
-
 RSpec:
   Language:
     ExampleGroups:
