@@ -1,13 +1,12 @@
-# rubocop:disable RSpec/MultipleMemoizedHelpers
 RSpec.describe CustomsTariff::Updates::ChapterNotesController, type: :request do
   subject(:rendered_page) { make_request && response }
 
   before { TradeTariffAdmin::ServiceChooser.service_choice = "uk" }
 
   let(:update_version) { "1.31" }
-  let(:section_id)     { "3" }
+  let(:section_id) { "3" }
 
-  let(:update_response) do
+  def update_response
     {
       status: 200,
       headers: { "content-type" => "application/json; charset=utf-8" },
@@ -30,32 +29,11 @@ RSpec.describe CustomsTariff::Updates::ChapterNotesController, type: :request do
     }
   end
 
-  let(:chapter_notes_response) do
-    {
-      status: 200,
-      headers: { "content-type" => "application/json; charset=utf-8" },
-      body: {
-        data: [
-          {
-            type: "customs_tariff_chapter_note",
-            id: "101",
-            attributes: {
-              "chapter_id" => "15",
-              "content" => "## Chapter 15\n\nSome content.",
-              "customs_tariff_update_version" => update_version,
-              "file_diff" => nil,
-              "versions" => [],
-            },
-          },
-        ],
-      }.to_json,
-    }
+  def chapter_note_id
+    "101"
   end
 
-  let(:chapter_note_id) { "101" }
-  let(:chapter_note_path_id) { chapter_note_attributes["chapter_id"] }
-
-  let(:chapter_note_attributes) do
+  def chapter_note_attributes
     {
       "chapter_id" => "15",
       "content" => "## Chapter 15\n\nSome content.",
@@ -65,7 +43,7 @@ RSpec.describe CustomsTariff::Updates::ChapterNotesController, type: :request do
     }
   end
 
-  let(:chapter_note_response) do
+  def chapter_note_response
     {
       status: 200,
       headers: { "content-type" => "application/json; charset=utf-8" },
@@ -79,9 +57,35 @@ RSpec.describe CustomsTariff::Updates::ChapterNotesController, type: :request do
     }
   end
 
+  def chapter_note_path_id
+    chapter_note_attributes["chapter_id"]
+  end
+
   describe "GET #index" do
     let(:make_request) do
       get customs_tariff_update_section_chapter_notes_path(update_version, section_id)
+    end
+
+    def chapter_notes_response
+      {
+        status: 200,
+        headers: { "content-type" => "application/json; charset=utf-8" },
+        body: {
+          data: [
+            {
+              type: "customs_tariff_chapter_note",
+              id: "101",
+              attributes: {
+                "chapter_id" => "15",
+                "content" => "## Chapter 15\n\nSome content.",
+                "customs_tariff_update_version" => update_version,
+                "file_diff" => nil,
+                "versions" => [],
+              },
+            },
+          ],
+        }.to_json,
+      }
     end
 
     before do
@@ -455,4 +459,3 @@ RSpec.describe CustomsTariff::Updates::ChapterNotesController, type: :request do
     end
   end
 end
-# rubocop:enable RSpec/MultipleMemoizedHelpers
