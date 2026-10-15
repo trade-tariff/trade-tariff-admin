@@ -1,3 +1,3 @@
 class Current < ActiveSupport::CurrentAttributes
-  attribute :whodunnit
+  attribute :whodunnit, :whodunnit_name
 end

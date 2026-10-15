@@ -22,6 +22,7 @@ private
 
   def set_paper_trail_whodunnit
     Current.whodunnit = current_user&.uid
+    Current.whodunnit_name = current_user&.name
   end
 
   def skip_pundit_verification?
