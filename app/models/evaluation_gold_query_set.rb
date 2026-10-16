@@ -47,10 +47,6 @@ class EvaluationGoldQuerySet
     atar_count.to_i + synthetic_atar_count.to_i
   end
 
-  def synthetic_atar_percentage
-    100 - atar_percentage.to_i
-  end
-
   def failure_list
     Array(failures)
   end

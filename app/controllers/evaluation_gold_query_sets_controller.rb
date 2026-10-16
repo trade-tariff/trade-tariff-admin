@@ -15,14 +15,16 @@ class EvaluationGoldQuerySetsController < AuthenticatedController
   def new
     authorize EvaluationGoldQuerySet, :create?
 
-    # Real ATaR rulings only is what the command-line task did before sets existed.
-    @gold_query_set = EvaluationGoldQuerySet.new(atar_percentage: 100)
+    @gold_query_set = EvaluationGoldQuerySet.new
   end
 
   def create
     authorize EvaluationGoldQuerySet, :create?
 
-    @gold_query_set = EvaluationGoldQuerySet.new(gold_query_set_params)
+    # atar_percentage is not an operator choice any more -- every set the backend builds
+    # through this form draws from real ATaR rulings only. The backend still requires the
+    # attribute today, so it is sent as a fixed value rather than exposed on the form.
+    @gold_query_set = EvaluationGoldQuerySet.new(gold_query_set_params.merge(atar_percentage: 100))
 
     if @gold_query_set.save && @gold_query_set.errors.empty?
       redirect_to evaluation_gold_query_set_path(@gold_query_set), notice: "Gold query set created. It is being generated in the background."
@@ -87,6 +89,6 @@ private
   end
 
   def gold_query_set_params
-    params.require(:evaluation_gold_query_set).permit(:name, :requested_size, :atar_percentage)
+    params.require(:evaluation_gold_query_set).permit(:name, :requested_size)
   end
 end

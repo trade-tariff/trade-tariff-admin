@@ -176,8 +176,8 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
       expect(page).to have_field("Number of source items")
     end
 
-    it "starts with real ATaR rulings only" do
-      expect(page).to have_field("Percentage from real ATaR rulings", with: "100")
+    it "does not offer a real/synthetic ATaR percentage choice" do
+      expect(page).not_to have_field("Percentage from real ATaR rulings")
     end
 
     it "shows the create button" do
@@ -194,7 +194,7 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
   describe "POST #create" do
     let(:make_request) do
       post evaluation_gold_query_sets_path, params: {
-        evaluation_gold_query_set: { name: "Baseline", requested_size: "12", atar_percentage: "60" },
+        evaluation_gold_query_set: { name: "Baseline", requested_size: "12" },
       }
     end
 
@@ -203,7 +203,7 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
         stub_api_request("/search/evaluation/gold_query_sets", :post)
           .with { |request|
             attributes = Rack::Utils.parse_nested_query(request.body).dig("data", "attributes")
-            attributes.slice("name", "requested_size", "atar_percentage") == { "name" => "Baseline", "requested_size" => "12", "atar_percentage" => "60" }
+            attributes.slice("name", "requested_size", "atar_percentage") == { "name" => "Baseline", "requested_size" => "12", "atar_percentage" => "100" }
           }
           .and_return(jsonapi_response("gold_query_set", set_attributes.merge("resource_id" => set_id, "status" => "generating"), status: 202))
       end
@@ -214,6 +214,27 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
         rendered_page
 
         expect(session.dig("flash", "flashes", "notice")).to eq("Gold query set created. It is being generated in the background.")
+      end
+    end
+
+    context "when a request tries to submit a percentage anyway" do
+      let(:make_request) do
+        post evaluation_gold_query_sets_path, params: {
+          evaluation_gold_query_set: { name: "Baseline", requested_size: "12", atar_percentage: "0" },
+        }
+      end
+
+      before do
+        stub_api_request("/search/evaluation/gold_query_sets", :post)
+          .with { |request|
+            attributes = Rack::Utils.parse_nested_query(request.body).dig("data", "attributes")
+            attributes.slice("name", "requested_size", "atar_percentage") == { "name" => "Baseline", "requested_size" => "12", "atar_percentage" => "100" }
+          }
+          .and_return(jsonapi_response("gold_query_set", set_attributes.merge("resource_id" => set_id, "status" => "generating"), status: 202))
+      end
+
+      it "ignores it and still sends 100" do
+        expect(rendered_page).to redirect_to(evaluation_gold_query_set_path(set_id))
       end
     end
 
@@ -239,10 +260,6 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
 
       it "keeps the number of source items" do
         expect(page).to have_field("Number of source items", with: "12")
-      end
-
-      it "keeps the ATaR percentage" do
-        expect(page).to have_field("Percentage from real ATaR rulings", with: "60")
       end
     end
 
@@ -272,8 +289,8 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
       expect(page).to have_css("strong.govuk-tag--yellow", text: "Partly failed")
     end
 
-    it "shows the source mix" do
-      expect(page).to have_css(".govuk-summary-list__value", text: "60% ATaR rulings, 40% synthetic ATaRs")
+    it "does not show a real/synthetic ATaR mix, since that choice no longer exists" do
+      expect(page).not_to have_css("dt", text: "Mix asked for")
     end
 
     it "shows the requested size" do
