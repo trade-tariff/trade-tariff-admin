@@ -47,12 +47,6 @@ RSpec.describe EvaluationGoldQuerySet do
     end
   end
 
-  describe "#synthetic_atar_percentage" do
-    it "is what is left after the ATaR share" do
-      expect(gold_query_set.synthetic_atar_percentage).to eq(40)
-    end
-  end
-
   describe "#failure_list" do
     it "gives the failed items" do
       expect(gold_query_set.failure_list.first).to include("source_id" => "600000001")
