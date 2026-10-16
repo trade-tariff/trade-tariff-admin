@@ -18,7 +18,7 @@
       <% if policy(@report).backfill_difference? %>
         <%= button_to "Backfill differences report", backfill_difference_report_path(@report), method: :post, class: "govuk-button govuk-button--secondary" %>
       <% end %>
-      <% if policy(@report).run? && !@report.supports_email %>
+      <% if policy(@report).run? && @report.supports_generate? %>
         <%= button_to "Generate report", run_report_path(@report), method: :post, class: "govuk-button" %>
       <% end %>
       <% if @report.supports_email && policy(@report).send_email? %>

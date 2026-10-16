@@ -42,6 +42,45 @@ RSpec.describe ReportsController do
       rendered_page
       expect(response.body).to include("Commodities report", "Commodity export")
     end
+
+    it "renders only the generate button", :aggregate_failures do
+      rendered_page
+      expect(response.body).to include("Generate report")
+      expect(response.body).not_to include("Generate and email")
+    end
+  end
+
+  describe "GET #show for a report that supports email only" do
+    before do
+      stub_api_request("/reports/differences").and_return jsonapi_response(
+        :report,
+        { resource_id: "differences", name: "Differences report", description: "Potential issues", available: false, dependencies_missing: false, missing_dependencies: [], download_url: nil, supports_email: true, supports_generate: false },
+      )
+    end
+
+    let(:make_request) { get report_path("differences") }
+
+    it "renders only the generate and email button", :aggregate_failures do
+      rendered_page
+      expect(response.body).to include("Generate and email")
+      expect(response.body).not_to include("Generate report")
+    end
+  end
+
+  describe "GET #show for a report that supports email and standalone generation" do
+    before do
+      stub_api_request("/reports/search_reference_changes").and_return jsonapi_response(
+        :report,
+        { resource_id: "search_reference_changes", name: "Search reference changes", description: "Monthly search reference changes", available: true, dependencies_missing: false, missing_dependencies: [], download_url: "https://reporting.trade-tariff.service.gov.uk/uk/reporting/file.csv", supports_email: true, supports_generate: true },
+      )
+    end
+
+    let(:make_request) { get report_path("search_reference_changes") }
+
+    it "renders both generate buttons and the download link" do
+      rendered_page
+      expect(response.body).to include("Generate report", "Generate and email", "Download report")
+    end
   end
 
   describe "GET #download" do
