@@ -41,6 +41,7 @@ class EvaluationRunsController < AuthenticatedController
     @idempotency_key = SecureRandom.uuid
     @experiments = fetch_experiments
     @gold_query_sets_by_id = fetch_gold_query_sets.index_by { |set| set.resource_id.to_s }
+    @synthetic_input_sets_by_id = fetch_synthetic_input_sets.index_by { |set| set.resource_id.to_s }
     @configuration_schema = EvaluationConfiguration.schema
   end
 
@@ -91,6 +92,13 @@ class EvaluationRunsController < AuthenticatedController
 
   def show
     authorize @run, :show?
+
+    # A run from before intended_result_count existed (AI-1435) has no snapshot and never will
+    # -- it is deliberately not backfilled (see that column's own migration comment) -- so the
+    # status partial falls back to the live total every run used to show before that snapshot
+    # existed. Skipped whenever intended_result_count is already present (every run created
+    # since), so a normal view never pays for this extra fetch.
+    @gold_query_set = fetch_gold_query_set if @run.intended_result_count.nil?
 
     respond_to do |format|
       # The page's own title (show.html.erb) needs the experiment name every time, generating or
@@ -195,6 +203,10 @@ private
     EvaluationGoldQuerySet.all(per_page: 200)
   end
 
+  def fetch_synthetic_input_sets
+    EvaluationSyntheticInputSet.all(per_page: 200)
+  end
+
   # This local rescue, not the controller-wide rescue_from Faraday::Error above, is deliberate —
   # the run list degrades to "empty list plus a warning" the same way the experiment list and
   # gold-query-set list already do, rather than bouncing away entirely the way the launch form
@@ -239,6 +251,18 @@ private
     end
   rescue ArgumentError
     value
+  end
+
+  # Only reached for a legacy run with no intended_result_count snapshot (see #show). An
+  # experiment's source is locked forever once chosen, so this run's gold_query_set_id, if it
+  # has one, always points at a real, still-existing set -- nil only means the lookup itself
+  # failed (a genuine outage), not that the operator chose none.
+  def fetch_gold_query_set
+    return nil if @run.gold_query_set_id.blank?
+
+    EvaluationGoldQuerySet.find(@run.gold_query_set_id)
+  rescue Faraday::Error
+    nil
   end
 
   # No rescue here: an experiment is never deleted while any of its runs still exist (the

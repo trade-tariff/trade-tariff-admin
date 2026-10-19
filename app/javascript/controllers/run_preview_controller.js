@@ -19,9 +19,9 @@ export default class extends Controller {
     const experimentOverrides = experimentData.overrides || {};
     const typedOverrides = this.currentTypedOverrides();
 
-    const setName = experimentData.gold_query_set_name || 'No gold query set on this experiment';
-    const setLabel = experimentData.gold_query_set_item_count != null
-      ? `${setName} (${experimentData.gold_query_set_item_count} items)`
+    const setName = experimentData.source_name || 'No source set on this experiment';
+    const setLabel = experimentData.source_item_count != null
+      ? `${setName} (${experimentData.source_item_count} items)`
       : setName;
 
     // Every key the operator could possibly see, in first-seen order (baseline's own keys first,
@@ -41,9 +41,10 @@ export default class extends Controller {
   }
 
   // Built from DOM nodes via textContent, never an HTML string — setLabel (a gold query set's
-  // name) and each row (an experiment's own saved overrides) are operator-entered free text,
-  // persisted and shown to every other technical operator who opens this form. Interpolating
-  // either into innerHTML would let one operator's saved text run as script in another's browser.
+  // or synthetic input set's name) and each row (an experiment's own saved overrides) are
+  // operator-entered free text, persisted and shown to every other technical operator who
+  // opens this form. Interpolating either into innerHTML would let one operator's saved text
+  // run as script in another's browser.
   renderPreview(setLabel, rows) {
     const heading = document.createElement('h2');
     heading.className = 'govuk-heading-s';

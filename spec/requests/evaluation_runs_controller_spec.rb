@@ -53,6 +53,7 @@ RSpec.describe EvaluationRunsController, type: :request do
     before do
       stub_api_request("/search/evaluation/experiments").with(query: hash_including("per_page" => "200")).and_return(paginated_response([experiment_attributes.merge("resource_id" => "7")], type: "experiment"))
       stub_api_request("/search/evaluation/gold_query_sets").with(query: hash_including("per_page" => "200")).and_return(paginated_response([gold_query_set_attributes.merge("resource_id" => "3")], type: "gold_query_set"))
+      stub_api_request("/search/evaluation/synthetic_input_sets").with(query: hash_including("per_page" => "200")).and_return(paginated_response([], type: "synthetic_input_set"))
       stub_api_request("/search/evaluation/configuration").and_return(configuration_response)
     end
 
@@ -107,13 +108,34 @@ RSpec.describe EvaluationRunsController, type: :request do
     it "embeds the gold query set name in the preview data" do
       experiments_data = JSON.parse(page.find("form")["data-run-preview-experiments-value"])
 
-      expect(experiments_data.dig("7", "gold_query_set_name")).to eq("Set A")
+      expect(experiments_data.dig("7", "source_name")).to eq("Set A")
     end
 
     it "embeds the gold query set item count in the preview data" do
       experiments_data = JSON.parse(page.find("form")["data-run-preview-experiments-value"])
 
-      expect(experiments_data.dig("7", "gold_query_set_item_count")).to eq(5)
+      expect(experiments_data.dig("7", "source_item_count")).to eq(5)
+    end
+
+    context "when the experiment uses a synthetic input set instead of a gold query set" do
+      let(:experiment_attributes) { { "name" => "Baseline", "configuration_overrides" => {}, "gold_query_set_id" => nil, "synthetic_input_set_id" => 9 } }
+
+      before do
+        stub_api_request("/search/evaluation/synthetic_input_sets").with(query: hash_including("per_page" => "200"))
+          .and_return(paginated_response([{ "name" => "Set B", "actual_size" => 8, "resource_id" => "9" }], type: "synthetic_input_set"))
+      end
+
+      it "embeds the synthetic input set's name in the preview data, not 'Unknown (set may have been deleted)'" do
+        experiments_data = JSON.parse(page.find("form")["data-run-preview-experiments-value"])
+
+        expect(experiments_data.dig("7", "source_name")).to eq("Set B")
+      end
+
+      it "embeds the synthetic input set's actual size as the item count" do
+        experiments_data = JSON.parse(page.find("form")["data-run-preview-experiments-value"])
+
+        expect(experiments_data.dig("7", "source_item_count")).to eq(8)
+      end
     end
 
     it "explains the question model override" do
@@ -469,6 +491,24 @@ RSpec.describe EvaluationRunsController, type: :request do
       it "shows the live count from intended_result_count, not 0, since there is no gold query set to fetch" do
         expect(page).to have_css("p", text: "3 of 8")
       end
+    end
+
+    context "when the run predates intended_result_count (AI-1435), so the snapshot was never taken" do
+      let(:run_attributes) { { "experiment_id" => 7, "status" => "running", "gold_query_set_id" => 3, "intended_result_count" => nil, "result_count" => 4, "error_count" => 0 } }
+
+      before do
+        stub_api_request("/search/evaluation/gold_query_sets/3").and_return(jsonapi_response("gold_query_set", { "name" => "Set A", "atar_count" => 10, "synthetic_atar_count" => 0, "gold_query_count" => 30, "resource_id" => "3" }))
+      end
+
+      it "falls back to a live gold query set fetch instead of showing a total of 0" do
+        expect(page).to have_css("p", text: "4 of 30")
+      end
+    end
+
+    it "never fetches the gold query set live when intended_result_count is already present" do
+      # No stub for /search/evaluation/gold_query_sets/3 in this example -- WebMock would raise
+      # if the code tried to fetch it, proving the common case doesn't pay that cost per view.
+      expect(rendered_page).to have_http_status(:success)
     end
 
     it "shows a cancel button while the run is in progress" do
