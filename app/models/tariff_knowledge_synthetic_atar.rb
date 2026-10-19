@@ -15,8 +15,8 @@ class TariffKnowledgeSyntheticAtar
              :created_at,
              :updated_at
 
-  def self.bulk_import(csv_content)
-    response = api.post("admin/tariff_knowledge_synthetic_atars/bulk_import", bulk_import_payload(csv_content))
+  def self.bulk_import(csv_content, source_workbook: nil)
+    response = api.post("admin/tariff_knowledge_synthetic_atars/bulk_import", bulk_import_payload(csv_content, source_workbook))
     attributes = handle_body(response).dig("data", "attributes") || {}
 
     BulkImportResult.new(
@@ -32,12 +32,13 @@ class TariffKnowledgeSyntheticAtar
     BulkImportResult.new(errors: [{ "detail" => "The import could not be completed. Check the list before you try again. Uploading the same file again is safe." }])
   end
 
-  def self.bulk_import_payload(csv_content)
+  def self.bulk_import_payload(csv_content, source_workbook)
     {
       data: {
         type: "tariff_knowledge_synthetic_atar_bulk_import",
         attributes: {
           csv: csv_content,
+          source_workbook: source_workbook,
         },
       },
     }
