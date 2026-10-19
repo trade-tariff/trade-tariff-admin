@@ -1,0 +1,46 @@
+<%= govuk_breadcrumbs "Evaluation experiments": evaluation_experiments_path %>
+
+<span class="govuk-caption-l">Synthetic input set</span>
+<h1 class="govuk-heading-l"><%= @synthetic_input_set.name %></h1>
+
+<p class="govuk-body">
+  This set is ready now. Choose it when you create or edit an experiment.
+</p>
+
+<dl class="govuk-summary-list govuk-!-margin-bottom-6">
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Items asked for</dt>
+    <dd class="govuk-summary-list__value"><%= @synthetic_input_set.requested_size %></dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Items sampled</dt>
+    <dd class="govuk-summary-list__value">
+      <%= @synthetic_input_set.actual_size %>
+      <span class="govuk-hint govuk-!-margin-bottom-0">Lower than the number asked for when there were not enough synthetic ATaRs.</span>
+    </dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">Created</dt>
+    <dd class="govuk-summary-list__value"><%= @synthetic_input_set.formatted_created_at %> by <%= @synthetic_input_set.created_by_name %></dd>
+  </div>
+</dl>
+
+<table class="govuk-table">
+  <caption class="govuk-table__caption govuk-table__caption--s"><%= pluralize(@synthetic_input_set.items.size, "item") %></caption>
+  <thead class="govuk-table__head">
+    <tr class="govuk-table__row">
+      <th class="govuk-table__header" scope="col">Synthetic ATaR</th>
+      <th class="govuk-table__header" scope="col">Query</th>
+      <th class="govuk-table__header" scope="col">Expected code</th>
+    </tr>
+  </thead>
+  <tbody class="govuk-table__body">
+    <% @synthetic_input_set.items.each do |item| %>
+      <tr class="govuk-table__row">
+        <td class="govuk-table__cell"><%= item["synthetic_atar_id"] %></td>
+        <td class="govuk-table__cell"><%= item["query"] %></td>
+        <td class="govuk-table__cell"><%= item["expected_code"] %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

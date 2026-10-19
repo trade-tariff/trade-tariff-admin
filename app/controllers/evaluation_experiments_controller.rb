@@ -17,6 +17,7 @@ class EvaluationExperimentsController < AuthenticatedController
 
     @experiment = EvaluationExperiment.new
     @gold_query_sets = fetch_gold_query_sets
+    @synthetic_input_sets = fetch_synthetic_input_sets
   end
 
   def create
@@ -27,7 +28,12 @@ class EvaluationExperimentsController < AuthenticatedController
     if @experiment.save && @experiment.errors.empty?
       redirect_to evaluation_experiments_path, notice: "Experiment created successfully."
     else
+      # source_type is form-only (never sent to or read from the backend), so unlike the other
+      # fields it is not already on @experiment from experiment_params -- read it back from the
+      # submitted params directly, purely so the chosen radio stays chosen on this re-render.
+      @experiment.source_type = params.dig(:evaluation_experiment, :source_type)
       @gold_query_sets = fetch_gold_query_sets
+      @synthetic_input_sets = fetch_synthetic_input_sets
       render :new, status: :unprocessable_content
     end
   end
@@ -76,7 +82,14 @@ private
     Kaminari.paginate_array([]).page(1)
   end
 
+  def fetch_synthetic_input_sets
+    EvaluationSyntheticInputSet.all(per_page: 200)
+  rescue Faraday::Error => e
+    Rails.logger.error("Failed to fetch synthetic input sets: #{e.message}")
+    Kaminari.paginate_array([]).page(1)
+  end
+
   def experiment_params
-    params.require(:evaluation_experiment).permit(:name, :description, :gold_query_set_id)
+    params.require(:evaluation_experiment).permit(:name, :description, :gold_query_set_id, :synthetic_input_set_id)
   end
 end
