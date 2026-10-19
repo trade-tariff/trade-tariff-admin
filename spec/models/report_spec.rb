@@ -45,4 +45,36 @@ RSpec.describe Report do
 
     it { expect(report).to be_dependencies_missing }
   end
+
+  describe "#supports_generate?" do
+    subject(:report) { described_class.new(supports_email:, supports_generate:) }
+
+    context "when supports_generate is true" do
+      let(:supports_email) { true }
+      let(:supports_generate) { true }
+
+      it { expect(report).to be_supports_generate }
+    end
+
+    context "when supports_generate is false" do
+      let(:supports_email) { true }
+      let(:supports_generate) { false }
+
+      it { expect(report).not_to be_supports_generate }
+    end
+
+    context "when supports_generate is missing and the report supports email" do
+      let(:supports_email) { true }
+      let(:supports_generate) { nil }
+
+      it { expect(report).not_to be_supports_generate }
+    end
+
+    context "when supports_generate is missing and the report does not support email" do
+      let(:supports_email) { false }
+      let(:supports_generate) { nil }
+
+      it { expect(report).to be_supports_generate }
+    end
+  end
 end

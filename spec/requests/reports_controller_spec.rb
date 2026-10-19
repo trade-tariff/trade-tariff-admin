@@ -42,6 +42,45 @@ RSpec.describe ReportsController do
       rendered_page
       expect(response.body).to include("Commodities report", "Commodity export")
     end
+
+    it "renders only the generate button", :aggregate_failures do
+      rendered_page
+      expect(response.body).to include("Generate report")
+      expect(response.body).not_to include("Generate and email")
+    end
+  end
+
+  describe "GET #show for a report that supports email only" do
+    before do
+      stub_api_request("/reports/differences").and_return jsonapi_response(
+        :report,
+        { resource_id: "differences", name: "Differences report", description: "Potential issues", available: false, dependencies_missing: false, missing_dependencies: [], download_url: nil, supports_email: true, supports_generate: false },
+      )
+    end
+
+    let(:make_request) { get report_path("differences") }
+
+    it "renders only the generate and email button", :aggregate_failures do
+      rendered_page
+      expect(response.body).to include("Generate and email")
+      expect(response.body).not_to include("Generate report")
+    end
+  end
+
+  describe "GET #show for a report that supports email and standalone generation" do
+    before do
+      stub_api_request("/reports/search_reference_changes").and_return jsonapi_response(
+        :report,
+        { resource_id: "search_reference_changes", name: "Search reference changes", description: "Monthly search reference changes", available: true, dependencies_missing: false, missing_dependencies: [], download_url: "https://reporting.trade-tariff.service.gov.uk/uk/reporting/file.csv", supports_email: true, supports_generate: true },
+      )
+    end
+
+    let(:make_request) { get report_path("search_reference_changes") }
+
+    it "renders both generate buttons and the download link" do
+      rendered_page
+      expect(response.body).to include("Generate report", "Generate and email", "Download report")
+    end
   end
 
   describe "GET #download" do
@@ -55,6 +94,45 @@ RSpec.describe ReportsController do
     let(:make_request) { get download_report_path("commodities") }
 
     it { is_expected.to redirect_to("https://reporting.trade-tariff.service.gov.uk/uk/reporting/file.csv") }
+  end
+
+  describe "GET #download for a report in the private persistence bucket" do
+    let(:make_request) { get download_report_path("search_reference_changes") }
+
+    before do
+      stub_api_request("/reports/search_reference_changes").and_return jsonapi_response(
+        :report,
+        { resource_id: "search_reference_changes", name: "Search reference changes", description: "Monthly search reference changes", available: true, dependencies_missing: false, missing_dependencies: [], download_url:, supports_email: true, supports_generate: true },
+      )
+    end
+
+    context "when the URL is a presigned URL for the persistence bucket" do
+      let(:download_url) { "https://trade-tariff-persistence-123456789012.s3.eu-west-2.amazonaws.com/reports/uk/search_reference_changes/file.csv?X-Amz-Signature=abc" }
+
+      it { is_expected.to redirect_to(download_url) }
+    end
+
+    context "when the URL is for another S3 bucket" do
+      let(:download_url) { "https://trade-tariff-persistence-123456789012.evil.s3.eu-west-2.amazonaws.com/file.csv" }
+
+      it { is_expected.to redirect_to(report_path("search_reference_changes")) }
+
+      it "shows a failure message" do
+        rendered_page
+        expect(flash[:alert]).to eq("Failed to download report.")
+      end
+    end
+
+    context "when the URL is not HTTPS" do
+      let(:download_url) { "http://trade-tariff-persistence-123456789012.s3.eu-west-2.amazonaws.com/file.csv" }
+
+      it { is_expected.to redirect_to(report_path("search_reference_changes")) }
+
+      it "shows a failure message" do
+        rendered_page
+        expect(flash[:alert]).to eq("Failed to download report.")
+      end
+    end
   end
 
   describe "GET #download when download_url is missing" do
