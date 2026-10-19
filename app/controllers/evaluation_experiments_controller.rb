@@ -89,7 +89,20 @@ private
     Kaminari.paginate_array([]).page(1)
   end
 
+  # The conditional reveal only hides the inactive picker with CSS -- its <select> keeps
+  # whatever it last held, so switching radios without reloading the page can submit both ids
+  # at once. source_type says which pick is the operator's actual final choice, so the other
+  # id is dropped here rather than forwarded to a backend that would otherwise reject the
+  # request as "cannot be set at the same time" even though the operator only picked one.
   def experiment_params
-    params.require(:evaluation_experiment).permit(:name, :description, :gold_query_set_id, :synthetic_input_set_id)
+    permitted = params.require(:evaluation_experiment).permit(:name, :description, :source_type, :gold_query_set_id, :synthetic_input_set_id)
+    source_type = permitted.delete(:source_type)
+
+    case source_type
+    when "gold_query_set" then permitted[:synthetic_input_set_id] = nil
+    when "synthetic_input_set" then permitted[:gold_query_set_id] = nil
+    end
+
+    permitted
   end
 end

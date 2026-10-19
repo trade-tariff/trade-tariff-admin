@@ -231,6 +231,51 @@ RSpec.describe EvaluationExperimentsController, type: :request do
       end
     end
 
+    context "when the operator picked a gold query set, then switched to a synthetic input set without the hidden picker clearing itself" do
+      # The conditional reveal only hides the inactive picker with CSS — its <select> keeps
+      # whatever was chosen before the radio was switched, so a real request can submit both
+      # ids. Only source_type says which pick is the operator's actual final choice.
+      let(:make_request) do
+        post evaluation_experiments_path, params: {
+          evaluation_experiment: { name: "Baseline", source_type: "synthetic_input_set", gold_query_set_id: "3", synthetic_input_set_id: "9" },
+        }
+      end
+
+      before do
+        stub_api_request("/search/evaluation/experiments", :post)
+          .with { |request|
+            attributes = Rack::Utils.parse_nested_query(request.body).dig("data", "attributes")
+            attributes["synthetic_input_set_id"] == "9" && attributes["gold_query_set_id"].nil?
+          }
+          .and_return(experiment_response.merge(status: 201))
+      end
+
+      it "sends only the synthetic_input_set_id, discarding the stale gold_query_set_id" do
+        expect(rendered_page).to redirect_to(evaluation_experiments_path)
+      end
+    end
+
+    context "when the operator picked a synthetic input set, then switched to a gold query set without the hidden picker clearing itself" do
+      let(:make_request) do
+        post evaluation_experiments_path, params: {
+          evaluation_experiment: { name: "Baseline", source_type: "gold_query_set", gold_query_set_id: "3", synthetic_input_set_id: "9" },
+        }
+      end
+
+      before do
+        stub_api_request("/search/evaluation/experiments", :post)
+          .with { |request|
+            attributes = Rack::Utils.parse_nested_query(request.body).dig("data", "attributes")
+            attributes["gold_query_set_id"] == "3" && attributes["synthetic_input_set_id"].nil?
+          }
+          .and_return(experiment_response.merge(status: 201))
+      end
+
+      it "sends only the gold_query_set_id, discarding the stale synthetic_input_set_id" do
+        expect(rendered_page).to redirect_to(evaluation_experiments_path)
+      end
+    end
+
     context "when a rejected synthetic input set choice is redisplayed" do
       let(:make_request) do
         post evaluation_experiments_path, params: {
