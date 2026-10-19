@@ -71,13 +71,20 @@ private
     redirect_to reports_path, alert: "Report not found."
   end
 
+  # Reports with personal data (search reference changes) are stored in the private
+  # persistence bucket, and the backend returns a short-lived presigned S3 URL for them.
+  PRIVATE_REPORT_HOST = /\Atrade-tariff-persistence-\d{12}\.s3\.eu-west-2\.amazonaws\.com\z/
+
   def validated_download_url(download_url)
     uri = URI.parse(download_url)
-    expected_host = URI.parse(TradeTariffAdmin.reporting_cdn_host).host
 
     raise ActionController::Redirecting::UnsafeRedirectError, download_url unless uri.is_a?(URI::HTTPS)
-    raise ActionController::Redirecting::UnsafeRedirectError, download_url unless uri.host == expected_host
+    raise ActionController::Redirecting::UnsafeRedirectError, download_url unless allowed_download_host?(uri.host)
 
     uri.to_s
+  end
+
+  def allowed_download_host?(host)
+    host == URI.parse(TradeTariffAdmin.reporting_cdn_host).host || PRIVATE_REPORT_HOST.match?(host.to_s)
   end
 end
