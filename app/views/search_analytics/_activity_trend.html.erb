@@ -16,7 +16,7 @@
         Use the search activity data table below for counts and unavailable breakdowns.
       </canvas>
     </div>
-    <p id="activity-trend-description" class="govuk-body-s">Each bar counts distinct journeys in that <%= @search_analytics.bucket_size == 'hour' ? 'hour' : 'day' %>. A journey active in more than one bucket counts in each, so bars do not add up to Total journeys. Unclassified includes missing or conflicting action evidence.</p>
+    <p id="activity-trend-description" class="govuk-body-s">Each bar counts distinct journeys in that <%= @search_analytics.bucket_size == 'hour' ? 'hour' : 'day' %>. A journey active in more than one bucket counts in each, so bars do not add up to Total journeys. Navigation, Search and Unclassified values in the table are percentages of Total journeys. Unclassified includes missing or conflicting action evidence.</p>
     <%= render GovukComponent::DetailsComponent.new(summary_text: "View search activity data", classes: "govuk-!-margin-top-3") do %>
       <div class="search-analytics-table-scroll" role="region" aria-label="Search activity data" tabindex="0">
         <table class="govuk-table">
@@ -24,7 +24,7 @@
           <thead class="govuk-table__head">
             <tr class="govuk-table__row">
               <th scope="col" class="govuk-table__header"><%= @search_analytics.bucket_size == 'hour' ? 'Date and hour (UTC)' : 'Date (UTC)' %></th>
-              <% ["Total journeys", *SearchAnalyticsHelper::SEARCH_ACTION_LABELS.values].each do |label| %>
+              <% ["Total journeys", "Navigation (%)", "Search (%)", "Unclassified (%)"].each do |label| %>
                 <th scope="col" class="govuk-table__header govuk-table__header--numeric"><%= label %></th>
               <% end %>
             </tr>
@@ -33,9 +33,10 @@
             <% rows.each do |row| %>
               <tr class="govuk-table__row">
                 <th scope="row" class="govuk-table__header"><%= search_analytics_bucket_date(row[:bucket], bucket_size: @search_analytics.bucket_size) %></th>
-                <% [:total, *SearchAnalyticsHelper::SEARCH_ACTION_LABELS.keys].each do |key| %>
-                  <td class="govuk-table__cell govuk-table__cell--numeric"><%= search_analytics_action_count(row[key]) %></td>
-                <% end %>
+                <td class="govuk-table__cell govuk-table__cell--numeric"><%= search_analytics_action_count(row[:total]) %></td>
+                <td class="govuk-table__cell govuk-table__cell--numeric"><%= search_analytics_action_percentage(row[:navigation], row[:total]) %></td>
+                <td class="govuk-table__cell govuk-table__cell--numeric"><%= search_analytics_action_percentage(row[:search], row[:total]) %></td>
+                <td class="govuk-table__cell govuk-table__cell--numeric"><%= search_analytics_action_percentage(row[:unclassified], row[:total]) %></td>
               </tr>
             <% end %>
           </tbody>

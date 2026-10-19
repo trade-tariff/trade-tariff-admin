@@ -193,6 +193,14 @@ module SearchAnalyticsHelper
     value.nil? ? "Unavailable" : search_analytics_number(value)
   end
 
+  def search_analytics_action_percentage(value, total)
+    return "Unavailable" if value.nil? || total.nil?
+    return "0%" if total.to_f.zero? && value.to_f.zero?
+    return "Unavailable" if total.to_f.zero?
+
+    search_analytics_percentage(value.to_f / total)
+  end
+
   def search_analytics_action_chart_payload(rows, bucket_size:)
     rows = Array(rows).map(&:with_indifferent_access)
     {
