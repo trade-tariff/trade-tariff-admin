@@ -77,7 +77,7 @@ RSpec.describe EvaluationExperimentsController, type: :request do
     end
 
     it "marks Evaluations as the current evaluation tab" do
-      expect(page).to have_css("nav.app-sub-navigation--nested[aria-label='Evaluation'] a[aria-current='page']", text: "Evaluations")
+      expect(page).to have_css("nav.app-sub-navigation[aria-label='Evaluation'] a[aria-current='page']", text: "Evaluations")
     end
 
     it "links to that experiment's runs" do
