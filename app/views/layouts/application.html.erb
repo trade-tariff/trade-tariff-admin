@@ -47,7 +47,9 @@
     <% if current_navigation_section&.items&.present? %>
       <%= render "application/sub_navigation", section: current_navigation_section %>
     <% end %>
-    <%= render "references/tabs" if request.path.include?("/search_references") %>
+    <% if (tabs_section = current_navigation_tabs_section) %>
+      <%= render "application/sub_navigation", section: tabs_section, nested: true %>
+    <% end %>
 
     <div class="govuk-width-container">
       <%= render 'application/auth_banner' unless @hide_auth_banner %>

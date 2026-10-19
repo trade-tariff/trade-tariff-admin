@@ -168,6 +168,10 @@
   &__item--current &__link {
     font-weight: bold;
   }
+
+  &--nested {
+    background-color: govuk.govuk-colour("black", $variant: "tint-95");
+  }
 }
 
 .search-analytics-filters {
