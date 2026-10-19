@@ -115,7 +115,7 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
     it "nests synthetic ATaRs under Evaluation", :aggregate_failures do
       expect(page).to have_css("nav[aria-label='Classification'] a", text: "Evaluation")
       expect(page).not_to have_css("nav[aria-label='Classification'] a", text: "Synthetic ATaRs")
-      expect(page).to have_css("nav.app-sub-navigation--nested[aria-label='Evaluation'] a[aria-current='page']", text: "Synthetic ATaRs")
+      expect(page).to have_css("nav.app-sub-navigation[aria-label='Evaluation'] a[aria-current='page']", text: "Synthetic ATaRs")
       expect(page).to have_link("Gold Query Sets", href: evaluation_gold_query_sets_path)
       expect(page).to have_link("Evaluations", href: evaluation_experiments_path)
     end

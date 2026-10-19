@@ -29,9 +29,9 @@ RSpec.describe References::EntitySearchesController do
     it "marks Search as the current search references tab", :aggregate_failures do
       page = Capybara.string(response.body)
 
-      expect(page).to have_css("nav.app-sub-navigation--nested[aria-label='Search References'] a[aria-current='page']", text: "Search")
-      expect(page).to have_css("nav.app-sub-navigation--nested[aria-label='Search References'] a", text: "Browse")
-      expect(page).not_to have_css("nav.app-sub-navigation--nested[aria-label='Search References'] a[aria-current='page']", text: "Browse")
+      expect(page).to have_css("nav.app-sub-navigation[aria-label='Search References'] a[aria-current='page']", text: "Search")
+      expect(page).to have_css("nav.app-sub-navigation[aria-label='Search References'] a", text: "Browse")
+      expect(page).not_to have_css("nav.app-sub-navigation[aria-label='Search References'] a[aria-current='page']", text: "Browse")
     end
 
     it "searches for the query" do

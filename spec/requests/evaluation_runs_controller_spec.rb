@@ -774,7 +774,7 @@ RSpec.describe EvaluationRunsController, type: :request do
     end
 
     it "keeps Evaluations current on the runs list" do
-      expect(page).to have_css("nav.app-sub-navigation--nested[aria-label='Evaluation'] a[aria-current='page']", text: "Evaluations")
+      expect(page).to have_css("nav.app-sub-navigation[aria-label='Evaluation'] a[aria-current='page']", text: "Evaluations")
     end
 
     it "links to the run" do

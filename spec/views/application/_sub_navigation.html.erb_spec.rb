@@ -29,10 +29,10 @@ RSpec.describe "application/_sub_navigation" do
   end
 
   it "renders the current nested tab", :aggregate_failures do
-    render partial: "application/sub_navigation", locals: { section:, nested: true }
+    render partial: "application/sub_navigation", locals: { section: }
 
     expect(rendered).to include('aria-label="Evaluation"')
-    expect(rendered).to include("app-sub-navigation--nested")
+    expect(rendered).to include('class="app-sub-navigation"')
     expect(rendered).to include('aria-current="page"')
     expect(rendered).to include("Gold Query Sets")
   end
