@@ -54,7 +54,13 @@
         <% selections = search_analytics_frontend_selection_rows(frontend_events[:selections]) %>
         <% if selections.any? %>
           <h3 class="govuk-heading-s">Result selections by rank and confidence</h3>
-          <%= govuk_table(head: ["Selection", "Recorded events"], rows: selections.map { |label, count| [label, search_analytics_number(count)] }) %>
+          <% if frontend_events.dig(:selection_coverage, :complete) == false %>
+            <%= govuk_inset_text(text: "Offer data is incomplete for these dates. Times offered and selection rates are unavailable. Recorded selections remain available.") %>
+          <% end %>
+          <div class="search-analytics-table-scroll" role="region" aria-label="Result selection data" tabindex="0">
+            <%= govuk_table(head: ["Selection", "Times offered", "Recorded selections", "Selection rate"], rows: selections) %>
+          </div>
+          <p class="govuk-body-s">Selection rate is recorded selections divided by times offered. Repeated selections can make the rate exceed 100%.</p>
         <% end %>
 
         <% questions = search_analytics_frontend_question_rows(frontend_events[:question_counts]) %>
