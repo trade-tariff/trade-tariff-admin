@@ -9,6 +9,10 @@ RSpec.describe EvaluationGoldQuerySetPolicy do
       expect(policy).to permit(user, gold_query_set)
     end
 
+    it "grants access to the basic auth user" do
+      expect(policy).to permit(User.basic_auth_user!, gold_query_set)
+    end
+
     it "denies access to hmrc admin" do
       user = create(:user, :hmrc_admin)
       expect(policy).not_to permit(user, gold_query_set)

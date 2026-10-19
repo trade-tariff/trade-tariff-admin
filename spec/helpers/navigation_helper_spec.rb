@@ -139,6 +139,30 @@ RSpec.describe NavigationHelper, type: :helper do
       end
     end
 
+    context "with UK service and the basic auth user" do
+      include_context "with UK service"
+
+      let(:user) { User.basic_auth_user! }
+
+      it "shows Evaluation" do
+        section = helper.visible_navigation_sections.find { |entry| entry.key == :evaluation }
+
+        expect(section.items.map(&:text)).to eq(["Synthetic ATaRs", "Gold Query Sets", "Evaluations"])
+      end
+    end
+
+    context "with the default service and the basic auth user" do
+      include_context "with default service"
+
+      let(:user) { User.basic_auth_user! }
+
+      it "shows Evaluation" do
+        section = helper.visible_navigation_sections.find { |entry| entry.key == :evaluation }
+
+        expect(section.items.map(&:text)).to eq(["Synthetic ATaRs", "Gold Query Sets", "Evaluations"])
+      end
+    end
+
     context "with UK service and hmrc_admin role" do
       include_context "with UK service"
 
