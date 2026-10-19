@@ -92,7 +92,6 @@ class EvaluationRunsController < AuthenticatedController
   def show
     authorize @run, :show?
 
-    @gold_query_set = fetch_gold_query_set
     respond_to do |format|
       # The page's own title (show.html.erb) needs the experiment name every time, generating or
       # not. The JSON poll only needs it once the run stops generating: that's when the status
@@ -242,18 +241,10 @@ private
     value
   end
 
-  def fetch_gold_query_set
-    return nil if @run.gold_query_set_id.blank?
-
-    EvaluationGoldQuerySet.find(@run.gold_query_set_id)
-  rescue Faraday::Error
-    nil
-  end
-
-  # No equivalent rescue to fetch_gold_query_set's: an experiment is never deleted while any of
-  # its runs still exist (the backend cascades an experiment's own deletion to its runs), so a
-  # run that loaded at all is guaranteed to have one. A Faraday::Error here is a genuine outage,
-  # left to the class-level rescue_from like every other unhandled fetch in this controller.
+  # No rescue here: an experiment is never deleted while any of its runs still exist (the
+  # backend cascades an experiment's own deletion to its runs), so a run that loaded at all is
+  # guaranteed to have one. A Faraday::Error here is a genuine outage, left to the class-level
+  # rescue_from like every other unhandled fetch in this controller.
   def fetch_experiment
     EvaluationExperiment.find(@run.experiment_id)
   end

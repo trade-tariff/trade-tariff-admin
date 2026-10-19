@@ -432,11 +432,10 @@ RSpec.describe EvaluationRunsController, type: :request do
   describe "GET #show" do
     let(:make_request) { get evaluation_run_path(run_id) }
     let(:run_id) { "9" }
-    let(:run_attributes) { { "experiment_id" => 7, "status" => "running", "gold_query_set_id" => 3, "result_count" => 4, "error_count" => 0 } }
+    let(:run_attributes) { { "experiment_id" => 7, "status" => "running", "gold_query_set_id" => 3, "intended_result_count" => 30, "result_count" => 4, "error_count" => 0 } }
 
     before do
       stub_api_request("/search/evaluation/runs/#{run_id}").and_return(jsonapi_response("run", run_attributes.merge("resource_id" => run_id)))
-      stub_api_request("/search/evaluation/gold_query_sets/3").and_return(jsonapi_response("gold_query_set", { "name" => "Set A", "atar_count" => 10, "synthetic_atar_count" => 0, "gold_query_count" => 30, "resource_id" => "3" }))
       stub_api_request("/search/evaluation/experiments/7").and_return(jsonapi_response("experiment", experiment_attributes.merge("resource_id" => "7")))
     end
 
@@ -460,6 +459,16 @@ RSpec.describe EvaluationRunsController, type: :request do
 
     it "shows the live count" do
       expect(page).to have_css("p", text: "4 of 30")
+    end
+
+    context "when the run's experiment uses a synthetic input set instead of a gold query set" do
+      let(:run_attributes) do
+        { "experiment_id" => 7, "status" => "running", "gold_query_set_id" => nil, "synthetic_input_set_id" => 11, "intended_result_count" => 8, "result_count" => 3, "error_count" => 0 }
+      end
+
+      it "shows the live count from intended_result_count, not 0, since there is no gold query set to fetch" do
+        expect(page).to have_css("p", text: "3 of 8")
+      end
     end
 
     it "shows a cancel button while the run is in progress" do
