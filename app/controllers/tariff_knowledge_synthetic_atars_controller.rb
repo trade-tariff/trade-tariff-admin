@@ -86,7 +86,7 @@ class TariffKnowledgeSyntheticAtarsController < AuthenticatedController
 
     file_result = SpreadsheetImportFile.new(import_file, sheet_name: IMPORT_SHEET_NAME).call
     if file_result.success?
-      import_result = TariffKnowledgeSyntheticAtar.bulk_import(file_result.csv_content)
+      import_result = TariffKnowledgeSyntheticAtar.bulk_import(file_result.csv_content, source_workbook: import_file&.original_filename)
       return redirect_to tariff_knowledge_synthetic_atars_path, notice: import_result.message if import_result.success?
 
       @import_errors = import_result.errors

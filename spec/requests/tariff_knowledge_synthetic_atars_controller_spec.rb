@@ -257,9 +257,12 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
       post bulk_import_tariff_knowledge_synthetic_atars_path, params: { tariff_knowledge_synthetic_atar_import: { file: upload } }
     end
 
-    def backend_accepts_csv(csv)
+    def backend_accepts_csv(csv, source_workbook: nil)
       stub_api_request("/tariff_knowledge_synthetic_atars/bulk_import", :post)
-        .with { |request| Rack::Utils.parse_nested_query(request.body).dig("data", "attributes", "csv") == csv }
+        .with { |request|
+          attributes = Rack::Utils.parse_nested_query(request.body).dig("data", "attributes")
+          attributes["csv"] == csv && (source_workbook.nil? || attributes["source_workbook"] == source_workbook)
+        }
         .and_return(
           status: 201,
           headers: json_headers,
@@ -268,7 +271,7 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
     end
 
     context "with a CSV file the backend accepts" do
-      before { backend_accepts_csv(csv_text) }
+      before { backend_accepts_csv(csv_text, source_workbook: "synthetic-atars.csv") }
 
       it { is_expected.to redirect_to(tariff_knowledge_synthetic_atars_path) }
 
@@ -288,7 +291,7 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
         ])
       end
 
-      before { backend_accepts_csv(csv_text) }
+      before { backend_accepts_csv(csv_text, source_workbook: "data.xlsx") }
 
       it "sends the Classifications sheet to the backend as CSV" do
         expect(rendered_page).to redirect_to(tariff_knowledge_synthetic_atars_path)
