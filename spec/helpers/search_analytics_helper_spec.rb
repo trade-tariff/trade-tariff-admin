@@ -96,7 +96,17 @@ RSpec.describe SearchAnalyticsHelper do
 
   describe "#search_analytics_frontend_selection_rows" do
     it "labels missing rank and confidence without dropping the event" do
-      expect(helper.search_analytics_frontend_selection_rows([{ event_count: 2 }])).to eq([["Unknown rank, Unknown", 2]])
+      expect(helper.search_analytics_frontend_selection_rows([{ event_count: 2 }])).to eq([["Unknown rank, Unknown", "Unavailable", "2", "Unavailable"]])
+    end
+  end
+
+  describe "#search_analytics_frontend_selection_rows formatting" do
+    it "formats offered counts and rates including observed zero" do
+      rows = helper.search_analytics_frontend_selection_rows([
+        { result_rank: 6, confidence: "possible", event_count: 0, offered_count: 1234, selection_rate: 0 },
+        { result_rank: 1, confidence: "strong", event_count: 3, offered_count: 2, selection_rate: 150 },
+      ])
+      expect(rows).to eq([["Rank 6, Possible", "1,234", "0", "0%"], ["Rank 1, Strong", "2", "3", "150%"]])
     end
   end
 

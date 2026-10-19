@@ -20,6 +20,27 @@ RSpec.describe "Frontend search event widgets" do
     end
   end
 
+  it "shows offers and rates including results with no selections", :aggregate_failures do
+    stub_events
+    visit search_analytics_path
+    expect_selection_table
+  end
+
+  it "retains selections when offers are unavailable", :aggregate_failures do
+    stub_events(data: unavailable_offers)
+    visit search_analytics_path
+    expect(page).to have_content("Offer data is incomplete for these dates")
+    table = page.find("table", text: "Times offered")
+    expect(table.all("tbody tr").first.all("td").map(&:text)).to include("Unavailable", "2")
+  end
+
+  it "supports selection rows from older backends", :aggregate_failures do
+    stub_events(data: legacy_selection_data)
+    visit search_analytics_path
+    expect(page.find("table", text: "Times offered").text).to include("Rank 1, Strong", "Unavailable")
+    expect(page).not_to have_content("Offer data is incomplete for these dates")
+  end
+
   it "does not show guided event widgets for Classic", :aggregate_failures do
     stub_events(view: "classic", journeys: { "question_counts" => [{ "questions" => 1, "journeys" => 4 }] })
     visit search_analytics_path(period: "24h", view: "classic")
@@ -81,6 +102,28 @@ RSpec.describe "Frontend search event widgets" do
     stub_events(question_outcomes: empty_question_outcomes)
     visit search_analytics_path
     expect_unavailable_question_rates
+  end
+
+  def expect_selection_table
+    table = page.find("[role='region'][aria-label='Result selection data'][tabindex='0']").find("table")
+    expect(table.all("thead th").map(&:text)).to eq(["Selection", "Times offered", "Recorded selections", "Selection rate"])
+    expect(table.all("tbody tr").map { |row| row.all("th, td").map(&:text) }).to eq([
+      ["Rank 1, Strong", "10", "2", "20%"],
+      ["Rank 2, Good", "4", "1", "25%"],
+      ["Rank 6, Possible", "2", "0", "0%"],
+    ])
+  end
+
+  def unavailable_offers
+    event_data["selection_coverage"]["complete"] = false
+    event_data["selections"].each { |row| row.merge!("offered_count" => nil, "selection_rate" => nil) }
+    event_data
+  end
+
+  def legacy_selection_data
+    event_data.delete("selection_coverage")
+    event_data["selections"].each { |row| row.except!("offered_count", "selection_rate") }
+    event_data
   end
 
   def expect_event_tables

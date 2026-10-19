@@ -17,9 +17,11 @@
   ],
   "actions": { "result_selected": 3, "dont_know": 1 },
   "selections": [
-    { "result_rank": 1, "confidence": "strong", "event_count": 2 },
-    { "result_rank": 2, "confidence": "good", "event_count": 1 }
+    { "result_rank": 1, "confidence": "strong", "event_count": 2, "offered_count": 10, "selection_rate": 20.0 },
+    { "result_rank": 2, "confidence": "good", "event_count": 1, "offered_count": 4, "selection_rate": 25.0 },
+    { "result_rank": 6, "confidence": "possible", "event_count": 0, "offered_count": 2, "selection_rate": 0.0 }
   ],
+  "selection_coverage": { "complete": true, "collected_days": 1, "expected_days": 1, "missing_dates": [] },
   "question_counts": [
     { "questions": null, "journeys": 1 },
     { "questions": 0, "journeys": 1 },

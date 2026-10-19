@@ -21,7 +21,12 @@ module SearchAnalyticsHelper
       rank = row[:result_rank]
       confidence = row[:confidence].presence&.humanize || "Unknown"
       label = rank.nil? ? "Unknown rank, #{confidence}" : "Rank #{rank}, #{confidence}"
-      [label, row[:event_count].to_i]
+      [
+        label,
+        row[:offered_count].nil? ? "Unavailable" : search_analytics_number(row[:offered_count]),
+        search_analytics_number(row[:event_count].to_i),
+        search_analytics_outcome_rate_percentage(row[:selection_rate]),
+      ]
     end
   end
 
