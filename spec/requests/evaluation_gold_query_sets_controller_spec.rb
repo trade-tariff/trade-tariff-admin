@@ -102,6 +102,10 @@ RSpec.describe EvaluationGoldQuerySetsController, type: :request do
       expect(page).to have_css("h1", text: "Gold query sets")
     end
 
+    it "marks Gold Query Sets as the current evaluation tab" do
+      expect(page).to have_css("nav.app-sub-navigation--nested[aria-label='Evaluation'] a[aria-current='page']", text: "Gold Query Sets")
+    end
+
     it "shows the set count" do
       expect(page).to have_css("caption", text: "1 gold query set")
     end

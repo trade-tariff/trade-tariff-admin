@@ -24,9 +24,21 @@ RSpec.describe NavigationHelper, type: :helper do
       )
     end
 
-    it "defines Classification with 9 items" do
+    it "defines Classification with 7 items" do
       section = helper.navigation_sections.find { |s| s.key == :classification }
-      expect(section.items.map(&:text)).to eq(["Search References", "Descriptions", "Intercepts", "Synthetic ATaRs", "Gold query sets", "Evaluations", "Search dashboard", "Search diagnostics", "Recent changes"])
+      expect(section.items.map(&:text)).to eq(["Search References", "Descriptions", "Intercepts", "Evaluation", "Search dashboard", "Search diagnostics", "Recent changes"])
+    end
+
+    it "subdivides Search References into Browse and Search" do
+      item = helper.navigation_sections.find { |s| s.key == :classification }.items.find { |entry| entry.text == "Search References" }
+
+      expect(item.tabs.map(&:text)).to eq(%w[Browse Search])
+    end
+
+    it "subdivides Evaluation into synthetic ATaRs, gold query sets, and evaluations" do
+      item = helper.navigation_sections.find { |s| s.key == :classification }.items.find { |entry| entry.text == "Evaluation" }
+
+      expect(item.tabs.map(&:text)).to eq(["Synthetic ATaRs", "Gold Query Sets", "Evaluations"])
     end
 
     it "defines SPIMM with xi service restriction" do
@@ -88,9 +100,36 @@ RSpec.describe NavigationHelper, type: :helper do
                          "Reports",
                          "Rollbacks",
                        ],
-                       classification: ["Search References", "Descriptions", "Intercepts", "Synthetic ATaRs", "Gold query sets", "Evaluations", "Search dashboard", "Search diagnostics", "Recent changes"],
+                       classification: ["Search References", "Descriptions", "Intercepts", "Evaluation", "Search dashboard", "Search diagnostics", "Recent changes"],
                        manage_users: nil,
                        configuration: []
+    end
+
+    context "with UK service when synthetic ATaRs are hidden" do
+      include_context "with UK service"
+
+      let(:user) { build(:user, :technical_operator) }
+      let(:evaluation_item) do
+        helper.visible_navigation_sections.find { |section| section.key == :classification }.items.find { |entry| entry.text == "Evaluation" }
+      end
+
+      before do
+        allow(Pundit).to receive(:policy).and_wrap_original do |method, policy_user, record|
+          if record == TariffKnowledgeSyntheticAtar
+            instance_double(TariffKnowledgeSyntheticAtarPolicy, index?: false)
+          else
+            method.call(policy_user, record)
+          end
+        end
+      end
+
+      it "keeps the other evaluation tabs" do
+        expect(evaluation_item.tabs.map(&:text)).to eq(["Gold Query Sets", "Evaluations"])
+      end
+
+      it "links Evaluation to the first visible tab" do
+        expect(evaluation_item.href).to eq(helper.evaluation_gold_query_sets_path)
+      end
     end
 
     context "with UK service and hmrc_admin role" do
@@ -206,6 +245,71 @@ RSpec.describe NavigationHelper, type: :helper do
 
       it "returns Classification section" do
         expect(helper.current_navigation_section.key).to eq(:classification)
+      end
+
+      it "subdivides Search References and marks Browse current", :aggregate_failures do
+        tabs = helper.current_navigation_tabs_section
+
+        expect(tabs.label).to eq("Search References")
+        expect(tabs.items.map(&:text)).to eq(%w[Browse Search])
+        expect(helper.item_active?(tabs.items[0])).to be true
+        expect(helper.item_active?(tabs.items[1])).to be false
+      end
+    end
+
+    context "when on the search references search page" do
+      let(:request_path) { "/search_references/search" }
+
+      it "marks Search current and leaves Browse inactive", :aggregate_failures do
+        tabs = helper.current_navigation_tabs_section
+
+        expect(helper.item_active?(tabs.items[0])).to be false
+        expect(helper.item_active?(tabs.items[1])).to be true
+      end
+    end
+
+    context "when on a synthetic ATaR page" do
+      let(:request_path) { "/tariff_knowledge_synthetic_atars/12/edit" }
+
+      it "subdivides Evaluation into the three evaluation tools" do
+        tabs = helper.current_navigation_tabs_section
+
+        expect(tabs.items.map(&:text)).to eq(["Synthetic ATaRs", "Gold Query Sets", "Evaluations"])
+      end
+
+      it "marks Synthetic ATaRs current" do
+        tabs = helper.current_navigation_tabs_section
+
+        expect(tabs.items.map { |item| helper.item_active?(item) }).to eq([true, false, false])
+      end
+    end
+
+    context "when on a gold query item page" do
+      let(:request_path) { "/evaluation_gold_query_sets/3/items/atar-1/edit" }
+
+      it "marks Gold Query Sets current" do
+        tabs = helper.current_navigation_tabs_section
+
+        expect(helper.item_active?(tabs.items.find { |item| item.text == "Gold Query Sets" })).to be true
+      end
+    end
+
+    context "when on an evaluation run page" do
+      let(:request_path) { "/evaluation_runs/9/results/4" }
+
+      it "marks Evaluations current" do
+        tabs = helper.current_navigation_tabs_section
+        active = tabs.items.map { |item| [item.text, helper.item_active?(item)] }.to_h
+
+        expect(active).to include("Evaluations" => true, "Synthetic ATaRs" => false)
+      end
+    end
+
+    context "when on descriptions" do
+      let(:request_path) { "/goods_nomenclature_self_texts" }
+
+      it "does not show a further subdivision" do
+        expect(helper.current_navigation_tabs_section).to be_nil
       end
     end
 

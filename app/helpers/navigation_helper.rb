@@ -1,6 +1,10 @@
 module NavigationHelper
   NavigationSection = Data.define(:key, :label, :href, :items, :service)
-  NavigationItem = Data.define(:text, :href, :policy_class, :active_when, :service)
+  NavigationItem = Data.define(:text, :href, :policy_class, :active_when, :service, :tabs) do
+    def initialize(text:, href:, policy_class:, active_when:, service: nil, tabs: [])
+      super(text:, href:, policy_class:, active_when:, service:, tabs:)
+    end
+  end
 
   def navigation_sections
     versioning = TradeTariffAdmin.enable_section_chapter_note_versioning?
@@ -79,8 +83,24 @@ module NavigationHelper
             text: "Search References",
             href: references_sections_path,
             policy_class: SearchReference,
-            active_when: /\/search_references/,
+            active_when: %r{/search_references},
             service: nil,
+            tabs: [
+              NavigationItem.new(
+                text: "Browse",
+                href: references_sections_path,
+                policy_class: SearchReference,
+                active_when: %r{/search_references(?!/search(?:/|\z))},
+                service: nil,
+              ),
+              NavigationItem.new(
+                text: "Search",
+                href: references_search_path,
+                policy_class: References::EntitySearch,
+                active_when: %r{/search_references/search(?:/|\z)},
+                service: nil,
+              ),
+            ],
           ),
           NavigationItem.new(
             text: "Descriptions",
@@ -97,25 +117,34 @@ module NavigationHelper
             service: :uk,
           ),
           NavigationItem.new(
-            text: "Synthetic ATaRs",
+            text: "Evaluation",
             href: tariff_knowledge_synthetic_atars_path,
             policy_class: TariffKnowledgeSyntheticAtar,
-            active_when: /\/tariff_knowledge_synthetic_atars/,
+            active_when: %r{/tariff_knowledge_synthetic_atars|/evaluation_gold_query_sets|/evaluation_experiments|/evaluation_runs},
             service: :uk,
-          ),
-          NavigationItem.new(
-            text: "Gold query sets",
-            href: evaluation_gold_query_sets_path,
-            policy_class: EvaluationGoldQuerySet,
-            active_when: /\/evaluation_gold_query_sets/,
-            service: :uk,
-          ),
-          NavigationItem.new(
-            text: "Evaluations",
-            href: evaluation_experiments_path,
-            policy_class: EvaluationExperiment,
-            active_when: /\/evaluation_experiments|\/evaluation_runs/,
-            service: :uk,
+            tabs: [
+              NavigationItem.new(
+                text: "Synthetic ATaRs",
+                href: tariff_knowledge_synthetic_atars_path,
+                policy_class: TariffKnowledgeSyntheticAtar,
+                active_when: %r{/tariff_knowledge_synthetic_atars},
+                service: :uk,
+              ),
+              NavigationItem.new(
+                text: "Gold Query Sets",
+                href: evaluation_gold_query_sets_path,
+                policy_class: EvaluationGoldQuerySet,
+                active_when: %r{/evaluation_gold_query_sets},
+                service: :uk,
+              ),
+              NavigationItem.new(
+                text: "Evaluations",
+                href: evaluation_experiments_path,
+                policy_class: EvaluationExperiment,
+                active_when: %r{/evaluation_experiments|/evaluation_runs},
+                service: :uk,
+              ),
+            ],
           ),
           NavigationItem.new(
             text: "Search dashboard",
@@ -209,11 +238,10 @@ module NavigationHelper
 
   def visible_navigation_sections
     navigation_sections.filter_map do |section|
-      next if section.service == :uk && !TradeTariffAdmin::ServiceChooser.uk?
-      next if section.service == :xi && !TradeTariffAdmin::ServiceChooser.xi?
+      next unless service_visible?(section)
 
       if section.items.present?
-        visible_items = section.items.select { |item| item_visible?(item) }
+        visible_items = section.items.filter_map { |item| visible_navigation_item(item) }
         next if visible_items.empty?
 
         NavigationSection.new(
@@ -235,9 +263,33 @@ module NavigationHelper
     visible_navigation_sections.find { |section| section_active?(section) }
   end
 
+  def current_navigation_item
+    current_navigation_section&.items&.find { |item| item_active?(item) }
+  end
+
+  def current_navigation_tabs_section
+    item = current_navigation_item
+    return if item.nil? || item.tabs.blank?
+
+    NavigationSection.new(
+      key: :nested,
+      label: item.text,
+      href: item.href,
+      items: item.tabs,
+      service: item.service,
+    )
+  end
+
+  def item_active?(item)
+    return true if item.active_when.present? && active_nav_link?(item.active_when)
+    return true if item.tabs.any? { |tab| item_active?(tab) }
+
+    false
+  end
+
   def section_active?(section)
     if section.items.present?
-      section.items.any? { |item| active_nav_link?(item.active_when) }
+      section.items.any? { |item| item_active?(item) }
     else
       section.href.present? && active_nav_link?(Regexp.new(Regexp.escape(section.href)))
     end
@@ -253,11 +305,26 @@ module NavigationHelper
 
 private
 
-  def item_visible?(item)
-    return false if item.service == :uk && !TradeTariffAdmin::ServiceChooser.uk?
-    return false if item.service == :xi && !TradeTariffAdmin::ServiceChooser.xi?
+  def service_visible?(record)
+    return false if record.service == :uk && !TradeTariffAdmin::ServiceChooser.uk?
+    return false if record.service == :xi && !TradeTariffAdmin::ServiceChooser.xi?
 
-    policy(item.policy_class).index?
+    true
+  end
+
+  def visible_navigation_item(item)
+    return nil unless service_visible?(item)
+
+    if item.tabs.any?
+      visible_tabs = item.tabs.filter_map { |tab| visible_navigation_item(tab) }
+      return nil if visible_tabs.empty?
+
+      item.with(href: visible_tabs.first.href, tabs: visible_tabs)
+    else
+      return nil unless policy(item.policy_class).index?
+
+      item
+    end
   end
 
   def policy_allows_section?(section)
