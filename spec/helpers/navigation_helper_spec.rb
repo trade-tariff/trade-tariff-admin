@@ -13,8 +13,8 @@ RSpec.describe NavigationHelper, type: :helper do
   end
 
   describe "#navigation_sections" do
-    it "returns all five sections" do
-      expect(helper.navigation_sections.map(&:key)).to eq(%i[ott_admin classification spimm manage_users configuration])
+    it "returns all six sections" do
+      expect(helper.navigation_sections.map(&:key)).to eq(%i[ott_admin classification evaluation spimm manage_users configuration])
     end
 
     it "defines OTT Admin with 8 items" do
@@ -24,9 +24,9 @@ RSpec.describe NavigationHelper, type: :helper do
       )
     end
 
-    it "defines Classification with 7 items" do
+    it "defines Classification with 6 items" do
       section = helper.navigation_sections.find { |s| s.key == :classification }
-      expect(section.items.map(&:text)).to eq(["Search References", "Descriptions", "Intercepts", "Evaluation", "Search dashboard", "Search diagnostics", "Recent changes"])
+      expect(section.items.map(&:text)).to eq(["Search References", "Descriptions", "Intercepts", "Search dashboard", "Search diagnostics", "Recent changes"])
     end
 
     it "subdivides Search References into Browse and Search" do
@@ -35,10 +35,16 @@ RSpec.describe NavigationHelper, type: :helper do
       expect(item.tabs.map(&:text)).to eq(%w[Browse Search])
     end
 
-    it "subdivides Evaluation into synthetic ATaRs, gold query sets, and evaluations" do
-      item = helper.navigation_sections.find { |s| s.key == :classification }.items.find { |entry| entry.text == "Evaluation" }
+    it "restricts Evaluation to the UK service" do
+      section = helper.navigation_sections.find { |s| s.key == :evaluation }
 
-      expect(item.tabs.map(&:text)).to eq(["Synthetic ATaRs", "Gold Query Sets", "Evaluations"])
+      expect(section.service).to eq(:uk)
+    end
+
+    it "defines Evaluation with the three evaluation tools" do
+      section = helper.navigation_sections.find { |s| s.key == :evaluation }
+
+      expect(section.items.map(&:text)).to eq(["Synthetic ATaRs", "Gold Query Sets", "Evaluations"])
     end
 
     it "defines SPIMM with xi service restriction" do
@@ -100,7 +106,8 @@ RSpec.describe NavigationHelper, type: :helper do
                          "Reports",
                          "Rollbacks",
                        ],
-                       classification: ["Search References", "Descriptions", "Intercepts", "Evaluation", "Search dashboard", "Search diagnostics", "Recent changes"],
+                       classification: ["Search References", "Descriptions", "Intercepts", "Search dashboard", "Search diagnostics", "Recent changes"],
+                       evaluation: ["Synthetic ATaRs", "Gold Query Sets", "Evaluations"],
                        manage_users: nil,
                        configuration: []
     end
@@ -109,8 +116,8 @@ RSpec.describe NavigationHelper, type: :helper do
       include_context "with UK service"
 
       let(:user) { build(:user, :technical_operator) }
-      let(:evaluation_item) do
-        helper.visible_navigation_sections.find { |section| section.key == :classification }.items.find { |entry| entry.text == "Evaluation" }
+      let(:evaluation_section) do
+        helper.visible_navigation_sections.find { |section| section.key == :evaluation }
       end
 
       before do
@@ -123,12 +130,12 @@ RSpec.describe NavigationHelper, type: :helper do
         end
       end
 
-      it "keeps the other evaluation tabs" do
-        expect(evaluation_item.tabs.map(&:text)).to eq(["Gold Query Sets", "Evaluations"])
+      it "keeps the other evaluation items" do
+        expect(evaluation_section.items.map(&:text)).to eq(["Gold Query Sets", "Evaluations"])
       end
 
-      it "links Evaluation to the first visible tab" do
-        expect(evaluation_item.href).to eq(helper.evaluation_gold_query_sets_path)
+      it "links Evaluation to the first visible item" do
+        expect(helper.section_href(evaluation_section)).to eq(helper.evaluation_gold_query_sets_path)
       end
     end
 
@@ -271,16 +278,14 @@ RSpec.describe NavigationHelper, type: :helper do
     context "when on a synthetic ATaR page" do
       let(:request_path) { "/tariff_knowledge_synthetic_atars/12/edit" }
 
-      it "subdivides Evaluation into the three evaluation tools" do
-        tabs = helper.current_navigation_tabs_section
-
-        expect(tabs.items.map(&:text)).to eq(["Synthetic ATaRs", "Gold Query Sets", "Evaluations"])
+      it "returns the Evaluation section" do
+        expect(helper.current_navigation_section.key).to eq(:evaluation)
       end
 
       it "marks Synthetic ATaRs current" do
-        tabs = helper.current_navigation_tabs_section
+        items = helper.current_navigation_section.items
 
-        expect(tabs.items.map { |item| helper.item_active?(item) }).to eq([true, false, false])
+        expect(items.map { |item| helper.item_active?(item) }).to eq([true, false, false])
       end
     end
 
@@ -288,9 +293,9 @@ RSpec.describe NavigationHelper, type: :helper do
       let(:request_path) { "/evaluation_gold_query_sets/3/items/atar-1/edit" }
 
       it "marks Gold Query Sets current" do
-        tabs = helper.current_navigation_tabs_section
+        item = helper.current_navigation_section.items.find { |entry| entry.text == "Gold Query Sets" }
 
-        expect(helper.item_active?(tabs.items.find { |item| item.text == "Gold Query Sets" })).to be true
+        expect(helper.item_active?(item)).to be true
       end
     end
 
@@ -298,8 +303,8 @@ RSpec.describe NavigationHelper, type: :helper do
       let(:request_path) { "/evaluation_runs/9/results/4" }
 
       it "marks Evaluations current" do
-        tabs = helper.current_navigation_tabs_section
-        active = tabs.items.map { |item| [item.text, helper.item_active?(item)] }.to_h
+        items = helper.current_navigation_section.items
+        active = items.map { |item| [item.text, helper.item_active?(item)] }.to_h
 
         expect(active).to include("Evaluations" => true, "Synthetic ATaRs" => false)
       end
