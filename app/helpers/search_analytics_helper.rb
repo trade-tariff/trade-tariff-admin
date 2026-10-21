@@ -1,4 +1,5 @@
 module SearchAnalyticsHelper
+  SEARCH_ANALYTICS_PERCENTAGE_PRECISION = 2
   SEARCH_ANALYTICS_CHART_COLOURS = {
     all: "#144e81",
     classic: "#005a30",
@@ -118,7 +119,7 @@ module SearchAnalyticsHelper
   def search_analytics_outcome_rate_percentage(value)
     return "Unavailable" if value.nil?
 
-    number_to_percentage(value.to_f, precision: 1, strip_insignificant_zeros: true)
+    number_to_percentage(value.to_f, precision: SEARCH_ANALYTICS_PERCENTAGE_PRECISION, strip_insignificant_zeros: true)
   end
 
   def search_analytics_outcome_definition(view)
@@ -218,10 +219,10 @@ module SearchAnalyticsHelper
     number_with_delimiter(value.to_i)
   end
 
-  def search_analytics_percentage(value)
+  def search_analytics_percentage(value, precision: SEARCH_ANALYTICS_PERCENTAGE_PRECISION)
     return "Unavailable" if value.nil?
 
-    number_to_percentage(value.to_f * 100, precision: 1, strip_insignificant_zeros: true)
+    number_to_percentage(value.to_f * 100, precision:, strip_insignificant_zeros: true)
   end
 
   def search_analytics_share(value)
