@@ -439,4 +439,40 @@ RSpec.describe NavigationHelper, type: :helper do
       expect(helper.section_href(section)).to eq(helper.users_path)
     end
   end
+
+  describe "distribution lists section" do
+    def distribution_lists_section
+      helper.visible_navigation_sections.find { |s| s.key == :distribution_lists }
+    end
+
+    context "when no Cognito user pool is configured" do
+      before { allow(TradeTariffAdmin).to receive(:cognito_user_pool_id).and_return(nil) }
+
+      it "is not defined" do
+        expect(helper.navigation_sections.map(&:key)).not_to include(:distribution_lists)
+      end
+    end
+
+    context "when a Cognito user pool is configured" do
+      before { allow(TradeTariffAdmin).to receive(:cognito_user_pool_id).and_return("eu-west-2_pool") }
+
+      it "is placed before Configuration" do
+        expect(helper.navigation_sections.map(&:key).last(2)).to eq(%i[distribution_lists configuration])
+      end
+
+      it "is visible to a technical operator" do
+        expect(distribution_lists_section.href).to eq(helper.distribution_lists_path)
+      end
+    end
+
+    context "when a Cognito user pool is configured and the user is an HMRC admin" do
+      let(:user) { build(:user, :hmrc_admin) }
+
+      before { allow(TradeTariffAdmin).to receive(:cognito_user_pool_id).and_return("eu-west-2_pool") }
+
+      it "is hidden" do
+        expect(distribution_lists_section).to be_nil
+      end
+    end
+  end
 end

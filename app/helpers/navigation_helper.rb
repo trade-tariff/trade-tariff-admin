@@ -232,6 +232,7 @@ module NavigationHelper
         service: nil,
         items: [],
       ),
+      distribution_lists_section,
       NavigationSection.new(
         key: :configuration,
         label: "Configuration",
@@ -239,7 +240,7 @@ module NavigationHelper
         items: [],
         service: :uk,
       ),
-    ]
+    ].compact
   end
 
   def visible_navigation_sections
@@ -311,6 +312,19 @@ module NavigationHelper
 
 private
 
+  # Hidden when no Cognito user pool is configured, because the routes do not exist.
+  def distribution_lists_section
+    return unless TradeTariffAdmin.distribution_lists_enabled?
+
+    NavigationSection.new(
+      key: :distribution_lists,
+      label: "Distribution lists",
+      href: distribution_lists_path,
+      service: nil,
+      items: [],
+    )
+  end
+
   def service_visible?(record)
     return false if record.service == :uk && !TradeTariffAdmin::ServiceChooser.uk?
     return false if record.service == :xi && !TradeTariffAdmin::ServiceChooser.xi?
@@ -339,6 +353,8 @@ private
       policy(User).index?
     when :configuration
       policy(AdminConfiguration).index?
+    when :distribution_lists
+      policy(:distribution_list).index?
     else
       true
     end

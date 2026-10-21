@@ -12,6 +12,25 @@ data "aws_iam_policy_document" "task" {
     ]
     resources = ["*"]
   }
+
+  # Distribution lists: manage membership of dl-* groups in the identity user
+  # pool. IAM cannot restrict by group name, so the app only allows dl-* groups.
+  # AdminListGroupsForUser and AdminDeleteUser let admin delete a user when an
+  # unsubscribe removes them from their last group.
+  statement {
+    effect = "Allow"
+    actions = [
+      "cognito-idp:AdminAddUserToGroup",
+      "cognito-idp:AdminCreateUser",
+      "cognito-idp:AdminDeleteUser",
+      "cognito-idp:AdminGetUser",
+      "cognito-idp:AdminListGroupsForUser",
+      "cognito-idp:AdminRemoveUserFromGroup",
+      "cognito-idp:ListGroups",
+      "cognito-idp:ListUsersInGroup",
+    ]
+    resources = [data.aws_cognito_user_pool.identity.arn]
+  }
 }
 
 resource "aws_iam_policy" "task" {

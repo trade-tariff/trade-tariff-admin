@@ -74,6 +74,18 @@ module TradeTariffAdmin
       @identity_consumer ||= ENV.fetch("IDENTITY_CONSUMER", "admin")
     end
 
+    def cognito_user_pool_id
+      ENV["COGNITO_USER_POOL_ID"].presence
+    end
+
+    def cognito_region
+      ENV.fetch("AWS_REGION", "eu-west-2")
+    end
+
+    def distribution_lists_enabled?
+      cognito_user_pool_id.present?
+    end
+
     def identity_cognito_jwks_keys
       return if identity_cognito_jwks_url.blank?
 
