@@ -122,7 +122,21 @@ RSpec.describe EvaluationExperimentsController, type: :request do
   describe "GET #new" do
     let(:make_request) { get new_evaluation_experiment_path }
 
-    before { stub_api_request("/search/evaluation/gold_query_sets").with(query: hash_including("per_page" => "200")).and_return(paginated_response([])) }
+    def synthetic_input_sets_response(rows = [])
+      {
+        status: 200,
+        headers: json_headers,
+        body: {
+          data: rows.map { |attributes| { type: "synthetic_input_set", id: attributes["resource_id"], attributes: attributes.except("resource_id") } },
+          meta: { pagination: { page: 1, per_page: 200, total_count: rows.length } },
+        }.to_json,
+      }
+    end
+
+    before do
+      stub_api_request("/search/evaluation/gold_query_sets").with(query: hash_including("per_page" => "200")).and_return(paginated_response([]))
+      stub_api_request("/search/evaluation/synthetic_input_sets").with(query: hash_including("per_page" => "200")).and_return(synthetic_input_sets_response)
+    end
 
     it "shows the heading" do
       expect(page).to have_css("h1", text: "New experiment")
@@ -130,6 +144,28 @@ RSpec.describe EvaluationExperimentsController, type: :request do
 
     it "shows the name field" do
       expect(page).to have_field("Name")
+    end
+
+    it "offers a gold query set radio choice" do
+      expect(page).to have_field("Gold query set", type: "radio")
+    end
+
+    it "offers a synthetic input set radio choice" do
+      expect(page).to have_field("Synthetic input set", type: "radio")
+    end
+
+    it "lists gold query sets in the gold query set picker" do
+      stub_api_request("/search/evaluation/gold_query_sets").with(query: hash_including("per_page" => "200"))
+                                                             .and_return(paginated_response([{ "resource_id" => "3", "name" => "Baseline GQS" }]))
+
+      expect(page).to have_select("Gold query set", with_options: ["Baseline GQS"])
+    end
+
+    it "lists synthetic input sets in the synthetic input set picker" do
+      stub_api_request("/search/evaluation/synthetic_input_sets").with(query: hash_including("per_page" => "200"))
+                                                                  .and_return(synthetic_input_sets_response([{ "resource_id" => "9", "name" => "Baseline SIS" }]))
+
+      expect(page).to have_select("Synthetic input set", with_options: ["Baseline SIS"])
     end
 
     it "shows the create button" do
@@ -160,6 +196,7 @@ RSpec.describe EvaluationExperimentsController, type: :request do
       before do
         stub_api_request("/search/evaluation/experiments", :post).and_return(api_error_response(name: "is already taken"))
         stub_api_request("/search/evaluation/gold_query_sets").with(query: hash_including("per_page" => "200")).and_return(paginated_response([]))
+        stub_api_request("/search/evaluation/synthetic_input_sets").with(query: hash_including("per_page" => "200")).and_return(status: 200, headers: json_headers, body: { data: [], meta: { pagination: { page: 1, per_page: 200, total_count: 0 } } }.to_json)
       end
 
       it { is_expected.to have_http_status :unprocessable_content }
@@ -170,6 +207,95 @@ RSpec.describe EvaluationExperimentsController, type: :request do
 
       it "keeps the typed name" do
         expect(page).to have_field("Name", with: "Baseline")
+      end
+    end
+
+    context "when a synthetic input set is chosen instead of a gold query set" do
+      let(:make_request) do
+        post evaluation_experiments_path, params: {
+          evaluation_experiment: { name: "Baseline", source_type: "synthetic_input_set", synthetic_input_set_id: "9" },
+        }
+      end
+
+      before do
+        stub_api_request("/search/evaluation/experiments", :post)
+          .with { |request|
+            attributes = Rack::Utils.parse_nested_query(request.body).dig("data", "attributes")
+            attributes["synthetic_input_set_id"] == "9" && attributes["gold_query_set_id"].nil?
+          }
+          .and_return(experiment_response.merge(status: 201))
+      end
+
+      it "sends synthetic_input_set_id, not gold_query_set_id" do
+        expect(rendered_page).to redirect_to(evaluation_experiments_path)
+      end
+    end
+
+    context "when the operator picked a gold query set, then switched to a synthetic input set without the hidden picker clearing itself" do
+      # The conditional reveal only hides the inactive picker with CSS — its <select> keeps
+      # whatever was chosen before the radio was switched, so a real request can submit both
+      # ids. Only source_type says which pick is the operator's actual final choice.
+      let(:make_request) do
+        post evaluation_experiments_path, params: {
+          evaluation_experiment: { name: "Baseline", source_type: "synthetic_input_set", gold_query_set_id: "3", synthetic_input_set_id: "9" },
+        }
+      end
+
+      before do
+        stub_api_request("/search/evaluation/experiments", :post)
+          .with { |request|
+            attributes = Rack::Utils.parse_nested_query(request.body).dig("data", "attributes")
+            attributes["synthetic_input_set_id"] == "9" && attributes["gold_query_set_id"].nil?
+          }
+          .and_return(experiment_response.merge(status: 201))
+      end
+
+      it "sends only the synthetic_input_set_id, discarding the stale gold_query_set_id" do
+        expect(rendered_page).to redirect_to(evaluation_experiments_path)
+      end
+    end
+
+    context "when the operator picked a synthetic input set, then switched to a gold query set without the hidden picker clearing itself" do
+      let(:make_request) do
+        post evaluation_experiments_path, params: {
+          evaluation_experiment: { name: "Baseline", source_type: "gold_query_set", gold_query_set_id: "3", synthetic_input_set_id: "9" },
+        }
+      end
+
+      before do
+        stub_api_request("/search/evaluation/experiments", :post)
+          .with { |request|
+            attributes = Rack::Utils.parse_nested_query(request.body).dig("data", "attributes")
+            attributes["gold_query_set_id"] == "3" && attributes["synthetic_input_set_id"].nil?
+          }
+          .and_return(experiment_response.merge(status: 201))
+      end
+
+      it "sends only the gold_query_set_id, discarding the stale synthetic_input_set_id" do
+        expect(rendered_page).to redirect_to(evaluation_experiments_path)
+      end
+    end
+
+    context "when a rejected synthetic input set choice is redisplayed" do
+      let(:make_request) do
+        post evaluation_experiments_path, params: {
+          evaluation_experiment: { name: "Baseline", source_type: "synthetic_input_set", synthetic_input_set_id: "9" },
+        }
+      end
+
+      before do
+        stub_api_request("/search/evaluation/experiments", :post).and_return(api_error_response(name: "is already taken"))
+        stub_api_request("/search/evaluation/gold_query_sets").with(query: hash_including("per_page" => "200")).and_return(paginated_response([]))
+        stub_api_request("/search/evaluation/synthetic_input_sets").with(query: hash_including("per_page" => "200"))
+          .and_return(status: 200, headers: json_headers, body: { data: [{ type: "synthetic_input_set", id: "9", attributes: { name: "Baseline SIS" } }], meta: { pagination: { page: 1, per_page: 200, total_count: 1 } } }.to_json)
+      end
+
+      it "keeps the synthetic input set radio chosen" do
+        expect(page).to have_checked_field("Synthetic input set")
+      end
+
+      it "keeps the chosen synthetic input set selected" do
+        expect(page).to have_select("Synthetic input set", selected: "Baseline SIS")
       end
     end
 

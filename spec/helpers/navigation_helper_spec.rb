@@ -41,10 +41,10 @@ RSpec.describe NavigationHelper, type: :helper do
       expect(section.service).to eq(:uk)
     end
 
-    it "defines Evaluation with the three evaluation tools" do
+    it "defines Evaluation with the four evaluation tools" do
       section = helper.navigation_sections.find { |s| s.key == :evaluation }
 
-      expect(section.items.map(&:text)).to eq(["Synthetic ATaRs", "Gold Query Sets", "Evaluations"])
+      expect(section.items.map(&:text)).to eq(["Synthetic ATaRs", "Gold Query Sets", "Synthetic Input Sets", "Evaluations"])
     end
 
     it "defines SPIMM with xi service restriction" do
@@ -107,7 +107,7 @@ RSpec.describe NavigationHelper, type: :helper do
                          "Rollbacks",
                        ],
                        classification: ["Search References", "Descriptions", "Intercepts", "Search dashboard", "Search diagnostics", "Recent changes"],
-                       evaluation: ["Synthetic ATaRs", "Gold Query Sets", "Evaluations"],
+                       evaluation: ["Synthetic ATaRs", "Gold Query Sets", "Synthetic Input Sets", "Evaluations"],
                        manage_users: nil,
                        configuration: []
     end
@@ -131,7 +131,7 @@ RSpec.describe NavigationHelper, type: :helper do
       end
 
       it "keeps the other evaluation items" do
-        expect(evaluation_section.items.map(&:text)).to eq(["Gold Query Sets", "Evaluations"])
+        expect(evaluation_section.items.map(&:text)).to eq(["Gold Query Sets", "Synthetic Input Sets", "Evaluations"])
       end
 
       it "links Evaluation to the first visible item" do
@@ -147,7 +147,7 @@ RSpec.describe NavigationHelper, type: :helper do
       it "shows Evaluation" do
         section = helper.visible_navigation_sections.find { |entry| entry.key == :evaluation }
 
-        expect(section.items.map(&:text)).to eq(["Synthetic ATaRs", "Gold Query Sets", "Evaluations"])
+        expect(section.items.map(&:text)).to eq(["Synthetic ATaRs", "Gold Query Sets", "Synthetic Input Sets", "Evaluations"])
       end
     end
 
@@ -159,7 +159,7 @@ RSpec.describe NavigationHelper, type: :helper do
       it "shows Evaluation" do
         section = helper.visible_navigation_sections.find { |entry| entry.key == :evaluation }
 
-        expect(section.items.map(&:text)).to eq(["Synthetic ATaRs", "Gold Query Sets", "Evaluations"])
+        expect(section.items.map(&:text)).to eq(["Synthetic ATaRs", "Gold Query Sets", "Synthetic Input Sets", "Evaluations"])
       end
     end
 
@@ -309,7 +309,7 @@ RSpec.describe NavigationHelper, type: :helper do
       it "marks Synthetic ATaRs current" do
         items = helper.current_navigation_section.items
 
-        expect(items.map { |item| helper.item_active?(item) }).to eq([true, false, false])
+        expect(items.map { |item| helper.item_active?(item) }).to eq([true, false, false, false])
       end
     end
 
@@ -318,6 +318,16 @@ RSpec.describe NavigationHelper, type: :helper do
 
       it "marks Gold Query Sets current" do
         item = helper.current_navigation_section.items.find { |entry| entry.text == "Gold Query Sets" }
+
+        expect(helper.item_active?(item)).to be true
+      end
+    end
+
+    context "when on the new synthetic input set page" do
+      let(:request_path) { "/evaluation_synthetic_input_sets/new" }
+
+      it "marks Synthetic Input Sets current" do
+        item = helper.current_navigation_section.items.find { |entry| entry.text == "Synthetic Input Sets" }
 
         expect(helper.item_active?(item)).to be true
       end

@@ -160,6 +160,13 @@ module NavigationHelper
             service: :uk,
           ),
           NavigationItem.new(
+            text: "Synthetic Input Sets",
+            href: new_evaluation_synthetic_input_set_path,
+            policy_class: EvaluationSyntheticInputSet,
+            active_when: %r{/evaluation_synthetic_input_sets},
+            service: :uk,
+          ),
+          NavigationItem.new(
             text: "Evaluations",
             href: evaluation_experiments_path,
             policy_class: EvaluationExperiment,

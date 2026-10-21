@@ -24,6 +24,26 @@ RSpec.describe EvaluationExperiment do
     end
   end
 
+  describe "#synthetic_input_set_id" do
+    it "round-trips the value the backend sent" do
+      experiment.synthetic_input_set_id = 9
+
+      expect(experiment.synthetic_input_set_id).to eq(9)
+    end
+  end
+
+  describe "#source_type" do
+    before { experiment.source_type = "synthetic_input_set" }
+
+    it "reads back what was set" do
+      expect(experiment.source_type).to eq("synthetic_input_set")
+    end
+
+    it "is never sent to the backend" do
+      expect(experiment.serializable_hash.dig(:data, :attributes)).not_to have_key(:source_type)
+    end
+  end
+
   describe "#created_by_name" do
     it "shows the name of a known user" do
       create(:user, uid: "user-123", name: "Alex Example")

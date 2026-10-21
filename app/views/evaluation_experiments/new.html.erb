@@ -16,13 +16,27 @@
                         label: { text: "Description", size: "s" },
                         rows: 2 %>
 
-  <%= f.govuk_collection_select :gold_query_set_id,
-                                @gold_query_sets,
-                                :resource_id,
-                                :name,
-                                label: { text: "Default gold query set", size: "s" },
-                                hint: { text: "Every run launched from this experiment scores against this set unless a different one is chosen at launch time." },
-                                options: { include_blank: "Choose later" } %>
+  <%= f.govuk_radio_buttons_fieldset :source_type,
+                                     legend: { text: "Source", size: "s" },
+                                     hint: { text: "Every run launched from this experiment scores against the set chosen here, unless a different one is chosen at launch time. This cannot be changed once chosen." } do %>
+    <%= f.govuk_radio_button :source_type, "gold_query_set", label: { text: "Gold query set" } do %>
+      <%= f.govuk_collection_select :gold_query_set_id,
+                                    @gold_query_sets,
+                                    :resource_id,
+                                    :name,
+                                    label: { text: "Gold query set", size: "s" },
+                                    options: { include_blank: "Choose later" } %>
+    <% end %>
+    <%= f.govuk_radio_button :source_type, "synthetic_input_set", label: { text: "Synthetic input set" } do %>
+      <%= f.govuk_collection_select :synthetic_input_set_id,
+                                    @synthetic_input_sets,
+                                    :resource_id,
+                                    :name,
+                                    label: { text: "Synthetic input set", size: "s" },
+                                    options: { include_blank: "Choose later" } %>
+      <%= link_to "Create a new synthetic input set", new_evaluation_synthetic_input_set_path, class: "govuk-link" %>
+    <% end %>
+  <% end %>
 
   <%= submit_and_back_buttons f, evaluation_experiments_path, submit: "Create experiment" %>
 <% end %>

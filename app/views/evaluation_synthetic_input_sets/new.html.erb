@@ -1,0 +1,26 @@
+<%= govuk_breadcrumbs "Evaluation experiments": evaluation_experiments_path %>
+
+<h1 class="govuk-heading-l">New synthetic input set</h1>
+
+<p class="govuk-body">
+  The backend samples real, HMRC-analyst-written product descriptions (synthetic ATaRs) at
+  random and uses them verbatim, not rewritten. Sampling happens straight away.
+</p>
+
+<%= govuk_form_for @synthetic_input_set,
+                   as: :evaluation_synthetic_input_set,
+                   url: evaluation_synthetic_input_sets_path do |f| %>
+  <%= f.govuk_error_summary %>
+
+  <%= f.govuk_text_field :name,
+                         label: { text: "Name", size: "s" },
+                         hint: { text: "A name that is not used by another set. It is how you will choose this set later." },
+                         width: "two-thirds" %>
+
+  <%= f.govuk_number_field :requested_size,
+                           label: { text: "Number of source items", size: "s" },
+                           hint: { text: "If fewer synthetic ATaRs exist than you ask for, the set uses all of them." },
+                           width: 5 %>
+
+  <%= submit_and_back_buttons f, evaluation_experiments_path, submit: "Create synthetic input set" %>
+<% end %>

@@ -15,8 +15,15 @@ class EvaluationExperiment
              :configuration_overrides,
              :default_scope,
              :gold_query_set_id,
+             :synthetic_input_set_id,
              :created_by,
              :created_at
+
+  # Which picker the new-experiment form shows -- "gold_query_set" or "synthetic_input_set".
+  # Form-only: never read from or sent to the backend (unlike the attributes above, it is a
+  # plain accessor, not registered through ApiEntity's attributes hash), because the backend
+  # already knows which source an experiment uses from whichever of the two ids is set.
+  attr_accessor :source_type
 
   # The backend refuses to delete an experiment while one of its runs is queued or running
   # (409) and says why in the reply. Falls back to the same wording when the body is empty.

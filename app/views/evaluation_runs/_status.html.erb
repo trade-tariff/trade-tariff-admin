@@ -1,7 +1,10 @@
-<%# The real total a run works through: one gold query per persona per item, not the number of
-    items (atar_count/synthetic_atar_count deliberately deduplicate by item, for the "N items"
-    display elsewhere) — see EvaluationGoldQuerySet.gold_query_counts on the backend. %>
-<% total_items = @gold_query_set ? @gold_query_set.gold_query_count.to_i : 0 %>
+<%# The real total a run works through, snapshotted onto the run itself at launch time (AI-1435)
+    rather than fetched live here — one gold query per persona per item for a gold query set, or
+    one result per item for a synthetic input set. A run that predates that snapshot (nil,
+    never backfilled) falls back to @gold_query_set, fetched live only for this case (#show).
+    0 covers a run with neither a snapshot nor a legacy gold query set to fall back on (should
+    not happen, but the throbber has to show something). %>
+<% total_items = @run.intended_result_count || (@gold_query_set&.gold_query_count).to_i %>
 
 <% if @run.generating? %>
   <div class="govuk-notification-banner" role="status" aria-live="polite">

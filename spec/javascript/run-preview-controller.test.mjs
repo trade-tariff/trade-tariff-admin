@@ -43,16 +43,16 @@ function allText(node) {
 
 test('never writes attacker-controlled text through innerHTML', () => {
   const payload = '<img src=x onerror=alert(1)>';
-  const controller = setup({ experiments: { 7: { gold_query_set_name: payload, overrides: {} } } });
+  const controller = setup({ experiments: { 7: { source_name: payload, overrides: {} } } });
 
   controller.render();
 
   assert.equal(controller.previewTarget.innerHTML, undefined, 'innerHTML must never be assigned once overrides/set names are rendered');
 });
 
-test('renders the gold query set name as literal text, not parsed HTML', () => {
+test('renders the source name as literal text, not parsed HTML', () => {
   const payload = '<img src=x onerror=alert(1)>';
-  const controller = setup({ experiments: { 7: { gold_query_set_name: payload, overrides: {} } } });
+  const controller = setup({ experiments: { 7: { source_name: payload, overrides: {} } } });
 
   controller.render();
 
@@ -64,7 +64,7 @@ test('renders an override value containing markup as literal text', () => {
   const payload = '<script>alert(1)</script>';
   const controller = setup({
     baseline: { question_model: 'gpt-5.4' },
-    experiments: { 7: { gold_query_set_name: 'Set A', overrides: { question_model: payload } } },
+    experiments: { 7: { source_name: 'Set A', overrides: { question_model: payload } } },
   });
 
   controller.render();
@@ -85,7 +85,7 @@ test('shows the prompt when no experiment is selected, with no stray list', () =
 });
 
 test('shows item count alongside the set name when present', () => {
-  const controller = setup({ experiments: { 7: { gold_query_set_name: 'Set A', gold_query_set_item_count: 5, overrides: {} } } });
+  const controller = setup({ experiments: { 7: { source_name: 'Set A', source_item_count: 5, overrides: {} } } });
 
   controller.render();
 
@@ -96,7 +96,7 @@ test('shows item count alongside the set name when present', () => {
 test('layers typed field values over the experiment and baseline overrides', () => {
   const controller = setup({
     baseline: { max_rounds: 7 },
-    experiments: { 7: { gold_query_set_name: 'Set A', overrides: {} } },
+    experiments: { 7: { source_name: 'Set A', overrides: {} } },
     overrideFields: [{ dataset: { overrideKey: 'max_rounds' }, type: 'number', value: '3' }],
   });
 
@@ -109,7 +109,7 @@ test('layers typed field values over the experiment and baseline overrides', () 
 test('shows "default" for a baseline field left untouched, not its resolved value', () => {
   const controller = setup({
     baseline: { search_non_declarables: false, max_rounds: 7 },
-    experiments: { 7: { gold_query_set_name: 'Set A', overrides: {} } },
+    experiments: { 7: { source_name: 'Set A', overrides: {} } },
   });
 
   controller.render();
@@ -122,7 +122,7 @@ test('shows "default" for a baseline field left untouched, not its resolved valu
 test('shows a typed boolean override as its real value, not "default"', () => {
   const controller = setup({
     baseline: { search_non_declarables: false },
-    experiments: { 7: { gold_query_set_name: 'Set A', overrides: {} } },
+    experiments: { 7: { source_name: 'Set A', overrides: {} } },
     overrideFields: [
       { dataset: { overrideKey: 'search_non_declarables' }, type: 'radio', value: '', checked: false },
       { dataset: { overrideKey: 'search_non_declarables' }, type: 'radio', value: 'true', checked: true },
@@ -139,7 +139,7 @@ test('shows a typed boolean override as its real value, not "default"', () => {
 test('shows an experiment-level override even for a key absent from baseline', () => {
   const controller = setup({
     baseline: { question_model: 'gpt-5.4' },
-    experiments: { 7: { gold_query_set_name: 'Set A', overrides: { simulator_model: 'gpt-5.2' } } },
+    experiments: { 7: { source_name: 'Set A', overrides: { simulator_model: 'gpt-5.2' } } },
   });
 
   controller.render();

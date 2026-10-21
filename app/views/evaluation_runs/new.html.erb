@@ -1,14 +1,27 @@
 <h1 class="govuk-heading-l">Launch an evaluation</h1>
 
 <%
+  # An experiment has at most one of these two ids set (enforced on the backend), so exactly
+  # one branch below ever finds anything -- the other's lookup is simply never reached. Both
+  # kinds report "Unknown (set may have been deleted)" the same way, rather than only the
+  # gold-query-set one, so a synthetic input set experiment doesn't wrongly look like a set
+  # that still exists has gone missing when really this code just never looked for it.
   experiments_data = @experiments.map { |e|
-    gold_query_set = @gold_query_sets_by_id[e.gold_query_set_id.to_s]
+    source_name, source_item_count =
+      if e.synthetic_input_set_id
+        synthetic_input_set = @synthetic_input_sets_by_id[e.synthetic_input_set_id.to_s]
+        [synthetic_input_set&.name, synthetic_input_set&.actual_size]
+      else
+        gold_query_set = @gold_query_sets_by_id[e.gold_query_set_id.to_s]
+        [gold_query_set&.name, gold_query_set&.item_count]
+      end
+
     [
       e.resource_id.to_s,
       {
         overrides: e.configuration_overrides,
-        gold_query_set_name: gold_query_set&.name || "Unknown (set may have been deleted)",
-        gold_query_set_item_count: gold_query_set&.item_count,
+        source_name: source_name || "Unknown (set may have been deleted)",
+        source_item_count: source_item_count,
       },
     ]
   }.to_h
