@@ -1,0 +1,84 @@
+<%= govuk_breadcrumbs "Distribution lists" => distribution_lists_path %>
+
+<span class="govuk-caption-l">Distribution list</span>
+<h1 class="govuk-heading-l"><%= @group.name %></h1>
+
+<% if @group.description.present? %>
+  <p class="govuk-body"><%= @group.description %></p>
+<% end %>
+
+<h2 class="govuk-heading-m">Subscribe a recipient</h2>
+
+<%= govuk_form_for @form,
+                   url: distribution_list_recipients_path(@group.name),
+                   method: :post do |f| %>
+  <%= f.govuk_email_field :email,
+                          label: { text: "Email address", size: "s" },
+                          hint: { text: "If no account exists for this email address, one is created. It has no access to any service and no invitation email is sent." },
+                          autocomplete: "off",
+                          spellcheck: false,
+                          width: "two-thirds" %>
+
+  <%= f.govuk_submit "Subscribe", prevent_double_click: true %>
+<% end %>
+
+<h2 class="govuk-heading-m">Recipients (<%= @members.size %>)</h2>
+
+<% if @members.any? %>
+  <%= govuk_table do |table|
+        table.with_head do |head|
+          head.with_row do |row|
+            row.with_cell(text: "Email")
+            row.with_cell(text: "Account status")
+            row.with_cell(text: "Enabled")
+            row.with_cell(text: "Action")
+          end
+        end
+
+        table.with_body do |body|
+          @members.each do |member|
+            body.with_row(html_attributes: { id: "recipient-#{member.username}" }) do |row|
+              row.with_cell(text: member.email.presence || "No email")
+              row.with_cell { govuk_tag(text: member.status.to_s.humanize, colour: member.status == "CONFIRMED" ? "green" : "grey") }
+              row.with_cell(text: member.enabled ? "Yes" : "No")
+              row.with_cell do
+                govuk_link_to("Unsubscribe", remove_distribution_list_recipient_path(@group.name, member.username),
+                              visually_hidden_suffix: member.email)
+              end
+            end
+          end
+        end
+      end %>
+<% else %>
+  <p class="govuk-body">No recipients yet.</p>
+<% end %>
+
+<h2 class="govuk-heading-m">Recent changes</h2>
+
+<% if @audit_events.any? %>
+  <p class="govuk-body">The <%= DistributionListHandling::AUDIT_EVENTS_SHOWN %> most recent changes. Recipients are identified by Cognito username, not by email address.</p>
+
+  <%= govuk_table do |table|
+        table.with_head do |head|
+          head.with_row do |row|
+            row.with_cell(text: "When")
+            row.with_cell(text: "Who")
+            row.with_cell(text: "Action")
+            row.with_cell(text: "Recipient")
+          end
+        end
+
+        table.with_body do |body|
+          @audit_events.each do |event|
+            body.with_row(html_attributes: { id: "audit-event-#{event.id}" }) do |row|
+              row.with_cell(text: distribution_list_audit_time(event.created_at))
+              row.with_cell(text: event.actor_name.presence || event.actor_uid)
+              row.with_cell(text: distribution_list_audit_action(event.action))
+              row.with_cell { tag.code(event.recipient_username) }
+            end
+          end
+        end
+      end %>
+<% else %>
+  <p class="govuk-body">No changes recorded yet.</p>
+<% end %>

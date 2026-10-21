@@ -10,9 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_23_081000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_21_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "distribution_list_audit_events", force: :cascade do |t|
+    t.string "actor_uid", null: false
+    t.string "actor_name"
+    t.string "action", null: false
+    t.string "group_name", null: false
+    t.string "recipient_username", null: false
+    t.datetime "created_at", null: false
+    t.index ["group_name", "created_at"], name: "index_dl_audit_events_on_group_name_and_created_at"
+    t.index ["recipient_username"], name: "index_distribution_list_audit_events_on_recipient_username"
+  end
 
   create_table "sessions", force: :cascade do |t|
     t.datetime "created_at", null: false

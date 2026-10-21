@@ -34,6 +34,9 @@ gem "jwt"
 # Authorization
 gem "pundit"
 
+# AWS
+gem "aws-sdk-cognitoidentityprovider", require: false
+
 # Helpers
 gem "kaminari"
 gem "responders"

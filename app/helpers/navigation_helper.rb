@@ -234,6 +234,7 @@ module NavigationHelper
         service: nil,
         items: [],
       ),
+      distribution_lists_section,
       NavigationSection.new(
         key: :configuration,
         label: "Configuration",
@@ -241,7 +242,7 @@ module NavigationHelper
         items: [],
         service: :uk,
       ),
-    ]
+    ].compact
   end
 
   def visible_navigation_sections
@@ -313,6 +314,19 @@ module NavigationHelper
 
 private
 
+  # Hidden when no Cognito user pool is configured, because the routes do not exist.
+  def distribution_lists_section
+    return unless TradeTariffAdmin.distribution_lists_enabled?
+
+    NavigationSection.new(
+      key: :distribution_lists,
+      label: "Distribution lists",
+      href: distribution_lists_path,
+      service: nil,
+      items: [],
+    )
+  end
+
   # Empty while gold query sets are hidden (see EvaluationGoldQuerySet.entry_points_enabled?).
   def gold_query_sets_navigation_items
     return [] unless EvaluationGoldQuerySet.entry_points_enabled?
@@ -356,6 +370,8 @@ private
       policy(User).index?
     when :configuration
       policy(AdminConfiguration).index?
+    when :distribution_lists
+      policy(:distribution_list).index?
     else
       true
     end

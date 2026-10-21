@@ -111,6 +111,59 @@ Sidekiq Web can delete queues, kill jobs and retry jobs. Take care in production
 The admin log records each request that can change Sidekiq data, with the
 user uid and email (`[SidekiqWeb]` lines).
 
+## Distribution lists
+
+An email distribution list is a Cognito group in the Identity user pool. The
+group name starts with `dl-`, for example `dl-tariff-notifications`. The prefix
+keeps distribution lists apart from the role and access groups (`admin`,
+`myott` and `portal`). Being on a distribution list gives no access to any
+service.
+
+Go to `/distribution_lists`. Only users with the `technical_operator` or
+`superadmin` role can open it.
+
+- Subscribe a recipient: enter an email address. If no Cognito user exists for
+  it, admin creates one with a verified email and sends no invitation email.
+  Then admin adds the user to the group.
+- Unsubscribe a recipient: admin removes the user from the group. Then admin
+  checks the other groups of the user, including `admin`, `myott` and `portal`.
+  If the user is in no other group, admin deletes the Cognito user. This
+  removes the email address and all other personal information that Cognito
+  holds. The confirmation page tells the operator if this will happen.
+
+Admin makes each change directly in Cognito, so the change takes effect
+immediately. Admin does not cache distribution lists.
+
+Admin writes an audit event to the `distribution_list_audit_events` table for
+each change: who (`actor_uid`, `actor_name`), the action (`user_created`,
+`recipient_added`, `recipient_removed` or `user_deleted`), the list, and when
+(`created_at`). The event identifies the recipient by Cognito username (sub),
+not by email address. Audit events cannot be changed. Each list page shows the
+20 most recent events. Admin also writes each event to the log
+(`distribution_list.*` lines).
+
+Admin reads recipient emails from Cognito and shows them on the page only. It
+does not store them in the database, the logs, flash messages or URLs. The
+pages send `Cache-Control: no-store`.
+
+If admin removes a user from a list but cannot delete the Cognito user, the
+page shows the Cognito username. Ask the platform team to delete that user.
+
+Terraform in `trade-tariff-platform-aws-terraform` creates the `dl-*` groups.
+Admin cannot create or delete groups. Admin only shows groups whose name
+starts with `dl-`. It refuses `admin`, `myott` and `portal`.
+
+The feature needs these variables:
+
+- `COGNITO_USER_POOL_ID`: the Identity user pool ID. When it is not set, the
+  pages and the navigation link are not available.
+- `AWS_REGION`: optional. The default is `eu-west-2`.
+
+In AWS, Terraform reads `COGNITO_USER_POOL_ID` from the `admin-configuration`
+secret and gives the task role Cognito permissions on that pool only (see
+[terraform/iam.tf](terraform/iam.tf)). Locally, use AWS credentials for the
+development account (for example, AWS SSO) and the development pool ID.
+
 ## Contribute
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) for reporting bugs, making a fork,
