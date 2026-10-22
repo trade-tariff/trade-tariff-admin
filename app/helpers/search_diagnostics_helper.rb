@@ -199,7 +199,7 @@ module SearchDiagnosticsHelper
   end
 
   def search_diagnostic_window_path(request_id, period)
-    search_diagnostic_path(request_id, search_diagnostic_return_filters.except("lookback_hours").merge(period:))
+    search_diagnostic_path(request_id, search_diagnostic_return_filters.merge(period:))
   end
 
   def search_diagnostic_window_filters
