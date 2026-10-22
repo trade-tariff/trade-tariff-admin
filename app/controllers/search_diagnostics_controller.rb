@@ -1,4 +1,6 @@
 class SearchDiagnosticsController < AuthenticatedController
+  SEARCH_WINDOW_PERIODS = { "3d" => 72, "7d" => 168, "14d" => 336 }.freeze
+
   def index
     authorize SearchDiagnostic, :index?
 
@@ -25,7 +27,12 @@ class SearchDiagnosticsController < AuthenticatedController
     authorize SearchDiagnostic, :show?
 
     @request_id = request_id
+    prepare_search_window
     @search_diagnostic = SearchDiagnostic.find(@request_id, search_params)
+  rescue Faraday::UnprocessableContentError => e
+    @date_range_error = date_range_error(e)
+    @search_diagnostic = SearchDiagnostic.new(request_id: @request_id, events: [])
+    render :show, status: :unprocessable_content
   rescue Faraday::ResourceNotFound
     redirect_to search_diagnostics_path, alert: "Search diagnostics were not found for that request ID."
   rescue Faraday::Error => e
@@ -58,8 +65,34 @@ private
     "Enter a valid request ID, browser session, or experiment."
   end
 
+  def prepare_search_window
+    @period = if params.key?(:from) || params.key?(:to) || params[:period] == "custom"
+                "custom"
+              elsif SEARCH_WINDOW_PERIODS.key?(params[:period])
+                params[:period]
+              elsif params[:lookback_hours].blank?
+                SEARCH_WINDOW_PERIODS.key(SearchDiagnostic::DEFAULT_LOOKBACK_HOURS)
+              else
+                SEARCH_WINDOW_PERIODS.key(explicit_lookback_hours)
+              end
+    @from = params[:from].to_s if @period == "custom"
+    @to = params[:to].to_s if @period == "custom"
+  end
+
   def search_params
-    preserved_filters
+    filters = preserved_filters
+    return filters.except("lookback_hours").merge(from: @from, to: @to) if @period == "custom"
+    return filters.merge("lookback_hours" => SEARCH_WINDOW_PERIODS.fetch(params[:period])) if SEARCH_WINDOW_PERIODS.key?(params[:period])
+
+    filters
+  end
+
+  def date_range_error(error)
+    body = error.response_body
+    body = JSON.parse(body) if body.is_a?(String)
+    body.is_a?(Hash) ? body.dig("errors", 0, "detail") || "Check the selected dates." : "Check the selected dates."
+  rescue JSON::ParserError
+    "Check the selected dates."
   end
 
   def preserved_filters

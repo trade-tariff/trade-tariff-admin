@@ -283,6 +283,12 @@ module SearchDiagnosticsHelper
     timestamp
   end
 
+  def search_diagnostic_date(timestamp)
+    Time.zone.parse(timestamp.to_s)&.utc&.to_date&.iso8601
+  rescue ArgumentError
+    nil
+  end
+
   def search_diagnostic_time_range(diagnostic)
     [diagnostic.start_time, diagnostic.end_time].filter_map { |timestamp| diagnostic_datetime(timestamp) }.join(" to ")
   end

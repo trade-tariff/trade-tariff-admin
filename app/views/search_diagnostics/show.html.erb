@@ -135,6 +135,8 @@
       <% end %>
     </dl>
 
+    <%= render "search_diagnostics/search_window" %>
+
     <% if @search_diagnostic.related_requests_available == false %>
       <p class="govuk-body">Related search requests could not be loaded. The diagnostics for this request are still shown below.</p>
     <% end %>
@@ -273,8 +275,9 @@
           <%= render "note_evidence", note_evidence_events: note_evidence_events %>
         </div>
       </div>
-    <% else %>
+    <% elsif @date_range_error.blank? %>
       <p class="govuk-body">No search journey events were found for this request ID.</p>
+      <p class="govuk-body">Feedback can arrive days after the search. Choose a longer window, or the dates around when the feedback was sent.</p>
     <% end %>
   </div>
 </div>
