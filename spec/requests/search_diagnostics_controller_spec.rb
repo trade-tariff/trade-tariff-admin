@@ -741,7 +741,7 @@ RSpec.describe SearchDiagnosticsController do
     context "when a date range is chosen" do
       let(:related_request_id) { "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee" }
       let(:make_request) do
-        get search_diagnostic_path("request-456", experiment: "hmrc-users", period: "custom", from: "2026-06-01", to: "2026-06-01")
+        get search_diagnostic_path("request-456", experiment: "hmrc-users", lookback_hours: 48, period: "custom", from: "2026-06-01", to: "2026-06-01")
       end
 
       before do
@@ -769,17 +769,20 @@ RSpec.describe SearchDiagnosticsController do
         rendered_page
 
         expect(response.body).to include(
-          CGI.escapeHTML(search_diagnostic_path(related_request_id, experiment: "hmrc-users", period: "custom", from: "2026-06-01", to: "2026-06-01")),
+          CGI.escapeHTML(search_diagnostic_path(related_request_id, experiment: "hmrc-users", lookback_hours: 48, period: "custom", from: "2026-06-01", to: "2026-06-01")),
         )
       end
 
-      it "keeps the return list when changing the window" do
+      it "keeps the return list in the window links" do
         rendered_page
 
-        expect(response.body).to include(
-          CGI.escapeHTML(search_diagnostic_path("request-456", experiment: "hmrc-users", period: "14d")),
-          'name="experiment" value="hmrc-users"',
-        )
+        expect(response.body).to include(CGI.escapeHTML(search_diagnostic_path("request-456", experiment: "hmrc-users", lookback_hours: 48, period: "14d")))
+      end
+
+      it "keeps the return list in the date form" do
+        rendered_page
+
+        expect(response.body).to include('name="experiment" value="hmrc-users"', 'name="lookback_hours" value="48"')
       end
     end
 
