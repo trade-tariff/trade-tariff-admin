@@ -718,6 +718,68 @@ RSpec.describe SearchDiagnosticsController do
 
         expect(response.body).to include("No search journey events were found for this request ID.")
       end
+
+      it "offers longer windows and a date range prefilled with the searched dates" do
+        rendered_page
+
+        expect(response.body).to include(search_diagnostic_path("missing-request", period: "14d"), 'value="2026-06-02"', 'value="2026-06-05"')
+      end
+    end
+
+    context "when a longer window is chosen" do
+      before do
+        stub_api_request("/search_diagnostics/request-456")
+          .with(query: { lookback_hours: "336" })
+          .to_return jsonapi_response(:search_diagnostic, { resource_id: "request-456", request_id: "request-456", events: [] })
+      end
+
+      let(:make_request) { get search_diagnostic_path("request-456", period: "14d") }
+
+      it { is_expected.to have_http_status :success }
+    end
+
+    context "when a date range is chosen" do
+      before do
+        stub_api_request("/search_diagnostics/request-456")
+          .with(query: { from: "2026-06-01", to: "2026-06-01" })
+          .to_return jsonapi_response(:search_diagnostic, { resource_id: "request-456", request_id: "request-456", events: [] })
+      end
+
+      let(:make_request) { get search_diagnostic_path("request-456", period: "custom", from: "2026-06-01", to: "2026-06-01") }
+
+      it "keeps the chosen dates in the form" do
+        rendered_page
+
+        expect(response.body).to include('value="2026-06-01"')
+      end
+    end
+
+    context "when the date range is rejected" do
+      before do
+        stub_api_request("/search_diagnostics/request-456")
+          .with(query: { from: "2026-06-02", to: "2026-06-01" })
+          .to_return(
+            status: 422,
+            body: { errors: [{ status: "422", detail: "From must be on or before To." }] }.to_json,
+            headers: { "content-type" => "application/json" },
+          )
+      end
+
+      let(:make_request) { get search_diagnostic_path("request-456", from: "2026-06-02", to: "2026-06-01") }
+
+      it { is_expected.to have_http_status :unprocessable_content }
+
+      it "shows the error next to the dates" do
+        rendered_page
+
+        expect(response.body).to include("From must be on or before To.", 'value="2026-06-02"')
+      end
+
+      it "does not claim that no events were found" do
+        rendered_page
+
+        expect(response.body).not_to include("No search journey events were found")
+      end
     end
 
     context "when the request predates compressed note evidence diagnostics" do
