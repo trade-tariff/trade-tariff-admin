@@ -9,13 +9,16 @@
     <div class="govuk-button-group">
       <% [["3d", "3 days"], ["7d", "7 days"], ["14d", "14 days"]].each do |period, label| %>
         <%= link_to label,
-                    search_diagnostic_path(@request_id, period: period),
+                    search_diagnostic_window_path(@request_id, period),
                     class: ["govuk-link", ("govuk-!-font-weight-bold" if @period == period)].compact.join(" ") %>
       <% end %>
     </div>
   </div>
   <%= form_with url: search_diagnostic_path(@request_id), method: :get, local: true, class: "search-analytics-date-range" do %>
     <%= hidden_field_tag :period, "custom" %>
+    <% search_diagnostic_return_filters.except("lookback_hours").each do |name, value| %>
+      <%= hidden_field_tag name, value, id: nil %>
+    <% end %>
     <fieldset class="govuk-fieldset" aria-describedby="<%= date_description %>">
       <legend class="govuk-visually-hidden">Log search dates (UTC)</legend>
       <p id="search-window-hint" class="govuk-visually-hidden">Both dates are included, in UTC. Choose up to 31 days within the last <%= SearchDiagnostic::LOG_RETENTION_DAYS %> days.</p>

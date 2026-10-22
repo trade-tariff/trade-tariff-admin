@@ -739,18 +739,47 @@ RSpec.describe SearchDiagnosticsController do
     end
 
     context "when a date range is chosen" do
+      let(:related_request_id) { "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee" }
+      let(:make_request) do
+        get search_diagnostic_path("request-456", experiment: "hmrc-users", period: "custom", from: "2026-06-01", to: "2026-06-01")
+      end
+
       before do
         stub_api_request("/search_diagnostics/request-456")
           .with(query: { from: "2026-06-01", to: "2026-06-01" })
-          .to_return jsonapi_response(:search_diagnostic, { resource_id: "request-456", request_id: "request-456", events: [] })
+          .to_return jsonapi_response(
+            :search_diagnostic,
+            {
+              resource_id: "request-456",
+              request_id: "request-456",
+              browser_session_id: "v1:#{'c' * 64}",
+              related_requests: [{ request_id: related_request_id, occurred_at: "2026-06-01 09:40:00.000", query: "fur coat" }],
+              events: [],
+            },
+          )
       end
-
-      let(:make_request) { get search_diagnostic_path("request-456", period: "custom", from: "2026-06-01", to: "2026-06-01") }
 
       it "keeps the chosen dates in the form" do
         rendered_page
 
         expect(response.body).to include('value="2026-06-01"')
+      end
+
+      it "keeps the chosen dates when opening another request" do
+        rendered_page
+
+        expect(response.body).to include(
+          CGI.escapeHTML(search_diagnostic_path(related_request_id, experiment: "hmrc-users", period: "custom", from: "2026-06-01", to: "2026-06-01")),
+        )
+      end
+
+      it "keeps the return list when changing the window" do
+        rendered_page
+
+        expect(response.body).to include(
+          CGI.escapeHTML(search_diagnostic_path("request-456", experiment: "hmrc-users", period: "14d")),
+          'name="experiment" value="hmrc-users"',
+        )
       end
     end
 
