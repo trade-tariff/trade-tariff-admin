@@ -96,6 +96,48 @@ RSpec.describe TariffUpdatesController do
 
       expect(response.body).to include("Rollback to 2026-04-01")
     end
+
+    context "when using the UK service" do
+      include_context "with UK service"
+
+      it "shows the CDS resend link" do
+        stub_tariff_updates_index([rollbackable_update])
+
+        get tariff_updates_path
+
+        page = Capybara.string(response.body)
+        expect(page).to have_link("Resend CDS Update email", href: resend_cds_update_notification_tariff_updates_path(cds_update_notification: { filename: rollbackable_update[:filename] }))
+      end
+    end
+
+    context "when using the XI service" do
+      include_context "with XI service"
+
+      let(:taric_update) do
+        rollbackable_update.merge(
+          filename: "2026-04-01_TGB26090.xml",
+          file_presigned_url: "https://example.com/2026-04-01_TGB26090.xml",
+        )
+      end
+
+      before { stub_tariff_updates_index([taric_update]) }
+
+      it "does not show the CDS resend link", :aggregate_failures do
+        get tariff_updates_path
+
+        expect(response).to have_http_status(:success)
+        expect(Capybara.string(response.body)).not_to have_link("Resend CDS Update email")
+      end
+
+      it "keeps the TARIC update actions", :aggregate_failures do
+        get tariff_updates_path
+
+        page = Capybara.string(response.body)
+        expect(page).to have_link("Review inserts")
+        expect(page).to have_link("Download #{taric_update[:filename]}", href: taric_update[:file_presigned_url])
+        expect(page).to have_link("Rollback to 2026-04-01")
+      end
+    end
   end
 
   context "when unauthenticated" do
