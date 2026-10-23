@@ -114,7 +114,7 @@ user uid and email (`[SidekiqWeb]` lines).
 ## Distribution lists
 
 An email distribution list is a Cognito group in the Identity user pool. The
-group name starts with `dl-`, for example `dl-tariff-notifications`. The prefix
+group name starts with `dl-`, for example `dl-differences-report`. The prefix
 keeps distribution lists apart from the role and access groups (`admin`,
 `myott` and `portal`). Being on a distribution list gives no access to any
 service.
