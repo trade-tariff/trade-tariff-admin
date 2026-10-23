@@ -23,6 +23,15 @@ class DistributionListService
   LOCK_TIMEOUT = 10 # seconds
   LOCK_POLL_INTERVAL = 0.1 # seconds
 
+  # Errors a Cognito call can raise. A NetworkingError (a connection failure or
+  # read timeout once the SDK's retries are used up) does not mean the request
+  # failed: it may still have reached Cognito, so state-changing calls check
+  # the outcome before treating it as a failure.
+  CLIENT_ERRORS = [
+    Aws::CognitoIdentityProvider::Errors::ServiceError,
+    Seahorse::Client::NetworkingError,
+  ].freeze
+
   Group = Data.define(:name, :description)
   Member = Data.define(:username, :email, :status, :enabled)
 
@@ -121,8 +130,8 @@ class DistributionListService
     end
   rescue Aws::CognitoIdentityProvider::Errors::ResourceNotFoundException
     raise NotFound, "Distribution list not found"
-  rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
-    raise Error, "Cognito refused to add the recipient (#{e.class.name.demodulize})"
+  rescue *CLIENT_ERRORS => e
+    raise Error, "Cognito could not add the recipient (#{e.class.name.demodulize})"
   end
 
   # True when the user is in no Cognito group other than group_name, so
@@ -150,7 +159,7 @@ class DistributionListService
       # Only a recipient of this list can be unsubscribed (and so deleted).
       raise NotFound, "Recipient not found" unless find_member(group_name, username)
 
-      client.admin_remove_user_from_group(user_pool_id:, username:, group_name:)
+      remove_from_group(group_name, username)
       audit("recipient_removed", group_name, username)
 
       delete_if_in_no_groups(group_name, username)
@@ -158,8 +167,8 @@ class DistributionListService
   rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException,
          Aws::CognitoIdentityProvider::Errors::ResourceNotFoundException
     raise NotFound, "Recipient or distribution list not found"
-  rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
-    raise Error, "Cognito refused to remove the recipient (#{e.class.name.demodulize})"
+  rescue *CLIENT_ERRORS => e
+    raise Error, "Cognito could not remove the recipient (#{e.class.name.demodulize})"
   end
 
 private
@@ -188,9 +197,11 @@ private
   end
 
   def advisory_lock_query(connection, function, key)
-    connection.select_value(
-      ActiveRecord::Base.sanitize_sql_array(["SELECT #{function}(hashtextextended(?, 0))", key]),
-    )
+    DistributionListAuditEvent.uncached do
+      connection.select_value(
+        ActiveRecord::Base.sanitize_sql_array(["SELECT #{function}(hashtextextended(?, 0))", key]),
+      )
+    end
   end
 
   def guard!(name)
@@ -208,22 +219,30 @@ private
     [client.admin_get_user(user_pool_id:, username: email).username, false]
   rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException
     begin
-      response = client.admin_create_user(
-        user_pool_id:,
-        username: email,
-        message_action: "SUPPRESS",
-        user_attributes: [
-          { name: "email", value: email },
-          # Required: identity's RemoveUnverifiedUsers sweep deletes users
-          # whose email is not verified.
-          { name: "email_verified", value: "true" },
-        ],
-      )
-      audit("user_created", group_name, response.user.username)
-      [response.user.username, true]
+      username = create_user(email)
+      audit("user_created", group_name, username)
+      [username, true]
     rescue Aws::CognitoIdentityProvider::Errors::UsernameExistsException
       [client.admin_get_user(user_pool_id:, username: email).username, false]
     end
+  end
+
+  def create_user(email)
+    client.admin_create_user(
+      user_pool_id:,
+      username: email,
+      message_action: "SUPPRESS",
+      user_attributes: [
+        { name: "email", value: email },
+        # Required: identity's RemoveUnverifiedUsers sweep deletes users
+        # whose email is not verified.
+        { name: "email_verified", value: "true" },
+      ],
+    ).user.username
+  rescue Seahorse::Client::NetworkingError => e
+    # The create may have reached Cognito. The user did not exist just before,
+    # so if it exists now, treat it as created here so a failed add cleans it up.
+    existing_username(email) || raise(e)
   end
 
   # If this request created the user and the add fails, the user would stay in
@@ -234,38 +253,86 @@ private
     client.admin_add_user_to_group(user_pool_id:, username:, group_name:)
   rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException
     raise
-  rescue Aws::CognitoIdentityProvider::Errors::ServiceError
-    discard_created_user(group_name, username) if created
-    raise
+  rescue *CLIENT_ERRORS => e
+    # The add may have reached Cognito (for example, a read timeout). If the
+    # user is in the group, the subscription worked.
+    groups = current_group_names(username)
+    return if groups&.include?(group_name)
+
+    discard_created_user(group_name, username, groups) if created
+    raise e
   end
 
-  def discard_created_user(group_name, username)
+  # groups is the user's current groups, or nil if they could not be read.
+  def discard_created_user(group_name, username, groups)
     # Another writer (for example identity) may have added the user to a group
     # since it was created. Then it is no longer orphaned, so keep it.
-    return if user_group_names(username).any?
+    return if (groups || user_group_names(username)).any?
 
-    client.admin_delete_user(user_pool_id:, username:)
-    audit("user_deleted", group_name, username)
+    audit("user_deleted", group_name, username) if delete_user(username)
   rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException
     nil
-  rescue Error, Aws::CognitoIdentityProvider::Errors::ServiceError => e
+  rescue Error, *CLIENT_ERRORS => e
     raise CleanupFailed.new(username, e.class.name.demodulize)
+  end
+
+  def remove_from_group(group_name, username)
+    client.admin_remove_user_from_group(user_pool_id:, username:, group_name:)
+  rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException,
+         Aws::CognitoIdentityProvider::Errors::ResourceNotFoundException
+    raise
+  rescue *CLIENT_ERRORS => e
+    # The removal may have reached Cognito (for example, a read timeout). If
+    # the user has left the group, carry on, so that a user left in no group
+    # is still deleted.
+    groups = current_group_names(username)
+    raise e unless groups && groups.exclude?(group_name)
   end
 
   def delete_if_in_no_groups(group_name, username)
     return :removed if user_group_names(username).any?
 
-    client.admin_delete_user(user_pool_id:, username:)
-    audit("user_deleted", group_name, username)
+    audit("user_deleted", group_name, username) if delete_user(username)
     :removed_and_deleted
   rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException
     :removed_and_deleted
-  rescue Error, Aws::CognitoIdentityProvider::Errors::ServiceError => e
+  rescue Error, *CLIENT_ERRORS => e
     raise DeletionFailed.new(username, e.class.name.demodulize)
+  end
+
+  # Returns true if this call deleted the user, false if it was already gone.
+  def delete_user(username)
+    client.admin_delete_user(user_pool_id:, username:)
+    true
+  rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException
+    false
+  rescue Seahorse::Client::NetworkingError => e
+    # The delete may have reached Cognito. Only report a failure if the user
+    # is still there.
+    raise e if existing_username(username)
+
+    true
+  end
+
+  # The Cognito username for a username or email, or nil if there is no user.
+  def existing_username(username)
+    client.admin_get_user(user_pool_id:, username:).username
+  rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException
+    nil
   end
 
   def user_group_names(username)
     paginate(:admin_list_groups_for_user, :groups, username:).map(&:group_name)
+  end
+
+  # The user's groups, [] if the user no longer exists, or nil if the groups
+  # could not be read.
+  def current_group_names(username)
+    user_group_names(username)
+  rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException
+    []
+  rescue Error
+    nil
   end
 
   def paginate(method, collection, **args)
@@ -283,7 +350,7 @@ private
   rescue Aws::CognitoIdentityProvider::Errors::ResourceNotFoundException,
          Aws::CognitoIdentityProvider::Errors::UserNotFoundException
     raise
-  rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
+  rescue *CLIENT_ERRORS => e
     raise Error, "Cognito request failed (#{e.class.name.demodulize})"
   end
 

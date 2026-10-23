@@ -79,12 +79,40 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
       before do
         cognito_client.stub_responses(:admin_get_user, username: new_sub)
         cognito_client.stub_responses(:admin_add_user_to_group, "TooManyRequestsException")
+        cognito_client.stub_responses(:admin_list_groups_for_user, groups: [{ group_name: "myott" }])
       end
 
       it "redirects with a generic error" do
         make_request
 
         expect(flash[:alert]).to eq(DistributionListHandling::UNAVAILABLE_MESSAGE)
+      end
+    end
+
+    context "when Cognito cannot be reached" do
+      before do
+        cognito_client.stub_responses(:admin_get_user, Seahorse::Client::NetworkingError.new(Net::OpenTimeout.new))
+      end
+
+      it "redirects with a generic error" do
+        make_request
+
+        expect(flash[:alert]).to eq(DistributionListHandling::UNAVAILABLE_MESSAGE)
+      end
+    end
+
+    context "when a new user was created but the add and the cleanup both time out" do
+      before do
+        cognito_client.stub_responses(:admin_get_user, "UserNotFoundException")
+        cognito_client.stub_responses(:admin_create_user, user: { username: new_sub })
+        cognito_client.stub_responses(:admin_add_user_to_group, Seahorse::Client::NetworkingError.new(Net::ReadTimeout.new))
+        cognito_client.stub_responses(:admin_list_groups_for_user, Seahorse::Client::NetworkingError.new(Net::ReadTimeout.new))
+        make_request
+      end
+
+      it "tells the operator which Cognito user to check", :aggregate_failures do
+        expect(response).to redirect_to(distribution_list_path(group))
+        expect(flash[:alert]).to include("was not subscribed", new_sub)
       end
     end
 
@@ -183,6 +211,20 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
       before do
         cognito_client.stub_responses(:admin_list_groups_for_user, groups: [])
         cognito_client.stub_responses(:admin_delete_user, "TooManyRequestsException")
+      end
+
+      it "tells the operator which Cognito user to delete" do
+        make_request
+
+        expect(flash[:alert]).to include("could not be checked or deleted", recipient_sub)
+      end
+    end
+
+    context "when the deletion times out and the user still exists" do
+      before do
+        cognito_client.stub_responses(:admin_list_groups_for_user, groups: [])
+        cognito_client.stub_responses(:admin_delete_user, Seahorse::Client::NetworkingError.new(Net::ReadTimeout.new))
+        cognito_client.stub_responses(:admin_get_user, username: recipient_sub)
       end
 
       it "tells the operator which Cognito user to delete" do
