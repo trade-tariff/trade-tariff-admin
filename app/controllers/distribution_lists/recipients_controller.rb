@@ -45,8 +45,15 @@ module DistributionLists
     end
 
     def destroy
-      result = distribution_list_service.remove(@group.name, params[:username])
+      result = distribution_list_service.remove(
+        @group.name,
+        params[:username],
+        account_deletion_acknowledged: params[:account_deletion_acknowledged] == "true",
+      )
       redirect_to distribution_list_path(@group.name), notice: REMOVE_MESSAGES.fetch(result)
+    rescue DistributionListService::ConfirmationRequired
+      redirect_to remove_distribution_list_recipient_path(@group.name, params[:username]),
+                  alert: "Group memberships changed. Review the account deletion warning and confirm again."
     rescue DistributionListService::DeletionFailed => e
       Rails.logger.error("distribution_list.deletion_failed #{e.message}")
       redirect_to distribution_list_path(@group.name),

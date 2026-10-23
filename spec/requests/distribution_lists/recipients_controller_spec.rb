@@ -161,11 +161,12 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
       expect(response.headers["Cache-Control"]).to eq("no-store")
     end
 
-    it "warns when the account will be deleted" do
+    it "warns when the account will be deleted", :aggregate_failures do
       cognito_client.stub_responses(:admin_list_groups_for_user, groups: [{ group_name: group }])
       get remove_distribution_list_recipient_path(group, recipient_sub)
 
       expect(response.body).to include("their Cognito account and email address will also be deleted")
+      expect(response.body).to include('name="account_deletion_acknowledged" value="true"')
     end
 
     it "redirects when the recipient is not on the list" do
@@ -176,7 +177,12 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
   end
 
   describe "DELETE #destroy" do
-    subject(:make_request) { delete distribution_list_recipient_path(group, recipient_sub) }
+    subject(:make_request) do
+      delete distribution_list_recipient_path(group, recipient_sub),
+             params: { account_deletion_acknowledged: account_deletion_acknowledged.to_s }
+    end
+
+    let(:account_deletion_acknowledged) { false }
 
     it "removes the user from the group only when they are in other groups", :aggregate_failures do
       make_request
@@ -196,6 +202,8 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
     end
 
     context "when the list was the last group the user was in" do
+      let(:account_deletion_acknowledged) { true }
+
       before { cognito_client.stub_responses(:admin_list_groups_for_user, groups: []) }
 
       it "deletes the Cognito user", :aggregate_failures do
@@ -208,6 +216,8 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
     end
 
     context "when the deletion fails" do
+      let(:account_deletion_acknowledged) { true }
+
       before do
         cognito_client.stub_responses(:admin_list_groups_for_user, groups: [])
         cognito_client.stub_responses(:admin_delete_user, "TooManyRequestsException")
@@ -221,6 +231,8 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
     end
 
     context "when the deletion times out and the user still exists" do
+      let(:account_deletion_acknowledged) { true }
+
       before do
         cognito_client.stub_responses(:admin_list_groups_for_user, groups: [])
         cognito_client.stub_responses(:admin_delete_user, Seahorse::Client::NetworkingError.new(Net::ReadTimeout.new))
@@ -231,6 +243,27 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
         make_request
 
         expect(flash[:alert]).to include("could not be checked or deleted", recipient_sub)
+      end
+    end
+
+    context "when a confirmation that kept the account becomes stale" do
+      before do
+        get remove_distribution_list_recipient_path(group, recipient_sub)
+        cognito_client.stub_responses(:admin_list_groups_for_user, groups: [{ group_name: group }])
+        make_request
+      end
+
+      it "requires a new confirmation before removing the recipient", :aggregate_failures do
+        expect(response).to redirect_to(remove_distribution_list_recipient_path(group, recipient_sub))
+        expect(flash[:alert]).to include("Review the account deletion warning")
+        expect(cognito_requests(:admin_remove_user_from_group)).to be_empty
+        expect(cognito_requests(:admin_delete_user)).to be_empty
+      end
+
+      it "shows the irreversible deletion warning on the new confirmation page" do
+        follow_redirect!
+
+        expect(response.body).to include("their Cognito account and email address will also be deleted")
       end
     end
 

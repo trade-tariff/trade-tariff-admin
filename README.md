@@ -168,11 +168,21 @@ still exist.
 Each subscribe and unsubscribe holds a lock on the recipient (a Postgres
 advisory lock keyed by Cognito username). This stops an unsubscribe from
 deleting a user while another admin request subscribes the same user to a
-different list. If the lock is busy for 10 seconds, the page asks the operator
-to try again. The Identity service also adds users to groups and does not take
-this lock. A user who signs in at the same moment as their last list is removed
-can lose the new membership. This risk is accepted because few people can
-change lists.
+different list. Each subscribe also holds a lock on the email address (keyed
+by a SHA-256 digest of the normalised email, so the email does not reach the
+database) from before admin looks up or creates the Cognito user. Only one
+request can find or create the user for an email at a time. The request that
+creates a user is then the only one that can subscribe it, and the one that
+deletes it again if the subscription fails.
+
+When it unsubscribes, admin checks the user's groups again while it holds the
+recipient lock. If account deletion became necessary after the confirmation
+page was shown, admin does not unsubscribe the recipient. It shows a new
+confirmation page with the irreversible deletion warning. If a lock is busy for
+10 seconds, the page asks the operator to try again. The Identity service also
+adds users to groups and does not take these locks. A user who signs in at the
+same moment as their last list is removed can lose the new membership. This
+risk is accepted because few people can change lists.
 
 Terraform in `trade-tariff-platform-aws-terraform` creates the `dl-*` groups.
 Admin cannot create or delete groups. Admin only shows groups whose name

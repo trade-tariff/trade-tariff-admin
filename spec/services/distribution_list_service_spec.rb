@@ -402,19 +402,27 @@ RSpec.describe DistributionListService do
     context "when the group was the last group the user was in" do
       before { client.stub_responses(:admin_list_groups_for_user, groups: []) }
 
+      it "requires account deletion to be confirmed before changing Cognito", :aggregate_failures do
+        expect { service.remove("dl-a", sub) }.to raise_error(described_class::ConfirmationRequired)
+        expect(requests_for(:admin_remove_user_from_group) + requests_for(:admin_delete_user)).to be_empty
+        expect(DistributionListAuditEvent.count).to eq(0)
+      end
+
       it "deletes the Cognito user", :aggregate_failures do
-        expect(service.remove("dl-a", sub)).to eq(:removed_and_deleted)
+        expect(service.remove("dl-a", sub, account_deletion_acknowledged: true)).to eq(:removed_and_deleted)
         expect(requests_for(:admin_delete_user).first[:params]).to eq(user_pool_id: "eu-west-2_pool", username: sub)
       end
 
-      it "checks the groups after the removal" do
-        service.remove("dl-a", sub)
+      it "checks the groups before removal and again before deletion" do
+        service.remove("dl-a", sub, account_deletion_acknowledged: true)
 
-        expect(client.api_requests.map { |r| r[:operation_name] }).to eq(%i[list_users_in_group admin_remove_user_from_group admin_list_groups_for_user admin_delete_user])
+        expect(client.api_requests.map { |r| r[:operation_name] }).to eq(
+          %i[list_users_in_group admin_list_groups_for_user admin_remove_user_from_group admin_list_groups_for_user admin_delete_user],
+        )
       end
 
       it "audits the removal and the deletion" do
-        service.remove("dl-a", sub)
+        service.remove("dl-a", sub, account_deletion_acknowledged: true)
 
         expect(DistributionListAuditEvent.order(:id).pluck(:action)).to eq(%w[recipient_removed user_deleted])
       end
@@ -427,7 +435,7 @@ RSpec.describe DistributionListService do
       end
 
       it "raises DeletionFailed with the sub but not the email", :aggregate_failures do
-        expect { service.remove("dl-a", sub) }.to raise_error(described_class::DeletionFailed) { |error|
+        expect { service.remove("dl-a", sub, account_deletion_acknowledged: true) }.to raise_error(described_class::DeletionFailed) { |error|
           expect(error.username).to eq(sub)
         }
         expect(DistributionListAuditEvent.pluck(:action)).to eq(%w[recipient_removed])
@@ -437,8 +445,9 @@ RSpec.describe DistributionListService do
     context "when checking the remaining groups fails" do
       before { client.stub_responses(:admin_list_groups_for_user, "TooManyRequestsException") }
 
-      it "raises DeletionFailed and does not delete", :aggregate_failures do
-        expect { service.remove("dl-a", sub) }.to raise_error(described_class::DeletionFailed)
+      it "does not unsubscribe or delete", :aggregate_failures do
+        expect { service.remove("dl-a", sub, account_deletion_acknowledged: true) }.to raise_error(described_class::Error)
+        expect(requests_for(:admin_remove_user_from_group)).to be_empty
         expect(requests_for(:admin_delete_user)).to be_empty
       end
     end
@@ -449,14 +458,14 @@ RSpec.describe DistributionListService do
       it "carries on, and deletes a user left in no group, if the removal reached Cognito", :aggregate_failures do
         client.stub_responses(:admin_list_groups_for_user, groups: [])
 
-        expect(service.remove("dl-a", sub)).to eq(:removed_and_deleted)
+        expect(service.remove("dl-a", sub, account_deletion_acknowledged: true)).to eq(:removed_and_deleted)
         expect(DistributionListAuditEvent.order(:id).pluck(:action)).to eq(%w[recipient_removed user_deleted])
       end
 
       it "reports the failure if the user is still in the group", :aggregate_failures do
         client.stub_responses(:admin_list_groups_for_user, groups: [{ group_name: "dl-a" }])
 
-        expect { service.remove("dl-a", sub) }.to raise_error(described_class::Error, /NetworkingError/)
+        expect { service.remove("dl-a", sub, account_deletion_acknowledged: true) }.to raise_error(described_class::Error, /NetworkingError/)
         expect(requests_for(:admin_delete_user)).to be_empty
         expect(DistributionListAuditEvent.count).to eq(0)
       end
@@ -464,7 +473,7 @@ RSpec.describe DistributionListService do
       it "reports the failure if the groups cannot be read", :aggregate_failures do
         client.stub_responses(:admin_list_groups_for_user, read_timeout)
 
-        expect { service.remove("dl-a", sub) }.to raise_error(described_class::Error, /NetworkingError/)
+        expect { service.remove("dl-a", sub, account_deletion_acknowledged: true) }.to raise_error(described_class::Error, /NetworkingError/)
         expect(requests_for(:admin_delete_user)).to be_empty
       end
     end
@@ -472,10 +481,9 @@ RSpec.describe DistributionListService do
     context "when checking the remaining groups times out" do
       before { client.stub_responses(:admin_list_groups_for_user, read_timeout) }
 
-      it "raises DeletionFailed with the sub", :aggregate_failures do
-        expect { service.remove("dl-a", sub) }.to raise_error(described_class::DeletionFailed) { |error|
-          expect(error.username).to eq(sub)
-        }
+      it "does not unsubscribe or delete", :aggregate_failures do
+        expect { service.remove("dl-a", sub, account_deletion_acknowledged: true) }.to raise_error(described_class::Error, /NetworkingError/)
+        expect(requests_for(:admin_remove_user_from_group)).to be_empty
         expect(requests_for(:admin_delete_user)).to be_empty
       end
     end
@@ -489,19 +497,19 @@ RSpec.describe DistributionListService do
       it "raises DeletionFailed if the user still exists" do
         client.stub_responses(:admin_get_user, username: sub)
 
-        expect { service.remove("dl-a", sub) }.to raise_error(described_class::DeletionFailed, /NetworkingError/)
+        expect { service.remove("dl-a", sub, account_deletion_acknowledged: true) }.to raise_error(described_class::DeletionFailed, /NetworkingError/)
       end
 
       it "raises DeletionFailed if it cannot check whether the user still exists" do
         client.stub_responses(:admin_get_user, read_timeout)
 
-        expect { service.remove("dl-a", sub) }.to raise_error(described_class::DeletionFailed, /NetworkingError/)
+        expect { service.remove("dl-a", sub, account_deletion_acknowledged: true) }.to raise_error(described_class::DeletionFailed, /NetworkingError/)
       end
 
       it "treats the deletion as done if the user is gone", :aggregate_failures do
         client.stub_responses(:admin_get_user, "UserNotFoundException")
 
-        expect(service.remove("dl-a", sub)).to eq(:removed_and_deleted)
+        expect(service.remove("dl-a", sub, account_deletion_acknowledged: true)).to eq(:removed_and_deleted)
         expect(DistributionListAuditEvent.order(:id).pluck(:action)).to eq(%w[recipient_removed user_deleted])
       end
     end
@@ -514,7 +522,7 @@ RSpec.describe DistributionListService do
     it "raises NotFound when the user is gone" do
       client.stub_responses(:admin_remove_user_from_group, "UserNotFoundException")
 
-      expect { service.remove("dl-a", sub) }.to raise_error(described_class::NotFound)
+      expect { service.remove("dl-a", sub, account_deletion_acknowledged: true) }.to raise_error(described_class::NotFound)
     end
 
     it "does not remove or delete a user who is not on the list", :aggregate_failures do
@@ -557,7 +565,7 @@ RSpec.describe DistributionListService do
 
     it "only locks the recipient being changed" do
       holding_distribution_list_lock(other_sub) do
-        expect(service.remove("dl-a", sub)).to eq(:removed_and_deleted)
+        expect(service.remove("dl-a", sub, account_deletion_acknowledged: true)).to eq(:removed_and_deleted)
       end
     end
 
@@ -572,14 +580,14 @@ RSpec.describe DistributionListService do
       end
 
       it "still holds the lock taken for the removal" do
-        service.remove("dl-a", sub)
+        service.remove("dl-a", sub, account_deletion_acknowledged: true)
 
         expect(lock_states).to eq([false])
       end
     end
 
     it "releases the lock after an unsubscribe" do
-      service.remove("dl-a", sub)
+      service.remove("dl-a", sub, account_deletion_acknowledged: true)
 
       expect(distribution_list_lock_free?(sub)).to be(true)
     end
@@ -588,7 +596,7 @@ RSpec.describe DistributionListService do
       client.stub_responses(:admin_remove_user_from_group, "TooManyRequestsException")
       client.stub_responses(:admin_list_groups_for_user, groups: [{ group_name: "dl-a" }])
 
-      expect { service.remove("dl-a", sub) }.to raise_error(described_class::Error)
+      expect { service.remove("dl-a", sub, account_deletion_acknowledged: true) }.to raise_error(described_class::Error)
       expect(distribution_list_lock_free?(sub)).to be(true)
     end
 
@@ -623,6 +631,75 @@ RSpec.describe DistributionListService do
       client.stub_responses(:admin_add_user_to_group, "UserNotFoundException")
 
       expect { service.add("dl-b", email) }.to raise_error(described_class::NotFound)
+    end
+
+    it "does not look the user up while another subscription holds the email's lock", :aggregate_failures do
+      holding_distribution_list_email_lock(email) do
+        expect { service.add("dl-b", " #{email.upcase} ") }.to raise_error(described_class::Busy)
+      end
+
+      expect(client.api_requests).to be_empty
+    end
+
+    it "releases the email lock after a subscribe" do
+      client.stub_responses(:admin_get_user, username: sub)
+      service.add("dl-b", email)
+
+      expect(distribution_list_email_lock_free?(email)).to be(true)
+    end
+
+    it "reports a user it created but cannot lock, so the user can be cleaned up", :aggregate_failures do
+      client.stub_responses(:admin_get_user, "UserNotFoundException")
+      client.stub_responses(:admin_create_user, user: { username: other_sub })
+
+      holding_distribution_list_lock(other_sub) do
+        expect { service.add("dl-b", email) }.to raise_error(described_class::CleanupFailed) { |error| expect(error.username).to eq(other_sub) }
+      end
+    end
+
+    # Request A creates the user. Before A takes the user's lock, request B
+    # subscribes the same email. B must not find A's new user, or B could hold
+    # its lock until A gives up, and then neither request cleans it up.
+    context "when another subscription for the same email starts while this one creates the user" do
+      let(:other_request) { {} }
+
+      before do
+        other_client = Aws::CognitoIdentityProvider::Client.new(stub_responses: true, region: "eu-west-2")
+        other_client.stub_responses(:admin_get_user, username: other_sub)
+        other = described_class.new(client: other_client, user_pool_id: "eu-west-2_pool", actor:, lock_timeout: 0.3)
+        outcome = other_request
+        client.stub_responses(:admin_get_user, "UserNotFoundException")
+        client.stub_responses(:admin_add_user_to_group, "TooManyRequestsException")
+        client.stub_responses(:admin_create_user, user: { username: other_sub })
+
+        allow(client).to receive(:admin_create_user).and_wrap_original do |original, *args, **kwargs|
+          response = original.call(*args, **kwargs)
+          outcome[:result] = in_other_request { other.add("dl-c", email.upcase) }
+          outcome[:cognito_calls] = other_client.api_requests.map { |r| r[:operation_name] }
+          response
+        end
+      end
+
+      def in_other_request(&block)
+        thread = Thread.new do
+          ActiveRecord::Base.connection_pool.with_connection(&block)
+        rescue StandardError => e
+          e.class
+        end
+        thread.value
+      end
+
+      it "makes the other subscription wait without looking the user up", :aggregate_failures do
+        expect { service.add("dl-b", email) }.to raise_error(described_class::Error)
+
+        expect(other_request).to eq(result: described_class::Busy, cognito_calls: [])
+      end
+
+      it "deletes the user it created when its own subscription fails", :aggregate_failures do
+        expect { service.add("dl-b", email) }.to raise_error(described_class::Error)
+
+        expect(requests_for(:admin_delete_user).map { |r| r[:params][:username] }).to eq([other_sub])
+      end
     end
   end
 end

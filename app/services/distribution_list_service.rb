@@ -9,7 +9,12 @@ require "aws-sdk-cognitoidentityprovider"
 #
 # Subscribing and unsubscribing hold a per-user lock (a Postgres advisory lock
 # keyed by Cognito username), so an unsubscribe cannot delete a user while
-# another admin request is subscribing them to a different list. Identity also
+# another admin request is subscribing them to a different list. Subscribing
+# also holds a per-email lock (keyed by a digest of the normalised email) from
+# before the user lookup, so only one request can find or create the user for
+# an email. The request that creates a user is then the only one that can
+# subscribe it, and so the one that cleans it up if the subscription fails.
+# The email lock is always taken before the user lock. Identity also
 # writes group memberships and does not take this lock. That race needs a user
 # to sign in at the same moment as their last list is removed, and is accepted.
 #
@@ -40,6 +45,9 @@ class DistributionListService
   class NotFound < Error; end
   # Another request is changing the same recipient. Safe to retry.
   class Busy < Error; end
+  # Group memberships changed after the confirmation page was shown. The
+  # operator must confirm again before the Cognito account can be deleted.
+  class ConfirmationRequired < Error; end
 
   # The user was removed from the list, but the follow-up check or deletion of
   # their Cognito user failed. The user may still hold personal information.
@@ -106,28 +114,11 @@ class DistributionListService
   def add(group_name, email)
     guard!(group_name)
     email = normalise(email)
-    attempts = 0
 
-    begin
-      attempts += 1
-      username, created = ensure_user(email, group_name)
-
-      # Holding the lock stops a concurrent unsubscribe from deleting this user
-      # between the membership check and the add.
-      with_user_lock(username) do
-        next :already_member if !created && find_member(group_name, username)
-
-        add_to_group(group_name, username, created:)
-        audit("recipient_added", group_name, username)
-
-        created ? :created_and_added : :added
-      end
-    rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException
-      # An unsubscribe deleted the user after ensure_user found them. Creating
-      # the user again gives them a new username, so take the lock again.
-      retry if attempts < 2
-      raise NotFound, "Recipient not found"
-    end
+    # Serialises lookup, creation and the add for this email, so another
+    # subscription cannot find a user this request created and take over
+    # (or block) its subscription and cleanup.
+    with_email_lock(email) { add_locked(group_name, email) }
   rescue Aws::CognitoIdentityProvider::Errors::ResourceNotFoundException
     raise NotFound, "Distribution list not found"
   rescue *CLIENT_ERRORS => e
@@ -149,20 +140,25 @@ class DistributionListService
   # removes their email and every other attribute held in Cognito.
   #
   # Returns :removed or :removed_and_deleted.
-  def remove(group_name, username)
+  def remove(group_name, username, account_deletion_acknowledged: false)
     guard!(group_name)
 
-    # The membership check, the remaining-groups check and the deletion run
-    # under the lock, so no admin subscription for this user can happen between
-    # them.
+    # Recheck the remaining groups under the lock before changing membership.
+    # If account deletion is newly required, return to confirmation without
+    # removing the recipient.
     with_user_lock(username) do
       # Only a recipient of this list can be unsubscribed (and so deleted).
       raise NotFound, "Recipient not found" unless find_member(group_name, username)
 
+      deletes_account = (user_group_names(username) - [group_name]).empty?
+      if deletes_account && !account_deletion_acknowledged
+        raise ConfirmationRequired, "Cognito account deletion must be confirmed"
+      end
+
       remove_from_group(group_name, username)
       audit("recipient_removed", group_name, username)
 
-      delete_if_in_no_groups(group_name, username)
+      deletes_account ? delete_if_in_no_groups(group_name, username) : :removed
     end
   rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException,
          Aws::CognitoIdentityProvider::Errors::ResourceNotFoundException
@@ -175,12 +171,51 @@ private
 
   attr_reader :client, :user_pool_id, :actor, :lock_timeout
 
+  def add_locked(group_name, email)
+    attempts = 0
+
+    begin
+      attempts += 1
+      username, created = ensure_user(email, group_name)
+
+      # Holding the lock stops a concurrent unsubscribe from deleting this user
+      # between the membership check and the add.
+      with_user_lock(username) do
+        next :already_member if !created && find_member(group_name, username)
+
+        add_to_group(group_name, username, created:)
+        audit("recipient_added", group_name, username)
+
+        created ? :created_and_added : :added
+      end
+    rescue Busy
+      # A user created by this request is new, so no unsubscribe can be
+      # holding its lock. If one is, the user cannot be safely deleted here:
+      # report it so the operator can have it checked.
+      raise CleanupFailed.new(username, "Busy") if created
+
+      raise
+    rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException
+      # An unsubscribe deleted the user after ensure_user found them. Creating
+      # the user again gives them a new username, so take the lock again.
+      retry if attempts < 2
+      raise NotFound, "Recipient not found"
+    end
+  end
+
+  def with_email_lock(email, &)
+    with_advisory_lock("distribution_list_email:#{user_pool_id}:#{Digest::SHA256.hexdigest(email)}", &)
+  end
+
+  def with_user_lock(username, &)
+    with_advisory_lock("distribution_list_user:#{user_pool_id}:#{username}", &)
+  end
+
   # Session-level advisory lock, so audit events written inside the block are
   # committed even if a later Cognito call fails. The lock is released when the
   # block ends, or by Postgres if the connection is lost.
-  def with_user_lock(username)
+  def with_advisory_lock(key)
     connection = DistributionListAuditEvent.connection
-    key = "distribution_list_user:#{user_pool_id}:#{username}"
     deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + lock_timeout
 
     until advisory_lock_query(connection, "pg_try_advisory_lock", key)

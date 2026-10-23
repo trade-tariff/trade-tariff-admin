@@ -12,6 +12,7 @@
   <%= govuk_button_to "Unsubscribe",
                       distribution_list_recipient_path(@group.name, @member.username),
                       method: :delete,
+                      params: { account_deletion_acknowledged: @deletes_account },
                       warning: true,
                       prevent_double_click: true %>
   <%= govuk_link_to "Cancel", distribution_list_path(@group.name) %>
