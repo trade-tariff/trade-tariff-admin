@@ -25,6 +25,16 @@ RSpec.describe DistributionListService do
   # What the SDK raises for a read timeout once its retries are used up.
   def read_timeout = Seahorse::Client::NetworkingError.new(Net::ReadTimeout.new)
 
+  # Makes the audit insert for one action fail, as it would if the database
+  # were unavailable. Other audit events are saved.
+  def fail_audit_for(action)
+    allow(DistributionListAuditEvent).to receive(:create!).and_wrap_original do |original, **attributes|
+      raise ActiveRecord::StatementInvalid, "insert failed" if attributes[:action] == action
+
+      original.call(**attributes)
+    end
+  end
+
   describe ".valid_group_name?" do
     it "accepts dl- prefixed names" do
       expect(described_class.valid_group_name?("dl-tariff-notifications")).to be(true)
@@ -368,6 +378,35 @@ RSpec.describe DistributionListService do
         expect(DistributionListAuditEvent.order(:id).pluck(:action)).to eq(%w[user_created recipient_added])
       end
     end
+
+    context "when the audit of a created user cannot be saved" do
+      before do
+        client.stub_responses(:admin_get_user, "UserNotFoundException")
+        client.stub_responses(:admin_create_user, user: { username: sub })
+        fail_audit_for("user_created")
+      end
+
+      it "still subscribes the user, then reports the missing audit event", :aggregate_failures do
+        expect { service.add("dl-a", email) }.to raise_error(described_class::AuditFailed) { |error|
+          expect([error.result, error.failures]).to eq([:created_and_added, [{ action: "user_created", group_name: "dl-a", username: sub }]])
+        }
+        expect(requests_for(:admin_add_user_to_group).first[:params]).to include(username: sub, group_name: "dl-a")
+        expect(DistributionListAuditEvent.pluck(:action)).to eq(%w[recipient_added])
+      end
+
+      it "still deletes the user if the subscription fails", :aggregate_failures do
+        client.stub_responses(:admin_add_user_to_group, "TooManyRequestsException")
+        client.stub_responses(:admin_list_groups_for_user, groups: [])
+
+        expect { service.add("dl-a", email) }.to raise_error(described_class::Error, /could not add the recipient/)
+        expect(requests_for(:admin_delete_user).first[:params]).to include(username: sub)
+      end
+
+      it "releases the email and recipient locks", :aggregate_failures do
+        expect { service.add("dl-a", email) }.to raise_error(described_class::AuditFailed)
+        expect([distribution_list_email_lock_free?(email), distribution_list_lock_free?(sub)]).to eq([true, true])
+      end
+    end
   end
 
   describe "#last_group?" do
@@ -521,6 +560,32 @@ RSpec.describe DistributionListService do
 
         expect(service.remove("dl-a", sub, account_deletion_acknowledged: true)).to eq(:removed_and_deleted)
         expect(DistributionListAuditEvent.order(:id).pluck(:action)).to eq(%w[recipient_removed user_deleted])
+      end
+    end
+
+    context "when the removal from the last group cannot be audited" do
+      before do
+        client.stub_responses(:admin_list_groups_for_user, groups: [])
+        fail_audit_for("recipient_removed")
+      end
+
+      it "still deletes the user, then reports the missing audit event", :aggregate_failures do
+        expect { service.remove("dl-a", sub, account_deletion_acknowledged: true) }.to raise_error(described_class::AuditFailed) { |error|
+          expect([error.result, error.failures]).to eq([:removed_and_deleted, [{ action: "recipient_removed", group_name: "dl-a", username: sub }]])
+        }
+        expect(requests_for(:admin_delete_user).first[:params]).to include(username: sub)
+        expect(DistributionListAuditEvent.pluck(:action)).to eq(%w[user_deleted])
+      end
+
+      it "reports DeletionFailed with the sub if the deletion then fails", :aggregate_failures do
+        client.stub_responses(:admin_delete_user, "TooManyRequestsException")
+
+        expect { service.remove("dl-a", sub, account_deletion_acknowledged: true) }.to raise_error(described_class::DeletionFailed) { |error| expect(error.username).to eq(sub) }
+      end
+
+      it "releases the recipient lock", :aggregate_failures do
+        expect { service.remove("dl-a", sub, account_deletion_acknowledged: true) }.to raise_error(described_class::AuditFailed)
+        expect(distribution_list_lock_free?(sub)).to be(true)
       end
     end
 

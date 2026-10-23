@@ -82,6 +82,19 @@ class DistributionListService
     end
   end
 
+  # The Cognito changes (and any cleanup) completed, but one or more audit
+  # events could not be saved. result is the outcome of the operation.
+  # failures lists each missing event as { action:, group_name:, username: }.
+  class AuditFailed < Error
+    attr_reader :result, :failures
+
+    def initialize(result, failures)
+      @result = result
+      @failures = failures
+      super("Audit events not saved: #{failures.map { |f| "#{f[:action]} #{f[:group_name]} #{f[:username]}" }.join(', ')}")
+    end
+  end
+
   def self.valid_group_name?(name)
     name = name.to_s
     GROUP_NAME_FORMAT.match?(name) && PROTECTED_GROUPS.exclude?(name)
@@ -92,6 +105,7 @@ class DistributionListService
     @user_pool_id = user_pool_id
     @actor = actor
     @lock_timeout = lock_timeout
+    @failed_audits = []
   end
 
   def groups
@@ -124,11 +138,13 @@ class DistributionListService
   def add(group_name, email)
     guard!(group_name)
     email = normalise(email)
+    @failed_audits = []
 
     # Serialises lookup, creation and the add for this email, so another
     # subscription cannot find a user this request created and take over
     # (or block) its subscription and cleanup.
-    with_email_lock(email) { add_locked(group_name, email) }
+    result = with_email_lock(email) { add_locked(group_name, email) }
+    raise_if_audit_failed(result)
   rescue Aws::CognitoIdentityProvider::Errors::ResourceNotFoundException
     raise NotFound, "Distribution list not found"
   rescue *CLIENT_ERRORS => e
@@ -152,11 +168,12 @@ class DistributionListService
   # Returns :removed or :removed_and_deleted.
   def remove(group_name, username, account_deletion_acknowledged: false)
     guard!(group_name)
+    @failed_audits = []
 
     # Recheck the remaining groups under the lock before changing membership.
     # If account deletion is newly required, return to confirmation without
     # removing the recipient.
-    with_user_lock(username) do
+    result = with_user_lock(username) do
       # Only a recipient of this list can be unsubscribed (and so deleted).
       raise NotFound, "Recipient not found" unless find_member(group_name, username)
 
@@ -170,6 +187,7 @@ class DistributionListService
 
       deletes_account ? delete_if_in_no_groups(group_name, username) : :removed
     end
+    raise_if_audit_failed(result)
   rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException,
          Aws::CognitoIdentityProvider::Errors::ResourceNotFoundException
     raise NotFound, "Recipient or distribution list not found"
@@ -237,8 +255,25 @@ private
     begin
       yield
     ensure
-      advisory_lock_query(connection, "pg_advisory_unlock", key)
+      release_advisory_lock(connection, key)
     end
+  end
+
+  # If the unlock fails (for example, the database is unavailable), discard
+  # the connection: Postgres releases session-level locks when the session
+  # ends. Raising here would hide the result of the Cognito changes.
+  def release_advisory_lock(connection, key)
+    advisory_lock_query(connection, "pg_advisory_unlock", key)
+  rescue ActiveRecord::ActiveRecordError => e
+    Rails.logger.error("distribution_list.unlock_failed #{e.class.name}")
+    connection.throw_away!
+  end
+
+  # Called after the Cognito changes, and any cleanup, are complete.
+  def raise_if_audit_failed(result)
+    raise AuditFailed.new(result, @failed_audits) if @failed_audits.any?
+
+    result
   end
 
   def advisory_lock_query(connection, function, key)
@@ -418,6 +453,11 @@ private
 
   # Records who did what to which list, and when. The recipient is identified
   # by the Cognito username (sub), never by email.
+  #
+  # Called after a Cognito change has been made. If the insert fails, the
+  # operation carries on, so that the subscription, removal or cleanup still
+  # completes, and the failure is reported afterwards with AuditFailed. The
+  # log line keeps the details so the event can be recorded by hand.
   def audit(action, group_name, username)
     event = DistributionListAuditEvent.create!(
       actor_uid: actor.uid,
@@ -436,5 +476,18 @@ private
         at: event.created_at.iso8601,
       }.to_json,
     )
+  rescue ActiveRecord::ActiveRecordError => e
+    Rails.logger.error(
+      {
+        event: "distribution_list.audit_failed",
+        action:,
+        actor_uid: actor.uid,
+        group: group_name,
+        recipient_username: username,
+        at: Time.current.iso8601,
+        error: e.class.name,
+      }.to_json,
+    )
+    @failed_audits << { action:, group_name:, username: }
   end
 end

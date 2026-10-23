@@ -167,6 +167,26 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
       end
     end
 
+    context "when the audit of a created user cannot be saved" do
+      before do
+        cognito_client.stub_responses(:admin_get_user, "UserNotFoundException")
+        cognito_client.stub_responses(:admin_create_user, user: { username: new_sub })
+        allow(DistributionListAuditEvent).to receive(:create!).and_wrap_original do |original, **attributes|
+          raise ActiveRecord::StatementInvalid, "insert failed" if attributes[:action] == "user_created"
+
+          original.call(**attributes)
+        end
+        make_request
+      end
+
+      it "subscribes the user and tells the operator which audit event to record", :aggregate_failures do
+        expect(cognito_requests(:admin_add_user_to_group).first[:params]).to include(username: new_sub, group_name: group)
+        expect(flash[:alert]).to include("New user created and subscribed", "audit record could not be saved", "user_created for Cognito user #{new_sub}")
+        expect(flash[:alert]).not_to include(new_email)
+        expect(flash[:notice]).to be_nil
+      end
+    end
+
     context "when the user is an HMRC admin" do
       let(:current_user) { create(:user, :hmrc_admin) }
 
@@ -277,6 +297,26 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
         make_request
 
         expect(flash[:alert]).to include("could not be checked or deleted", recipient_sub)
+      end
+    end
+
+    context "when the removal from the last group cannot be audited" do
+      let(:account_deletion_acknowledged) { true }
+
+      before do
+        cognito_client.stub_responses(:admin_list_groups_for_user, groups: [])
+        allow(DistributionListAuditEvent).to receive(:create!).and_wrap_original do |original, **attributes|
+          raise ActiveRecord::StatementInvalid, "insert failed" if attributes[:action] == "recipient_removed"
+
+          original.call(**attributes)
+        end
+        make_request
+      end
+
+      it "deletes the account and tells the operator which audit event to record", :aggregate_failures do
+        expect(cognito_requests(:admin_delete_user).first[:params]).to include(username: recipient_sub)
+        expect(flash[:alert]).to include("were deleted", "audit record could not be saved", "recipient_removed for Cognito user #{recipient_sub}")
+        expect(flash[:notice]).to be_nil
       end
     end
 
