@@ -1,0 +1,42 @@
+<% today = Time.current.utc.to_date %>
+<% from = @from.presence || search_diagnostic_date(@search_diagnostic.start_time) %>
+<% to = @to.presence || search_diagnostic_date(@search_diagnostic.end_time) %>
+<% date_description = @date_range_error ? "search-window-hint search-window-error" : "search-window-hint" %>
+
+<div class="search-analytics-filters govuk-!-margin-bottom-5">
+  <div>
+    <h2 class="govuk-heading-s govuk-!-margin-bottom-2">Change log search window</h2>
+    <div class="govuk-button-group">
+      <% [["3d", "3 days"], ["7d", "7 days"], ["14d", "14 days"]].each do |period, label| %>
+        <%= link_to label,
+                    search_diagnostic_window_path(@request_id, period),
+                    class: ["govuk-link", ("govuk-!-font-weight-bold" if @period == period)].compact.join(" ") %>
+      <% end %>
+    </div>
+  </div>
+  <%= form_with url: search_diagnostic_path(@request_id), method: :get, local: true, class: "search-analytics-date-range" do %>
+    <%= hidden_field_tag :period, "custom" %>
+    <% search_diagnostic_return_filters.each do |name, value| %>
+      <%= hidden_field_tag name, value, id: nil %>
+    <% end %>
+    <fieldset class="govuk-fieldset" aria-describedby="<%= date_description %>">
+      <legend class="govuk-visually-hidden">Log search dates (UTC)</legend>
+      <p id="search-window-hint" class="govuk-visually-hidden">Both dates are included, in UTC. Choose up to 31 days within the last <%= SearchDiagnostic::LOG_RETENTION_DAYS %> days.</p>
+      <% if @date_range_error %>
+        <p id="search-window-error" class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> <%= @date_range_error %></p>
+      <% end %>
+      <% [[:from, from], [:to, to]].each do |name, date| %>
+        <div class="govuk-form-group<%= ' govuk-form-group--error' if @date_range_error %>">
+          <%= label_tag name, name.to_s.capitalize, class: "govuk-label" %>
+          <%= date_field_tag name, date,
+                             required: true,
+                             min: (today - SearchDiagnostic::LOG_RETENTION_DAYS).iso8601,
+                             max: today.iso8601,
+                             class: "govuk-input#{' govuk-input--error' if @date_range_error}",
+                             aria: { describedby: date_description, invalid: @date_range_error.present? } %>
+        </div>
+      <% end %>
+      <%= submit_tag "Apply dates", class: "govuk-button" %>
+    </fieldset>
+  <% end %>
+</div>

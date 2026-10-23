@@ -195,7 +195,15 @@ module SearchDiagnosticsHelper
   end
 
   def search_diagnostic_request_path(request_id)
-    search_diagnostic_path(request_id, search_diagnostic_return_filters)
+    search_diagnostic_path(request_id, search_diagnostic_return_filters.merge(search_diagnostic_window_filters))
+  end
+
+  def search_diagnostic_window_path(request_id, period)
+    search_diagnostic_path(request_id, search_diagnostic_return_filters.merge(period:))
+  end
+
+  def search_diagnostic_window_filters
+    params.permit(:period, :from, :to).to_h.compact_blank
   end
 
   def search_diagnostics_back_path
@@ -281,6 +289,12 @@ module SearchDiagnosticsHelper
     Time.zone.parse(timestamp).strftime("%H:%M:%S.%L")
   rescue ArgumentError
     timestamp
+  end
+
+  def search_diagnostic_date(timestamp)
+    Time.zone.parse(timestamp.to_s)&.utc&.to_date&.iso8601
+  rescue ArgumentError
+    nil
   end
 
   def search_diagnostic_time_range(diagnostic)

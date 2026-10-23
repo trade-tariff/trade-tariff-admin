@@ -45,8 +45,8 @@ RSpec.describe "Search activity breakdown" do
 
     let(:expected_rows) do
       [
-        ["9 June 2026", "60", "Unavailable", "Unavailable", "60"],
-        ["10 June 2026", "100", "40", "50", "10"],
+        ["9 June 2026", "60", "Unavailable", "Unavailable", "100%"],
+        ["10 June 2026", "100", "40%", "50%", "10%"],
       ]
     end
 

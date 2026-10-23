@@ -22,6 +22,12 @@ RSpec.describe SearchAnalyticsHelper do
     end
   end
 
+  describe "#search_analytics_action_percentage" do
+    it "preserves two decimal places for activity percentages" do
+      expect(helper.search_analytics_action_percentage(1, 3)).to eq("33.33%")
+    end
+  end
+
   describe "#search_analytics_outcome_rate_chart_payload" do
     it "uses a distinct neutral colour for each outcome concept" do
       rows = [{ key: "results", label: "Results", percentage: 50 }, { key: "error", label: "Error", percentage: 50 }]
@@ -35,6 +41,7 @@ RSpec.describe SearchAnalyticsHelper do
       expect(helper.search_analytics_outcome_rate_percentage(nil)).to eq("Unavailable")
       expect(helper.search_analytics_outcome_rate_percentage(0)).to eq("0%")
       expect(helper.search_analytics_outcome_rate_percentage(33.3)).to eq("33.3%")
+      expect(helper.search_analytics_outcome_rate_percentage(33.33)).to eq("33.33%")
     end
   end
 
