@@ -165,6 +165,13 @@ counts as done if the user has left the group. If admin cannot confirm the
 state, it reports a failure and shows the Cognito username where the user may
 still exist.
 
+If a create times out and admin also cannot check whether the user now exists,
+admin does not know the Cognito username. It does not subscribe the recipient
+or write an audit event. It shows a page with the submitted email address and
+tells the operator how to reconcile: subscribe again, or ask the platform team
+to delete the account if it is in no groups. The email address is only in that
+response. It is not in the log, the flash message or the URL.
+
 Each subscribe and unsubscribe holds a lock on the recipient (a Postgres
 advisory lock keyed by Cognito username). This stops an unsubscribe from
 deleting a user while another admin request subscribes the same user to a

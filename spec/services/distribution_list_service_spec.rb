@@ -289,6 +289,16 @@ RSpec.describe DistributionListService do
         expect { service.add("dl-a", email) }.to raise_error(described_class::Error, /NetworkingError/)
         expect(requests_for(:admin_add_user_to_group)).to be_empty
       end
+
+      %w[timeout throttled].each do |lookup_failure|
+        it "reports an unconfirmed creation if the lookup is #{lookup_failure} too", :aggregate_failures do
+          client.stub_responses(:admin_get_user, ["UserNotFoundException", lookup_failure == "timeout" ? read_timeout : "TooManyRequestsException"])
+
+          expect { service.add("dl-a", email) }.to raise_error(described_class::CreationIndeterminate) { |error| expect(error.message).not_to include(email) }
+          expect(requests_for(:admin_add_user_to_group) + requests_for(:admin_delete_user)).to be_empty
+          expect(DistributionListAuditEvent.count).to eq(0)
+        end
+      end
     end
 
     context "when another request created the user first" do
