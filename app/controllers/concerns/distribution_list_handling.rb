@@ -36,7 +36,17 @@ private
 
   def distribution_lists_unavailable(exception)
     Rails.logger.error("distribution_list.error #{exception.class.name}: #{exception.message}")
-    redirect_to distribution_lists_path, alert: UNAVAILABLE_MESSAGE
+    redirect_to distribution_lists_path, alert: with_missing_audits(UNAVAILABLE_MESSAGE, exception)
+  end
+
+  # Appends the audit events that could not be saved, named by action and
+  # Cognito username (never by email), so the operator can have them recorded.
+  def with_missing_audits(message, error)
+    failures = error.is_a?(DistributionListService::AuditFailed) ? error.failures : error.failed_audits
+    return message if failures.empty?
+
+    missing = failures.map { |f| "#{f[:action]} for Cognito user #{f[:username]}" }.join("; ")
+    "#{message} The audit record could not be saved. Ask the platform team to record: #{missing}."
   end
 
   def distribution_list_busy

@@ -40,7 +40,15 @@ class DistributionListService
   Group = Data.define(:name, :description)
   Member = Data.define(:username, :email, :status, :enabled)
 
-  class Error < StandardError; end
+  class Error < StandardError
+    # Audit events that could not be saved before this error ended the
+    # operation, as { action:, group_name:, username: }. The Cognito changes
+    # they describe were made, so the operator must have them recorded.
+    attr_writer :failed_audits
+
+    def failed_audits = @failed_audits || []
+  end
+
   class InvalidGroup < Error; end
   class NotFound < Error; end
   # Another request is changing the same recipient. Safe to retry.
@@ -82,6 +90,20 @@ class DistributionListService
     end
   end
 
+  # The request to remove the user from the group failed without a response,
+  # and the follow-up lookup of their groups also failed, so it is not known
+  # whether the user left the group. No removal audit is written and the user
+  # is not deleted. If the removal worked and it was their last group, the user
+  # is verified and in no group, so nothing else will clean it up.
+  class RemovalIndeterminate < Error
+    attr_reader :username
+
+    def initialize(username, cause_name)
+      @username = username
+      super("Could not confirm whether recipient #{username} was unsubscribed (#{cause_name})")
+    end
+  end
+
   # The Cognito changes (and any cleanup) completed, but one or more audit
   # events could not be saved. result is the outcome of the operation.
   # failures lists each missing event as { action:, group_name:, username: }.
@@ -101,7 +123,11 @@ class DistributionListService
   end
 
   def initialize(actor:, client: nil, user_pool_id: TradeTariffAdmin.cognito_user_pool_id, lock_timeout: LOCK_TIMEOUT)
-    @client = client || Aws::CognitoIdentityProvider::Client.new(region: TradeTariffAdmin.cognito_region)
+    @client = client || Aws::CognitoIdentityProvider::Client.new(
+      region: TradeTariffAdmin.cognito_region,
+      retry_mode: "standard",
+      max_attempts: 1,
+    )
     @user_pool_id = user_pool_id
     @actor = actor
     @lock_timeout = lock_timeout
@@ -136,19 +162,7 @@ class DistributionListService
 
   # Returns :created_and_added, :added or :already_member.
   def add(group_name, email)
-    guard!(group_name)
-    email = normalise(email)
-    @failed_audits = []
-
-    # Serialises lookup, creation and the add for this email, so another
-    # subscription cannot find a user this request created and take over
-    # (or block) its subscription and cleanup.
-    result = with_email_lock(email) { add_locked(group_name, email) }
-    raise_if_audit_failed(result)
-  rescue Aws::CognitoIdentityProvider::Errors::ResourceNotFoundException
-    raise NotFound, "Distribution list not found"
-  rescue *CLIENT_ERRORS => e
-    raise Error, "Cognito could not add the recipient (#{e.class.name.demodulize})"
+    with_audit_failures { perform_add(group_name, email) }
   end
 
   # True when the user is in no Cognito group other than group_name, so
@@ -167,13 +181,34 @@ class DistributionListService
   #
   # Returns :removed or :removed_and_deleted.
   def remove(group_name, username, account_deletion_acknowledged: false)
+    with_audit_failures { perform_remove(group_name, username, account_deletion_acknowledged:) }
+  end
+
+private
+
+  attr_reader :client, :user_pool_id, :actor, :lock_timeout
+
+  def perform_add(group_name, email)
     guard!(group_name)
-    @failed_audits = []
+    email = normalise(email)
+
+    # Serialises lookup, creation and the add for this email, so another
+    # subscription cannot find a user this request created and take over
+    # (or block) its subscription and cleanup.
+    with_email_lock(email) { add_locked(group_name, email) }
+  rescue Aws::CognitoIdentityProvider::Errors::ResourceNotFoundException
+    raise NotFound, "Distribution list not found"
+  rescue *CLIENT_ERRORS => e
+    raise Error, "Cognito could not add the recipient (#{e.class.name.demodulize})"
+  end
+
+  def perform_remove(group_name, username, account_deletion_acknowledged:)
+    guard!(group_name)
 
     # Recheck the remaining groups under the lock before changing membership.
     # If account deletion is newly required, return to confirmation without
     # removing the recipient.
-    result = with_user_lock(username) do
+    with_user_lock(username) do
       # Only a recipient of this list can be unsubscribed (and so deleted).
       raise NotFound, "Recipient not found" unless find_member(group_name, username)
 
@@ -187,17 +222,12 @@ class DistributionListService
 
       deletes_account ? delete_if_in_no_groups(group_name, username) : :removed
     end
-    raise_if_audit_failed(result)
   rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException,
          Aws::CognitoIdentityProvider::Errors::ResourceNotFoundException
     raise NotFound, "Recipient or distribution list not found"
   rescue *CLIENT_ERRORS => e
     raise Error, "Cognito could not remove the recipient (#{e.class.name.demodulize})"
   end
-
-private
-
-  attr_reader :client, :user_pool_id, :actor, :lock_timeout
 
   def add_locked(group_name, email)
     attempts = 0
@@ -269,11 +299,21 @@ private
     connection.throw_away!
   end
 
-  # Called after the Cognito changes, and any cleanup, are complete.
-  def raise_if_audit_failed(result)
+  # Runs an operation and reports audit events that could not be saved. The
+  # operation, including any cleanup, always runs to the end first. If it
+  # completes, AuditFailed carries its result. If it fails, its error carries
+  # the missing events, so the operator is told about both.
+  def with_audit_failures
+    @failed_audits = []
+    result = yield
     raise AuditFailed.new(result, @failed_audits) if @failed_audits.any?
 
     result
+  rescue AuditFailed
+    raise
+  rescue Error => e
+    e.failed_audits = @failed_audits.dup
+    raise
   end
 
   def advisory_lock_query(connection, function, key)
@@ -372,7 +412,14 @@ private
     # the user has left the group, carry on, so that a user left in no group
     # is still deleted.
     groups = current_group_names(username)
-    raise e unless groups && groups.exclude?(group_name)
+    return if groups&.exclude?(group_name)
+
+    # Without a response the removal may have worked, so it must not be
+    # reported as a plain failure. It must not be audited, and the user must
+    # not be deleted, while the outcome is unknown.
+    raise RemovalIndeterminate.new(username, e.class.name.demodulize) if groups.nil? && e.is_a?(Seahorse::Client::NetworkingError)
+
+    raise e
   end
 
   def delete_if_in_no_groups(group_name, username)
