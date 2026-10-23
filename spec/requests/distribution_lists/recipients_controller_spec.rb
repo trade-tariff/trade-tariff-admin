@@ -133,6 +133,40 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
       end
     end
 
+    context "when the create response and the recovery lookup both fail" do
+      let(:log) { StringIO.new }
+
+      before do
+        cognito_client.stub_responses(:admin_get_user, ["UserNotFoundException", Seahorse::Client::NetworkingError.new(Net::ReadTimeout.new)])
+        cognito_client.stub_responses(:admin_create_user, Seahorse::Client::NetworkingError.new(Net::ReadTimeout.new))
+        original_logger = Rails.logger
+        Rails.logger = ActiveSupport::Logger.new(log)
+        make_request
+      ensure
+        Rails.logger = original_logger
+      end
+
+      it "shows reconciliation instructions with the email in the response", :aggregate_failures do
+        expect(response).to have_http_status(:service_unavailable)
+        expect(response.body).to include("did not confirm whether an account was created for #{new_email}", "in no groups")
+        expect(response.body).not_to include("New user created")
+        expect(response.headers["Cache-Control"]).to eq("no-store")
+      end
+
+      it "does not subscribe or claim the recipient was subscribed", :aggregate_failures do
+        expect(cognito_requests(:admin_add_user_to_group)).to be_empty
+        expect(flash[:notice]).to be_nil
+        expect(DistributionListAuditEvent.count).to eq(0)
+      end
+
+      it "keeps the email out of the log, flash and URL", :aggregate_failures do
+        expect(log.string).to include("distribution_list.creation_indeterminate")
+        expect(log.string.downcase).not_to include(new_email)
+        expect(flash.to_h.values.join).not_to include(new_email)
+        expect(request.url).not_to include("new.person")
+      end
+    end
+
     context "when the user is an HMRC admin" do
       let(:current_user) { create(:user, :hmrc_admin) }
 

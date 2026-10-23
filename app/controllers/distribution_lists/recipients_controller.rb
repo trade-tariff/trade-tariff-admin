@@ -27,6 +27,11 @@ module DistributionLists
           Rails.logger.error("distribution_list.cleanup_failed #{e.message}")
           redirect_to distribution_list_path(@group.name),
                       alert: "Recipient was not subscribed. A new Cognito account was created for them but could not be checked or removed. Ask the platform team to check the remaining groups for Cognito user #{e.username} and delete the account only if no groups remain."
+        rescue DistributionListService::CreationIndeterminate => e
+          # The email is only known from this request, so the instructions are
+          # rendered in this response. It must not go in the log, flash or URL.
+          Rails.logger.error("distribution_list.creation_indeterminate group=#{@group.name} #{e.message}")
+          render :creation_indeterminate, status: :service_unavailable
         end
       else
         @members = distribution_list_service.members(@group.name)

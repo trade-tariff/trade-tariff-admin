@@ -72,6 +72,16 @@ class DistributionListService
     end
   end
 
+  # The request to create a Cognito user failed without a response, and the
+  # follow-up lookup also failed, so it is not known whether the user exists.
+  # If it does, it is verified and in no group, so nothing else will clean it
+  # up. The Cognito username is not known; the message never contains the email.
+  class CreationIndeterminate < Error
+    def initialize(cause_name)
+      super("Could not confirm whether a Cognito user was created (#{cause_name})")
+    end
+  end
+
   def self.valid_group_name?(name)
     name = name.to_s
     GROUP_NAME_FORMAT.match?(name) && PROTECTED_GROUPS.exclude?(name)
@@ -277,7 +287,13 @@ private
   rescue Seahorse::Client::NetworkingError => e
     # The create may have reached Cognito. The user did not exist just before,
     # so if it exists now, treat it as created here so a failed add cleans it up.
-    existing_username(email) || raise(e)
+    confirmed_username = begin
+      existing_username(email)
+    rescue *CLIENT_ERRORS => lookup_error
+      raise CreationIndeterminate, lookup_error.class.name.demodulize
+    end
+
+    confirmed_username || raise(e)
   end
 
   # If this request created the user and the add fails, the user would stay in
