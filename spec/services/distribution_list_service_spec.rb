@@ -394,17 +394,32 @@ RSpec.describe DistributionListService do
         expect(DistributionListAuditEvent.pluck(:action)).to eq(%w[recipient_added])
       end
 
-      it "still deletes the user if the subscription fails", :aggregate_failures do
-        client.stub_responses(:admin_add_user_to_group, "TooManyRequestsException")
-        client.stub_responses(:admin_list_groups_for_user, groups: [])
-
-        expect { service.add("dl-a", email) }.to raise_error(described_class::Error, /could not add the recipient/)
-        expect(requests_for(:admin_delete_user).first[:params]).to include(username: sub)
-      end
-
       it "releases the email and recipient locks", :aggregate_failures do
         expect { service.add("dl-a", email) }.to raise_error(described_class::AuditFailed)
         expect([distribution_list_email_lock_free?(email), distribution_list_lock_free?(sub)]).to eq([true, true])
+      end
+    end
+
+    context "when the audit of a created user cannot be saved and the subscription fails" do
+      before do
+        client.stub_responses(:admin_get_user, "UserNotFoundException")
+        client.stub_responses(:admin_create_user, user: { username: sub })
+        client.stub_responses(:admin_add_user_to_group, "TooManyRequestsException")
+        client.stub_responses(:admin_list_groups_for_user, groups: [])
+        fail_audit_for("user_created")
+      end
+
+      it "still deletes the user, and carries the missing event on the error", :aggregate_failures do
+        expect { service.add("dl-a", email) }.to raise_error(described_class::Error, /could not add the recipient/) { |error|
+          expect(error.failed_audits).to eq([{ action: "user_created", group_name: "dl-a", username: sub }])
+        }
+        expect(requests_for(:admin_delete_user).first[:params]).to include(username: sub)
+      end
+
+      it "carries the missing event on CleanupFailed if the deletion also fails", :aggregate_failures do
+        client.stub_responses(:admin_delete_user, "TooManyRequestsException")
+
+        expect { service.add("dl-a", email) }.to raise_error(described_class::CleanupFailed) { |error| expect(error.failed_audits.pluck(:action)).to eq(%w[user_created]) }
       end
     end
   end
@@ -518,11 +533,44 @@ RSpec.describe DistributionListService do
         expect(requests_for(:admin_delete_user)).to be_empty
         expect(DistributionListAuditEvent.count).to eq(0)
       end
+    end
 
-      it "reports the failure if the groups cannot be read", :aggregate_failures do
-        client.stub_responses(:admin_list_groups_for_user, read_timeout)
+    context "when the removal times out and only the recovery lookup fails" do
+      before do
+        client.stub_responses(:admin_remove_user_from_group, read_timeout)
+        client.stub_responses(:admin_list_groups_for_user, [{ groups: [{ group_name: "dl-a" }] }, read_timeout])
+      end
 
-        expect { service.remove("dl-a", sub, account_deletion_acknowledged: true) }.to raise_error(described_class::Error, /NetworkingError/)
+      it "reports an unconfirmed removal with the sub but not the email", :aggregate_failures do
+        expect { service.remove("dl-a", sub, account_deletion_acknowledged: true) }.to raise_error(described_class::RemovalIndeterminate) { |error|
+          expect(error.username).to eq(sub)
+          expect(error.message).not_to include(email)
+        }
+        expect(requests_for(:admin_remove_user_from_group).size).to eq(1)
+      end
+
+      it "neither audits the removal nor deletes the user", :aggregate_failures do
+        expect { service.remove("dl-a", sub, account_deletion_acknowledged: true) }.to raise_error(described_class::RemovalIndeterminate)
+        expect(DistributionListAuditEvent.count).to eq(0)
+        expect(requests_for(:admin_delete_user)).to be_empty
+      end
+
+      it "releases the recipient lock", :aggregate_failures do
+        expect { service.remove("dl-a", sub, account_deletion_acknowledged: true) }.to raise_error(described_class::RemovalIndeterminate)
+        expect(distribution_list_lock_free?(sub)).to be(true)
+      end
+    end
+
+    context "when Cognito rejects the removal and the recovery lookup fails" do
+      before do
+        client.stub_responses(:admin_remove_user_from_group, "TooManyRequestsException")
+        client.stub_responses(:admin_list_groups_for_user, [{ groups: [{ group_name: "dl-a" }] }, read_timeout])
+      end
+
+      it "reports a plain failure, because the removal did not happen", :aggregate_failures do
+        expect { service.remove("dl-a", sub, account_deletion_acknowledged: true) }.to raise_error(described_class::Error) { |error|
+          expect(error).not_to be_a(described_class::RemovalIndeterminate)
+        }
         expect(requests_for(:admin_delete_user)).to be_empty
       end
     end
@@ -580,7 +628,9 @@ RSpec.describe DistributionListService do
       it "reports DeletionFailed with the sub if the deletion then fails", :aggregate_failures do
         client.stub_responses(:admin_delete_user, "TooManyRequestsException")
 
-        expect { service.remove("dl-a", sub, account_deletion_acknowledged: true) }.to raise_error(described_class::DeletionFailed) { |error| expect(error.username).to eq(sub) }
+        expect { service.remove("dl-a", sub, account_deletion_acknowledged: true) }.to raise_error(described_class::DeletionFailed) { |error|
+          expect([error.username, error.failed_audits]).to eq([sub, [{ action: "recipient_removed", group_name: "dl-a", username: sub }]])
+        }
       end
 
       it "releases the recipient lock", :aggregate_failures do

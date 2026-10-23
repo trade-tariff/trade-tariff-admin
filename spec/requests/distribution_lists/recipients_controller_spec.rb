@@ -7,6 +7,14 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
   let(:new_email) { "new.person@example.com" }
   let(:new_sub) { "99999999-8888-7777-6666-555555555555" }
 
+  def fail_audit_for(action)
+    allow(DistributionListAuditEvent).to receive(:create!).and_wrap_original do |original, **attributes|
+      raise ActiveRecord::StatementInvalid, "insert failed" if attributes[:action] == action
+
+      original.call(**attributes)
+    end
+  end
+
   describe "POST #create" do
     subject(:make_request) do
       post distribution_list_recipients_path(group), params: { distribution_list_recipient_form: { email: " New.Person@Example.com " } }
@@ -187,6 +195,39 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
       end
     end
 
+    context "when the audit of a created user cannot be saved and the subscription then fails" do
+      before do
+        cognito_client.stub_responses(:admin_get_user, "UserNotFoundException")
+        cognito_client.stub_responses(:admin_create_user, user: { username: new_sub })
+        cognito_client.stub_responses(:admin_add_user_to_group, "TooManyRequestsException")
+        cognito_client.stub_responses(:admin_list_groups_for_user, groups: [])
+        fail_audit_for("user_created")
+        make_request
+      end
+
+      it "reports the failure and the audit event to record", :aggregate_failures do
+        expect(cognito_requests(:admin_delete_user).first[:params]).to include(username: new_sub)
+        expect(flash[:alert]).to include(DistributionListHandling::UNAVAILABLE_MESSAGE, "audit record could not be saved", "user_created for Cognito user #{new_sub}")
+        expect(flash[:alert]).not_to include(new_email)
+      end
+    end
+
+    context "when the audit of a created user cannot be saved and its cleanup then fails" do
+      before do
+        cognito_client.stub_responses(:admin_get_user, "UserNotFoundException")
+        cognito_client.stub_responses(:admin_create_user, user: { username: new_sub })
+        cognito_client.stub_responses(:admin_add_user_to_group, "TooManyRequestsException")
+        cognito_client.stub_responses(:admin_list_groups_for_user, groups: [])
+        cognito_client.stub_responses(:admin_delete_user, "TooManyRequestsException")
+        fail_audit_for("user_created")
+        make_request
+      end
+
+      it "gives the cleanup instructions and the audit event to record" do
+        expect(flash[:alert]).to include("could not be checked or removed", "user_created for Cognito user #{new_sub}")
+      end
+    end
+
     context "when the user is an HMRC admin" do
       let(:current_user) { create(:user, :hmrc_admin) }
 
@@ -284,6 +325,29 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
       end
     end
 
+    context "when the removal times out and the recovery lookup fails" do
+      let(:account_deletion_acknowledged) { true }
+
+      before do
+        cognito_client.stub_responses(:admin_list_groups_for_user, [{ groups: [{ group_name: group }] }, Seahorse::Client::NetworkingError.new(Net::ReadTimeout.new)])
+        cognito_client.stub_responses(:admin_remove_user_from_group, Seahorse::Client::NetworkingError.new(Net::ReadTimeout.new))
+      end
+
+      it "gives reconciliation instructions without claiming success", :aggregate_failures do
+        make_request
+
+        expect(flash[:notice]).to be_nil
+        expect(flash[:alert]).to include("did not confirm whether the recipient was unsubscribed", recipient_sub, "record recipient_removed", "If no groups remain, delete")
+      end
+
+      it "neither audits nor deletes", :aggregate_failures do
+        make_request
+
+        expect(DistributionListAuditEvent.count).to eq(0)
+        expect(cognito_requests(:admin_delete_user)).to be_empty
+      end
+    end
+
     context "when the deletion times out and the user still exists" do
       let(:account_deletion_acknowledged) { true }
 
@@ -316,6 +380,22 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
       it "deletes the account and tells the operator which audit event to record", :aggregate_failures do
         expect(cognito_requests(:admin_delete_user).first[:params]).to include(username: recipient_sub)
         expect(flash[:alert]).to include("were deleted", "audit record could not be saved", "recipient_removed for Cognito user #{recipient_sub}")
+        expect(flash[:notice]).to be_nil
+      end
+    end
+
+    context "when the removal cannot be audited and the deletion then fails" do
+      let(:account_deletion_acknowledged) { true }
+
+      before do
+        cognito_client.stub_responses(:admin_list_groups_for_user, groups: [])
+        cognito_client.stub_responses(:admin_delete_user, "TooManyRequestsException")
+        fail_audit_for("recipient_removed")
+        make_request
+      end
+
+      it "gives the deletion instructions and the audit event to record", :aggregate_failures do
+        expect(flash[:alert]).to include("could not be checked or deleted", "recipient_removed for Cognito user #{recipient_sub}")
         expect(flash[:notice]).to be_nil
       end
     end

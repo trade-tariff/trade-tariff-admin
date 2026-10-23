@@ -146,8 +146,11 @@ Admin saves an audit event after the Cognito change is made. If the event
 cannot be saved, admin still completes the change, including any deletion of
 a user who is now in no group or of a new user whose subscription failed. Then
 the page tells the operator which events are missing, by action and Cognito
-username. Ask the platform team to record them. The log keeps each missing
-event as a `distribution_list.audit_failed` line.
+username. Ask the platform team to record them. The page shows the missing
+events if the operation completes, and also if it fails later (for example,
+when the cleanup or deletion also fails). In that case the page shows both the
+failure instructions and the missing events. The log keeps each missing event
+as a `distribution_list.audit_failed` line.
 
 Admin reads recipient emails from Cognito and shows them on the page only. It
 does not store them in the database, the logs, flash messages or URLs. The
@@ -178,6 +181,13 @@ or write an audit event. It shows a page with the submitted email address and
 tells the operator how to reconcile: subscribe again, or ask the platform team
 to delete the account if it is in no groups. The email address is only in that
 response. It is not in the log, the flash message or the URL.
+
+If a removal times out and admin also cannot read the user's groups, admin
+does not know whether the user left the list. It does not write the removal
+audit event or delete the account. It tells the operator the Cognito username
+and how to reconcile: check the user's groups, record `recipient_removed` if
+the user has left the list, and delete the account (and record
+`user_deleted`) only if no groups remain.
 
 Each subscribe and unsubscribe holds a lock on the recipient (a Postgres
 advisory lock keyed by Cognito username). This stops an unsubscribe from
