@@ -44,7 +44,7 @@ module DistributionLists
     rescue DistributionListService::DeletionFailed => e
       Rails.logger.error("distribution_list.deletion_failed #{e.message}")
       redirect_to distribution_list_path(@group.name),
-                  alert: "Recipient unsubscribed, but their Cognito account was not deleted. Ask the platform team to delete Cognito user #{e.username}."
+                  alert: "Recipient unsubscribed, but their Cognito account could not be checked or deleted. Ask the platform team to check the remaining groups for Cognito user #{e.username} and delete the account only if no groups remain."
     rescue DistributionListService::NotFound
       redirect_to distribution_list_path(@group.name), alert: "Recipient is no longer in this distribution list."
     end
