@@ -156,6 +156,15 @@ list page shows and the unverified-user sweep skips. Admin keeps the user if
 it is in a group by then. If the deletion also fails, the page shows the
 Cognito username. Ask the platform team to delete that user.
 
+Cognito can time out after it has already made a change. Admin treats a
+connection or read-timeout failure (`Seahorse::Client::NetworkingError`) the
+same as a Cognito service error. Before it cleans up, admin checks Cognito
+again: a timed-out add counts as done if the user is in the group, a timed-out
+delete counts as done if the user no longer exists, and a timed-out removal
+counts as done if the user has left the group. If admin cannot confirm the
+state, it reports a failure and shows the Cognito username where the user may
+still exist.
+
 Each subscribe and unsubscribe holds a lock on the recipient (a Postgres
 advisory lock keyed by Cognito username). This stops an unsubscribe from
 deleting a user while another admin request subscribes the same user to a
