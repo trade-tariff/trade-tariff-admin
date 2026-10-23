@@ -108,6 +108,8 @@ class DistributionListService
   def remove(group_name, username)
     guard!(group_name)
 
+    raise NotFound, "Recipient not found" unless find_member(group_name, username)
+
     client.admin_remove_user_from_group(user_pool_id:, username:, group_name:)
     audit("recipient_removed", group_name, username)
 
