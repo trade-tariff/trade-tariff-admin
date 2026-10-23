@@ -69,3 +69,8 @@ data "aws_sns_topic" "slack_observability_topic" {
   count = var.enable_observability_alerts ? 1 : 0
   name  = "slack-observability-topic"
 }
+
+data "aws_cognito_user_pool" "identity" {
+  count        = local.distribution_lists_enabled ? 1 : 0
+  user_pool_id = local.cognito_user_pool_id
+}

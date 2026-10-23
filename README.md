@@ -111,6 +111,120 @@ Sidekiq Web can delete queues, kill jobs and retry jobs. Take care in production
 The admin log records each request that can change Sidekiq data, with the
 user uid and email (`[SidekiqWeb]` lines).
 
+## Distribution lists
+
+An email distribution list is a Cognito group in the Identity user pool. The
+group name starts with `dl-`, for example `dl-differences-report`. The prefix
+keeps distribution lists apart from the role and access groups (`admin`,
+`myott` and `portal`). Being on a distribution list gives no access to any
+service.
+
+Go to `/distribution_lists`. Only users with the `technical_operator` or
+`superadmin` role can open it.
+
+- Subscribe a recipient: enter an email address. If no Cognito user exists for
+  it, admin creates one with a verified email and sends no invitation email.
+  Then admin adds the user to the group.
+- Unsubscribe a recipient: admin removes the user from the group. Then admin
+  checks the other groups of the user, including `admin`, `myott` and `portal`.
+  If the user is in no other group, admin deletes the Cognito user. This
+  removes the email address and all other personal information that Cognito
+  holds. The confirmation page tells the operator if this will happen.
+
+Admin makes each change directly in Cognito, so the change takes effect
+immediately. Admin does not cache distribution lists.
+
+Admin writes an audit event to the `distribution_list_audit_events` table for
+each change: who (`actor_uid`, `actor_name`), the action (`user_created`,
+`recipient_added`, `recipient_removed` or `user_deleted`), the list, and when
+(`created_at`). The event identifies the recipient by Cognito username (sub),
+not by email address. Audit events cannot be changed. Each list page shows the
+20 most recent events. Admin also writes each event to the log
+(`distribution_list.*` lines).
+
+Admin saves an audit event after the Cognito change is made. If the event
+cannot be saved, admin still completes the change, including any deletion of
+a user who is now in no group or of a new user whose subscription failed. Then
+the page tells the operator which events are missing, by action and Cognito
+username. Ask the platform team to record them. The page shows the missing
+events if the operation completes, and also if it fails later (for example,
+when the cleanup or deletion also fails). In that case the page shows both the
+failure instructions and the missing events. The log keeps each missing event
+as a `distribution_list.audit_failed` line.
+
+Admin reads recipient emails from Cognito and shows them on the page only. It
+does not store them in the database, the logs, flash messages or URLs. The
+pages send `Cache-Control: no-store`.
+
+If admin removes a user from a list but cannot delete the Cognito user, the
+page shows the Cognito username. Ask the platform team to delete that user.
+
+If admin creates a Cognito user for a subscription and then cannot add it to
+the list, admin deletes that new user again (audited as `user_deleted`). This
+stops a failed subscription from leaving a verified user in no group, which no
+list page shows and the unverified-user sweep skips. Admin keeps the user if
+it is in a group by then. If the deletion also fails, the page shows the
+Cognito username. Ask the platform team to delete that user.
+
+Cognito can time out after it has already made a change. Admin treats a
+connection or read-timeout failure (`Seahorse::Client::NetworkingError`) the
+same as a Cognito service error. Before it cleans up, admin checks Cognito
+again: a timed-out add counts as done if the user is in the group, a timed-out
+delete counts as done if the user no longer exists, and a timed-out removal
+counts as done if the user has left the group. If admin cannot confirm the
+state, it reports a failure and shows the Cognito username where the user may
+still exist.
+
+If a create times out and admin also cannot check whether the user now exists,
+admin does not know the Cognito username. It does not subscribe the recipient
+or write an audit event. It shows a page with the submitted email address and
+tells the operator how to reconcile: subscribe again, or ask the platform team
+to delete the account if it is in no groups. The email address is only in that
+response. It is not in the log, the flash message or the URL.
+
+If a removal times out and admin also cannot read the user's groups, admin
+does not know whether the user left the list. It does not write the removal
+audit event or delete the account. It tells the operator the Cognito username
+and how to reconcile: check the user's groups, record `recipient_removed` if
+the user has left the list, and delete the account (and record
+`user_deleted`) only if no groups remain.
+
+Each subscribe and unsubscribe holds a lock on the recipient (a Postgres
+advisory lock keyed by Cognito username). This stops an unsubscribe from
+deleting a user while another admin request subscribes the same user to a
+different list. Each subscribe also holds a lock on the email address (keyed
+by a SHA-256 digest of the normalised email, so the email does not reach the
+database) from before admin looks up or creates the Cognito user. Only one
+request can find or create the user for an email at a time. The request that
+creates a user is then the only one that can subscribe it, and the one that
+deletes it again if the subscription fails.
+
+When it unsubscribes, admin checks the user's groups again while it holds the
+recipient lock. If account deletion became necessary after the confirmation
+page was shown, admin does not unsubscribe the recipient. It shows a new
+confirmation page with the irreversible deletion warning. If a lock is busy for
+10 seconds, the page asks the operator to try again. The Identity service also
+adds users to groups and does not take these locks. A user who signs in at the
+same moment as their last list is removed can lose the new membership. This
+risk is accepted because few people can change lists.
+
+Terraform in `trade-tariff-platform-aws-terraform` creates the `dl-*` groups.
+Admin cannot create or delete groups. Admin only shows groups whose name
+starts with `dl-`. It refuses `admin`, `myott` and `portal`.
+
+The feature needs these variables:
+
+- `COGNITO_USER_POOL_ID`: the Identity user pool ID. When it is not set or is
+  blank, the pages and the navigation link are not available, and Terraform
+  does not add the Cognito permissions.
+- `AWS_REGION`: optional. The default is `eu-west-2`.
+
+In AWS, Terraform reads `COGNITO_USER_POOL_ID` from the `admin-configuration`
+secret. If it has a value, Terraform gives the task role Cognito permissions on
+that pool only (see
+[terraform/iam.tf](terraform/iam.tf)). Locally, use AWS credentials for the
+development account (for example, AWS SSO) and the development pool ID.
+
 ## Contribute
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) for reporting bugs, making a fork,

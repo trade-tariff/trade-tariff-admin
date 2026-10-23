@@ -308,6 +308,23 @@ Rails.application.routes.draw do
   resources :live_issues, only: %i[index create new update edit destroy]
   resources :users, only: %i[index new create edit update destroy]
 
+  # Email distribution lists are Cognito dl-* groups. Recipients are identified
+  # in URLs by their Cognito username (sub), never by email.
+  constraints(->(_request) { TradeTariffAdmin.distribution_lists_enabled? }) do
+    resources :distribution_lists,
+              only: %i[index show],
+              param: :group_name,
+              constraints: { group_name: /dl-[a-z0-9-]+/ } do
+      resources :recipients,
+                only: %i[create destroy],
+                module: :distribution_lists,
+                param: :username,
+                constraints: { username: /[A-Za-z0-9-]{1,128}/ } do
+        get :remove, on: :member
+      end
+    end
+  end
+
   resources :quotas, only: %i[new show] do
     collection do
       get "/search", as: :perform_search, via: %i[get post], to: "quotas#search"
