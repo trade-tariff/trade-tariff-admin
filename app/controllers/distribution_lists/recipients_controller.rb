@@ -32,6 +32,8 @@ module DistributionLists
           # rendered in this response. It must not go in the log, flash or URL.
           Rails.logger.error("distribution_list.creation_indeterminate group=#{@group.name} #{e.message}")
           render :creation_indeterminate, status: :service_unavailable
+        rescue DistributionListService::AuditFailed => e
+          redirect_to distribution_list_path(@group.name), alert: audit_failed_message(ADD_MESSAGES.fetch(e.result), e)
         end
       else
         @members = distribution_list_service.members(@group.name)
@@ -59,6 +61,8 @@ module DistributionLists
     rescue DistributionListService::ConfirmationRequired
       redirect_to remove_distribution_list_recipient_path(@group.name, params[:username]),
                   alert: "Group memberships changed. Review the account deletion warning and confirm again."
+    rescue DistributionListService::AuditFailed => e
+      redirect_to distribution_list_path(@group.name), alert: audit_failed_message(REMOVE_MESSAGES.fetch(e.result), e)
     rescue DistributionListService::DeletionFailed => e
       Rails.logger.error("distribution_list.deletion_failed #{e.message}")
       redirect_to distribution_list_path(@group.name),
@@ -68,6 +72,13 @@ module DistributionLists
     end
 
   private
+
+    # The Cognito change is complete. Names each missing audit event by
+    # action and Cognito username, never by email.
+    def audit_failed_message(outcome, error)
+      missing = error.failures.map { |f| "#{f[:action]} for Cognito user #{f[:username]}" }.join("; ")
+      "#{outcome} The audit record could not be saved. Ask the platform team to record: #{missing}."
+    end
 
     def authorize_distribution_list
       authorize :distribution_list, action_name == "create" ? :create? : :destroy?

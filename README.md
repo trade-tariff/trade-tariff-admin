@@ -142,6 +142,13 @@ not by email address. Audit events cannot be changed. Each list page shows the
 20 most recent events. Admin also writes each event to the log
 (`distribution_list.*` lines).
 
+Admin saves an audit event after the Cognito change is made. If the event
+cannot be saved, admin still completes the change, including any deletion of
+a user who is now in no group or of a new user whose subscription failed. Then
+the page tells the operator which events are missing, by action and Cognito
+username. Ask the platform team to record them. The log keeps each missing
+event as a `distribution_list.audit_failed` line.
+
 Admin reads recipient emails from Cognito and shows them on the page only. It
 does not store them in the database, the logs, flash messages or URLs. The
 pages send `Cache-Control: no-store`.
