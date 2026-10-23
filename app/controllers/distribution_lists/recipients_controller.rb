@@ -20,8 +20,14 @@ module DistributionLists
       @form = DistributionListRecipientForm.new(email: params.dig(:distribution_list_recipient_form, :email))
 
       if @form.valid?
-        result = distribution_list_service.add(@group.name, @form.email)
-        redirect_to distribution_list_path(@group.name), notice: ADD_MESSAGES.fetch(result)
+        begin
+          result = distribution_list_service.add(@group.name, @form.email)
+          redirect_to distribution_list_path(@group.name), notice: ADD_MESSAGES.fetch(result)
+        rescue DistributionListService::CleanupFailed => e
+          Rails.logger.error("distribution_list.cleanup_failed #{e.message}")
+          redirect_to distribution_list_path(@group.name),
+                      alert: "Recipient was not subscribed. A new Cognito account was created for them but could not be removed. Ask the platform team to delete Cognito user #{e.username}."
+        end
       else
         @members = distribution_list_service.members(@group.name)
         load_audit_events

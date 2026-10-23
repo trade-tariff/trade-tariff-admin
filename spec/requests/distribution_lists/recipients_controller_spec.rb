@@ -1,6 +1,7 @@
 RSpec.describe DistributionLists::RecipientsController, type: :request do
   include_context "with authenticated user"
   include_context "with distribution lists"
+  include DistributionListLockHelper
 
   let(:group) { "dl-tariff-notifications" }
   let(:new_email) { "new.person@example.com" }
@@ -87,6 +88,23 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
       end
     end
 
+    context "when a new user was created but could not be subscribed or removed" do
+      before do
+        cognito_client.stub_responses(:admin_get_user, "UserNotFoundException")
+        cognito_client.stub_responses(:admin_create_user, user: { username: new_sub })
+        cognito_client.stub_responses(:admin_add_user_to_group, "TooManyRequestsException")
+        cognito_client.stub_responses(:admin_list_groups_for_user, groups: [])
+        cognito_client.stub_responses(:admin_delete_user, "TooManyRequestsException")
+        make_request
+      end
+
+      it "tells the operator which Cognito user to delete", :aggregate_failures do
+        expect(response).to redirect_to(distribution_list_path(group))
+        expect(flash[:alert]).to include("was not subscribed", new_sub)
+        expect(flash[:alert]).not_to include(new_email)
+      end
+    end
+
     context "when the user is an HMRC admin" do
       let(:current_user) { create(:user, :hmrc_admin) }
 
@@ -170,7 +188,7 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
       it "tells the operator which Cognito user to delete" do
         make_request
 
-        expect(flash[:alert]).to include("was not deleted", recipient_sub)
+        expect(flash[:alert]).to include("could not be checked or deleted", recipient_sub)
       end
     end
 
@@ -188,6 +206,39 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
         make_request
 
         expect(response).to have_http_status(:forbidden)
+      end
+    end
+  end
+
+  context "when another request is changing the same recipient" do
+    before { stub_const("DistributionListService::LOCK_TIMEOUT", 0.3) }
+
+    let(:busy_message) { "Another change to this recipient is in progress. Try again." }
+
+    context "when unsubscribing" do
+      before do
+        holding_distribution_list_lock(recipient_sub) { delete distribution_list_recipient_path(group, recipient_sub) }
+      end
+
+      it "asks the operator to try again and does not unsubscribe", :aggregate_failures do
+        expect(response).to redirect_to(distribution_list_path(group))
+        expect(flash[:alert]).to eq(busy_message)
+        expect(cognito_requests(:admin_remove_user_from_group)).to be_empty
+      end
+    end
+
+    context "when subscribing" do
+      before do
+        cognito_client.stub_responses(:admin_get_user, username: recipient_sub)
+        holding_distribution_list_lock(recipient_sub) do
+          post distribution_list_recipients_path(group), params: { distribution_list_recipient_form: { email: recipient_email } }
+        end
+      end
+
+      it "asks the operator to try again and does not subscribe", :aggregate_failures do
+        expect(response).to redirect_to(distribution_list_path(group))
+        expect(flash[:alert]).to eq(busy_message)
+        expect(cognito_requests(:admin_add_user_to_group)).to be_empty
       end
     end
   end

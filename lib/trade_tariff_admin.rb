@@ -75,7 +75,7 @@ module TradeTariffAdmin
     end
 
     def cognito_user_pool_id
-      ENV["COGNITO_USER_POOL_ID"].presence
+      ENV["COGNITO_USER_POOL_ID"].to_s.strip.presence
     end
 
     def cognito_region

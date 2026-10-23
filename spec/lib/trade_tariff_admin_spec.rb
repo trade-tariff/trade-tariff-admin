@@ -398,4 +398,30 @@ RSpec.describe TradeTariffAdmin do
       expect { described_class.sidekiq_xi_redis_url }.to raise_error(KeyError, /SIDEKIQ_XI_REDIS_URL/)
     end
   end
+
+  describe ".distribution_lists_enabled?" do
+    {
+      "not set" => nil,
+      "blank" => "",
+      "whitespace only" => "  ",
+    }.each do |description, value|
+      context "when COGNITO_USER_POOL_ID is #{description}" do
+        before { value.nil? ? ENV.delete("COGNITO_USER_POOL_ID") : ENV["COGNITO_USER_POOL_ID"] = value }
+
+        it "disables distribution lists", :aggregate_failures do
+          expect(described_class.cognito_user_pool_id).to be_nil
+          expect(described_class.distribution_lists_enabled?).to be(false)
+        end
+      end
+    end
+
+    context "when COGNITO_USER_POOL_ID has surrounding whitespace" do
+      before { ENV["COGNITO_USER_POOL_ID"] = " eu-west-2_abc123 " }
+
+      it "enables distribution lists with the trimmed pool ID", :aggregate_failures do
+        expect(described_class.cognito_user_pool_id).to eq("eu-west-2_abc123")
+        expect(described_class.distribution_lists_enabled?).to be(true)
+      end
+    end
+  end
 end
