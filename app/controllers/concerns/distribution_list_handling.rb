@@ -7,6 +7,7 @@ module DistributionListHandling
 
   UNAVAILABLE_MESSAGE = "Distribution lists are unavailable. Try again later.".freeze
   LIST_NOT_FOUND_MESSAGE = "Distribution list not found.".freeze
+  BUSY_MESSAGE = "Another change to this recipient is in progress. Try again.".freeze
   AUDIT_EVENTS_SHOWN = 20
 
   included do
@@ -16,6 +17,7 @@ module DistributionListHandling
     rescue_from DistributionListService::Error, with: :distribution_lists_unavailable
     rescue_from DistributionListService::InvalidGroup, with: :distribution_list_not_found
     rescue_from DistributionListService::NotFound, with: :distribution_list_not_found
+    rescue_from DistributionListService::Busy, with: :distribution_list_busy
   end
 
 private
@@ -35,6 +37,10 @@ private
   def distribution_lists_unavailable(exception)
     Rails.logger.error("distribution_list.error #{exception.class.name}: #{exception.message}")
     redirect_to distribution_lists_path, alert: UNAVAILABLE_MESSAGE
+  end
+
+  def distribution_list_busy
+    redirect_to @group ? distribution_list_path(@group.name) : distribution_lists_path, alert: BUSY_MESSAGE
   end
 
   def distribution_list_not_found

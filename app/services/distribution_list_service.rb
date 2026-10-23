@@ -7,6 +7,12 @@ require "aws-sdk-cognitoidentityprovider"
 # change writes a DistributionListAuditEvent that identifies the recipient by
 # Cognito username (sub).
 #
+# Subscribing and unsubscribing hold a per-user lock (a Postgres advisory lock
+# keyed by Cognito username), so an unsubscribe cannot delete a user while
+# another admin request is subscribing them to a different list. Identity also
+# writes group memberships and does not take this lock. That race needs a user
+# to sign in at the same moment as their last list is removed, and is accepted.
+#
 # Recipient emails are read from Cognito for display only. This service must
 # never write them to the database, the cache, the logs or an exception message.
 class DistributionListService
@@ -14,6 +20,8 @@ class DistributionListService
   GROUP_NAME_FORMAT = /\Adl-[a-z0-9][a-z0-9-]{0,120}\z/
   # Role/access groups. Distribution lists must never touch these.
   PROTECTED_GROUPS = %w[admin myott portal].freeze
+  LOCK_TIMEOUT = 10 # seconds
+  LOCK_POLL_INTERVAL = 0.1 # seconds
 
   Group = Data.define(:name, :description)
   Member = Data.define(:username, :email, :status, :enabled)
@@ -21,6 +29,8 @@ class DistributionListService
   class Error < StandardError; end
   class InvalidGroup < Error; end
   class NotFound < Error; end
+  # Another request is changing the same recipient. Safe to retry.
+  class Busy < Error; end
 
   # The user was removed from the list, but the follow-up check or deletion of
   # their Cognito user failed. The user may still hold personal information.
@@ -33,15 +43,28 @@ class DistributionListService
     end
   end
 
+  # A new Cognito user was created for a subscription that then failed, and the
+  # follow-up deletion of that user also failed. The user is in no group, so
+  # nothing else will clean it up.
+  class CleanupFailed < Error
+    attr_reader :username
+
+    def initialize(username, cause_name)
+      @username = username
+      super("Recipient #{username} was created but not subscribed, and not deleted (#{cause_name})")
+    end
+  end
+
   def self.valid_group_name?(name)
     name = name.to_s
     GROUP_NAME_FORMAT.match?(name) && PROTECTED_GROUPS.exclude?(name)
   end
 
-  def initialize(actor:, client: nil, user_pool_id: TradeTariffAdmin.cognito_user_pool_id)
+  def initialize(actor:, client: nil, user_pool_id: TradeTariffAdmin.cognito_user_pool_id, lock_timeout: LOCK_TIMEOUT)
     @client = client || Aws::CognitoIdentityProvider::Client.new(region: TradeTariffAdmin.cognito_region)
     @user_pool_id = user_pool_id
     @actor = actor
+    @lock_timeout = lock_timeout
   end
 
   def groups
@@ -73,17 +96,29 @@ class DistributionListService
   # Returns :created_and_added, :added or :already_member.
   def add(group_name, email)
     guard!(group_name)
+    email = normalise(email)
+    attempts = 0
 
-    username, created = ensure_user(normalise(email), group_name)
+    begin
+      attempts += 1
+      username, created = ensure_user(email, group_name)
 
-    if !created && find_member(group_name, username)
-      return :already_member
+      # Holding the lock stops a concurrent unsubscribe from deleting this user
+      # between the membership check and the add.
+      with_user_lock(username) do
+        next :already_member if !created && find_member(group_name, username)
+
+        add_to_group(group_name, username, created:)
+        audit("recipient_added", group_name, username)
+
+        created ? :created_and_added : :added
+      end
+    rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException
+      # An unsubscribe deleted the user after ensure_user found them. Creating
+      # the user again gives them a new username, so take the lock again.
+      retry if attempts < 2
+      raise NotFound, "Recipient not found"
     end
-
-    client.admin_add_user_to_group(user_pool_id:, username:, group_name:)
-    audit("recipient_added", group_name, username)
-
-    created ? :created_and_added : :added
   rescue Aws::CognitoIdentityProvider::Errors::ResourceNotFoundException
     raise NotFound, "Distribution list not found"
   rescue Aws::CognitoIdentityProvider::Errors::ServiceError => e
@@ -108,12 +143,18 @@ class DistributionListService
   def remove(group_name, username)
     guard!(group_name)
 
-    raise NotFound, "Recipient not found" unless find_member(group_name, username)
+    # The membership check, the remaining-groups check and the deletion run
+    # under the lock, so no admin subscription for this user can happen between
+    # them.
+    with_user_lock(username) do
+      # Only a recipient of this list can be unsubscribed (and so deleted).
+      raise NotFound, "Recipient not found" unless find_member(group_name, username)
 
-    client.admin_remove_user_from_group(user_pool_id:, username:, group_name:)
-    audit("recipient_removed", group_name, username)
+      client.admin_remove_user_from_group(user_pool_id:, username:, group_name:)
+      audit("recipient_removed", group_name, username)
 
-    delete_if_in_no_groups(group_name, username)
+      delete_if_in_no_groups(group_name, username)
+    end
   rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException,
          Aws::CognitoIdentityProvider::Errors::ResourceNotFoundException
     raise NotFound, "Recipient or distribution list not found"
@@ -123,7 +164,34 @@ class DistributionListService
 
 private
 
-  attr_reader :client, :user_pool_id, :actor
+  attr_reader :client, :user_pool_id, :actor, :lock_timeout
+
+  # Session-level advisory lock, so audit events written inside the block are
+  # committed even if a later Cognito call fails. The lock is released when the
+  # block ends, or by Postgres if the connection is lost.
+  def with_user_lock(username)
+    connection = DistributionListAuditEvent.connection
+    key = "distribution_list_user:#{user_pool_id}:#{username}"
+    deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + lock_timeout
+
+    until advisory_lock_query(connection, "pg_try_advisory_lock", key)
+      raise Busy, "Another change to this recipient is in progress" if Process.clock_gettime(Process::CLOCK_MONOTONIC) >= deadline
+
+      sleep LOCK_POLL_INTERVAL
+    end
+
+    begin
+      yield
+    ensure
+      advisory_lock_query(connection, "pg_advisory_unlock", key)
+    end
+  end
+
+  def advisory_lock_query(connection, function, key)
+    connection.select_value(
+      ActiveRecord::Base.sanitize_sql_array(["SELECT #{function}(hashtextextended(?, 0))", key]),
+    )
+  end
 
   def guard!(name)
     raise InvalidGroup, "Not a distribution list" unless self.class.valid_group_name?(name)
@@ -156,6 +224,32 @@ private
     rescue Aws::CognitoIdentityProvider::Errors::UsernameExistsException
       [client.admin_get_user(user_pool_id:, username: email).username, false]
     end
+  end
+
+  # If this request created the user and the add fails, the user would stay in
+  # Cognito in no group: not on any list page, and skipped by identity's
+  # unverified-user sweep because the email is verified. Delete it so a failed
+  # subscription leaves no personal data behind.
+  def add_to_group(group_name, username, created:)
+    client.admin_add_user_to_group(user_pool_id:, username:, group_name:)
+  rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException
+    raise
+  rescue Aws::CognitoIdentityProvider::Errors::ServiceError
+    discard_created_user(group_name, username) if created
+    raise
+  end
+
+  def discard_created_user(group_name, username)
+    # Another writer (for example identity) may have added the user to a group
+    # since it was created. Then it is no longer orphaned, so keep it.
+    return if user_group_names(username).any?
+
+    client.admin_delete_user(user_pool_id:, username:)
+    audit("user_deleted", group_name, username)
+  rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException
+    nil
+  rescue Error, Aws::CognitoIdentityProvider::Errors::ServiceError => e
+    raise CleanupFailed.new(username, e.class.name.demodulize)
   end
 
   def delete_if_in_no_groups(group_name, username)

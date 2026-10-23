@@ -71,5 +71,6 @@ data "aws_sns_topic" "slack_observability_topic" {
 }
 
 data "aws_cognito_user_pool" "identity" {
-  user_pool_id = local.secret_map["COGNITO_USER_POOL_ID"]
+  count        = local.distribution_lists_enabled ? 1 : 0
+  user_pool_id = local.cognito_user_pool_id
 }

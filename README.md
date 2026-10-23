@@ -149,18 +149,36 @@ pages send `Cache-Control: no-store`.
 If admin removes a user from a list but cannot delete the Cognito user, the
 page shows the Cognito username. Ask the platform team to delete that user.
 
+If admin creates a Cognito user for a subscription and then cannot add it to
+the list, admin deletes that new user again (audited as `user_deleted`). This
+stops a failed subscription from leaving a verified user in no group, which no
+list page shows and the unverified-user sweep skips. Admin keeps the user if
+it is in a group by then. If the deletion also fails, the page shows the
+Cognito username. Ask the platform team to delete that user.
+
+Each subscribe and unsubscribe holds a lock on the recipient (a Postgres
+advisory lock keyed by Cognito username). This stops an unsubscribe from
+deleting a user while another admin request subscribes the same user to a
+different list. If the lock is busy for 10 seconds, the page asks the operator
+to try again. The Identity service also adds users to groups and does not take
+this lock. A user who signs in at the same moment as their last list is removed
+can lose the new membership. This risk is accepted because few people can
+change lists.
+
 Terraform in `trade-tariff-platform-aws-terraform` creates the `dl-*` groups.
 Admin cannot create or delete groups. Admin only shows groups whose name
 starts with `dl-`. It refuses `admin`, `myott` and `portal`.
 
 The feature needs these variables:
 
-- `COGNITO_USER_POOL_ID`: the Identity user pool ID. When it is not set, the
-  pages and the navigation link are not available.
+- `COGNITO_USER_POOL_ID`: the Identity user pool ID. When it is not set or is
+  blank, the pages and the navigation link are not available, and Terraform
+  does not add the Cognito permissions.
 - `AWS_REGION`: optional. The default is `eu-west-2`.
 
 In AWS, Terraform reads `COGNITO_USER_POOL_ID` from the `admin-configuration`
-secret and gives the task role Cognito permissions on that pool only (see
+secret. If it has a value, Terraform gives the task role Cognito permissions on
+that pool only (see
 [terraform/iam.tf](terraform/iam.tf)). Locally, use AWS credentials for the
 development account (for example, AWS SSO) and the development pool ID.
 
