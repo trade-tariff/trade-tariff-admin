@@ -22,9 +22,10 @@ RSpec.describe EvaluationRunsController, type: :request do
       status: 200,
       headers: json_headers,
       body: {
-        baseline: { "question_model" => "gpt-5.4", "max_rounds" => 7 },
+        baseline: { "question_model" => "gpt-5.4", "max_rounds" => 7, "reasoning_effort" => "medium" },
         allowed_overrides: [
           { name: "question_model", config_type: "options", description: "The AI model used to ask clarifying questions.", options: [{ key: "gpt-5.4", label: "gpt-5.4" }, { key: "gpt-5.6", label: "gpt-5.6" }] },
+          { name: "reasoning_effort", config_type: "options", description: "How hard the question model thinks before it answers.", options: %w[none minimal low medium high xhigh max].map { |level| { key: level, label: level } } },
           { name: "max_rounds", config_type: "integer", min: 1, max: 20, description: "The most clarifying questions the search can ask." },
           { name: "search_non_declarables", config_type: "boolean", description: "Include non-declarable codes in the results." },
         ],
@@ -77,6 +78,26 @@ RSpec.describe EvaluationRunsController, type: :request do
 
     it "offers the max rounds field" do
       expect(page).to have_field("Max rounds")
+    end
+
+    it "offers a reasoning effort select with 'Use default' and every level the backend lists" do
+      expect(page).to have_select("Reasoning effort", options: ["Use default", "none", "minimal", "low", "medium", "high", "xhigh", "max"])
+    end
+
+    it "explains what reasoning effort does" do
+      expect(page).to have_text("How hard the question model thinks before it answers.")
+    end
+
+    it "keeps reasoning effort inside the accordion with the other overrides" do
+      accordion = page.find(".govuk-accordion[data-module='govuk-accordion']")
+
+      expect(accordion).to have_select("Reasoning effort")
+    end
+
+    it "lets the preview read reasoning effort like any other override" do
+      field = page.find_field("Reasoning effort")
+
+      expect(field["data-override-key"]).to eq("reasoning_effort")
     end
 
     it "offers the search non declarables fieldset" do
@@ -234,6 +255,68 @@ RSpec.describe EvaluationRunsController, type: :request do
       end
 
       it { is_expected.to redirect_to(evaluation_run_path("9")) }
+    end
+
+    context "when a reasoning effort override is chosen" do
+      let(:make_request) do
+        post evaluation_runs_path, params: {
+          evaluation_run: {
+            experiment_id: "7",
+            gold_query_set_id: "3",
+            idempotency_key: "key-abc",
+            max_rounds: "",
+            question_model: "",
+            reasoning_effort: "high",
+            search_non_declarables: "",
+          },
+        }
+      end
+
+      before do
+        stub_api_request("/search/evaluation/configuration").and_return(configuration_response)
+        stub_api_request("/search/evaluation/runs", :post)
+          .with { |request|
+            JSON.parse(request.body).dig("data", "attributes", "configuration_overrides") == { "reasoning_effort" => "high" }
+          }
+          .and_return(jsonapi_response("run", { "status" => "queued", "resource_id" => "9" }, status: 201))
+      end
+
+      it "sends it to the backend as a string override" do
+        expect(rendered_page).to have_http_status(:found)
+      end
+    end
+
+    context "when the backend rejects it and a reasoning effort was chosen" do
+      let(:make_request) do
+        post evaluation_runs_path, params: {
+          evaluation_run: {
+            experiment_id: "7",
+            gold_query_set_id: "3",
+            idempotency_key: "key-abc",
+            max_rounds: "",
+            question_model: "gpt-5.6",
+            reasoning_effort: "xhigh",
+            search_non_declarables: "",
+          },
+        }
+      end
+
+      before do
+        stub_api_request("/search/evaluation/runs", :post).and_return(api_error_response(base: "reasoning_effort must be one of: none, low, medium, high for question_model gpt-5.2"))
+        stub_api_request("/search/evaluation/experiments").with(query: hash_including("per_page" => "200")).and_return(paginated_response([experiment_attributes.merge("resource_id" => "7")], type: "experiment"))
+        stub_api_request("/search/evaluation/gold_query_sets").with(query: hash_including("per_page" => "200")).and_return(paginated_response([gold_query_set_attributes.merge("resource_id" => "3")], type: "gold_query_set"))
+        stub_api_request("/search/evaluation/configuration").and_return(configuration_response)
+      end
+
+      it "keeps the chosen reasoning effort selected, not reset to Use default" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_select("Reasoning effort", selected: "xhigh")
+      end
+
+      it "shows the backend's reason" do
+        expect(rendered_page.body).to include("reasoning_effort must be one of")
+      end
     end
 
     context "when a boolean override is set" do
