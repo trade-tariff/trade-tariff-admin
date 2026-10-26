@@ -554,8 +554,12 @@
                 bundle binstubs --all
                 printf 'yarn-offline-mirror "/deps/yarn-archives"\n' > "$TMPDIR/yarnrc"
                 yarn --use-yarnrc "$TMPDIR/yarnrc" install --offline --frozen-lockfile --ignore-scripts
-                initdb -D "$PGDATA" -U postgres --auth=trust --encoding=UTF8 --no-locale
-                pg_ctl -D "$PGDATA" -l "$TMPDIR/postgres.log" -o "-k $PGHOST -c listen_addresses=" -w start
+                if [ ! -f "$PGDATA/PG_VERSION" ]; then
+                  initdb -D "$PGDATA" -U postgres --auth=trust --encoding=UTF8 --no-locale
+                fi
+                if ! pg_isready -h "$PGHOST" -U postgres >/dev/null 2>&1; then
+                  pg_ctl -D "$PGDATA" -l "$TMPDIR/postgres.log" -o "-k $PGHOST -c listen_addresses=" -w start
+                fi
                 pg_isready -h "$PGHOST" -U postgres
                 bundle exec rails db:test:prepare_parallel
                 printf 'disable_checkpoint = true\nprovider_installation {\n filesystem_mirror {\n path = "/deps/terraform-inputs/providers"\n include = ["registry.terraform.io/*/*"]\n }\n}\n' > "$TF_CLI_CONFIG_FILE"
