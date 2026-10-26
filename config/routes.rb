@@ -203,7 +203,11 @@ Rails.application.routes.draw do
       end
     end
   end
-  resources :evaluation_synthetic_input_sets, only: %i[new create]
+  resources :evaluation_synthetic_input_sets, only: %i[index new create show destroy] do
+    member do
+      get :delete, action: :confirm_destroy
+    end
+  end
   resources :evaluation_experiments, only: %i[index new create destroy] do
     member do
       get :delete, action: :confirm_destroy

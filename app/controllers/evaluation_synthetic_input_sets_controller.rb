@@ -2,6 +2,15 @@ class EvaluationSyntheticInputSetsController < AuthenticatedController
   include UkOnly
 
   rescue_from Faraday::Error, with: :redirect_synthetic_input_set_unavailable
+  rescue_from Faraday::ResourceNotFound, with: :redirect_synthetic_input_set_not_found
+
+  before_action :load_synthetic_input_set, only: %i[show confirm_destroy destroy]
+
+  def index
+    authorize EvaluationSyntheticInputSet, :index?
+
+    @synthetic_input_sets = fetch_synthetic_input_sets
+  end
 
   def new
     authorize EvaluationSyntheticInputSet, :create?
@@ -9,26 +18,69 @@ class EvaluationSyntheticInputSetsController < AuthenticatedController
     @synthetic_input_set = EvaluationSyntheticInputSet.new
   end
 
-  # Unlike a gold query set, sampling finishes within this one request -- there is no
-  # background generation to redirect away to poll for. The created set (and the items it
-  # was sampled from) is rendered directly, rather than redirecting to a #show the backend
-  # has no route for.
   def create
     authorize EvaluationSyntheticInputSet, :create?
 
     @synthetic_input_set = EvaluationSyntheticInputSet.new(synthetic_input_set_params)
 
     if @synthetic_input_set.save && @synthetic_input_set.errors.empty?
-      render :show
+      redirect_to evaluation_synthetic_input_set_path(@synthetic_input_set), notice: "Synthetic input set created."
     else
       render :new, status: :unprocessable_content
     end
+  rescue Faraday::Error
+    redirect_to new_evaluation_synthetic_input_set_path, alert: "The synthetic input set could not be created. Try again."
+  end
+
+  def show
+    authorize EvaluationSyntheticInputSet, :show?
+
+    @items = fetch_items
+  end
+
+  def confirm_destroy
+    authorize @synthetic_input_set, :destroy?
+  end
+
+  def destroy
+    authorize @synthetic_input_set, :destroy?
+
+    @synthetic_input_set.destroy!
+    redirect_to evaluation_synthetic_input_sets_path, notice: "Synthetic input set deleted successfully."
+  rescue Faraday::ConflictError => e
+    redirect_to evaluation_synthetic_input_set_path(@synthetic_input_set),
+                alert: EvaluationSyntheticInputSet.conflict_detail(e) || "The synthetic input set could not be deleted because it is in use."
   end
 
 private
 
+  def load_synthetic_input_set
+    @synthetic_input_set = EvaluationSyntheticInputSet.find(params[:id])
+  end
+
+  def redirect_synthetic_input_set_not_found
+    redirect_to evaluation_synthetic_input_sets_path, alert: "Synthetic input set not found."
+  end
+
   def redirect_synthetic_input_set_unavailable
-    redirect_to new_evaluation_synthetic_input_set_path, alert: "The synthetic input set could not be created. Try again."
+    redirect_to evaluation_synthetic_input_sets_path, alert: "The synthetic input set could not be loaded. Try again."
+  end
+
+  def fetch_synthetic_input_sets
+    EvaluationSyntheticInputSet.all(params.permit(:page).to_h.symbolize_keys)
+  rescue Faraday::Error => e
+    Rails.logger.error("Failed to fetch synthetic input sets: #{e.message}")
+    flash.now[:alert] = "Synthetic input sets could not be loaded. Try again."
+    Kaminari.paginate_array([]).page(1)
+  end
+
+  # Nil when the items cannot be loaded, so the page can still show the set itself.
+  def fetch_items
+    EvaluationSyntheticInputSetItem.all(params.permit(:page).to_h.symbolize_keys.merge(synthetic_input_set_id: @synthetic_input_set.resource_id))
+  rescue Faraday::Error => e
+    Rails.logger.error("Failed to fetch synthetic input set items: #{e.message}")
+    flash.now[:alert] = "The items of this set could not be loaded. Try again."
+    nil
   end
 
   def synthetic_input_set_params

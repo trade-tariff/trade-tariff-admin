@@ -1,10 +1,10 @@
-<%= govuk_breadcrumbs "Evaluation experiments": evaluation_experiments_path %>
+<%= govuk_breadcrumbs "Synthetic input sets": evaluation_synthetic_input_sets_path %>
 
 <span class="govuk-caption-l">Synthetic input set</span>
 <h1 class="govuk-heading-l"><%= @synthetic_input_set.name %></h1>
 
 <p class="govuk-body">
-  This set is ready now. Choose it when you create or edit an experiment.
+  A set never changes after it is created. Choose it when you create an experiment.
 </p>
 
 <dl class="govuk-summary-list govuk-!-margin-bottom-6">
@@ -25,22 +25,40 @@
   </div>
 </dl>
 
-<table class="govuk-table">
-  <caption class="govuk-table__caption govuk-table__caption--s"><%= pluralize(@synthetic_input_set.items.size, "item") %></caption>
-  <thead class="govuk-table__head">
-    <tr class="govuk-table__row">
-      <th class="govuk-table__header" scope="col">Synthetic ATaR</th>
-      <th class="govuk-table__header" scope="col">Query</th>
-      <th class="govuk-table__header" scope="col">Expected code</th>
-    </tr>
-  </thead>
-  <tbody class="govuk-table__body">
-    <% @synthetic_input_set.items.each do |item| %>
-      <tr class="govuk-table__row">
-        <td class="govuk-table__cell"><%= item["synthetic_atar_id"] %></td>
-        <td class="govuk-table__cell"><%= item["query"] %></td>
-        <td class="govuk-table__cell"><%= item["expected_code"] %></td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
+<% if policy(@synthetic_input_set).destroy? %>
+  <div class="govuk-button-group">
+    <%= govuk_button_link_to "Delete synthetic input set", delete_evaluation_synthetic_input_set_path(@synthetic_input_set), warning: true %>
+  </div>
+<% end %>
+
+<% unless @items.nil? %>
+  <h2 class="govuk-heading-m govuk-!-margin-top-8">Items</h2>
+
+  <% if @items.any? %>
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--s"><%= pluralize(@items.total_count, "item") %></caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th class="govuk-table__header" scope="col">Synthetic ATaR</th>
+          <th class="govuk-table__header" scope="col">Query</th>
+          <th class="govuk-table__header" scope="col">Expected code</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        <% @items.each do |item| %>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell"><%= item.synthetic_atar_id %></td>
+            <td class="govuk-table__cell"><%= item.query %></td>
+            <td class="govuk-table__cell"><%= item.expected_code %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <%= paginate @items %>
+  <% else %>
+    <div class="govuk-inset-text">
+      <p class="govuk-body">This set has no items.</p>
+    </div>
+  <% end %>
+<% end %>
