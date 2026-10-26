@@ -3,7 +3,7 @@ RSpec.describe EvaluationSyntheticInputSetPolicy do
 
   let(:synthetic_input_set) { EvaluationSyntheticInputSet.new(resource_id: 3, name: "Baseline") }
 
-  permissions :index?, :create? do
+  permissions :index?, :create?, :destroy?, :show? do
     it "grants access to technical operator" do
       user = create(:user, :technical_operator)
       expect(policy).to permit(user, synthetic_input_set)

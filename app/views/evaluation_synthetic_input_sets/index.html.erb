@@ -1,0 +1,50 @@
+<h1 class="govuk-heading-l">Synthetic input sets</h1>
+
+<p class="govuk-body">
+  A synthetic input set is a saved sample of synthetic ATaRs: real, HMRC-analyst-written product
+  descriptions, used as they are. An experiment can use one instead of a gold query set. A set never
+  changes after it is created. Every set needs a name that no other set uses, so check this list
+  before you create one.
+</p>
+
+<div class="govuk-button-group govuk-!-margin-bottom-6">
+  <%= link_to "New synthetic input set", new_evaluation_synthetic_input_set_path, class: "govuk-button" %>
+</div>
+
+<% if @synthetic_input_sets.nil? %>
+  <div class="govuk-inset-text">
+    <p class="govuk-body">The list of sets could not be loaded, so existing names cannot be checked yet. Reload the page to try again.</p>
+  </div>
+<% elsif @synthetic_input_sets.any? %>
+  <table class="govuk-table">
+    <caption class="govuk-table__caption govuk-table__caption--s">
+      <%= pluralize(@synthetic_input_sets.total_count, "synthetic input set") %>
+    </caption>
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th class="govuk-table__header" scope="col">Name</th>
+        <th class="govuk-table__header" scope="col">Items asked for</th>
+        <th class="govuk-table__header" scope="col">Items sampled</th>
+        <th class="govuk-table__header" scope="col">Created</th>
+        <th class="govuk-table__header" scope="col">Created by</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+      <% @synthetic_input_sets.each do |synthetic_input_set| %>
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell"><%= link_to synthetic_input_set.name, evaluation_synthetic_input_set_path(synthetic_input_set), class: "govuk-link" %></td>
+          <td class="govuk-table__cell"><%= synthetic_input_set.requested_size %></td>
+          <td class="govuk-table__cell"><%= synthetic_input_set.actual_size %></td>
+          <td class="govuk-table__cell"><%= synthetic_input_set.formatted_created_at %></td>
+          <td class="govuk-table__cell"><%= synthetic_input_set.created_by_name %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <%= paginate @synthetic_input_sets %>
+<% else %>
+  <div class="govuk-inset-text">
+    <p class="govuk-body">No synthetic input sets yet. Create one to start.</p>
+  </div>
+<% end %>

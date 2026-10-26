@@ -1,0 +1,21 @@
+<%= govuk_breadcrumbs "Synthetic input sets": evaluation_synthetic_input_sets_path,
+                      @synthetic_input_set.name => evaluation_synthetic_input_set_path(@synthetic_input_set) %>
+
+<span class="govuk-caption-l">Synthetic input set</span>
+<h1 class="govuk-heading-l">Are you sure you want to delete this synthetic input set?</h1>
+
+<%= govuk_warning_text(text: "This deletes the set and all of its items. It cannot be undone. A set that an experiment uses cannot be deleted. An experiment's set cannot be changed, so delete the experiments that use it first. Deleting an experiment also deletes its runs and results.") %>
+
+<%= govuk_summary_list(rows: [
+  { key: { text: "Name" }, value: { text: @synthetic_input_set.name } },
+  { key: { text: "Items sampled" }, value: { text: @synthetic_input_set.actual_size.to_s } },
+]) %>
+
+<div class="govuk-button-group">
+  <%= govuk_button_to "Delete synthetic input set",
+                      evaluation_synthetic_input_set_path(@synthetic_input_set),
+                      method: :delete,
+                      warning: true,
+                      prevent_double_click: true %>
+  <%= govuk_link_to "Cancel", evaluation_synthetic_input_set_path(@synthetic_input_set) %>
+</div>

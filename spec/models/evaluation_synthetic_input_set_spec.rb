@@ -8,7 +8,6 @@ RSpec.describe EvaluationSyntheticInputSet do
       "requested_size" => 10,
       "actual_size" => 8,
       "created_by" => "user-123",
-      "items" => [{ "id" => "1", "synthetic_atar_id" => 42, "query" => "plastic box", "expected_code" => "3924100000" }],
     }
   end
 
@@ -40,9 +39,17 @@ RSpec.describe EvaluationSyntheticInputSet do
     end
   end
 
-  it "carries the items the backend built the set from" do
-    expect(synthetic_input_set.items).to contain_exactly(
-      include("synthetic_atar_id" => 42, "query" => "plastic box", "expected_code" => "3924100000"),
-    )
+  describe ".conflict_detail" do
+    it "reads the reason from the backend's error body" do
+      error = Faraday::ConflictError.new("conflict", { status: 409, body: { "errors" => [{ "detail" => "These experiments use it: baseline." }] } })
+
+      expect(described_class.conflict_detail(error)).to eq("These experiments use it: baseline.")
+    end
+
+    it "is nil when the body has no reason" do
+      error = Faraday::ConflictError.new("conflict", { status: 409, body: "" })
+
+      expect(described_class.conflict_detail(error)).to be_nil
+    end
   end
 end

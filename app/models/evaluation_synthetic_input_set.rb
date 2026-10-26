@@ -15,8 +15,15 @@ class EvaluationSyntheticInputSet
              :requested_size,
              :actual_size,
              :created_by,
-             :items,
              :created_at
+
+  # The backend refuses to delete a set that an experiment still uses (409) and names
+  # the experiments in its reply. That sentence is what the operator needs to read.
+  def self.conflict_detail(error)
+    body = handle_body(error.response)
+
+    body.dig("errors", 0, "detail") if body.is_a?(Hash)
+  end
 
   def created_by_name
     return "-" if created_by.blank?

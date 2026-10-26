@@ -161,7 +161,7 @@ module NavigationHelper
           ),
           NavigationItem.new(
             text: "Synthetic Input Sets",
-            href: new_evaluation_synthetic_input_set_path,
+            href: evaluation_synthetic_input_sets_path,
             policy_class: EvaluationSyntheticInputSet,
             active_when: %r{/evaluation_synthetic_input_sets},
             service: :uk,
