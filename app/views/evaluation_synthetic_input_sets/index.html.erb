@@ -11,7 +11,11 @@
   <%= link_to "New synthetic input set", new_evaluation_synthetic_input_set_path, class: "govuk-button" %>
 </div>
 
-<% if @synthetic_input_sets.any? %>
+<% if @synthetic_input_sets.nil? %>
+  <div class="govuk-inset-text">
+    <p class="govuk-body">The list of sets could not be loaded, so existing names cannot be checked yet. Reload the page to try again.</p>
+  </div>
+<% elsif @synthetic_input_sets.any? %>
   <table class="govuk-table">
     <caption class="govuk-table__caption govuk-table__caption--s">
       <%= pluralize(@synthetic_input_sets.total_count, "synthetic input set") %>

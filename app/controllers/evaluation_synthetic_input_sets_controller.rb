@@ -50,6 +50,8 @@ class EvaluationSyntheticInputSetsController < AuthenticatedController
   rescue Faraday::ConflictError => e
     redirect_to evaluation_synthetic_input_set_path(@synthetic_input_set),
                 alert: EvaluationSyntheticInputSet.conflict_detail(e) || "The synthetic input set could not be deleted because it is in use."
+  rescue Faraday::Error
+    redirect_to evaluation_synthetic_input_set_path(@synthetic_input_set), alert: "The synthetic input set could not be deleted. Try again."
   end
 
 private
@@ -66,12 +68,14 @@ private
     redirect_to evaluation_synthetic_input_sets_path, alert: "The synthetic input set could not be loaded. Try again."
   end
 
+  # Nil when the sets cannot be loaded, so the page does not claim there are none. This page
+  # is where an operator checks existing names before creating a set.
   def fetch_synthetic_input_sets
     EvaluationSyntheticInputSet.all(params.permit(:page).to_h.symbolize_keys)
   rescue Faraday::Error => e
     Rails.logger.error("Failed to fetch synthetic input sets: #{e.message}")
     flash.now[:alert] = "Synthetic input sets could not be loaded. Try again."
-    Kaminari.paginate_array([]).page(1)
+    nil
   end
 
   # Nil when the items cannot be loaded, so the page can still show the set itself.

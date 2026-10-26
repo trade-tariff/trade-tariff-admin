@@ -127,6 +127,14 @@ RSpec.describe EvaluationSyntheticInputSetsController, type: :request do
       it "warns that sets could not be loaded" do
         expect(rendered_page.body).to include("Synthetic input sets could not be loaded. Try again.")
       end
+
+      it "does not claim there are no sets, which would hide the names an operator came to check" do
+        expect(rendered_page.body).not_to include("No synthetic input sets yet.")
+      end
+
+      it "says existing names cannot be checked yet" do
+        expect(rendered_page.body).to include("existing names cannot be checked")
+      end
     end
 
     context "when the user is not a technical operator" do
@@ -386,6 +394,18 @@ RSpec.describe EvaluationSyntheticInputSetsController, type: :request do
       expect(page).to have_css(".govuk-warning-text", text: "all of its items")
     end
 
+    it "tells the operator to delete the experiments that use the set, since an experiment's set cannot be changed" do
+      expect(page).to have_css(".govuk-warning-text", text: "delete the experiments that use it first")
+    end
+
+    it "warns that deleting an experiment deletes its runs and results" do
+      expect(page).to have_css(".govuk-warning-text", text: "runs and results")
+    end
+
+    it "does not suggest pointing an experiment at another set" do
+      expect(page).to have_no_css(".govuk-warning-text", text: "another set")
+    end
+
     it "shows the set name" do
       expect(page).to have_text("Baseline")
     end
@@ -423,11 +443,13 @@ RSpec.describe EvaluationSyntheticInputSetsController, type: :request do
     end
 
     context "when an experiment still uses the set" do
+      let(:reason) { "This set cannot be deleted because these experiments use it: baseline. An experiment's set cannot be changed, so delete those experiments first. That also deletes their runs and results." }
+
       before do
         stub_api_request("/search/evaluation/synthetic_input_sets/#{set_id}", :delete).and_return(
           status: 409,
           headers: json_headers,
-          body: { errors: [{ status: "409", title: "Synthetic input set is in use", detail: "This set cannot be deleted because these experiments use it: baseline. Point them at another set first." }] }.to_json,
+          body: { errors: [{ status: "409", title: "Synthetic input set is in use", detail: reason }] }.to_json,
         )
       end
 
@@ -436,7 +458,35 @@ RSpec.describe EvaluationSyntheticInputSetsController, type: :request do
       it "shows the backend's reason, which names the experiments" do
         rendered_page
 
-        expect(session.dig("flash", "flashes", "alert")).to eq("This set cannot be deleted because these experiments use it: baseline. Point them at another set first.")
+        expect(session.dig("flash", "flashes", "alert")).to eq(reason)
+      end
+    end
+
+    context "when the backend fails to delete it" do
+      before do
+        stub_api_request("/search/evaluation/synthetic_input_sets/#{set_id}", :delete).and_return(status: 500, headers: json_headers, body: { error: "boom" }.to_json)
+      end
+
+      it "sends the operator back to the set, so they can try again" do
+        expect(rendered_page).to redirect_to(evaluation_synthetic_input_set_path(set_id))
+      end
+
+      it "says the delete did not complete, not that a load failed" do
+        rendered_page
+
+        expect(session.dig("flash", "flashes", "alert")).to eq("The synthetic input set could not be deleted. Try again.")
+      end
+    end
+
+    context "when the backend cannot be reached to delete it" do
+      before do
+        stub_api_request("/search/evaluation/synthetic_input_sets/#{set_id}", :delete).to_raise(Faraday::ConnectionFailed)
+      end
+
+      it "says the delete did not complete" do
+        rendered_page
+
+        expect(session.dig("flash", "flashes", "alert")).to eq("The synthetic input set could not be deleted. Try again.")
       end
     end
 
