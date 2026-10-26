@@ -157,6 +157,8 @@ module TradeTariffAdmin
         "https://www.trade-tariff.service.gov.uk"
       when "staging"
         "https://staging.trade-tariff.service.gov.uk"
+      when "uat"
+        "https://uat.trade-tariff.service.gov.uk"
       when "development"
         "https://dev.trade-tariff.service.gov.uk"
       else
@@ -170,6 +172,7 @@ module TradeTariffAdmin
       {
         "production" => "https://reporting.trade-tariff.service.gov.uk",
         "staging" => "https://reporting.staging.trade-tariff.service.gov.uk",
+        "uat" => "https://reporting.uat.trade-tariff.service.gov.uk",
         "development" => "https://reporting.dev.trade-tariff.service.gov.uk",
       }[environment]
     end

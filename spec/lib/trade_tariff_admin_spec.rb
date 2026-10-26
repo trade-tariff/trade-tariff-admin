@@ -272,6 +272,12 @@ RSpec.describe TradeTariffAdmin do
       it { is_expected.to eq("https://staging.trade-tariff.service.gov.uk") }
     end
 
+    context "when in uat" do
+      before { ENV["ENVIRONMENT"] = "uat" }
+
+      it { is_expected.to eq("https://uat.trade-tariff.service.gov.uk") }
+    end
+
     context "when in development" do
       before { ENV["ENVIRONMENT"] = "development" }
 
@@ -300,6 +306,12 @@ RSpec.describe TradeTariffAdmin do
       before { ENV["ENVIRONMENT"] = "production" }
 
       it { is_expected.to eq("https://reporting.trade-tariff.service.gov.uk") }
+    end
+
+    context "when in uat" do
+      before { ENV["ENVIRONMENT"] = "uat" }
+
+      it { is_expected.to eq("https://reporting.uat.trade-tariff.service.gov.uk") }
     end
   end
 
