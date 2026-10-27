@@ -552,6 +552,40 @@ RSpec.describe EvaluationRunsController, type: :request do
       expect(page).to have_css("h1", text: "Baseline — Run ID: 9")
     end
 
+    context "when the run's experiment uses a gold query set" do
+      let(:run_attributes) { super().merge("source_type" => "gold_query_set", "source_name" => "Baseline GQS") }
+
+      it "shows the set, linked, and says it is a gold query set", :aggregate_failures do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css(".govuk-summary-list__row", text: /Source\s*Baseline GQS\s*Gold query set/)
+        expect(page).to have_link("Baseline GQS", href: evaluation_gold_query_set_path(3))
+      end
+    end
+
+    context "when the run's experiment uses a synthetic input set" do
+      let(:run_attributes) do
+        { "experiment_id" => 7, "status" => "running", "gold_query_set_id" => nil, "synthetic_input_set_id" => 11, "source_type" => "synthetic_input_set", "source_name" => "Baseline SIS", "intended_result_count" => 8, "result_count" => 3, "error_count" => 0 }
+      end
+
+      it "shows the set, linked, and says it is a synthetic input set", :aggregate_failures do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css(".govuk-summary-list__row", text: /Source\s*Baseline SIS\s*Synthetic input set/)
+        expect(page).to have_link("Baseline SIS", href: evaluation_synthetic_input_set_path(11))
+      end
+    end
+
+    context "when the run's experiment has not chosen a set" do
+      let(:run_attributes) { super().merge("gold_query_set_id" => nil, "source_type" => nil, "source_name" => nil) }
+
+      it "says none was chosen" do
+        page = Capybara.string(rendered_page.body)
+
+        expect(page).to have_css(".govuk-summary-list__row", text: /Source\s*None chosen/)
+      end
+    end
+
     context "when the run has a generated label (AI-1437)" do
       let(:run_attributes) { super().merge("label" => "vector based retrieval") }
 

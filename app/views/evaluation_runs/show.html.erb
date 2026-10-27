@@ -3,6 +3,15 @@
      data-run-tracking-url-value="<%= evaluation_run_path(@run, format: :json) %>">
   <h1 class="govuk-heading-l"><%= @experiment.name %> — Run ID: <%= @run.resource_id %><%= evaluation_run_label_suffix(@run) %></h1>
 
+  <%# Outside the polled status below: the set does not change while a run is going, and an operator
+      wants to see it whether the run is still running or finished. %>
+  <dl class="govuk-summary-list govuk-summary-list--no-border">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Source</dt>
+      <dd class="govuk-summary-list__value"><%= evaluation_source(@run) %></dd>
+    </div>
+  </dl>
+
   <div data-run-tracking-target="status" role="status" aria-live="polite">
     <%= render "status" %>
   </div>

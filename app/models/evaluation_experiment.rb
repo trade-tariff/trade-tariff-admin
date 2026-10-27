@@ -16,6 +16,8 @@ class EvaluationExperiment
              :default_scope,
              :gold_query_set_id,
              :synthetic_input_set_id,
+             :source_type,
+             :source_name,
              :created_by,
              :created_at
 
