@@ -769,6 +769,10 @@ RSpec.describe EvaluationRunsController, type: :request do
 
     it { is_expected.to have_http_status :success }
 
+    it "shows a back link" do
+      expect(page).to have_css("a.govuk-back-link", text: "Back to experiments")
+    end
+
     it "shows the heading" do
       expect(page).to have_css("h1", text: "Evaluation runs")
     end
