@@ -52,6 +52,41 @@ RSpec.describe EvaluationExperimentsController, type: :request do
 
     it { is_expected.to have_http_status :success }
 
+    context "when experiments use different sets" do
+      before do
+        stub_api_request("/search/evaluation/experiments").and_return(
+          paginated_response(
+            [
+              experiment_attributes.merge("resource_id" => "7", "name" => "On gold", "source_type" => "gold_query_set", "source_name" => "Baseline GQS", "gold_query_set_id" => 3),
+              experiment_attributes.merge("resource_id" => "8", "name" => "On synthetic", "source_type" => "synthetic_input_set", "source_name" => "Baseline SIS", "gold_query_set_id" => nil, "synthetic_input_set_id" => 9),
+              experiment_attributes.merge("resource_id" => "10", "name" => "On nothing", "source_type" => nil, "source_name" => nil, "gold_query_set_id" => nil),
+            ],
+          ),
+        )
+      end
+
+      it "has a Source column" do
+        expect(page).to have_css("th", text: "Source")
+      end
+
+      it "links a gold query set experiment to its set" do
+        expect(page).to have_link("Baseline GQS", href: evaluation_gold_query_set_path(3))
+      end
+
+      it "links a synthetic input set experiment to its set" do
+        expect(page).to have_link("Baseline SIS", href: evaluation_synthetic_input_set_path(9))
+      end
+
+      it "says which kind of set each experiment uses", :aggregate_failures do
+        expect(page).to have_css("td", text: "Gold query set")
+        expect(page).to have_css("td", text: "Synthetic input set")
+      end
+
+      it "says when an experiment has not chosen a set yet" do
+        expect(page).to have_css("td", text: "None chosen")
+      end
+    end
+
     context "when the XI service is selected" do
       before { allow(TradeTariffAdmin::ServiceChooser).to receive(:service_choice).and_return "xi" }
 
