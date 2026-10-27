@@ -469,10 +469,10 @@ globals@^17.13.0:
   resolved "https://registry.yarnpkg.com/globals/-/globals-17.13.0.tgz#ab2134b5ededbf2fbe2831dd0acc36f4f1ddeac5"
   integrity sha512-RwMTC61u7hrG3ZJMkZQOK4JLJrKS8QtoTii63EmWvFXHqycY9FObBJQCbsLxSO8kjKhWE5kV1GC+Vb1g3RI0Zg==
 
-govuk-frontend@6.5.1:
-  version "6.5.1"
-  resolved "https://registry.yarnpkg.com/govuk-frontend/-/govuk-frontend-6.5.1.tgz#fbd75bc07e5f550419c604310f98201741b2b4b6"
-  integrity sha512-myC7pDU9d7NqHa/oiDKe7k/ojCPMY4LjHpJkDncgQ3MgWeGUkySpz/gfdjRVvGaER6GNoi0kDGSgSXMa1he0xg==
+govuk-frontend@6.6.0:
+  version "6.6.0"
+  resolved "https://registry.yarnpkg.com/govuk-frontend/-/govuk-frontend-6.6.0.tgz#6fe9b666903ad60b49d6d52f43cb841fd211ed9c"
+  integrity sha512-xctkWrQvLnvQt7fyjQ3MGX9S0wz0x0RQuLxCeoXF+s8EjGICG81/DYQGKN5qgO+0KVT12UAaRwUsGY6fulRcRg==
 
 hashery@^1.4.0, hashery@^1.5.1:
   version "1.5.1"
