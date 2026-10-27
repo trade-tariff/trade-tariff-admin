@@ -1,0 +1,19 @@
+<%= govuk_breadcrumbs({ "Distribution lists" => distribution_lists_path, @group.name => distribution_list_path(@group.name) }) %>
+
+<h1 class="govuk-heading-l">Unsubscribe recipient?</h1>
+
+<% if @deletes_account %>
+  <%= govuk_warning_text(text: "#{@member.email} will be removed from #{@group.name}. This is the only group they are in, so their Cognito account and email address will also be deleted. This cannot be undone.") %>
+<% else %>
+  <%= govuk_warning_text(text: "#{@member.email} will be removed from #{@group.name}. They are in other groups, so their Cognito account and other access are not changed.") %>
+<% end %>
+
+<div class="govuk-button-group">
+  <%= govuk_button_to "Unsubscribe",
+                      distribution_list_recipient_path(@group.name, @member.username),
+                      method: :delete,
+                      params: { account_deletion_acknowledged: @deletes_account },
+                      warning: true,
+                      prevent_double_click: true %>
+  <%= govuk_link_to "Cancel", distribution_list_path(@group.name) %>
+</div>
