@@ -16,8 +16,7 @@ class EvaluationExperimentsController < AuthenticatedController
     authorize EvaluationExperiment, :create?
 
     @experiment = EvaluationExperiment.new
-    @gold_query_sets = fetch_gold_query_sets
-    @synthetic_input_sets = fetch_synthetic_input_sets
+    load_source_sets
   end
 
   def create
@@ -32,8 +31,7 @@ class EvaluationExperimentsController < AuthenticatedController
       # fields it is not already on @experiment from experiment_params -- read it back from the
       # submitted params directly, purely so the chosen radio stays chosen on this re-render.
       @experiment.source_type = params.dig(:evaluation_experiment, :source_type)
-      @gold_query_sets = fetch_gold_query_sets
-      @synthetic_input_sets = fetch_synthetic_input_sets
+      load_source_sets
       render :new, status: :unprocessable_content
     end
   end
@@ -73,6 +71,12 @@ private
     Rails.logger.error("Failed to fetch experiments: #{e.message}")
     flash.now[:alert] = "Experiments could not be loaded. Try again."
     Kaminari.paginate_array([]).page(1)
+  end
+
+  # Gold query sets are only loaded when the form offers them (EvaluationGoldQuerySet.entry_points_enabled?).
+  def load_source_sets
+    @gold_query_sets = fetch_gold_query_sets if EvaluationGoldQuerySet.entry_points_enabled?
+    @synthetic_input_sets = fetch_synthetic_input_sets
   end
 
   def fetch_gold_query_sets

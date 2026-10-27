@@ -116,7 +116,7 @@ RSpec.describe TariffKnowledgeSyntheticAtarsController, type: :request do
       expect(page).to have_css("nav[aria-label='Menu'] a", text: "Evaluation")
       expect(page).not_to have_css("nav[aria-label='Classification'] a", text: "Evaluation")
       expect(page).to have_css("nav.app-sub-navigation[aria-label='Evaluation'] a[aria-current='page']", text: "Synthetic ATaRs")
-      expect(page).to have_link("Gold Query Sets", href: evaluation_gold_query_sets_path)
+      expect(page).not_to have_link("Gold Query Sets")
       expect(page).to have_link("Evaluations", href: evaluation_experiments_path)
     end
 

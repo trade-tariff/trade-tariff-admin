@@ -5,6 +5,16 @@ class EvaluationGoldQuerySet
   include ApiEntity
   include RecordDateFormatting
 
+  # Synthetic input sets are now the standard source for an experiment, so gold query sets are not
+  # offered: no Evaluation navigation link and no choice on the new-experiment form (AI-1480). Their
+  # pages, routes and policy are untouched, so existing sets stay reachable by their address. Set this
+  # to true to offer them again.
+  ENTRY_POINTS_ENABLED = false
+
+  def self.entry_points_enabled?
+    ENTRY_POINTS_ENABLED
+  end
+
   uk_only
 
   set_collection_path "admin/search/evaluation/gold_query_sets"
