@@ -41,10 +41,20 @@ RSpec.describe NavigationHelper, type: :helper do
       expect(section.service).to eq(:uk)
     end
 
-    it "defines Evaluation with the four evaluation tools" do
+    it "defines Evaluation with the three evaluation tools, leaving out the hidden Gold Query Sets" do
       section = helper.navigation_sections.find { |s| s.key == :evaluation }
 
-      expect(section.items.map(&:text)).to eq(["Synthetic ATaRs", "Gold Query Sets", "Synthetic Input Sets", "Evaluations"])
+      expect(section.items.map(&:text)).to eq(["Synthetic ATaRs", "Synthetic Input Sets", "Evaluations"])
+    end
+
+    context "when gold query sets are offered again" do
+      before { allow(EvaluationGoldQuerySet).to receive(:entry_points_enabled?).and_return(true) }
+
+      it "puts Gold Query Sets back in Evaluation, in its old place" do
+        section = helper.navigation_sections.find { |s| s.key == :evaluation }
+
+        expect(section.items.map(&:text)).to eq(["Synthetic ATaRs", "Gold Query Sets", "Synthetic Input Sets", "Evaluations"])
+      end
     end
 
     it "defines SPIMM with xi service restriction" do
@@ -107,7 +117,7 @@ RSpec.describe NavigationHelper, type: :helper do
                          "Rollbacks",
                        ],
                        classification: ["Search References", "Descriptions", "Intercepts", "Search dashboard", "Search diagnostics", "Recent changes"],
-                       evaluation: ["Synthetic ATaRs", "Gold Query Sets", "Synthetic Input Sets", "Evaluations"],
+                       evaluation: ["Synthetic ATaRs", "Synthetic Input Sets", "Evaluations"],
                        manage_users: nil,
                        configuration: []
     end
@@ -131,11 +141,11 @@ RSpec.describe NavigationHelper, type: :helper do
       end
 
       it "keeps the other evaluation items" do
-        expect(evaluation_section.items.map(&:text)).to eq(["Gold Query Sets", "Synthetic Input Sets", "Evaluations"])
+        expect(evaluation_section.items.map(&:text)).to eq(["Synthetic Input Sets", "Evaluations"])
       end
 
       it "links Evaluation to the first visible item" do
-        expect(helper.section_href(evaluation_section)).to eq(helper.evaluation_gold_query_sets_path)
+        expect(helper.section_href(evaluation_section)).to eq(helper.evaluation_synthetic_input_sets_path)
       end
     end
 
@@ -147,7 +157,7 @@ RSpec.describe NavigationHelper, type: :helper do
       it "shows Evaluation" do
         section = helper.visible_navigation_sections.find { |entry| entry.key == :evaluation }
 
-        expect(section.items.map(&:text)).to eq(["Synthetic ATaRs", "Gold Query Sets", "Synthetic Input Sets", "Evaluations"])
+        expect(section.items.map(&:text)).to eq(["Synthetic ATaRs", "Synthetic Input Sets", "Evaluations"])
       end
     end
 
@@ -159,7 +169,7 @@ RSpec.describe NavigationHelper, type: :helper do
       it "shows Evaluation" do
         section = helper.visible_navigation_sections.find { |entry| entry.key == :evaluation }
 
-        expect(section.items.map(&:text)).to eq(["Synthetic ATaRs", "Gold Query Sets", "Synthetic Input Sets", "Evaluations"])
+        expect(section.items.map(&:text)).to eq(["Synthetic ATaRs", "Synthetic Input Sets", "Evaluations"])
       end
     end
 
@@ -309,12 +319,22 @@ RSpec.describe NavigationHelper, type: :helper do
       it "marks Synthetic ATaRs current" do
         items = helper.current_navigation_section.items
 
-        expect(items.map { |item| helper.item_active?(item) }).to eq([true, false, false, false])
+        expect(items.map { |item| helper.item_active?(item) }).to eq([true, false, false])
       end
     end
 
-    context "when on a gold query item page" do
+    context "when on a gold query item page, which is still reachable by its address" do
       let(:request_path) { "/evaluation_gold_query_sets/3/items/atar-1/edit" }
+
+      it "marks no navigation section current, because the Gold Query Sets tab is hidden" do
+        expect(helper.current_navigation_section).to be_nil
+      end
+    end
+
+    context "when on a gold query item page and gold query sets are offered again" do
+      let(:request_path) { "/evaluation_gold_query_sets/3/items/atar-1/edit" }
+
+      before { allow(EvaluationGoldQuerySet).to receive(:entry_points_enabled?).and_return(true) }
 
       it "marks Gold Query Sets current" do
         item = helper.current_navigation_section.items.find { |entry| entry.text == "Gold Query Sets" }

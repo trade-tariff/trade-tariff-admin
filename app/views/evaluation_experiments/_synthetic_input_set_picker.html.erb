@@ -1,0 +1,8 @@
+<%= f.govuk_collection_select :synthetic_input_set_id,
+                              @synthetic_input_sets,
+                              :resource_id,
+                              :name,
+                              label: { text: "Synthetic input set", size: "s" },
+                              hint: hint,
+                              options: { include_blank: "Choose later" } %>
+<%= link_to "Create a new synthetic input set", new_evaluation_synthetic_input_set_path, class: "govuk-link" %>

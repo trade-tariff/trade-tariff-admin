@@ -152,13 +152,7 @@ module NavigationHelper
             active_when: %r{/tariff_knowledge_synthetic_atars},
             service: :uk,
           ),
-          NavigationItem.new(
-            text: "Gold Query Sets",
-            href: evaluation_gold_query_sets_path,
-            policy_class: EvaluationGoldQuerySet,
-            active_when: %r{/evaluation_gold_query_sets},
-            service: :uk,
-          ),
+          *gold_query_sets_navigation_items,
           NavigationItem.new(
             text: "Synthetic Input Sets",
             href: evaluation_synthetic_input_sets_path,
@@ -310,6 +304,21 @@ module NavigationHelper
   end
 
 private
+
+  # Empty while gold query sets are hidden (see EvaluationGoldQuerySet.entry_points_enabled?).
+  def gold_query_sets_navigation_items
+    return [] unless EvaluationGoldQuerySet.entry_points_enabled?
+
+    [
+      NavigationItem.new(
+        text: "Gold Query Sets",
+        href: evaluation_gold_query_sets_path,
+        policy_class: EvaluationGoldQuerySet,
+        active_when: %r{/evaluation_gold_query_sets},
+        service: :uk,
+      ),
+    ]
+  end
 
   def service_visible?(record)
     return false if record.service == :uk && !TradeTariffAdmin::ServiceChooser.uk?

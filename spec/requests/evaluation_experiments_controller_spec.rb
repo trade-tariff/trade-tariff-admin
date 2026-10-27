@@ -134,7 +134,6 @@ RSpec.describe EvaluationExperimentsController, type: :request do
     end
 
     before do
-      stub_api_request("/search/evaluation/gold_query_sets").with(query: hash_including("per_page" => "200")).and_return(paginated_response([]))
       stub_api_request("/search/evaluation/synthetic_input_sets").with(query: hash_including("per_page" => "200")).and_return(synthetic_input_sets_response)
     end
 
@@ -146,19 +145,43 @@ RSpec.describe EvaluationExperimentsController, type: :request do
       expect(page).to have_field("Name")
     end
 
-    it "offers a gold query set radio choice" do
-      expect(page).to have_field("Gold query set", type: "radio")
+    it "does not offer a gold query set choice" do
+      expect(page).not_to have_field("Gold query set")
     end
 
-    it "offers a synthetic input set radio choice" do
-      expect(page).to have_field("Synthetic input set", type: "radio")
+    it "does not ask the backend for gold query sets" do
+      rendered_page
+
+      expect(a_request(:get, %r{/search/evaluation/gold_query_sets})).not_to have_been_made
     end
 
-    it "lists gold query sets in the gold query set picker" do
-      stub_api_request("/search/evaluation/gold_query_sets").with(query: hash_including("per_page" => "200"))
-                                                             .and_return(paginated_response([{ "resource_id" => "3", "name" => "Baseline GQS" }]))
+    it "offers the synthetic input set picker directly, with no radio choice to make first", :aggregate_failures do
+      expect(page).to have_select("Synthetic input set")
+      expect(page).not_to have_field(type: "radio")
+    end
 
-      expect(page).to have_select("Gold query set", with_options: ["Baseline GQS"])
+    it "still says the source cannot be changed once chosen" do
+      expect(page).to have_text("This cannot be changed once chosen.")
+    end
+
+    context "when gold query sets are offered again" do
+      before do
+        allow(EvaluationGoldQuerySet).to receive(:entry_points_enabled?).and_return(true)
+        stub_api_request("/search/evaluation/gold_query_sets").with(query: hash_including("per_page" => "200"))
+          .and_return(paginated_response([{ "resource_id" => "3", "name" => "Baseline GQS" }]))
+      end
+
+      it "offers a gold query set radio choice" do
+        expect(page).to have_field("Gold query set", type: "radio")
+      end
+
+      it "offers a synthetic input set radio choice" do
+        expect(page).to have_field("Synthetic input set", type: "radio")
+      end
+
+      it "lists gold query sets in the gold query set picker" do
+        expect(page).to have_select("Gold query set", with_options: ["Baseline GQS"])
+      end
     end
 
     it "lists synthetic input sets in the synthetic input set picker" do
@@ -288,10 +311,6 @@ RSpec.describe EvaluationExperimentsController, type: :request do
         stub_api_request("/search/evaluation/gold_query_sets").with(query: hash_including("per_page" => "200")).and_return(paginated_response([]))
         stub_api_request("/search/evaluation/synthetic_input_sets").with(query: hash_including("per_page" => "200"))
           .and_return(status: 200, headers: json_headers, body: { data: [{ type: "synthetic_input_set", id: "9", attributes: { name: "Baseline SIS" } }], meta: { pagination: { page: 1, per_page: 200, total_count: 1 } } }.to_json)
-      end
-
-      it "keeps the synthetic input set radio chosen" do
-        expect(page).to have_checked_field("Synthetic input set")
       end
 
       it "keeps the chosen synthetic input set selected" do
