@@ -8,10 +8,6 @@ class EvaluationConfiguration
     # deep_symbolize_keys, not symbolize_keys: an "options" entry's own choices (question_model,
     # simulator_model) are a nested array of hashes, and the view reads their :key/:label with
     # symbol access too — a shallow symbolize would leave those as string-keyed JSON.parse output.
-    #
-    # search_index is what the backend says about the search index itself (today, how many documents hold
-    # ATaR keywords). It stays string-keyed like the baseline, and nil, not an empty hash, when an older
-    # backend sends none: "no report" and "a count that could not be made" mean different things to the form.
-    { baseline: body["baseline"], allowed_overrides: body["allowed_overrides"].map(&:deep_symbolize_keys), search_index: body["search_index"] }
+    { baseline: body["baseline"], allowed_overrides: body["allowed_overrides"].map(&:deep_symbolize_keys) }
   end
 end
