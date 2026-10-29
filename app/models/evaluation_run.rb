@@ -84,6 +84,13 @@ class EvaluationRun
     api.delete("#{collection_path}/bulk_destroy", run_ids:)
   end
 
+  # The run's summary and results as an Excel workbook, built by the backend (AI-1494). Returns the
+  # file's bytes as sent. It is a download, not JSON, so it skips the parsing every other call here
+  # gets -- the same way SearchExportWorkbook.download works.
+  def self.export(id)
+    api.get("#{collection_path}/#{id}/export").body
+  end
+
   def generating?
     %w[queued running].include?(status)
   end

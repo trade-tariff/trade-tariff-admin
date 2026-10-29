@@ -215,6 +215,8 @@ Rails.application.routes.draw do
   end
   resources :evaluation_runs, only: %i[index new create show] do
     post :cancel, on: :member
+    # The id ends up in the downloaded file's name, so only a plain number is routed.
+    get :export, on: :member, constraints: { id: /\d+/ }
     get :compare, on: :collection
     collection do
       get :confirm_bulk_destroy
