@@ -121,6 +121,24 @@ class EvaluationRunsController < AuthenticatedController
     redirect_to evaluation_run_path(@run)
   end
 
+  # Sends on the Excel workbook the backend builds (AI-1494). A backend error here goes back to the run
+  # list with its own message: the class-level Faraday::Error handler above is written for the launch
+  # form, and would send the operator to the experiments page with a message about that form. A run
+  # that does not exist is left to the Faraday::ResourceNotFound handler, as for the run page.
+  def export
+    authorize EvaluationRun, :show?
+
+    send_data EvaluationRun.export(params[:id]),
+              filename: "evaluation-run-#{params[:id]}.xlsx",
+              type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              disposition: "attachment"
+  rescue Faraday::ResourceNotFound
+    raise
+  rescue Faraday::Error => e
+    Rails.logger.error("Failed to export evaluation run #{params[:id]}: #{e.message}")
+    redirect_to evaluation_runs_path, alert: "The export could not be created. Try again."
+  end
+
   NO_RUNS_SELECTED_ERROR = "Select at least one run to delete.".freeze
 
   # No side effects, no backend call -- unlike EvaluationExperimentsController's own

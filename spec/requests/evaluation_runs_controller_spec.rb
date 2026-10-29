@@ -891,6 +891,75 @@ RSpec.describe EvaluationRunsController, type: :request do
     end
   end
 
+  describe "GET #export" do
+    let(:make_request) { get export_evaluation_run_path(run_id) }
+    let(:run_id) { "9" }
+    let(:workbook_bytes) { "PK\x03\x04\xFF\x00".b }
+    let(:xlsx_type) { "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
+
+    context "when the backend builds the workbook" do
+      before do
+        stub_api_request("/search/evaluation/runs/#{run_id}/export")
+          .to_return(status: 200, body: workbook_bytes, headers: { "Content-Type" => xlsx_type })
+      end
+
+      it { is_expected.to have_http_status :success }
+
+      it "serves the backend's bytes unchanged" do
+        expect(rendered_page.body.b).to eq(workbook_bytes)
+      end
+
+      it "serves an Excel workbook" do
+        expect(rendered_page.media_type).to eq(xlsx_type)
+      end
+
+      it "offers it as a download named after the run" do
+        expect(rendered_page.headers["Content-Disposition"]).to include("attachment").and include("evaluation-run-9.xlsx")
+      end
+    end
+
+    context "when the user is not a technical operator" do
+      let(:current_user) { create(:user, :hmrc_admin) }
+
+      it { is_expected.to have_http_status :forbidden }
+    end
+
+    # The class-level Faraday::Error handler sends the operator to the experiments page with a
+    # message about the launch form, which would be wrong for a failed download.
+    context "when the backend cannot be reached" do
+      before { stub_api_request("/search/evaluation/runs/#{run_id}/export").to_raise(Faraday::ConnectionFailed) }
+
+      it { is_expected.to redirect_to(evaluation_runs_path) }
+
+      it "says the export could not be created" do
+        rendered_page
+
+        expect(flash[:alert]).to eq("The export could not be created. Try again.")
+      end
+    end
+
+    context "when the backend answers with a server error" do
+      before { stub_api_request("/search/evaluation/runs/#{run_id}/export").to_return(status: 500, body: "") }
+
+      it { is_expected.to redirect_to(evaluation_runs_path) }
+    end
+
+    context "when the run does not exist" do
+      before { stub_api_request("/search/evaluation/runs/#{run_id}/export").to_return(status: 404, body: "") }
+
+      it "says so, the same as the run page does" do
+        rendered_page
+
+        expect(flash[:alert]).to eq("Run not found.")
+      end
+    end
+
+    # The id goes into the downloaded file's name, so only a plain number is accepted.
+    it "does not route a run id that is not a number" do
+      expect { Rails.application.routes.recognize_path("/evaluation_runs/not-a-number/export") }.to raise_error(ActionController::RoutingError)
+    end
+  end
+
   describe "GET #index" do
     let(:make_request) { get evaluation_runs_path }
     let(:run_attributes) do
@@ -969,6 +1038,36 @@ RSpec.describe EvaluationRunsController, type: :request do
 
     it "shows the cost" do
       expect(page).to have_css("td", text: "0.0421")
+    end
+
+    it "offers to export the run to Excel" do
+      expect(page).to have_link("Export to Excel", href: export_evaluation_run_path("9"))
+    end
+
+    it "does not offer a CSV export" do
+      expect(page).to have_no_link(text: /csv/i)
+    end
+
+    context "with a run in every status" do
+      let(:statuses) { EvaluationRun::STATUSES }
+
+      before do
+        rows = statuses.each_with_index.map { |status, index| run_attributes.merge("resource_id" => (20 + index).to_s, "status" => status) }
+        stub_api_request("/search/evaluation/runs").and_return(paginated_response(rows))
+      end
+
+      %w[completed partially_failed failed cancelled].each do |status|
+        it "offers to export a #{status} run" do
+          expect(page).to have_link("Export to Excel", href: export_evaluation_run_path(20 + EvaluationRun::STATUSES.index(status)))
+        end
+      end
+
+      # A half-finished run's totals would mislead, the same reason it has no checkbox.
+      %w[queued running].each do |status|
+        it "does not offer to export a #{status} run" do
+          expect(page).to have_no_link("Export to Excel", href: export_evaluation_run_path(20 + EvaluationRun::STATUSES.index(status)))
+        end
+      end
     end
 
     context "when a run has a generated label (AI-1437)" do
@@ -1059,6 +1158,10 @@ RSpec.describe EvaluationRunsController, type: :request do
 
       it "offers the delete button" do
         expect(page).to have_button("Delete selected runs")
+      end
+
+      it "still offers to export the run" do
+        expect(page).to have_link("Export to Excel", href: export_evaluation_run_path("9"))
       end
     end
 

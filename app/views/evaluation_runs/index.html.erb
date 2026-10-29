@@ -65,6 +65,7 @@
           <th class="govuk-table__header" scope="col">Cost</th>
           <th class="govuk-table__header" scope="col">Started</th>
           <th class="govuk-table__header" scope="col">Completed</th>
+          <th class="govuk-table__header" scope="col">Export</th>
         </tr>
       </thead>
       <tbody class="govuk-table__body">
@@ -89,6 +90,14 @@
             <td class="govuk-table__cell"><%= run.total_cost_usd || "-" %></td>
             <td class="govuk-table__cell"><%= run.started_at || "-" %></td>
             <td class="govuk-table__cell"><%= run.completed_at || "-" %></td>
+            <td class="govuk-table__cell">
+              <%# Not for a run that is still queued or running, for the same reason it has no checkbox:
+                  its totals are not final yet. Shown whether or not an experiment is selected, unlike
+                  the checkbox, which only appears for a filtered list. %>
+              <% unless run.generating? %>
+                <%= link_to export_evaluation_run_path(run), class: "govuk-link" do %>Export to Excel<span class="govuk-visually-hidden"> for <%= evaluation_run_display_name(run) %></span><% end %>
+              <% end %>
+            </td>
           </tr>
         <% end %>
       </tbody>
