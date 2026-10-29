@@ -336,10 +336,10 @@ RSpec.describe NavigationHelper, type: :helper do
     context "when on the export page" do
       let(:request_path) { "/search_references/export" }
 
-      it "marks Export current" do
+      it "marks only Export current" do
         tabs = helper.current_navigation_tabs_section
 
-        expect(helper.item_active?(tabs.items[2])).to be true
+        expect(tabs.items.map { |item| helper.item_active?(item) }).to eq([false, false, true])
       end
     end
 

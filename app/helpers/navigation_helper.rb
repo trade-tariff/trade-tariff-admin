@@ -90,7 +90,7 @@ module NavigationHelper
                 text: "Browse",
                 href: references_sections_path,
                 policy_class: SearchReference,
-                active_when: %r{/search_references(?!/search(?:/|\z))},
+                active_when: %r{/search_references(?!/(?:search|export)(?:/|\z))},
                 service: nil,
               ),
               NavigationItem.new(

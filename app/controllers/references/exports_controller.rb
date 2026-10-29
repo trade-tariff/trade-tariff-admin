@@ -12,7 +12,7 @@ module References
       file = SearchReference.export(include_ai_labels:)
 
       send_data file.body,
-                filename: "search_references_#{TradeTariffAdmin::ServiceChooser.service_choice}_#{Time.zone.today.strftime('%Y_%m_%d')}.csv",
+                filename: "search_references_#{TradeTariffAdmin::ServiceChooser.service_name}_#{Time.zone.today.strftime('%Y_%m_%d')}.csv",
                 type: "text/csv",
                 disposition: "attachment"
     rescue Faraday::Error => e
