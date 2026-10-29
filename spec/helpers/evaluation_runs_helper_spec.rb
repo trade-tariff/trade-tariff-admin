@@ -163,66 +163,53 @@ RSpec.describe EvaluationRunsHelper do
 
   describe "#evaluation_override_hint" do
     let(:atars_entry) { { name: "search_atars_enabled", description: "Also search ATaR keywords." } }
-    let(:search_index) { { "atar_keyword_count" => 4512 } }
 
     it "adds the live setting to any override, as On or Off for a yes/no one" do
       entry = { name: "search_non_declarables", description: "Include non-declarable codes." }
 
-      expect(helper.evaluation_override_hint(entry, baseline: { "search_non_declarables" => true }, search_index:)).to eq("Include non-declarable codes. Live setting right now: On.")
+      expect(helper.evaluation_override_hint(entry, baseline: { "search_non_declarables" => true })).to eq("Include non-declarable codes. Live setting right now: On.")
     end
 
     it "shows a number as it is" do
       entry = { name: "max_rounds", description: "Most questions." }
 
-      expect(helper.evaluation_override_hint(entry, baseline: { "max_rounds" => 7 }, search_index:)).to eq("Most questions. Live setting right now: 7.")
+      expect(helper.evaluation_override_hint(entry, baseline: { "max_rounds" => 7 })).to eq("Most questions. Live setting right now: 7.")
     end
 
     it "shows a choice as it is" do
       entry = { name: "question_model", description: "The AI model." }
 
-      expect(helper.evaluation_override_hint(entry, baseline: { "question_model" => "gpt-5.4" }, search_index:)).to eq("The AI model. Live setting right now: gpt-5.4.")
+      expect(helper.evaluation_override_hint(entry, baseline: { "question_model" => "gpt-5.4" })).to eq("The AI model. Live setting right now: gpt-5.4.")
     end
 
     it "puts extra detail between the description and the live setting" do
       entry = { name: "max_rounds", description: "Most questions." }
 
-      expect(helper.evaluation_override_hint(entry, baseline: { "max_rounds" => 7 }, search_index:, detail: "Between 1 and 20.")).to eq("Most questions. Between 1 and 20. Live setting right now: 7.")
+      expect(helper.evaluation_override_hint(entry, baseline: { "max_rounds" => 7 }, detail: "Between 1 and 20.")).to eq("Most questions. Between 1 and 20. Live setting right now: 7.")
     end
 
     it "is just the description for an override the baseline has no value for, such as simulator_model" do
       entry = { name: "simulator_model", description: "The simulated user." }
 
-      expect(helper.evaluation_override_hint(entry, baseline: { "max_rounds" => 7 }, search_index:)).to eq("The simulated user.")
+      expect(helper.evaluation_override_hint(entry, baseline: { "max_rounds" => 7 })).to eq("The simulated user.")
     end
 
     it "is just the description when the baseline value is nil, as reasoning_effort is for a model with none" do
       entry = { name: "reasoning_effort", description: "How hard it thinks." }
 
-      expect(helper.evaluation_override_hint(entry, baseline: { "reasoning_effort" => nil }, search_index:)).to eq("How hard it thinks.")
+      expect(helper.evaluation_override_hint(entry, baseline: { "reasoning_effort" => nil })).to eq("How hard it thinks.")
     end
 
-    it "does not add the index count to an override other than search_atars_enabled" do
-      entry = { name: "max_rounds", description: "Most questions." }
-
-      expect(helper.evaluation_override_hint(entry, baseline: { "max_rounds" => 7 }, search_index:)).not_to include("search index")
-    end
-
-    it "adds the live setting and the index count to search_atars_enabled, in that order" do
-      hint = helper.evaluation_override_hint(atars_entry, baseline: { "search_atars_enabled" => true }, search_index:)
-
-      expect(hint).to eq("Also search ATaR keywords. Live setting right now: On. The search index holds ATaR keywords for 4,512 commodity codes.")
+    it "treats search_atars_enabled like any other override" do
+      expect(helper.evaluation_override_hint(atars_entry, baseline: { "search_atars_enabled" => true })).to eq("Also search ATaR keywords. Live setting right now: On.")
     end
 
     it "leaves out the live setting when the baseline does not hold one, instead of guessing Off" do
-      hint = helper.evaluation_override_hint(atars_entry, baseline: {}, search_index:)
-
-      expect(hint).to eq("Also search ATaR keywords. The search index holds ATaR keywords for 4,512 commodity codes.")
+      expect(helper.evaluation_override_hint(atars_entry, baseline: {})).to eq("Also search ATaR keywords.")
     end
 
     it "copes with no baseline at all" do
-      hint = helper.evaluation_override_hint(atars_entry, baseline: nil, search_index: nil)
-
-      expect(hint).to eq("Also search ATaR keywords.")
+      expect(helper.evaluation_override_hint(atars_entry, baseline: nil)).to eq("Also search ATaR keywords.")
     end
   end
 end

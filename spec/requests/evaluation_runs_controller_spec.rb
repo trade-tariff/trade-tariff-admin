@@ -33,9 +33,9 @@ RSpec.describe EvaluationRunsController, type: :request do
     }
   end
 
-  # A configuration that offers the search_atars_enabled override (AI-1498). search_index is what the
-  # backend says about the ATaR keywords in the search index; nil leaves it out, as an older backend
-  # would, which is not the same as { atar_keyword_count: nil } (a count that could not be made).
+  # A configuration that offers the search_atars_enabled override (AI-1498). search_index is the ATaR keyword
+  # count that AI-1498 first added to the backend response and then dropped; nil leaves it out, as the
+  # backend does now.
   def atars_configuration_response(live:, search_index: nil)
     body = {
       baseline: { "question_model" => "gpt-5.4", "search_non_declarables" => false, "search_atars_enabled" => live },
@@ -223,12 +223,12 @@ RSpec.describe EvaluationRunsController, type: :request do
       expect(radios.map { |radio| radio["data-run-preview-target"] }).to all(eq("overrideField"))
     end
 
-    # The live setting and the index count are display only: read from the backend on every load and
-    # never saved on an experiment or a run.
+    # The live setting is display only: read from the backend on every load and never saved on an
+    # experiment or a run.
     describe "the search_atars_enabled override" do
-      # Loads the launch form against a backend that reports the given live setting and index report,
-      # and returns the page. A nil search_index leaves the report out, as an older backend would.
-      def atars_page(live: true, search_index: { atar_keyword_count: 4512 })
+      # Loads the launch form against a backend that reports the given live setting, and returns the page.
+      # search_index is the dropped ATaR keyword count, for a backend that still sends it.
+      def atars_page(live: true, search_index: nil)
         stub_api_request("/search/evaluation/configuration").and_return(atars_configuration_response(live:, search_index:))
         get new_evaluation_run_path
 
@@ -251,37 +251,19 @@ RSpec.describe EvaluationRunsController, type: :request do
         expect(radios.map { |radio| radio["data-override-key"] }).to all(eq("search_atars_enabled"))
       end
 
-      it "shows the live setting and how many commodity codes hold keywords, after the override's own description" do
-        expect(atars_hint).to eq("Also search the keywords taken from public ATaRs. Live setting right now: On. The search index holds ATaR keywords for 4,512 commodity codes.")
+      it "shows the live setting after the override's own description" do
+        expect(atars_hint).to eq("Also search the keywords taken from public ATaRs. Live setting right now: On.")
       end
 
       it "says Off when the live setting is off" do
-        expect(atars_hint(live: false)).to eq("Also search the keywords taken from public ATaRs. Live setting right now: Off. The search index holds ATaR keywords for 4,512 commodity codes.")
+        expect(atars_hint(live: false)).to eq("Also search the keywords taken from public ATaRs. Live setting right now: Off.")
       end
 
-      it "does not say 'codes' when exactly one commodity code holds ATaR keywords" do
-        expect(atars_hint(search_index: { atar_keyword_count: 1 })).to end_with("for 1 commodity code.")
+      it "does not say whether the search index holds ATaR keywords, even if the backend still sends a count" do
+        expect(atars_hint(search_index: { atar_keyword_count: 4512 })).to eq("Also search the keywords taken from public ATaRs. Live setting right now: On.")
       end
 
-      it "says the override will make no difference when no commodity code holds ATaR keywords" do
-        expect(atars_hint(search_index: { atar_keyword_count: 0 })).to eq("Also search the keywords taken from public ATaRs. Live setting right now: On. The search index holds no ATaR keywords, so this override will make no difference.")
-      end
-
-      it "says the index could not be checked when the backend could not count" do
-        expect(atars_hint(search_index: { atar_keyword_count: nil })).to eq("Also search the keywords taken from public ATaRs. Live setting right now: On. The search index could not be checked just now.")
-      end
-
-      it "still loads the form when the backend could not count" do
-        atars_page(search_index: { atar_keyword_count: nil })
-
-        expect(response).to have_http_status :success
-      end
-
-      it "shows the live setting only when an older backend sends no search index report" do
-        expect(atars_hint(search_index: nil)).to eq("Also search the keywords taken from public ATaRs. Live setting right now: On.")
-      end
-
-      it "gives the other yes/no override its live setting too, but not the index count" do
+      it "gives the other yes/no override its live setting too" do
         hint = atars_page.find("fieldset", text: "Search non declarables").find(".govuk-hint").text
 
         expect(hint).to eq("Include non-declarable codes in the results. Live setting right now: Off.")
@@ -289,7 +271,7 @@ RSpec.describe EvaluationRunsController, type: :request do
 
       # The preview shows "default" for anything the operator has not chosen, on purpose, so that a
       # value they did not pick never looks picked. It reads the baseline's keys only.
-      it "leaves the preview's data as the baseline alone, with no index report in it" do
+      it "leaves the preview's data as the baseline alone" do
         baseline = JSON.parse(atars_page.find("form")["data-run-preview-baseline-value"])
 
         expect(baseline).to eq("question_model" => "gpt-5.4", "search_non_declarables" => false, "search_atars_enabled" => true)
@@ -617,12 +599,12 @@ RSpec.describe EvaluationRunsController, type: :request do
         expect(page).to have_css(".govuk-error-summary", text: "Choose an experiment")
       end
 
-      it "shows the search_atars_enabled live setting and index count again, read afresh" do
-        stub_api_request("/search/evaluation/configuration").and_return(atars_configuration_response(live: false, search_index: { atar_keyword_count: 12 }))
+      it "shows the search_atars_enabled live setting again, read afresh" do
+        stub_api_request("/search/evaluation/configuration").and_return(atars_configuration_response(live: false))
 
         hint = page.find("fieldset", text: "Search atars enabled").find(".govuk-hint").text
 
-        expect(hint).to end_with("Live setting right now: Off. The search index holds ATaR keywords for 12 commodity codes.")
+        expect(hint).to end_with("Live setting right now: Off.")
       end
     end
 

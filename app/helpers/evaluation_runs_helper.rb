@@ -99,16 +99,15 @@ module EvaluationRunsHelper
 
   # The hint under an override's field on the launch form: its description, any extra detail (a number
   # field's range), then what the live admin setting is, so "Use default" and a blank number field mean
-  # something the operator can see. search_atars_enabled also says whether the search index holds any ATaR
-  # keywords, because the override cannot add keywords to an index that was built without them -- without
-  # this, an operator could run an "ATaRs on" comparison against an index with none and wrongly read the
-  # identical results as "ATaRs do not help". All of it is display only: read from the backend on each
-  # load, saved nowhere.
-  def evaluation_override_hint(entry, baseline:, search_index:, detail: nil)
-    parts = [entry[:description], detail, evaluation_live_setting(entry, baseline)]
-    parts << evaluation_atar_index_status(search_index) if entry[:name] == "search_atars_enabled"
-
-    parts.compact.join(" ")
+  # something the operator can see. Display only: read from the backend on each load, saved nowhere.
+  #
+  # It deliberately does not say whether the search index holds ATaR keywords. The search_atars_enabled
+  # override only has an effect if the index was built with them, and the backend's description of the
+  # override says so. AI-1498 added a count of them here and dropped it in review: the override works
+  # without it, and it was expected to go once ATaRs are live. If a backend still sends that count, the
+  # form ignores it.
+  def evaluation_override_hint(entry, baseline:, detail: nil)
+    [entry[:description], detail, evaluation_live_setting(entry, baseline)].compact.join(" ")
   end
 
 private
@@ -129,18 +128,6 @@ private
     when false then "Off"
     else live.to_s
     end
-  end
-
-  # nil when the backend sent no report at all (an older backend). A report with a nil count is
-  # different: the backend did try, and could not count, so that is said out loud.
-  def evaluation_atar_index_status(search_index)
-    return nil if search_index.nil?
-
-    count = search_index["atar_keyword_count"]
-    return "The search index could not be checked just now." if count.nil?
-    return "The search index holds no ATaR keywords, so this override will make no difference." if count.zero?
-
-    "The search index holds ATaR keywords for #{number_with_delimiter(count)} commodity #{'code'.pluralize(count)}."
   end
 
   def evaluation_run_elapsed(run)
