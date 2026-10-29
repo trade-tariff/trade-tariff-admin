@@ -22,6 +22,9 @@ Rails.application.routes.draw do
 
   namespace :references, path: "search_references" do
     get :search, to: "entity_searches#index"
+    resource :export, only: %i[show] do
+      get :download
+    end
 
     concern :search_reference_manageable do
       member do

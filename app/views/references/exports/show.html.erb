@@ -1,0 +1,47 @@
+<%= govuk_breadcrumbs "Search References": references_sections_path,
+                      "Export": references_export_path
+%>
+
+<h2 class="govuk-heading-m">Export search references</h2>
+
+<p class="govuk-body">Export the current search references for the selected service as a CSV file.</p>
+
+<%= govuk_form_for @export,
+                   as: "",
+                   url: download_references_export_path,
+                   method: :get do |f|
+%>
+  <div class="govuk-form-group">
+    <p class="govuk-body">The exported data will include:</p>
+    <%= govuk_list [
+        "the commodity code the references belong to",
+        "the product line suffix",
+        "whether the reference belongs to a chapter, heading, subheading, or commodity",
+        "where the search reference is used"
+      ], type: :bullet
+    %>
+  </div>
+
+  <% if policy(SearchReference).export_ai_labels? %>
+    <div class="govuk-form-group" data-testid="search_references_export_ai_labels">
+      <p class="govuk-body">The export can also include the AI-generated labels for each reference:</p>
+      <%= govuk_list [
+          "description",
+          "synonyms",
+          "colloquial terms and known brands",
+          "review status (stale, needs review, approved, manually edited, expired)",
+        ], type: :bullet
+      %>
+      <%= f.govuk_check_box :include_ai_labels, 1, 0,
+                            multiple: false,
+                            label: { text: "Include AI-generated labels" }
+      %>
+    </div>
+  <% end %>
+
+  <div class="govuk-button-group">
+    <%= f.govuk_submit "Download search references",
+                        data: { testid: "search_references_export_download_button" }
+    %>
+  </div>
+<% end %>

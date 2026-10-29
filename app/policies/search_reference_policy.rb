@@ -8,6 +8,14 @@ class SearchReferencePolicy < ApplicationPolicy
     technical_operator? || hmrc_admin? || auditor?
   end
 
+  def export?
+    technical_operator? || hmrc_admin?
+  end
+
+  def export_ai_labels?
+    superadmin?
+  end
+
   def create?
     technical_operator? || hmrc_admin?
   end

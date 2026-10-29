@@ -29,10 +29,11 @@ RSpec.describe NavigationHelper, type: :helper do
       expect(section.items.map(&:text)).to eq(["Search References", "Descriptions", "Intercepts", "Search dashboard", "Search diagnostics", "Recent changes"])
     end
 
-    it "subdivides Search References into Browse and Search" do
+    it "subdivides Search References into Browse, Search and Export", :aggregate_failures do
       item = helper.navigation_sections.find { |s| s.key == :classification }.items.find { |entry| entry.text == "Search References" }
 
-      expect(item.tabs.map(&:text)).to eq(%w[Browse Search])
+      expect(item.tabs.map(&:text)).to eq(%w[Browse Search Export])
+      expect(item.tabs.last.href).to eq(helper.references_export_path)
     end
 
     it "restricts Evaluation to the UK service" do
@@ -86,6 +87,29 @@ RSpec.describe NavigationHelper, type: :helper do
   end
 
   describe "#visible_navigation_sections" do
+    %w[UK XI].each do |service|
+      {
+        technical_operator: %w[Browse Search Export],
+        superadmin: %w[Browse Search Export],
+        hmrc_admin: %w[Browse Search Export],
+        auditor: %w[Browse Search],
+        guest: [],
+      }.each do |role, expected_tabs|
+        context "with #{service} service and #{role} role" do
+          include_context "with #{service} service"
+
+          let(:user) { build(:user, role) }
+
+          it "shows only permitted Search References tabs" do
+            section = helper.visible_navigation_sections.find { |entry| entry.key == :classification }
+            item = section&.items&.find { |entry| entry.text == "Search References" }
+
+            expect(item&.tabs&.map(&:text) || []).to eq(expected_tabs)
+          end
+        end
+      end
+    end
+
     shared_examples "visible sections and items" do |expected|
       it "shows the correct sections" do
         expect(helper.visible_navigation_sections.map(&:key)).to eq(expected.keys)
@@ -292,9 +316,8 @@ RSpec.describe NavigationHelper, type: :helper do
         tabs = helper.current_navigation_tabs_section
 
         expect(tabs.label).to eq("Search References")
-        expect(tabs.items.map(&:text)).to eq(%w[Browse Search])
-        expect(helper.item_active?(tabs.items[0])).to be true
-        expect(helper.item_active?(tabs.items[1])).to be false
+        expect(tabs.items.map(&:text)).to eq(%w[Browse Search Export])
+        expect(tabs.items.map { |item| helper.item_active?(item) }).to eq([true, false, false])
       end
     end
 
@@ -306,6 +329,17 @@ RSpec.describe NavigationHelper, type: :helper do
 
         expect(helper.item_active?(tabs.items[0])).to be false
         expect(helper.item_active?(tabs.items[1])).to be true
+        expect(helper.item_active?(tabs.items[2])).to be false
+      end
+    end
+
+    context "when on the export page" do
+      let(:request_path) { "/search_references/export" }
+
+      it "marks Export current" do
+        tabs = helper.current_navigation_tabs_section
+
+        expect(helper.item_active?(tabs.items[2])).to be true
       end
     end
 
