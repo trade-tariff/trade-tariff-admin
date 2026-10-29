@@ -22,12 +22,12 @@
           <%= f.govuk_select entry[:name],
                              options_for_select([["Use default", ""]] + entry[:options].map { |o| [o[:label], o[:key]] }, f.object.public_send(entry[:name])),
                              label: { text: entry[:name].humanize, size: "s" },
-                             hint: { text: entry[:description] },
+                             hint: { text: evaluation_override_hint(entry, baseline: baseline, search_index: search_index) },
                              data: { "run-preview-target": "overrideField", "override-key": entry[:name], action: "change->run-preview#render" } %>
         <% when "integer" %>
           <%= f.govuk_number_field entry[:name],
                                    label: { text: entry[:name].humanize, size: "s" },
-                                   hint: { text: "#{entry[:description]} Between #{entry[:min]} and #{entry[:max]}. Leave blank to use the default." },
+                                   hint: { text: evaluation_override_hint(entry, baseline: baseline, search_index: search_index, detail: "Between #{entry[:min]} and #{entry[:max]}. Leave blank to use the default.") },
                                    width: 5,
                                    data: { "run-preview-target": "overrideField", "override-key": entry[:name], action: "change->run-preview#render" } %>
         <% when "boolean" %>
@@ -39,7 +39,7 @@
               run_preview_controller.js read every boolean override as the literal string "undefined".
               govuk_radio_button, by contrast, forwards arbitrary kwargs (including data:) straight onto
               its own <input>. %>
-          <%= f.govuk_radio_buttons_fieldset entry[:name], legend: { text: entry[:name].humanize }, hint: { text: entry[:description] } do %>
+          <%= f.govuk_radio_buttons_fieldset entry[:name], legend: { text: entry[:name].humanize }, hint: { text: evaluation_override_hint(entry, baseline: baseline, search_index: search_index) } do %>
             <% [["", "Use default"], ["true", "Yes"], ["false", "No"]].each do |value, label| %>
               <%= f.govuk_radio_button entry[:name], value,
                                        label: { text: label },

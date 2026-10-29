@@ -33,6 +33,22 @@ RSpec.describe EvaluationRunsController, type: :request do
     }
   end
 
+  # A configuration that offers the search_atars_enabled override (AI-1498). search_index is what the
+  # backend says about the ATaR keywords in the search index; nil leaves it out, as an older backend
+  # would, which is not the same as { atar_keyword_count: nil } (a count that could not be made).
+  def atars_configuration_response(live:, search_index: nil)
+    body = {
+      baseline: { "question_model" => "gpt-5.4", "search_non_declarables" => false, "search_atars_enabled" => live },
+      allowed_overrides: [
+        { name: "search_non_declarables", config_type: "boolean", description: "Include non-declarable codes in the results." },
+        { name: "search_atars_enabled", config_type: "boolean", description: "Also search the keywords taken from public ATaRs." },
+      ],
+    }
+    body[:search_index] = search_index if search_index
+
+    { status: 200, headers: json_headers, body: body.to_json }
+  end
+
   def page
     Capybara.string(rendered_page.body)
   end
@@ -167,6 +183,30 @@ RSpec.describe EvaluationRunsController, type: :request do
       expect(page).to have_css(".govuk-hint", text: "Include non-declarable codes in the results.")
     end
 
+    # Each override says what the live admin setting is, so "Use default" and a blank number field
+    # mean something the operator can see. Display only: read afresh on every load, saved nowhere.
+    describe "the live setting under each override" do
+      def hint_for(label)
+        page.find(".govuk-form-group", text: label).find(".govuk-hint").text
+      end
+
+      it "shows a choice's live value" do
+        expect(hint_for("Question model")).to end_with("Live setting right now: gpt-5.4.")
+      end
+
+      it "shows a number's live value after the range and the blank-field note" do
+        expect(hint_for("Max rounds")).to eq("The most clarifying questions the search can ask. Between 1 and 20. Leave blank to use the default. Live setting right now: 7.")
+      end
+
+      it "shows reasoning effort's live value" do
+        expect(hint_for("Reasoning effort")).to end_with("Live setting right now: medium.")
+      end
+
+      it "leaves the sentence out for an override the baseline has no value for" do
+        expect(hint_for("Search non declarables")).to eq("Include non-declarable codes in the results.")
+      end
+    end
+
     it "says a number field can be left blank" do
       expect(page).to have_css(".govuk-hint", text: "Leave blank to use the default.")
     end
@@ -181,6 +221,79 @@ RSpec.describe EvaluationRunsController, type: :request do
       radios = page.all("input[type='radio'][data-override-key='search_non_declarables']")
 
       expect(radios.map { |radio| radio["data-run-preview-target"] }).to all(eq("overrideField"))
+    end
+
+    # The live setting and the index count are display only: read from the backend on every load and
+    # never saved on an experiment or a run.
+    describe "the search_atars_enabled override" do
+      # Loads the launch form against a backend that reports the given live setting and index report,
+      # and returns the page. A nil search_index leaves the report out, as an older backend would.
+      def atars_page(live: true, search_index: { atar_keyword_count: 4512 })
+        stub_api_request("/search/evaluation/configuration").and_return(atars_configuration_response(live:, search_index:))
+        get new_evaluation_run_path
+
+        Capybara.string(response.body)
+      end
+
+      def atars_hint(**)
+        atars_page(**).find("fieldset", text: "Search atars enabled").find(".govuk-hint").text
+      end
+
+      it "offers Use default, Yes and No" do
+        radios = atars_page.find("fieldset", text: "Search atars enabled").all("input[type='radio']")
+
+        expect(radios.map { |radio| radio["value"] }).to eq(["", "true", "false"])
+      end
+
+      it "lets the preview read it like any other override" do
+        radios = atars_page.find("fieldset", text: "Search atars enabled").all("input[type='radio']")
+
+        expect(radios.map { |radio| radio["data-override-key"] }).to all(eq("search_atars_enabled"))
+      end
+
+      it "shows the live setting and how many commodity codes hold keywords, after the override's own description" do
+        expect(atars_hint).to eq("Also search the keywords taken from public ATaRs. Live setting right now: On. The search index holds ATaR keywords for 4,512 commodity codes.")
+      end
+
+      it "says Off when the live setting is off" do
+        expect(atars_hint(live: false)).to eq("Also search the keywords taken from public ATaRs. Live setting right now: Off. The search index holds ATaR keywords for 4,512 commodity codes.")
+      end
+
+      it "does not say 'codes' when exactly one commodity code holds ATaR keywords" do
+        expect(atars_hint(search_index: { atar_keyword_count: 1 })).to end_with("for 1 commodity code.")
+      end
+
+      it "says the override will make no difference when no commodity code holds ATaR keywords" do
+        expect(atars_hint(search_index: { atar_keyword_count: 0 })).to eq("Also search the keywords taken from public ATaRs. Live setting right now: On. The search index holds no ATaR keywords, so this override will make no difference.")
+      end
+
+      it "says the index could not be checked when the backend could not count" do
+        expect(atars_hint(search_index: { atar_keyword_count: nil })).to eq("Also search the keywords taken from public ATaRs. Live setting right now: On. The search index could not be checked just now.")
+      end
+
+      it "still loads the form when the backend could not count" do
+        atars_page(search_index: { atar_keyword_count: nil })
+
+        expect(response).to have_http_status :success
+      end
+
+      it "shows the live setting only when an older backend sends no search index report" do
+        expect(atars_hint(search_index: nil)).to eq("Also search the keywords taken from public ATaRs. Live setting right now: On.")
+      end
+
+      it "gives the other yes/no override its live setting too, but not the index count" do
+        hint = atars_page.find("fieldset", text: "Search non declarables").find(".govuk-hint").text
+
+        expect(hint).to eq("Include non-declarable codes in the results. Live setting right now: Off.")
+      end
+
+      # The preview shows "default" for anything the operator has not chosen, on purpose, so that a
+      # value they did not pick never looks picked. It reads the baseline's keys only.
+      it "leaves the preview's data as the baseline alone, with no index report in it" do
+        baseline = JSON.parse(atars_page.find("form")["data-run-preview-baseline-value"])
+
+        expect(baseline).to eq("question_model" => "gpt-5.4", "search_non_declarables" => false, "search_atars_enabled" => true)
+      end
     end
 
     context "when the experiment's gold query set has been deleted" do
@@ -502,6 +615,14 @@ RSpec.describe EvaluationRunsController, type: :request do
         page = Capybara.string(rendered_page.body)
 
         expect(page).to have_css(".govuk-error-summary", text: "Choose an experiment")
+      end
+
+      it "shows the search_atars_enabled live setting and index count again, read afresh" do
+        stub_api_request("/search/evaluation/configuration").and_return(atars_configuration_response(live: false, search_index: { atar_keyword_count: 12 }))
+
+        hint = page.find("fieldset", text: "Search atars enabled").find(".govuk-hint").text
+
+        expect(hint).to end_with("Live setting right now: Off. The search index holds ATaR keywords for 12 commodity codes.")
       end
     end
 
