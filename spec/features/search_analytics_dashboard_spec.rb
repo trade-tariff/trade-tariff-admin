@@ -419,7 +419,7 @@ RSpec.describe "Search analytics dashboard" do
 
   def expect_guided_outcome_rates
     expect(page).to have_css("#journey-outcome-rates", text: "Journey outcome rates")
-    expect(page).to have_content("journeys started").and have_content("last recorded outcome")
+    expect(page).to have_content("journeys started").and have_content("last recorded outcome").and have_content("open a tariff page directly")
     payload = JSON.parse(page.find("#journey-outcome-rates ~ .search-analytics-chart-container canvas")["data-chart"])
     expect(payload.fetch("labels")).to eq(["Results", ["I don't", "know"], %w[No results], %w[Unknown results], %w[Blocking guidance], "Error", "Abandonment"])
     expect(payload.dig("datasets", 0, "data")).to eq([50.0, 10.0, 10.0, 10.0, 10.0, 5.0, 5.0])

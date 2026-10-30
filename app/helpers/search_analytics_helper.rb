@@ -125,7 +125,7 @@ module SearchAnalyticsHelper
   def search_analytics_outcome_definition(view)
     case view
     when "internal"
-      "Each started journey counts once. If it reaches more than one terminating outcome on the same UTC day, the last recorded outcome is used. Rates use journeys started as the denominator. Abandonment is a started journey with no terminating outcome that day. A journey that ends on a later day can count as abandoned on the start day. Missing collection is not abandonment. When no journeys start, rates are unavailable."
+      "Each started journey counts once. If it reaches more than one terminating outcome on the same UTC day, the last recorded outcome is used. Rates use journeys started as the denominator. Journeys that open a tariff page directly for a code or search suggestion are not counted. Abandonment is a started journey with no terminating outcome that day. A journey that ends on a later day can count as abandoned on the start day. Missing collection is not abandonment. When no journeys start, rates are unavailable."
     when "classic"
       "Results and No results are shares of completed frontend fuzzy searches. Exact matches are excluded. No results means the total result count is 0. These figures do not prove that a results page was visible. There is no classic abandonment rate. When no fuzzy searches complete, rates are unavailable."
     else
