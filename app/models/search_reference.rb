@@ -18,6 +18,10 @@ class SearchReference
              :referenced_class,
              *READ_ONLY_ATTRIBUTES.map(&:to_sym)
 
+  def self.export(include_ai_labels: false)
+    api.get("#{collection_path}/export", { include_ai_labels: include_ai_labels })
+  end
+
   def normalize_serialized_attributes(attrs)
     (%w[release_services release_to_uk release_to_xi] + READ_ONLY_ATTRIBUTES).each do |key|
       attrs.delete(key)

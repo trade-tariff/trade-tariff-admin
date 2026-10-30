@@ -1,8 +1,8 @@
 module NavigationHelper
   NavigationSection = Data.define(:key, :label, :href, :items, :service)
-  NavigationItem = Data.define(:text, :href, :policy_class, :active_when, :service, :tabs) do
-    def initialize(text:, href:, policy_class:, active_when:, service: nil, tabs: [])
-      super(text:, href:, policy_class:, active_when:, service:, tabs:)
+  NavigationItem = Data.define(:text, :href, :policy_class, :active_when, :service, :tabs, :policy_query) do
+    def initialize(text:, href:, policy_class:, active_when:, service: nil, tabs: [], policy_query: :index?)
+      super(text:, href:, policy_class:, active_when:, service:, tabs:, policy_query:)
     end
   end
 
@@ -90,7 +90,7 @@ module NavigationHelper
                 text: "Browse",
                 href: references_sections_path,
                 policy_class: SearchReference,
-                active_when: %r{/search_references(?!/search(?:/|\z))},
+                active_when: %r{/search_references(?!/(?:search|export)(?:/|\z))},
                 service: nil,
               ),
               NavigationItem.new(
@@ -98,6 +98,14 @@ module NavigationHelper
                 href: references_search_path,
                 policy_class: References::EntitySearch,
                 active_when: %r{/search_references/search(?:/|\z)},
+                service: nil,
+              ),
+              NavigationItem.new(
+                text: "Export",
+                href: references_export_path,
+                policy_class: SearchReference,
+                policy_query: :export?,
+                active_when: %r{/search_references/export\z},
                 service: nil,
               ),
             ],
@@ -336,7 +344,7 @@ private
 
       item.with(href: visible_tabs.first.href, tabs: visible_tabs)
     else
-      return nil unless policy(item.policy_class).index?
+      return nil unless policy(item.policy_class).public_send(item.policy_query)
 
       item
     end
