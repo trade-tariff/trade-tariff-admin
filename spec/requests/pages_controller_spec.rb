@@ -1,12 +1,6 @@
 RSpec.describe PagesController do
   include_context "with authenticated user"
 
-  let(:sections) { [] }
-
-  before do
-    allow(Section).to receive(:all).and_return(sections)
-  end
-
   describe "GET #index" do
     context "when authorised" do
       it "redirects to customs tariff updates" do
@@ -30,7 +24,6 @@ RSpec.describe PagesController do
       include_context "with XI service"
 
       before do
-        allow(TradeTariffAdmin).to receive(:enable_section_chapter_note_versioning?).and_call_original
         allow(TradeTariffAdmin).to receive(:environment).and_return("production".inquiry)
       end
 

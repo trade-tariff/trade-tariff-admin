@@ -1,9 +1,0 @@
-<h1>New Chapter Note</h1>
-
-<%= govuk_form_for @chapter_note, url: notes_chapter_chapter_note_path(chapter) do |f| %>
-  <%= f.govuk_text_field :section_title, disabled: true, value: chapter.goods_nomenclature_item_id %>
-
-  <%= govuk_markdown_area f, :content, rows: 12 %>
-
-  <%= submit_and_back_buttons f, notes_section_chapters_path(chapter) %>
-<% end %>

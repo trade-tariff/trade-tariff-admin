@@ -4,15 +4,10 @@ class Chapter
   include ApiEntity
 
   has_one :section
-  has_one :chapter_note
   has_many :headings
 
   def search_references
     Chapter::SearchReference.all(casted_by: self)
-  end
-
-  def has_chapter_note?
-    self[:chapter_note_id].present?
   end
 
   def short_code

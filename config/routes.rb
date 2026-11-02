@@ -4,22 +4,6 @@ Rails.application.routes.draw do
   filter :service_path_prefix_handler
   default_url_options(host: TradeTariffAdmin.host)
 
-  namespace :notes, module: :notes do
-    resources :sections, only: %i[index show] do
-      scope module: "sections" do
-        resource :section_note
-        resources :chapters, only: [:index]
-      end
-    end
-
-    resources :chapters, only: %i[index show] do
-      scope module: "chapters" do
-        resource :chapter_note
-        resources :headings, only: [:index]
-      end
-    end
-  end
-
   namespace :references, path: "search_references" do
     get :search, to: "entity_searches#index"
     resource :export, only: %i[show] do
