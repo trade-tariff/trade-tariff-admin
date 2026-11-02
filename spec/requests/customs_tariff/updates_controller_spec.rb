@@ -79,6 +79,32 @@ RSpec.describe CustomsTariff::UpdatesController, type: :request do
       expect(response.body).not_to include("Pending")
     end
 
+    context "when using XI in production" do
+      before do
+        TradeTariffAdmin::ServiceChooser.service_choice = "xi"
+        allow(TradeTariffAdmin).to receive(:enable_section_chapter_note_versioning?).and_call_original
+        allow(TradeTariffAdmin).to receive(:environment).and_return("production".inquiry)
+        stub_api_request("/customs_tariff_updates", backend: "xi")
+          .with(query: { "page" => "1" })
+          .and_return(
+            status: 200,
+            headers: { "content-type" => "application/json; charset=utf-8" },
+            body: {
+              data: [{ type: "customs_tariff_update", id: update_version, attributes: customs_tariff_update_attributes }],
+              meta: { pagination: { page: 1, per_page: 20, total_count: 1 } },
+            }.to_json,
+          )
+      end
+
+      it "renders versioned updates from XI", :aggregate_failures do
+        make_request
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(customs_tariff_update_path(update_version))
+        expect(response.body).not_to include("/notes/sections")
+      end
+    end
+
     context "when more updates exist than fit on one page" do
       let(:make_request) { get customs_tariff_updates_path, params: { page: 2 } }
 

@@ -20,14 +20,7 @@ module NavigationHelper
             href: versioning ? customs_tariff_updates_path : notes_sections_path,
             policy_class: versioning ? CustomsTariff::Update : SectionNote,
             active_when: versioning ? %r{/customs_tariff} : %r{/notes},
-            service: :uk,
-          ),
-          NavigationItem.new(
-            text: "Section & chapter notes",
-            href: notes_sections_path,
-            policy_class: SectionNote,
-            active_when: /\/notes/,
-            service: :xi,
+            service: nil,
           ),
           NavigationItem.new(
             text: "News",

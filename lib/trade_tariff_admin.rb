@@ -207,9 +207,6 @@ module TradeTariffAdmin
     end
 
     def enable_section_chapter_note_versioning?
-      return false if environment.production?
-      return false if TradeTariffAdmin::ServiceChooser.xi?
-
       true
     end
   end
