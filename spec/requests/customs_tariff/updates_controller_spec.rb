@@ -82,7 +82,6 @@ RSpec.describe CustomsTariff::UpdatesController, type: :request do
     context "when using XI in production" do
       before do
         TradeTariffAdmin::ServiceChooser.service_choice = "xi"
-        allow(TradeTariffAdmin).to receive(:enable_section_chapter_note_versioning?).and_call_original
         allow(TradeTariffAdmin).to receive(:environment).and_return("production".inquiry)
         stub_api_request("/customs_tariff_updates", backend: "xi")
           .with(query: { "page" => "1" })

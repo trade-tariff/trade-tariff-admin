@@ -205,9 +205,5 @@ module TradeTariffAdmin
         "#{environment}_#{base_name}"
       end.to_sym
     end
-
-    def enable_section_chapter_note_versioning?
-      true
-    end
   end
 end

@@ -24,9 +24,8 @@ class ApplicationController < ActionController::Base
 
   def default_landing_path
     return references_sections_path if current_user&.hmrc_admin?
-    return customs_tariff_updates_path if TradeTariffAdmin.enable_section_chapter_note_versioning?
 
-    dashboard_path
+    customs_tariff_updates_path
   end
   helper_method :default_landing_path
 
