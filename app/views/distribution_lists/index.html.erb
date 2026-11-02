@@ -1,0 +1,31 @@
+<h1 class="govuk-heading-l">Distribution lists</h1>
+
+<p class="govuk-body">
+  Each distribution list is a Cognito group whose name starts with <code>dl-</code>.
+  Subscribe a person to add them to the group. Unsubscribe them to remove them from it.
+  Being on a list gives no access to any service.
+</p>
+
+<% if @groups.any? %>
+  <%= govuk_table do |table|
+        table.with_head do |head|
+          head.with_row do |row|
+            row.with_cell(text: "Name")
+            row.with_cell(text: "Description")
+          end
+        end
+
+        table.with_body do |body|
+          @groups.each do |group|
+            body.with_row(html_attributes: { id: "distribution-list-#{group.name}" }) do |row|
+              row.with_cell { govuk_link_to(group.name, distribution_list_path(group.name)) }
+              row.with_cell(text: group.description.presence || "No description")
+            end
+          end
+        end
+      end %>
+<% else %>
+  <p class="govuk-body">
+    No distribution lists found. Lists are created in Terraform with the <code>dl-</code> prefix.
+  </p>
+<% end %>

@@ -1,0 +1,16 @@
+<%= govuk_breadcrumbs({ "Distribution lists" => distribution_lists_path, @group.name => distribution_list_path(@group.name) }) %>
+
+<h1 class="govuk-heading-l">Recipient was not subscribed</h1>
+
+<%= govuk_warning_text(text: "Cognito did not confirm whether an account was created for #{@form.email}. An account may exist that is in no group. It does not show on any distribution list and is not removed automatically.") %>
+
+<p class="govuk-body">Do one of these:</p>
+
+<ul class="govuk-list govuk-list--bullet">
+  <li>To subscribe this recipient, try again when Cognito is available. If the account exists, it is subscribed. If it does not exist, it is created.</li>
+  <li>If you do not want to subscribe this recipient, ask the platform team to find <%= @form.email %> in the Identity user pool. They must delete the account only if it is in no groups.</li>
+</ul>
+
+<p class="govuk-body">This page is the only record of the email address. Admin does not store it. Copy the email address before you leave this page.</p>
+
+<%= govuk_button_link_to "Back to #{@group.name}", distribution_list_path(@group.name), secondary: true %>
