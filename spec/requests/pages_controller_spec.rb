@@ -26,6 +26,21 @@ RSpec.describe PagesController do
       end
     end
 
+    context "when using the XI service in production" do
+      include_context "with XI service"
+
+      before do
+        allow(TradeTariffAdmin).to receive(:enable_section_chapter_note_versioning?).and_call_original
+        allow(TradeTariffAdmin).to receive(:environment).and_return("production".inquiry)
+      end
+
+      it "redirects to customs tariff updates" do
+        get dashboard_path
+
+        expect(response).to redirect_to(customs_tariff_updates_path)
+      end
+    end
+
     context "when user is hmrc_admin" do
       let(:current_user) { create(:user, :hmrc_admin) }
 

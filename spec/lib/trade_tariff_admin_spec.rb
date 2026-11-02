@@ -347,7 +347,7 @@ RSpec.describe TradeTariffAdmin do
     context "when in production" do
       before { ENV["ENVIRONMENT"] = "production" }
 
-      it { is_expected.to be(false) }
+      it { is_expected.to be(true) }
     end
 
     context "when using the Northern Ireland service" do
@@ -356,7 +356,7 @@ RSpec.describe TradeTariffAdmin do
         allow(TradeTariffAdmin::ServiceChooser).to receive(:xi?).and_return(true)
       end
 
-      it { is_expected.to be(false) }
+      it { is_expected.to be(true) }
     end
 
     context "when using the UK service outside production" do
