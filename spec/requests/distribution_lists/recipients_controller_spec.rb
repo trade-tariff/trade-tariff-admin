@@ -7,6 +7,9 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
   let(:new_email) { "new.person@example.com" }
   let(:new_sub) { "99999999-8888-7777-6666-555555555555" }
 
+  # Reconciliation instructions are rendered, not flashed, so read the page.
+  def page_text = CGI.unescapeHTML(response.body)
+
   def fail_audit_for(action)
     allow(DistributionListAuditEvent).to receive(:create!).and_wrap_original do |original, **attributes|
       raise ActiveRecord::StatementInvalid, "insert failed" if attributes[:action] == action
@@ -109,7 +112,7 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
       end
     end
 
-    context "when a new user was created but the add and the cleanup both time out" do
+    context "when a new user was created but the add and the recovery lookup both time out" do
       before do
         cognito_client.stub_responses(:admin_get_user, "UserNotFoundException")
         cognito_client.stub_responses(:admin_create_user, user: { username: new_sub })
@@ -118,9 +121,27 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
         make_request
       end
 
-      it "tells the operator which Cognito user to check", :aggregate_failures do
-        expect(response).to redirect_to(distribution_list_path(group))
-        expect(flash[:alert]).to include("was not subscribed", new_sub)
+      it "gives reconciliation instructions without claiming either outcome", :aggregate_failures do
+        expect(response).to have_http_status(:service_unavailable)
+        expect(page_text).to include("did not confirm whether the recipient was subscribed", "Do not subscribe them again", new_sub, "record recipient_added", "If no groups remain, delete")
+        expect(page_text).not_to include("was not subscribed", new_email)
+        expect(cognito_requests(:admin_delete_user)).to be_empty
+      end
+    end
+
+    context "when adding an existing user and the recovery lookup both time out" do
+      before do
+        cognito_client.stub_responses(:admin_get_user, username: new_sub)
+        cognito_client.stub_responses(:admin_add_user_to_group, Seahorse::Client::NetworkingError.new(Net::ReadTimeout.new))
+        cognito_client.stub_responses(:admin_list_groups_for_user, Seahorse::Client::NetworkingError.new(Net::ReadTimeout.new))
+        make_request
+      end
+
+      it "tells the operator to check membership and record recipient_added", :aggregate_failures do
+        expect(response).to have_http_status(:service_unavailable)
+        expect(page_text).to include("did not confirm whether the recipient was subscribed", new_sub, "record recipient_added")
+        expect(page_text).not_to include("If no groups remain", new_email)
+        expect(DistributionListAuditEvent.count).to eq(0)
       end
     end
 
@@ -135,9 +156,9 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
       end
 
       it "tells the operator which Cognito user to delete", :aggregate_failures do
-        expect(response).to redirect_to(distribution_list_path(group))
-        expect(flash[:alert]).to include("was not subscribed", new_sub)
-        expect(flash[:alert]).not_to include(new_email)
+        expect(response).to have_http_status(:service_unavailable)
+        expect(page_text).to include("was not subscribed", new_sub)
+        expect(page_text).not_to include(new_email)
       end
     end
 
@@ -189,8 +210,8 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
 
       it "subscribes the user and tells the operator which audit event to record", :aggregate_failures do
         expect(cognito_requests(:admin_add_user_to_group).first[:params]).to include(username: new_sub, group_name: group)
-        expect(flash[:alert]).to include("New user created and subscribed", "audit record could not be saved", "user_created for Cognito user #{new_sub}")
-        expect(flash[:alert]).not_to include(new_email)
+        expect(page_text).to include("New user created and subscribed", "audit record could not be saved", "user_created for Cognito user #{new_sub}")
+        expect(page_text).not_to include(new_email)
         expect(flash[:notice]).to be_nil
       end
     end
@@ -207,8 +228,8 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
 
       it "reports the failure and the audit event to record", :aggregate_failures do
         expect(cognito_requests(:admin_delete_user).first[:params]).to include(username: new_sub)
-        expect(flash[:alert]).to include(DistributionListHandling::UNAVAILABLE_MESSAGE, "audit record could not be saved", "user_created for Cognito user #{new_sub}")
-        expect(flash[:alert]).not_to include(new_email)
+        expect(page_text).to include(DistributionListHandling::UNAVAILABLE_MESSAGE, "audit record could not be saved", "user_created for Cognito user #{new_sub}")
+        expect(page_text).not_to include(new_email)
       end
     end
 
@@ -224,7 +245,83 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
       end
 
       it "gives the cleanup instructions and the audit event to record" do
-        expect(flash[:alert]).to include("could not be checked or removed", "user_created for Cognito user #{new_sub}")
+        expect(page_text).to include("could not be checked or removed", "user_created for Cognito user #{new_sub}")
+      end
+    end
+
+    context "when the database fails after a new user is created" do
+      before do
+        cognito_client.stub_responses(:admin_get_user, "UserNotFoundException")
+        cognito_client.stub_responses(:admin_create_user, user: { username: new_sub })
+        allow(DistributionListAuditEvent.connection).to receive(:select_value).and_wrap_original do |original, sql, *args|
+          raise ActiveRecord::ConnectionNotEstablished, "database down" if sql.include?("pg_try_advisory_lock") && sql.include?("distribution_list_user:")
+
+          original.call(sql, *args)
+        end
+        make_request
+      end
+
+      it "names the Cognito user to delete without showing the email", :aggregate_failures do
+        expect(response).to have_http_status(:service_unavailable)
+        expect(page_text).to include("was not subscribed", new_sub)
+        expect(page_text).not_to include(new_email)
+      end
+    end
+
+    context "when the audit of a created user cannot be saved and the list then disappears" do
+      before do
+        cognito_client.stub_responses(:admin_get_user, "UserNotFoundException")
+        cognito_client.stub_responses(:admin_create_user, user: { username: new_sub })
+        cognito_client.stub_responses(:admin_add_user_to_group, "ResourceNotFoundException")
+        cognito_client.stub_responses(:admin_list_groups_for_user, groups: [])
+        fail_audit_for("user_created")
+        make_request
+      end
+
+      it "cleans up and shows the list error with the audit event to record", :aggregate_failures do
+        expect(cognito_requests(:admin_delete_user).first[:params]).to include(username: new_sub)
+        expect(page_text).to include(DistributionListHandling::LIST_NOT_FOUND_MESSAGE, "audit record could not be saved", "user_created for Cognito user #{new_sub}")
+        expect(page_text).not_to include(new_email)
+      end
+    end
+
+    context "when the recipient's account keeps being deleted during the request" do
+      before do
+        cognito_client.stub_responses(:admin_get_user, username: new_sub)
+        cognito_client.stub_responses(:admin_add_user_to_group, "UserNotFoundException")
+        make_request
+      end
+
+      it "stays on the list and says the recipient was not subscribed", :aggregate_failures do
+        expect(response).to redirect_to(distribution_list_path(group))
+        expect(flash[:alert]).to include("Recipient was not subscribed because their Cognito account was deleted")
+      end
+    end
+
+    context "when a created user cannot be audited and its account is then deleted during the request" do
+      before do
+        cognito_client.stub_responses(:admin_get_user, "UserNotFoundException")
+        cognito_client.stub_responses(:admin_create_user, user: { username: new_sub })
+        cognito_client.stub_responses(:admin_add_user_to_group, "UserNotFoundException")
+        fail_audit_for("user_created")
+        make_request
+      end
+
+      it "shows the missing audit events on the page", :aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(page_text).to include("was not subscribed", "user_created for Cognito user #{new_sub}")
+      end
+    end
+
+    context "when the Cognito user pool does not exist" do
+      before { cognito_client.stub_responses(:list_groups, "ResourceNotFoundException") }
+
+      it "reports the lists as unavailable without subscribing", :aggregate_failures do
+        make_request
+
+        expect(response).to redirect_to(distribution_lists_path)
+        expect(flash[:alert]).to eq(DistributionListHandling::UNAVAILABLE_MESSAGE)
+        expect(cognito_requests(:admin_add_user_to_group)).to be_empty
       end
     end
 
@@ -268,6 +365,14 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
       get remove_distribution_list_recipient_path(group, "00000000-0000-0000-0000-000000000000")
 
       expect(response).to redirect_to(distribution_list_path(group))
+    end
+
+    it "stays on the list when the recipient's account is deleted before the group check", :aggregate_failures do
+      cognito_client.stub_responses(:admin_list_groups_for_user, "UserNotFoundException")
+      get remove_distribution_list_recipient_path(group, recipient_sub)
+
+      expect(response).to redirect_to(distribution_list_path(group))
+      expect(flash[:alert]).to eq("Recipient is no longer in this distribution list.")
     end
   end
 
@@ -321,7 +426,14 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
       it "tells the operator which Cognito user to delete" do
         make_request
 
-        expect(flash[:alert]).to include("could not be checked or deleted", recipient_sub)
+        expect(page_text).to include("could not be checked or deleted", recipient_sub)
+      end
+
+      it "renders the instructions in this response, without loading the list again", :aggregate_failures do
+        make_request
+
+        expect(response).to have_http_status(:service_unavailable)
+        expect(cognito_requests(:list_users_in_group).size).to eq(1)
       end
     end
 
@@ -337,7 +449,7 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
         make_request
 
         expect(flash[:notice]).to be_nil
-        expect(flash[:alert]).to include("did not confirm whether the recipient was unsubscribed", recipient_sub, "record recipient_removed", "If no groups remain, delete")
+        expect(page_text).to include("did not confirm whether the recipient was unsubscribed", recipient_sub, "record recipient_removed", "If no groups remain, delete")
       end
 
       it "neither audits nor deletes", :aggregate_failures do
@@ -360,7 +472,7 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
       it "tells the operator which Cognito user to delete" do
         make_request
 
-        expect(flash[:alert]).to include("could not be checked or deleted", recipient_sub)
+        expect(page_text).to include("could not be checked or deleted", recipient_sub)
       end
     end
 
@@ -379,7 +491,7 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
 
       it "deletes the account and tells the operator which audit event to record", :aggregate_failures do
         expect(cognito_requests(:admin_delete_user).first[:params]).to include(username: recipient_sub)
-        expect(flash[:alert]).to include("were deleted", "audit record could not be saved", "recipient_removed for Cognito user #{recipient_sub}")
+        expect(page_text).to include("were deleted", "audit record could not be saved", "recipient_removed for Cognito user #{recipient_sub}")
         expect(flash[:notice]).to be_nil
       end
     end
@@ -395,7 +507,7 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
       end
 
       it "gives the deletion instructions and the audit event to record", :aggregate_failures do
-        expect(flash[:alert]).to include("could not be checked or deleted", "recipient_removed for Cognito user #{recipient_sub}")
+        expect(page_text).to include("could not be checked or deleted", "recipient_removed for Cognito user #{recipient_sub}")
         expect(flash[:notice]).to be_nil
       end
     end
@@ -426,6 +538,14 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
       make_request
 
       expect(flash[:alert]).to eq("Recipient is no longer in this distribution list.")
+    end
+
+    it "returns to the index when the list itself is deleted during the request", :aggregate_failures do
+      cognito_client.stub_responses(:admin_remove_user_from_group, "ResourceNotFoundException")
+      make_request
+
+      expect(response).to redirect_to(distribution_lists_path)
+      expect(flash[:alert]).to eq(DistributionListHandling::LIST_NOT_FOUND_MESSAGE)
     end
 
     context "when the user is an auditor" do

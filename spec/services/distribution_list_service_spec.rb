@@ -64,6 +64,12 @@ RSpec.describe DistributionListService do
 
       expect(requests_for(:list_groups).last[:params]).to include(next_token: "page-2", user_pool_id: "eu-west-2_pool")
     end
+
+    it "reports a missing user pool as unavailable, not as a missing list", :aggregate_failures do
+      client.stub_responses(:list_groups, "ResourceNotFoundException")
+
+      expect { service.groups }.to raise_error(described_class::Error, /user pool not found/) { |error| expect(error).not_to be_a(described_class::NotFound) }
+    end
   end
 
   describe "#find_group" do
@@ -231,6 +237,15 @@ RSpec.describe DistributionListService do
         expect { service.add("dl-a", email) }.to raise_error(described_class::Error, /NetworkingError/)
         expect(requests_for(:admin_delete_user)).to be_empty
       end
+
+      it "raises AddIndeterminate without auditing if the group lookup also times out", :aggregate_failures do
+        client.stub_responses(:admin_list_groups_for_user, read_timeout)
+
+        expect { service.add("dl-a", email) }.to raise_error(described_class::AddIndeterminate) { |error|
+          expect([error.username, error.created]).to eq([sub, false])
+        }
+        expect(DistributionListAuditEvent.count).to eq(0)
+      end
     end
 
     context "when the user was created but adding it to the group times out" do
@@ -256,13 +271,12 @@ RSpec.describe DistributionListService do
         expect(DistributionListAuditEvent.order(:id).pluck(:action)).to eq(%w[user_created user_deleted])
       end
 
-      it "raises CleanupFailed without deleting when the group lookup also times out", :aggregate_failures do
+      it "raises AddIndeterminate without deleting or auditing when the group lookup also times out", :aggregate_failures do
         client.stub_responses(:admin_list_groups_for_user, read_timeout)
 
-        expect { service.add("dl-a", email) }.to raise_error(described_class::CleanupFailed) { |error|
-          expect(error.username).to eq(sub)
-        }
+        expect { service.add("dl-a", email) }.to raise_error(described_class::AddIndeterminate) { |error| expect([error.username, error.created]).to eq([sub, true]) }
         expect(requests_for(:admin_delete_user)).to be_empty
+        expect(DistributionListAuditEvent.pluck(:action)).to eq(%w[user_created])
       end
 
       it "raises CleanupFailed when the deletion times out and the user still exists" do
@@ -422,6 +436,32 @@ RSpec.describe DistributionListService do
         expect { service.add("dl-a", email) }.to raise_error(described_class::CleanupFailed) { |error| expect(error.failed_audits.pluck(:action)).to eq(%w[user_created]) }
       end
     end
+
+    context "when the database fails before the recipient lock is taken" do
+      before do
+        connection = DistributionListAuditEvent.connection
+        allow(connection).to receive(:select_value).and_wrap_original do |original, sql, *args|
+          raise ActiveRecord::ConnectionNotEstablished, "database down" if sql.include?("pg_try_advisory_lock") && sql.include?("distribution_list_user:")
+
+          original.call(sql, *args)
+        end
+      end
+
+      it "raises CleanupFailed with the sub of a newly created user", :aggregate_failures do
+        client.stub_responses(:admin_get_user, "UserNotFoundException")
+        client.stub_responses(:admin_create_user, user: { username: sub })
+        fail_audit_for("user_created")
+
+        expect { service.add("dl-a", email) }.to raise_error(described_class::CleanupFailed, /#{sub}.*ConnectionNotEstablished/) { |error| expect(error.failed_audits.pluck(:action)).to eq(%w[user_created]) }
+        expect(requests_for(:admin_add_user_to_group)).to be_empty
+      end
+
+      it "does not report cleanup for an existing user" do
+        client.stub_responses(:admin_get_user, username: sub)
+
+        expect { service.add("dl-a", email) }.to raise_error(ActiveRecord::ConnectionNotEstablished)
+      end
+    end
   end
 
   describe "#last_group?" do
@@ -437,10 +477,10 @@ RSpec.describe DistributionListService do
       expect(service.last_group?("dl-a", sub)).to be(false)
     end
 
-    it "raises NotFound for an unknown user" do
+    it "raises RecipientNotFound for an unknown user" do
       client.stub_responses(:admin_list_groups_for_user, "UserNotFoundException")
 
-      expect { service.last_group?("dl-a", sub) }.to raise_error(described_class::NotFound)
+      expect { service.last_group?("dl-a", sub) }.to raise_error(described_class::RecipientNotFound)
     end
   end
 
@@ -644,16 +684,22 @@ RSpec.describe DistributionListService do
       expect(client.api_requests).to be_empty
     end
 
-    it "raises NotFound when the user is gone" do
+    it "raises RecipientNotFound when the user is gone" do
       client.stub_responses(:admin_remove_user_from_group, "UserNotFoundException")
 
-      expect { service.remove("dl-a", sub, account_deletion_acknowledged: true) }.to raise_error(described_class::NotFound)
+      expect { service.remove("dl-a", sub, account_deletion_acknowledged: true) }.to raise_error(described_class::RecipientNotFound)
+    end
+
+    it "raises a list NotFound, not RecipientNotFound, when the list is gone", :aggregate_failures do
+      client.stub_responses(:admin_remove_user_from_group, "ResourceNotFoundException")
+
+      expect { service.remove("dl-a", sub, account_deletion_acknowledged: true) }.to raise_error(described_class::NotFound) { |error| expect(error).not_to be_a(described_class::RecipientNotFound) }
     end
 
     it "does not remove or delete a user who is not on the list", :aggregate_failures do
       client.stub_responses(:list_users_in_group, users: [])
 
-      expect { service.remove("dl-a", sub) }.to raise_error(described_class::NotFound)
+      expect { service.remove("dl-a", sub) }.to raise_error(described_class::RecipientNotFound)
       expect(requests_for(:admin_remove_user_from_group) + requests_for(:admin_delete_user)).to be_empty
     end
   end
@@ -751,11 +797,11 @@ RSpec.describe DistributionListService do
       end
     end
 
-    it "raises NotFound when the user keeps disappearing" do
+    it "raises RecipientNotFound when the user keeps disappearing" do
       client.stub_responses(:admin_get_user, username: sub)
       client.stub_responses(:admin_add_user_to_group, "UserNotFoundException")
 
-      expect { service.add("dl-b", email) }.to raise_error(described_class::NotFound)
+      expect { service.add("dl-b", email) }.to raise_error(described_class::RecipientNotFound)
     end
 
     it "does not look the user up while another subscription holds the email's lock", :aggregate_failures do

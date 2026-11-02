@@ -36,7 +36,24 @@ private
 
   def distribution_lists_unavailable(exception)
     Rails.logger.error("distribution_list.error #{exception.class.name}: #{exception.message}")
-    redirect_to distribution_lists_path, alert: with_missing_audits(UNAVAILABLE_MESSAGE, exception)
+    return render_missing_audits(UNAVAILABLE_MESSAGE, exception) if exception.failed_audits.any?
+
+    redirect_to distribution_lists_path, alert: UNAVAILABLE_MESSAGE
+  end
+
+  # Shows instructions that name a Cognito user to act on in this response.
+  # A redirect would load Cognito again, and if that failed its alert would
+  # replace these instructions. Makes no Cognito calls.
+  def render_reconciliation(heading, message, status: :service_unavailable)
+    @reconciliation_heading = heading
+    @reconciliation_message = message
+    render "distribution_lists/recipients/reconciliation", status:
+  end
+
+  def render_missing_audits(message, exception)
+    return redirect_to(distribution_lists_path, alert: with_missing_audits(message, exception)) unless @group
+
+    render_reconciliation("Audit record not saved", with_missing_audits(message, exception))
   end
 
   # Appends the audit events that could not be saved, named by action and
@@ -53,7 +70,9 @@ private
     redirect_to @group ? distribution_list_path(@group.name) : distribution_lists_path, alert: BUSY_MESSAGE
   end
 
-  def distribution_list_not_found
+  def distribution_list_not_found(exception)
+    return render_missing_audits(LIST_NOT_FOUND_MESSAGE, exception) if exception.failed_audits.any?
+
     redirect_to distribution_lists_path, alert: LIST_NOT_FOUND_MESSAGE
   end
 end

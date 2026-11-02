@@ -51,6 +51,9 @@ class DistributionListService
 
   class InvalidGroup < Error; end
   class NotFound < Error; end
+  # The recipient (Cognito user or list membership) no longer exists. A plain
+  # NotFound means the distribution list itself is missing.
+  class RecipientNotFound < NotFound; end
   # Another request is changing the same recipient. Safe to retry.
   class Busy < Error; end
   # Group memberships changed after the confirmation page was shown. The
@@ -104,6 +107,20 @@ class DistributionListService
     end
   end
 
+  # An add got no response from Cognito and the user's groups could not be
+  # read, so the subscription may have worked. It is not audited, and a user
+  # created by this request is not deleted. A retry would find the user in the
+  # group and not audit the add, so the operator must reconcile it.
+  class AddIndeterminate < Error
+    attr_reader :username, :created
+
+    def initialize(username, created, cause_name)
+      @username = username
+      @created = created
+      super("Could not confirm whether recipient #{username} was subscribed (#{cause_name})")
+    end
+  end
+
   # The Cognito changes (and any cleanup) completed, but one or more audit
   # events could not be saved. result is the outcome of the operation.
   # failures lists each missing event as { action:, group_name:, username: }.
@@ -139,6 +156,10 @@ class DistributionListService
       .select { |group| self.class.valid_group_name?(group.group_name) }
       .map { |group| Group.new(name: group.group_name, description: group.description) }
       .sort_by(&:name)
+  rescue Aws::CognitoIdentityProvider::Errors::ResourceNotFoundException
+    # ListGroups only fails this way when the user pool itself is missing (a
+    # configuration error), so report the feature as unavailable.
+    raise Error, "Cognito user pool not found"
   end
 
   def find_group(name)
@@ -172,7 +193,7 @@ class DistributionListService
 
     (user_group_names(username) - [group_name]).empty?
   rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException
-    raise NotFound, "Recipient not found"
+    raise RecipientNotFound, "Recipient not found"
   end
 
   # Removes the user from the group. If that was the last group the user was
@@ -210,7 +231,7 @@ private
     # removing the recipient.
     with_user_lock(username) do
       # Only a recipient of this list can be unsubscribed (and so deleted).
-      raise NotFound, "Recipient not found" unless find_member(group_name, username)
+      raise RecipientNotFound, "Recipient not found" unless find_member(group_name, username)
 
       deletes_account = (user_group_names(username) - [group_name]).empty?
       if deletes_account && !account_deletion_acknowledged
@@ -222,9 +243,10 @@ private
 
       deletes_account ? delete_if_in_no_groups(group_name, username) : :removed
     end
-  rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException,
-         Aws::CognitoIdentityProvider::Errors::ResourceNotFoundException
-    raise NotFound, "Recipient or distribution list not found"
+  rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException
+    raise RecipientNotFound, "Recipient not found"
+  rescue Aws::CognitoIdentityProvider::Errors::ResourceNotFoundException
+    raise NotFound, "Distribution list not found"
   rescue *CLIENT_ERRORS => e
     raise Error, "Cognito could not remove the recipient (#{e.class.name.demodulize})"
   end
@@ -253,11 +275,17 @@ private
       raise CleanupFailed.new(username, "Busy") if created
 
       raise
+    rescue ActiveRecord::ActiveRecordError => e
+      # The database failed before the user lock was taken, so the user cannot
+      # be safely deleted here. A new user is in no group: report its username.
+      raise CleanupFailed.new(username, e.class.name.demodulize) if created
+
+      raise
     rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException
       # An unsubscribe deleted the user after ensure_user found them. Creating
       # the user again gives them a new username, so take the lock again.
       retry if attempts < 2
-      raise NotFound, "Recipient not found"
+      raise RecipientNotFound, "Recipient not found"
     end
   end
 
@@ -384,6 +412,10 @@ private
     # user is in the group, the subscription worked.
     groups = current_group_names(username)
     return if groups&.include?(group_name)
+
+    # Without a response the add may have worked, so it must not be reported
+    # as a plain failure, and a created user must not be deleted.
+    raise AddIndeterminate.new(username, created, e.class.name.demodulize) if groups.nil? && e.is_a?(Seahorse::Client::NetworkingError)
 
     discard_created_user(group_name, username, groups) if created
     raise e

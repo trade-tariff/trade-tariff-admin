@@ -35,6 +35,17 @@ RSpec.describe DistributionListsController, type: :request do
       end
     end
 
+    context "when the Cognito user pool does not exist" do
+      before { cognito_client.stub_responses(:list_groups, "ResourceNotFoundException") }
+
+      it "renders the unavailable page", :aggregate_failures do
+        make_request
+
+        expect(response).to have_http_status(:service_unavailable)
+        expect(response.body).to include(DistributionListHandling::UNAVAILABLE_MESSAGE)
+      end
+    end
+
     %i[hmrc_admin auditor guest].each do |role|
       context "when the user is #{role}" do
         let(:current_user) { create(:user, role) }
@@ -74,6 +85,14 @@ RSpec.describe DistributionListsController, type: :request do
       get distribution_list_path("dl-tariff-notifications")
 
       expect(response.body).to include("Recent changes", "Olivia Operator", "Cognito user and email deleted", "gone-sub")
+    end
+
+    it "reports the lists as unavailable when the Cognito user pool does not exist", :aggregate_failures do
+      cognito_client.stub_responses(:list_groups, "ResourceNotFoundException")
+      get distribution_list_path("dl-tariff-notifications")
+
+      expect(response).to redirect_to(distribution_lists_path)
+      expect(flash[:alert]).to eq(DistributionListHandling::UNAVAILABLE_MESSAGE)
     end
 
     it "redirects for an unknown dl- group" do

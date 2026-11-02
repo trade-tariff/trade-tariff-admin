@@ -164,7 +164,10 @@ the list, admin deletes that new user again (audited as `user_deleted`). This
 stops a failed subscription from leaving a verified user in no group, which no
 list page shows and the unverified-user sweep skips. Admin keeps the user if
 it is in a group by then. If the deletion also fails, the page shows the
-Cognito username. Ask the platform team to delete that user.
+Cognito username. Ask the platform team to delete that user. If the database
+fails after admin creates the user but before admin locks it, admin does not
+subscribe or delete the user, and the page shows the Cognito username in the
+same way.
 
 Cognito can time out after it has already made a change. Admin treats a
 connection or read-timeout failure (`Seahorse::Client::NetworkingError`) the
@@ -188,6 +191,21 @@ audit event or delete the account. It tells the operator the Cognito username
 and how to reconcile: check the user's groups, record `recipient_removed` if
 the user has left the list, and delete the account (and record
 `user_deleted`) only if no groups remain.
+
+A subscription can be uncertain in the same way: the add times out and admin
+cannot read the user's groups. Admin does not write `recipient_added` and does
+not delete a user it has just created. It tells the operator the Cognito
+username and how to reconcile: check the user's groups and record
+`recipient_added` if the user is in the list. For a new user, delete the
+account (and record `user_deleted`) only if no groups remain. Do not subscribe
+the recipient again to fix it: admin finds them already in the list and does
+not record the event.
+
+When the instructions name a Cognito username or missing audit events, admin
+shows them on a page in the same response. It does not redirect to the list
+page, because that page reads Cognito again and, if Cognito is unavailable,
+replaces the instructions with a general error. Copy the instructions before
+you leave the page.
 
 Each subscribe and unsubscribe holds a lock on the recipient (a Postgres
 advisory lock keyed by Cognito username). This stops an unsubscribe from
