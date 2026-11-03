@@ -205,12 +205,5 @@ module TradeTariffAdmin
         "#{environment}_#{base_name}"
       end.to_sym
     end
-
-    def enable_section_chapter_note_versioning?
-      return false if environment.production?
-      return false if TradeTariffAdmin::ServiceChooser.xi?
-
-      true
-    end
   end
 end

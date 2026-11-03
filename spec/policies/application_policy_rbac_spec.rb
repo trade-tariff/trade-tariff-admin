@@ -5,8 +5,8 @@ RSpec.describe ApplicationPolicy do
     let(:guest_user) { create(:user, :guest) }
 
     it "denies access to sections & chapters", :aggregate_failures do
-      expect(SectionNotePolicy.new(guest_user, SectionNote.new).index?).to be(false)
-      expect(ChapterNotePolicy.new(guest_user, ChapterNote.new).index?).to be(false)
+      expect(CustomsTariff::UpdatePolicy.new(guest_user, CustomsTariff::Update.new).index?).to be(false)
+      expect(CustomsTariff::SectionNotePolicy.new(guest_user, CustomsTariff::SectionNote.new).create?).to be(false)
     end
 
     it "denies access to search references" do
@@ -53,8 +53,8 @@ RSpec.describe ApplicationPolicy do
     let(:hmrc_admin) { create(:user, :hmrc_admin) }
 
     it "denies access to sections & chapters (hidden)", :aggregate_failures do
-      expect(SectionNotePolicy.new(hmrc_admin, SectionNote.new).index?).to be(false)
-      expect(ChapterNotePolicy.new(hmrc_admin, ChapterNote.new).index?).to be(false)
+      expect(CustomsTariff::UpdatePolicy.new(hmrc_admin, CustomsTariff::Update.new).index?).to be(false)
+      expect(CustomsTariff::SectionNotePolicy.new(hmrc_admin, CustomsTariff::SectionNote.new).create?).to be(false)
     end
 
     it "allows full access to search references", :aggregate_failures do
@@ -110,11 +110,11 @@ RSpec.describe ApplicationPolicy do
     let(:auditor) { create(:user, :auditor) }
 
     it "allows read-only access to sections & chapters", :aggregate_failures do
-      expect(SectionNotePolicy.new(auditor, SectionNote.new).index?).to be(true)
-      expect(SectionNotePolicy.new(auditor, SectionNote.new).show?).to be(true)
-      expect(SectionNotePolicy.new(auditor, SectionNote.new).create?).to be(false)
-      expect(SectionNotePolicy.new(auditor, SectionNote.new).update?).to be(false)
-      expect(SectionNotePolicy.new(auditor, SectionNote.new).destroy?).to be(false)
+      expect(CustomsTariff::UpdatePolicy.new(auditor, CustomsTariff::Update.new).index?).to be(true)
+      expect(CustomsTariff::UpdatePolicy.new(auditor, CustomsTariff::Update.new).show?).to be(true)
+      expect(CustomsTariff::SectionNotePolicy.new(auditor, CustomsTariff::SectionNote.new).create?).to be(false)
+      expect(CustomsTariff::SectionNotePolicy.new(auditor, CustomsTariff::SectionNote.new).update?).to be(false)
+      expect(CustomsTariff::SectionNotePolicy.new(auditor, CustomsTariff::SectionNote.new).destroy?).to be(false)
     end
 
     it "allows read-only access to search references", :aggregate_failures do
@@ -179,10 +179,10 @@ RSpec.describe ApplicationPolicy do
     let(:technical_operator) { create(:user, :technical_operator) }
 
     it "allows full access to sections & chapters", :aggregate_failures do
-      expect(SectionNotePolicy.new(technical_operator, SectionNote.new).index?).to be(true)
-      expect(SectionNotePolicy.new(technical_operator, SectionNote.new).create?).to be(true)
-      expect(SectionNotePolicy.new(technical_operator, SectionNote.new).update?).to be(true)
-      expect(SectionNotePolicy.new(technical_operator, SectionNote.new).destroy?).to be(true)
+      expect(CustomsTariff::UpdatePolicy.new(technical_operator, CustomsTariff::Update.new).index?).to be(true)
+      expect(CustomsTariff::SectionNotePolicy.new(technical_operator, CustomsTariff::SectionNote.new).create?).to be(true)
+      expect(CustomsTariff::SectionNotePolicy.new(technical_operator, CustomsTariff::SectionNote.new).update?).to be(true)
+      expect(CustomsTariff::SectionNotePolicy.new(technical_operator, CustomsTariff::SectionNote.new).destroy?).to be(true)
     end
 
     it "allows full access to search references", :aggregate_failures do
@@ -257,7 +257,7 @@ RSpec.describe ApplicationPolicy do
     let(:superadmin) { create(:user, :superadmin) }
 
     it "inherits content management access", :aggregate_failures do
-      expect([SectionNotePolicy.new(superadmin, SectionNote.new).index?,
+      expect([CustomsTariff::UpdatePolicy.new(superadmin, CustomsTariff::Update.new).index?,
               SearchReferencePolicy.new(superadmin, SearchReference.new).create?]).to all(be(true))
     end
 
@@ -331,7 +331,7 @@ RSpec.describe ApplicationPolicy do
 
     it "does not bypass other policies", :aggregate_failures do
       guest = create(:user, :guest)
-      expect(SectionNotePolicy.new(guest, SectionNote.new).index?).to be(false)
+      expect(CustomsTariff::UpdatePolicy.new(guest, CustomsTariff::Update.new).index?).to be(false)
       expect(News::ItemPolicy.new(guest, News::Item.new).index?).to be(false)
     end
   end

@@ -17,10 +17,10 @@ RSpec.describe NavigationHelper, type: :helper do
       expect(helper.navigation_sections.map(&:key)).to eq(%i[ott_admin classification evaluation spimm manage_users configuration])
     end
 
-    it "defines OTT Admin with 8 items" do
+    it "defines OTT Admin with 7 items" do
       section = helper.navigation_sections.find { |s| s.key == :ott_admin }
       expect(section.items.map(&:text)).to eq(
-        ["Customs Tariff Updates", "Section & chapter notes", "News", "Live Issues", "Quotas", "Updates", "Reports", "Rollbacks"],
+        ["Customs Tariff Updates", "News", "Live Issues", "Quotas", "Updates", "Reports", "Rollbacks"],
       )
     end
 
@@ -241,7 +241,7 @@ RSpec.describe NavigationHelper, type: :helper do
       let(:user) { build(:user, :technical_operator) }
 
       include_examples "visible sections and items",
-                       ott_admin: ["Section & chapter notes", "Updates", "Reports", "Rollbacks"],
+                       ott_admin: ["Customs Tariff Updates", "Updates", "Reports", "Rollbacks"],
                        classification: ["Search References", "Descriptions", "Search dashboard", "Search diagnostics", "Recent changes"],
                        spimm: [
                          "Category Assessments",
@@ -269,7 +269,7 @@ RSpec.describe NavigationHelper, type: :helper do
       let(:user) { build(:user, :auditor) }
 
       include_examples "visible sections and items",
-                       ott_admin: ["Section & chapter notes", "Updates", "Rollbacks"],
+                       ott_admin: ["Customs Tariff Updates", "Updates", "Rollbacks"],
                        classification: ["Search References", "Search dashboard", "Search diagnostics"],
                        spimm: [
                          "Category Assessments",

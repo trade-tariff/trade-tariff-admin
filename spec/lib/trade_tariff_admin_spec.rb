@@ -335,40 +335,6 @@ RSpec.describe TradeTariffAdmin do
     end
   end
 
-  describe ".enable_section_chapter_note_versioning?" do
-    subject(:section_chapter_note_versioning) do
-      described_class.enable_section_chapter_note_versioning?
-    end
-
-    before do
-      allow(described_class).to receive(:enable_section_chapter_note_versioning?).and_call_original
-    end
-
-    context "when in production" do
-      before { ENV["ENVIRONMENT"] = "production" }
-
-      it { is_expected.to be(false) }
-    end
-
-    context "when using the Northern Ireland service" do
-      before do
-        ENV["ENVIRONMENT"] = "development"
-        allow(TradeTariffAdmin::ServiceChooser).to receive(:xi?).and_return(true)
-      end
-
-      it { is_expected.to be(false) }
-    end
-
-    context "when using the UK service outside production" do
-      before do
-        ENV["ENVIRONMENT"] = "development"
-        allow(TradeTariffAdmin::ServiceChooser).to receive(:xi?).and_return(false)
-      end
-
-      it { is_expected.to be(true) }
-    end
-  end
-
   describe ".sidekiq_uk_redis_url" do
     it "returns SIDEKIQ_UK_REDIS_URL when it is set" do
       ENV["SIDEKIQ_UK_REDIS_URL"] = "rediss://:secret@uk-sidekiq:6379"
