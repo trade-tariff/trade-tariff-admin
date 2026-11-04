@@ -9,7 +9,7 @@ RSpec.describe DistributionListsController, type: :request do
       make_request
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include(">Tariff notifications</a>", "<code>dl-tariff-notifications</code>")
+      expect(response.body).to include(">Tariff notifications</a>", ">dl-tariff-notifications</code>")
       expect(response.body).not_to match(/>(admin|myott|portal)</)
     end
 
@@ -83,7 +83,7 @@ RSpec.describe DistributionListsController, type: :request do
     it "shows the readable name and the Cognito group name" do
       get distribution_list_path("dl-tariff-notifications")
 
-      expect(response.body).to include(">Tariff notifications</h1>", "<code>dl-tariff-notifications</code>")
+      expect(response.body).to include(">Tariff notifications</h1>", ">dl-tariff-notifications</code>")
     end
 
     it "warns that an empty list falls back to the old recipients" do

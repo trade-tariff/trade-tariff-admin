@@ -2,7 +2,7 @@
 
 <span class="govuk-caption-l">Distribution list</span>
 <h1 class="govuk-heading-l govuk-!-margin-bottom-2"><%= distribution_list_display_name(@group.name) %></h1>
-<p class="govuk-hint">Cognito group <code><%= @group.name %></code></p>
+<p class="govuk-hint">Cognito group <code class="distribution-list-group-name"><%= @group.name %></code></p>
 
 <% if @group.description.present? %>
   <p class="govuk-body"><%= @group.description %></p>

@@ -895,3 +895,11 @@
 #overrides-accordion .govuk-accordion__section-toggle-text {
   display: none;
 }
+
+// The Cognito group name shown under a distribution list's readable name.
+.distribution-list-group-name {
+  font-family: monospace;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: govuk.$govuk-secondary-text-colour;
+}

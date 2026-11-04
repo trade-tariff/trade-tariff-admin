@@ -21,7 +21,7 @@
               row.with_cell do
                 safe_join([
                   govuk_link_to(distribution_list_display_name(group.name), distribution_list_path(group.name)),
-                  tag.span(tag.code(group.name), class: "govuk-body-s govuk-hint govuk-!-display-block govuk-!-margin-bottom-0"),
+                  tag.code(group.name, class: "distribution-list-group-name govuk-!-display-block"),
                 ])
               end
               row.with_cell(text: group.description.presence || "No description")
