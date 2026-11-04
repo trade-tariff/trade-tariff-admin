@@ -139,7 +139,7 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
 
       it "tells the operator to check membership and record recipient_added", :aggregate_failures do
         expect(response).to have_http_status(:service_unavailable)
-        expect(page_text).to include("did not confirm whether the recipient was subscribed", new_sub, "record recipient_added")
+        expect(page_text).to include("did not confirm whether the recipient was subscribed", new_sub, "record recipient_added", "in Tariff notifications (dl-tariff-notifications)")
         expect(page_text).not_to include("If no groups remain", new_email)
         expect(DistributionListAuditEvent.count).to eq(0)
       end
@@ -449,7 +449,7 @@ RSpec.describe DistributionLists::RecipientsController, type: :request do
         make_request
 
         expect(flash[:notice]).to be_nil
-        expect(page_text).to include("did not confirm whether the recipient was unsubscribed", recipient_sub, "record recipient_removed", "If no groups remain, delete")
+        expect(page_text).to include("did not confirm whether the recipient was unsubscribed", recipient_sub, "record recipient_removed", "no longer in Tariff notifications (dl-tariff-notifications)", "If no groups remain, delete")
       end
 
       it "neither audits nor deletes", :aggregate_failures do

@@ -80,7 +80,7 @@ module DistributionLists
         "Unsubscribe not confirmed",
         with_missing_audits(
           "Cognito did not confirm whether the recipient was unsubscribed. Ask the platform team to check the groups for Cognito user #{e.username}. " \
-          "If the user is no longer in #{@group.name}, record recipient_removed for that user. " \
+          "If the user is no longer in #{group_label}, record recipient_removed for that user. " \
           "If no groups remain, delete the Cognito account and record user_deleted.",
           e,
         ),
@@ -102,10 +102,16 @@ module DistributionLists
     def add_indeterminate_instructions(error)
       message = "Cognito did not confirm whether the recipient was subscribed. Do not subscribe them again. " \
                 "Ask the platform team to check the groups for Cognito user #{error.username}. " \
-                "If the user is in #{@group.name}, record recipient_added for that user."
+                "If the user is in #{group_label}, record recipient_added for that user."
       return message unless error.created
 
       "#{message} A new Cognito account was created for them. If no groups remain, delete the Cognito account and record user_deleted."
+    end
+
+    # The platform team checks membership in the AWS console, so the
+    # instructions also give the Cognito group name.
+    def group_label
+      "#{helpers.distribution_list_display_name(@group.name)} (#{@group.name})"
     end
 
     def recipient_gone(message, error)

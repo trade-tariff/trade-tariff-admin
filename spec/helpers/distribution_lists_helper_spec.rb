@@ -1,4 +1,17 @@
 RSpec.describe DistributionListsHelper, type: :helper do
+  describe "#distribution_list_display_name" do
+    it "removes the dl- prefix and humanises the rest", :aggregate_failures do
+      expect(helper.distribution_list_display_name("dl-cds-updates")).to eq("Cds updates")
+      expect(helper.distribution_list_display_name("dl-green-lanes-updates")).to eq("Green lanes updates")
+      expect(helper.distribution_list_display_name("dl-tariff")).to eq("Tariff")
+    end
+
+    it "returns the name when nothing is left after the prefix", :aggregate_failures do
+      expect(helper.distribution_list_display_name("dl-")).to eq("dl-")
+      expect(helper.distribution_list_display_name(nil)).to eq("")
+    end
+  end
+
   it "labels a deletion" do
     expect(helper.distribution_list_audit_action("user_deleted")).to eq("Cognito user and email deleted")
   end
