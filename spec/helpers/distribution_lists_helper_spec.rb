@@ -1,9 +1,13 @@
 RSpec.describe DistributionListsHelper, type: :helper do
   describe "#distribution_list_display_name" do
-    it "removes the dl- prefix and humanises the rest", :aggregate_failures do
-      expect(helper.distribution_list_display_name("dl-cds-updates")).to eq("Cds updates")
-      expect(helper.distribution_list_display_name("dl-green-lanes-updates")).to eq("Green lanes updates")
+    it "removes the dl- prefix and title-cases the rest", :aggregate_failures do
+      expect(helper.distribution_list_display_name("dl-green-lanes")).to eq("Green Lanes")
       expect(helper.distribution_list_display_name("dl-tariff")).to eq("Tariff")
+    end
+
+    it "keeps known acronyms in upper case", :aggregate_failures do
+      expect(helper.distribution_list_display_name("dl-cds-updates")).to eq("CDS Updates")
+      expect(helper.distribution_list_display_name("dl-xi-api-alerts")).to eq("XI API Alerts")
     end
 
     it "returns the name when nothing is left after the prefix", :aggregate_failures do
