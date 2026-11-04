@@ -1,4 +1,4 @@
-<%= govuk_breadcrumbs({ "Distribution lists" => distribution_lists_path, @group.name => distribution_list_path(@group.name) }) %>
+<%= govuk_breadcrumbs({ "Distribution lists" => distribution_lists_path, distribution_list_display_name(@group.name) => distribution_list_path(@group.name) }) %>
 
 <h1 class="govuk-heading-l"><%= @reconciliation_heading %></h1>
 
@@ -6,4 +6,4 @@
 
 <p class="govuk-body">Copy these instructions before you leave this page. Admin does not show them again.</p>
 
-<%= govuk_button_link_to "Back to #{@group.name}", distribution_list_path(@group.name), secondary: true %>
+<%= govuk_button_link_to "Back to #{distribution_list_display_name(@group.name)}", distribution_list_path(@group.name), secondary: true %>

@@ -22,6 +22,8 @@ require "aws-sdk-cognitoidentityprovider"
 # never write them to the database, the cache, the logs or an exception message.
 class DistributionListService
   PREFIX = "dl-".freeze
+  # trade-tariff-backend's DistributionListRecipients has a copy of this guard
+  # (it reads the lists to send emails). Keep both the same.
   GROUP_NAME_FORMAT = /\Adl-[a-z0-9][a-z0-9-]{0,120}\z/
   # Role/access groups. Distribution lists must never touch these.
   PROTECTED_GROUPS = %w[admin myott portal].freeze

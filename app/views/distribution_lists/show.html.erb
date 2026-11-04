@@ -1,7 +1,8 @@
 <%= govuk_breadcrumbs "Distribution lists" => distribution_lists_path %>
 
 <span class="govuk-caption-l">Distribution list</span>
-<h1 class="govuk-heading-l"><%= @group.name %></h1>
+<h1 class="govuk-heading-l govuk-!-margin-bottom-2"><%= distribution_list_display_name(@group.name) %></h1>
+<p class="govuk-hint">Cognito group <code><%= @group.name %></code></p>
 
 <% if @group.description.present? %>
   <p class="govuk-body"><%= @group.description %></p>
@@ -23,6 +24,10 @@
 <% end %>
 
 <h2 class="govuk-heading-m">Recipients (<%= @members.size %>)</h2>
+
+<%= govuk_inset_text(html_attributes: { id: "empty-list-fallback" }) do %>
+  <p class="govuk-body">Emptying this list does not stop the email. While the old recipient settings are still in place, an email for a list with no enabled recipients goes to the recipients that were set before distribution lists were introduced.</p>
+<% end %>
 
 <% if @members.any? %>
   <%= govuk_table do |table|

@@ -1,4 +1,4 @@
-<%= govuk_breadcrumbs({ "Distribution lists" => distribution_lists_path, @group.name => distribution_list_path(@group.name) }) %>
+<%= govuk_breadcrumbs({ "Distribution lists" => distribution_lists_path, distribution_list_display_name(@group.name) => distribution_list_path(@group.name) }) %>
 
 <h1 class="govuk-heading-l">Recipient was not subscribed</h1>
 
@@ -13,4 +13,4 @@
 
 <p class="govuk-body">This page is the only record of the email address. Admin does not store it. Copy the email address before you leave this page.</p>
 
-<%= govuk_button_link_to "Back to #{@group.name}", distribution_list_path(@group.name), secondary: true %>
+<%= govuk_button_link_to "Back to #{distribution_list_display_name(@group.name)}", distribution_list_path(@group.name), secondary: true %>

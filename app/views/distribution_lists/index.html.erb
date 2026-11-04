@@ -18,7 +18,12 @@
         table.with_body do |body|
           @groups.each do |group|
             body.with_row(html_attributes: { id: "distribution-list-#{group.name}" }) do |row|
-              row.with_cell { govuk_link_to(group.name, distribution_list_path(group.name)) }
+              row.with_cell do
+                safe_join([
+                  govuk_link_to(distribution_list_display_name(group.name), distribution_list_path(group.name)),
+                  tag.span(tag.code(group.name), class: "govuk-body-s govuk-hint govuk-!-display-block govuk-!-margin-bottom-0"),
+                ])
+              end
               row.with_cell(text: group.description.presence || "No description")
             end
           end
