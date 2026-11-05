@@ -9,7 +9,7 @@ RSpec.describe DistributionListsController, type: :request do
       make_request
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include("dl-tariff-notifications", "Tariff notifications")
+      expect(response.body).to include(">Tariff Notifications</a>", ">dl-tariff-notifications</code>")
       expect(response.body).not_to match(/>(admin|myott|portal)</)
     end
 
@@ -78,6 +78,18 @@ RSpec.describe DistributionListsController, type: :request do
       expect(response.body).to include(recipient_email, "Subscribe", "Recipients (1)")
       expect(response.body).to include(remove_distribution_list_recipient_path("dl-tariff-notifications", recipient_sub))
       expect(response.headers["Cache-Control"]).to eq("no-store")
+    end
+
+    it "shows the readable name and the Cognito group name" do
+      get distribution_list_path("dl-tariff-notifications")
+
+      expect(response.body).to include(">Tariff Notifications</h1>", ">dl-tariff-notifications</code>")
+    end
+
+    it "warns that an empty list falls back to the old recipients" do
+      get distribution_list_path("dl-tariff-notifications")
+
+      expect(response.body).to include("Emptying this list does not stop the email")
     end
 
     it "shows recent changes without email addresses", :aggregate_failures do
